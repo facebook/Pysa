@@ -25,7 +25,7 @@
     "codemirror": "^5.59.0",
     "docusaurus-lunr-search": "^3.4.0",
     "docusaurus-plugin-internaldocs-fb": "1.7.0",
-    "http-proxy-middleware": "2.0.9",
+    "http-proxy-middleware": "2.0.10",
     "image-size": "1.2.1",
     "parseuri": "^3.0.1",
     "prismjs": "1.30.0",
