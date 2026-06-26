@@ -388,6 +388,29 @@ Higher order call graphs
         }
       }
     },
+    "142:13-142:22|identifier|namespace": {
+      "identifier": {
+        "if_called": {
+          "new_calls": [
+            {
+              "target": "builtins.object.__new__",
+              "index": 0,
+              "return_type": [],
+              "is_static_method": true
+            }
+          ],
+          "init_calls": [
+            {
+              "target": "builtins.object.__init__",
+              "index": 0,
+              "implicit_receiver": true,
+              "return_type": [],
+              "receiver_class": "call_graph.namespace"
+            }
+          ]
+        }
+      }
+    },
     "142:13-142:24|artificial-call|match-value-comparison-equals>comparison": {
       "call": { "unresolved": [ "SkippedMatchCondition" ] }
     },
@@ -456,6 +479,29 @@ Higher order call graphs
               "implicit_dunder_call": true,
               "return_type": [],
               "receiver_class": "call_graph.namespace.C"
+            }
+          ]
+        }
+      }
+    },
+    "144:13-144:22|identifier|namespace": {
+      "identifier": {
+        "if_called": {
+          "new_calls": [
+            {
+              "target": "builtins.object.__new__",
+              "index": 0,
+              "return_type": [],
+              "is_static_method": true
+            }
+          ],
+          "init_calls": [
+            {
+              "target": "builtins.object.__init__",
+              "index": 0,
+              "implicit_receiver": true,
+              "return_type": [],
+              "receiver_class": "call_graph.namespace"
             }
           ]
         }
