@@ -9,3 +9,4 @@ typing_extensions
 typing_inspect
 tomli
 tomli-w
+pyrefly
