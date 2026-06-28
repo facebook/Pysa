@@ -1,70 +1,38 @@
-[![tests](https://github.com/facebook/pyre-check/workflows/tests/badge.svg)](https://github.com/facebook/pyre-check/actions/workflows/tests.yml)
+[![tests](https://github.com/facebook/Pysa/actions/workflows/pysa.yml/badge.svg)](https://github.com/facebook/Pysa/actions/workflows/pysa.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Gitter](https://badges.gitter.im/pyre-check/community.svg)](https://gitter.im/pyre-check/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
-
-> [!WARNING]
->
-> ## This Repository Is Archived
->
-> This repository is no longer maintained and has been archived.
->
-> - **Type checking:** Pyre has been replaced by <a href="https://github.com/facebook/pyrefly">Pyrefly</a>, our next-generation Python typechecker and language server.
-> - **Security analysis (Pysa):** Pysa has moved to its own repository at <a href="https://github.com/facebook/Pysa">github.com/facebook/Pysa</a>. If you are looking for Pysa, please head there.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/facebook/pyre-check/main/logo.png">
+  <img src="https://raw.githubusercontent.com/facebook/Pysa/main/logo.png">
 </p>
 
-Pyre is a performant type checker for Python compliant with [PEP 484](https://www.python.org/dev/peps/pep-0484/). Pyre can analyze codebases with millions of lines of code incrementally – providing instantaneous feedback to developers as they write code. Refer to our [documentation](https://pyre-check.org/docs/getting-started) to get started.
+Pysa is a security-focused static analysis tool for Python that tracks data flows to find security and privacy issues — for example, user-controlled input reaching a dangerous sink such as remote code execution or SQL injection. Pysa can analyze codebases with millions of lines of code. Refer to our [documentation](https://pyre-check.org/docs/pysa-basics) to get started.
 
-Pyre ships with **Pysa**, a security focused static analysis tool we've built on top of Pyre that reasons about data flows in Python applications. **Pysa now lives in its own repository at [github.com/facebook/Pysa](https://github.com/facebook/Pysa)** — please head there for the latest version and to get started with our security analysis.
+Pysa relies on type information from [Pyrefly](https://pyrefly.org/), Meta's performant Python type checker.
 
-Pysa is also available on the [GitHub Marketplace as a Github Action](https://github.com/marketplace/actions/pysa-action)
+Pysa is also available on the [GitHub Marketplace as a GitHub Action](https://github.com/marketplace/actions/pysa-action).
 
-## Requirements
-To get started, you need [Python 3.9 or later](https://www.python.org/getit/) and [watchman](https://facebook.github.io/watchman/) working on your system. On *MacOS* you can get everything with [homebrew](https://brew.sh/):
+## Installation
+Pysa requires Python 3.9 or later. Install it with pip:
 ```bash
-$ brew install python3 watchman
+$ pip install pyre-check
 ```
-On *Ubuntu*, *Mint*, or *Debian*; use `apt-get` and [homebrew](https://brew.sh/):
+Pysa is currently distributed as part of the `pyre-check` package, since it was historically bundled with [Pyre](https://pyre-check.org/), Meta's (deprecated) type checker. In the future, Pysa will ship as its own PyPI package.
+
+## Running Pysa
+Pysa relies on type information from [Pyrefly](https://pyrefly.org/). Before running Pysa, make sure Pyrefly can successfully check your code:
 ```bash
-$ sudo apt-get install python3 python3-pip python3-venv
-$ brew install watchman
+$ pyrefly check
 ```
-We tested Pyre on *Ubuntu 18.04.5 LTS*, *CentOS 7*, as well as *OSX 10.11* and later.
-
-## Setting up a Project
-We start by creating an empty project directory and setting up a virtual environment:
-
+Once Pyrefly runs cleanly, run Pysa from your project directory to find security and privacy issues:
 ```bash
-$ mkdir my_project && cd my_project
-$ python3 -m venv ~/.venvs/venv
-$ source ~/.venvs/venv/bin/activate
-(venv) $ pip install pyre-check
+$ pyre analyze
 ```
+Pysa uses models to identify sources of taint (where untrusted data enters) and sinks (dangerous operations). For details on configuring Pysa, writing models, and interpreting results, see the [Pysa documentation](https://pyre-check.org/docs/pysa-basics).
 
-Next, we teach Pyre about our new project:
-```bash
-(venv) $ pyre init
-```
-This command will set up a configuration for Pyre (`.pyre_configuration`) as well as watchman (`.watchmanconfig`) in your project's directory. Accept the defaults for now – you can change them later if necessary.
-
-## Running Pyre
-We are now ready to run Pyre:
-```bash
-(venv) $ echo "i: int = 'string'" > test.py
-(venv) $ pyre
- ƛ Found 1 type error!
-test.py:1:0 Incompatible variable type [9]: i is declared to have type `int` but is used as type `str`.
-```
-This first invocation will start a daemon listening for filesystem changes – type checking your project incrementally as you make edits to the code. You will notice that subsequent invocations of `pyre` will be faster than the first one.
-
-For more detailed documentation, see https://pyre-check.org.
-
-## Join the Pyre community
+## Join the Pysa community
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to help out.
 
 ## License
 
-Pyre is licensed under the MIT license.
+Pysa is licensed under the MIT license.
