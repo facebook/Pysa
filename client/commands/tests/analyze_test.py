@@ -43,6 +43,7 @@ class ArgumentTest(testslide.TestCase):
                         [search_path.SimpleElement("source")]
                     ),
                 ),
+                pyrefly_results="/pyrefly-results",
                 dump_call_graph="/call-graph",
                 dump_model_query_results="/model-query",
                 find_missing_flows="obscure",
@@ -113,6 +114,7 @@ class ArgumentTest(testslide.TestCase):
                 ("transform_filter", ["T"]),
                 ("save_results_to", "/output/results.json"),
                 ("output_format", "sharded-json"),
+                ("pyrefly_results", "/pyrefly-results"),
                 ("strict", True),
                 ("taint_model_paths", ["/taint/models"]),
                 ("use_cache", True),
@@ -216,34 +218,23 @@ class ArgumentTest(testslide.TestCase):
                         maximum_target_depth=4,
                         maximum_parameterized_targets_at_call_site=1000,
                     ),
-                    pyrefly_results=None,
+                    pyrefly_results=str(root_path / "pyrefly_results"),
                 ),
                 analyze.Arguments(
                     base_arguments=backend_arguments.BaseArguments(
                         log_path=str(root_path / ".pyre/local"),
                         global_root=str(root_path),
-                        checked_directory_allowlist=[
-                            str(root_path / "local/src"),
-                        ],
-                        checked_directory_blocklist=[
-                            str(root_path / "blocks"),
-                            str(root_path / "nonexistent"),
-                        ],
+                        checked_directory_allowlist=[],
+                        checked_directory_blocklist=[],
                         debug=True,
-                        excludes=[
-                            "exclude",
-                        ],
-                        extensions=[".ext"],
-                        relative_local_root="local",
+                        excludes=[],
+                        extensions=[],
+                        relative_local_root=None,
                         number_of_workers=42,
                         parallel=True,
                         python_version=analyze_configuration.get_python_version(),
-                        search_paths=[
-                            search_path.SimpleElement(str(root_path / "search"))
-                        ],
-                        source_paths=backend_arguments.SimpleSourcePath(
-                            [search_path.SimpleElement(str(root_path / "local/src"))]
-                        ),
+                        search_paths=[],
+                        source_paths=backend_arguments.SimpleSourcePath(elements=[]),
                     ),
                     dump_call_graph="/call-graph",
                     dump_model_query_results="/model-query",
@@ -287,6 +278,6 @@ class ArgumentTest(testslide.TestCase):
                     higher_order_call_graph_max_iterations=10,
                     maximum_target_depth=4,
                     maximum_parameterized_targets_at_call_site=1000,
-                    pyrefly_results=None,
+                    pyrefly_results=str(root_path / "pyrefly_results"),
                 ),
             )

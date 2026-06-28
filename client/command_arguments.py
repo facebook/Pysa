@@ -327,7 +327,6 @@ class AnalyzeArguments:
     transform: List[str] = field(default_factory=list)
     save_results_to: Optional[str] = None
     output_format: Optional[TaintOutputFormat] = None
-    use_pyrefly: bool = False
     pyrefly_binary: Optional[str] = None
     show_type_errors: bool = False
     skip_buck_dependencies: bool = False

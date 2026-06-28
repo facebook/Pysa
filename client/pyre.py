@@ -733,6 +733,11 @@ def analyze(
     Run Pysa, the inter-procedural static analysis tool.
     """
     command_argument: command_arguments.CommandArguments = context.obj["arguments"]
+    if use_pyre1:
+        raise commands.ClientException(
+            "The Pyre1 backend has been removed. Pyrefly is now the only supported type provider for Pysa; please drop the --use-pyre1 flag.",
+            exit_code=commands.ExitCode.FAILURE,
+        )
     if version != command_arguments.VersionKind.NONE:
         _show_pyre_version(command_argument)
         return commands.ExitCode.SUCCESS
@@ -784,7 +789,6 @@ def analyze(
                 if output_format is not None
                 else None
             ),
-            use_pyrefly=not use_pyre1,
             pyrefly_binary=pyrefly_binary,
             show_type_errors=show_type_errors,
             skip_buck_dependencies=skip_buck_dependencies,
