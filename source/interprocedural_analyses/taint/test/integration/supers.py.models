@@ -1290,13 +1290,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "supers.A.f1" ],
+            "override_call": {
               "port": "formal(self, position=0)[attribute]"
             },
             "caller_interval": [ { "lower": 3, "upper": 6 } ],
@@ -1320,13 +1321,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "supers.A.f1" ],
+            "override_call": {
               "port": "formal(self, position=0)[attribute]"
             },
             "caller_interval": [ { "lower": 4, "upper": 5 } ],
@@ -1350,13 +1352,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "supers.A.f1" ],
+            "override_call": {
               "port": "formal(self, position=0)[attribute]"
             },
             "caller_interval": [ { "lower": 7, "upper": 10 } ],
@@ -1367,13 +1370,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "supers.A.f1" ],
+            "override_call": {
               "port": "formal(self, position=0)[attribute]"
             },
             "caller_interval": [ { "lower": 8, "upper": 9 } ],
@@ -1397,13 +1401,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "supers.A.f1" ],
+            "override_call": {
               "port": "formal(self, position=0)[attribute]"
             },
             "caller_interval": [ { "lower": 8, "upper": 9 } ],
@@ -1427,13 +1432,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "supers.A.f1" ],
+            "override_call": {
               "port": "formal(self, position=0)[attribute]"
             },
             "caller_interval": [ { "lower": 4, "upper": 5 } ],

@@ -2724,7 +2724,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 9, "upper": 10 } ],
             "is_self_call": false
           }
@@ -2762,7 +2762,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(value, position=1)" },
             "caller_interval": [ { "lower": 33, "upper": 36 } ],
             "is_self_call": false
           }
@@ -2789,7 +2789,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 9, "upper": 10 } ],
             "is_self_call": false
           }
@@ -2818,7 +2818,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(self, position=0)" },
             "caller_interval": [ { "lower": 32, "upper": 37 } ],
             "is_self_call": false
           }
@@ -2839,7 +2839,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(value, position=1)" },
             "caller_interval": [ { "lower": 33, "upper": 36 } ],
             "is_self_call": false
           }

@@ -3087,7 +3087,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": false
           }
@@ -3114,7 +3114,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 11, "upper": 12 } ],
             "is_self_call": false
           }
@@ -3141,7 +3141,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 25, "upper": 26 } ],
             "is_self_call": false
           }
@@ -3168,7 +3168,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [
               { "lower": 30, "upper": 31 }, { "lower": 33, "upper": 34 }
             ],
@@ -3197,7 +3197,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [
               { "lower": 39, "upper": 40 }, { "lower": 43, "upper": 44 }
             ],
@@ -3226,7 +3226,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 48, "upper": 49 } ],
             "is_self_call": false
           }
@@ -3252,7 +3252,7 @@
                 "kind": "SinkC"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 57, "upper": 58 } ],
             "is_self_call": false
           },
@@ -3265,7 +3265,7 @@
                 "kind": "SinkC"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 59, "upper": 60 } ],
             "is_self_call": false
           }
@@ -3292,7 +3292,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 72, "upper": 73 } ],
             "is_self_call": false
           }
@@ -3318,7 +3318,7 @@
                 "kind": "TransformX:ExtraTraceSink"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 87, "upper": 88 } ],
             "is_self_call": false
           }
@@ -3369,7 +3369,7 @@
                 "kind": "TransformX:ExtraTraceSink"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 93, "upper": 94 } ],
             "is_self_call": false
           }
@@ -3486,7 +3486,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 109, "upper": 110 } ],
             "is_self_call": false
           }
@@ -3513,7 +3513,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 116, "upper": 117 } ],
             "is_self_call": false
           }
@@ -3540,7 +3540,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 127, "upper": 128 } ],
             "is_self_call": false
           }
@@ -3567,7 +3567,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 134, "upper": 135 } ],
             "is_self_call": false
           }
@@ -3594,7 +3594,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 139, "upper": 142 } ],
             "is_self_call": false
           },
@@ -3602,34 +3602,32 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.B6.m0" ],
-              "port": "result"
-            },
-            "caller_interval": [ { "lower": 140, "upper": 141 } ],
-            "receiver_interval": [ { "lower": 140, "upper": 141 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_source" } ],
-                "length": 1,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.E6.m3" ],
-              "port": "result"
-            },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 139, "upper": 142 } ],
             "receiver_interval": [ { "lower": 158, "upper": 159 } ],
+            "is_self_call": false
+          },
+          {
+            "kinds": [
+              {
+                "features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
+                "length": 1,
+                "kind": "Test"
+              }
+            ],
+            "override_call": { "port": "result" },
+            "caller_interval": [ { "lower": 140, "upper": 141 } ],
+            "receiver_interval": [ { "lower": 140, "upper": 141 } ],
             "is_self_call": false
           }
         ]
@@ -3655,7 +3653,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 48, "upper": 49 } ],
             "is_self_call": false
           }
@@ -3681,7 +3679,7 @@
                 "kind": "TransformX:ExtraTraceSink"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 87, "upper": 88 } ],
             "is_self_call": false
           }
@@ -3728,7 +3726,7 @@
                 "kind": "TransformX:ExtraTraceSink"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 93, "upper": 94 } ],
             "is_self_call": false
           }
@@ -3776,7 +3774,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 109, "upper": 110 } ],
             "is_self_call": false
           }
@@ -3797,15 +3795,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.A3.m1" ],
-              "port": "formal(x, position=1)"
-            },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 116, "upper": 117 } ],
             "receiver_interval": [ { "lower": 115, "upper": 120 } ],
             "is_self_call": true
@@ -3814,15 +3811,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.A3.m1" ],
-              "port": "formal(x, position=1)"
-            },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 116, "upper": 117 } ],
             "receiver_interval": [ { "lower": 116, "upper": 117 } ],
             "is_self_call": true
@@ -3850,7 +3846,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 139, "upper": 142 } ],
             "is_self_call": false
           },
@@ -3858,34 +3854,32 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.B6.m0" ],
-              "port": "result"
-            },
-            "caller_interval": [ { "lower": 140, "upper": 141 } ],
-            "receiver_interval": [ { "lower": 140, "upper": 141 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_source" } ],
-                "length": 1,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.E6.m3" ],
-              "port": "result"
-            },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 139, "upper": 142 } ],
             "receiver_interval": [ { "lower": 158, "upper": 159 } ],
+            "is_self_call": false
+          },
+          {
+            "kinds": [
+              {
+                "features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
+                "length": 1,
+                "kind": "Test"
+              }
+            ],
+            "override_call": { "port": "result" },
+            "caller_interval": [ { "lower": 140, "upper": 141 } ],
+            "receiver_interval": [ { "lower": 140, "upper": 141 } ],
             "is_self_call": false
           }
         ]
@@ -3911,7 +3905,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": false
           }
@@ -3938,7 +3932,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 11, "upper": 12 } ],
             "is_self_call": false
           }
@@ -3965,7 +3959,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 25, "upper": 26 } ],
             "is_self_call": false
           }
@@ -3992,7 +3986,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [
               { "lower": 30, "upper": 31 }, { "lower": 33, "upper": 34 }
             ],
@@ -4020,7 +4014,7 @@
                 "kind": "SinkC"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 57, "upper": 58 } ],
             "is_self_call": false
           }
@@ -4047,7 +4041,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 72, "upper": 73 } ],
             "is_self_call": false
           }
@@ -4131,15 +4125,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.A3.m1" ],
-              "port": "formal(x, position=1)"
-            },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 116, "upper": 117 } ],
             "receiver_interval": [ { "lower": 116, "upper": 117 } ],
             "is_self_call": true
@@ -4167,7 +4160,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 116, "upper": 117 } ],
             "is_self_call": false
           }
@@ -4194,7 +4187,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 127, "upper": 128 } ],
             "is_self_call": false
           }
@@ -4221,7 +4214,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 48, "upper": 49 } ],
             "is_self_call": false
           }
@@ -4247,7 +4240,7 @@
                 "kind": "SinkC"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 59, "upper": 60 } ],
             "is_self_call": false
           }
@@ -4274,7 +4267,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 72, "upper": 73 } ],
             "is_self_call": false
           }
@@ -4330,7 +4323,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(x, position=1)" },
             "caller_interval": [ { "lower": 134, "upper": 135 } ],
             "is_self_call": false
           }
@@ -4351,15 +4344,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "class_interval.B6.m0" ],
-              "port": "result"
-            },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 140, "upper": 141 } ],
             "receiver_interval": [ { "lower": 140, "upper": 141 } ],
             "is_self_call": false
@@ -4387,7 +4379,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [
               { "lower": 39, "upper": 40 }, { "lower": 43, "upper": 44 }
             ],

@@ -388,66 +388,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][a][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -476,8 +435,8 @@
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -494,66 +453,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][a][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -575,8 +493,8 @@
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -593,66 +511,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][b][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -681,8 +558,8 @@
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -699,66 +576,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][b][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -780,8 +616,8 @@
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -798,66 +634,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][c][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -886,8 +681,8 @@
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -904,66 +699,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]",
-              "call_site": "29:8-29:23"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][c][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 29, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -986,7 +740,7 @@
             "call": {
               "position": { "line": 29, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "29:8-29:23"
             },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
@@ -1060,66 +814,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][a][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1148,8 +861,8 @@
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1166,66 +879,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][a][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1247,8 +919,8 @@
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1265,66 +937,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][b][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1353,8 +984,8 @@
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1371,66 +1002,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][b][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1452,8 +1042,8 @@
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1470,66 +1060,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][c][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1558,8 +1107,8 @@
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1576,66 +1125,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]",
-              "call_site": "37:8-37:23"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][c][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 37, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1658,7 +1166,7 @@
             "call": {
               "position": { "line": 37, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "37:8-37:23"
             },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
@@ -1746,66 +1254,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][a][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -1834,8 +1301,8 @@
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -1852,66 +1319,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][a][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -1933,8 +1359,8 @@
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -1951,66 +1377,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][b][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2039,8 +1424,8 @@
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2057,66 +1442,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][b][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2138,8 +1482,8 @@
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2156,66 +1500,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][c][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2244,8 +1547,8 @@
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]",
+              "resolves_to": [ "combinatory_ports.C.method" ],
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2262,66 +1565,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]",
-              "call_site": "47:8-47:23"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][c][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 47, "start": 8, "end": 14 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2344,7 +1606,7 @@
             "call": {
               "position": { "line": 47, "start": 8, "end": 14 },
               "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]",
+              "port": "formal(self, position=0)[x]",
               "call_site": "47:8-47:23"
             },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
@@ -2463,65 +1725,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][a][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2542,15 +1764,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2565,65 +1786,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][a][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2637,15 +1818,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2660,65 +1840,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][b][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2739,15 +1879,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2762,65 +1901,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][b][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2834,15 +1933,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2857,65 +1955,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][c][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2936,15 +1994,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -2959,65 +2016,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[a][c][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3031,15 +2048,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3053,15 +2069,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3084,65 +2099,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][a][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3163,15 +2138,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3186,65 +2160,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][a][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3258,15 +2192,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3281,65 +2214,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][b][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3360,15 +2253,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3383,65 +2275,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][b][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3455,15 +2307,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3478,65 +2329,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][c][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3557,15 +2368,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3580,65 +2390,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[b][c][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3652,15 +2422,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3674,15 +2443,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3705,154 +2473,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3866,15 +2507,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -3889,154 +2529,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4051,154 +2564,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
-            "caller_interval": [ { "lower": 3, "upper": 4 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4212,15 +2598,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4234,15 +2619,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4257,154 +2641,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4418,15 +2675,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4441,154 +2697,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4603,154 +2732,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
-            "caller_interval": [ { "lower": 5, "upper": 6 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4764,15 +2766,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4786,15 +2787,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4809,154 +2809,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4970,15 +2843,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -4993,154 +2865,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5155,154 +2900,27 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [
-                  { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
-                  { "via": "model-shaping" },
-                  { "always-via": "broadening" },
-                  { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
-                ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "via": "model-sink-shaping" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
             "local_features": [
               { "always-via": "model-broadening" },
+              { "via": "model-shaping" },
               { "always-via": "broadening" },
+              { "via": "model-sink-shaping" },
               { "always-via": "model-sink-broadening" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5316,15 +2934,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5338,15 +2955,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5366,7 +2982,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "is_self_call": false
           }
@@ -5388,65 +3004,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][a]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][a][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5467,15 +3043,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5490,65 +3065,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[a][c]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][a][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5562,15 +3097,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.A.method" ],
-              "port": "formal(self, position=0)[a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5585,65 +3119,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][a]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][b][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5664,15 +3158,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5687,65 +3180,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[b][c]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][b][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5759,15 +3212,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.B.method" ],
-              "port": "formal(self, position=0)[b][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5782,65 +3234,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][a]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][c][a][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][a][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5861,15 +3273,14 @@
                   { "via": "model-sink-shaping" },
                   { "always-via": "model-sink-broadening" }
                 ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][b]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5884,65 +3295,25 @@
               {
                 "features": [
                   { "always-via": "special_sink" },
-                  { "always-via": "model-broadening" },
+                  { "via": "model-broadening" },
                   { "via": "model-shaping" },
-                  { "always-via": "broadening" },
+                  { "via": "broadening" },
                   { "via": "model-sink-shaping" },
-                  { "always-via": "model-sink-broadening" }
+                  { "via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
                 ],
                 "length": 3,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [],
-              "port": "formal(self, position=0)[c][c]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
             "local_features": [
-              { "always-via": "model-shaping" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-shaping" }
+              { "via": "model-shaping" },
+              { "via": "broadening" },
+              { "via": "model-sink-shaping" }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 9 } ],
-            "is_self_call": false
-          }
-        ]
-      },
-      {
-        "port": "formal(self, position=0)[c][c][c][x]",
-        "taint": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "length": 3,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5956,15 +3327,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 2,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[c][x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -5978,15 +3348,14 @@
             "kinds": [
               {
                 "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
                 "length": 1,
                 "kind": "Test"
               }
             ],
-            "call": {
-              "position": { "line": -1, "start": -1, "end": -1 },
-              "resolves_to": [ "combinatory_ports.C.method" ],
-              "port": "formal(self, position=0)[x]"
-            },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "receiver_interval": [ { "lower": 2, "upper": 9 } ],
             "is_self_call": false
@@ -6006,7 +3375,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(self, position=0)[x]" },
             "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "is_self_call": false
           }

@@ -2019,7 +2019,7 @@
             "local_features": [
               { "has": "first-index" }, { "first-index": "tainted" }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 14, "upper": 15 } ],
             "is_self_call": false
           }
@@ -2051,7 +2051,7 @@
             "local_features": [
               { "has": "first-index" }, { "first-index": "tainted" }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 14, "upper": 15 } ],
             "is_self_call": false
           }

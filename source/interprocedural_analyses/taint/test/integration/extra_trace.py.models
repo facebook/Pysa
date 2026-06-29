@@ -1469,7 +1469,7 @@
                 "kind": "TransformX:ExtraTraceSink"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           }
@@ -1516,7 +1516,7 @@
                 "kind": "TransformX:ExtraTraceSink"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "formal(arg, position=1)" },
             "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           }

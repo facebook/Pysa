@@ -2365,7 +2365,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 8, "upper": 11 } ],
             "is_self_call": false
           },
@@ -2379,7 +2379,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 9, "upper": 10 } ],
             "is_self_call": false
           }
@@ -2406,7 +2406,7 @@
                 "kind": "Test"
               }
             ],
-            "origin": { "line": -1, "start": -1, "end": -1 },
+            "override_call": { "port": "result" },
             "caller_interval": [ { "lower": 9, "upper": 10 } ],
             "is_self_call": false
           }

@@ -648,7 +648,7 @@ module Make (Analysis : ANALYSIS) = struct
               Target.pp_pretty
               callable
             |> failwith
-        | Some model -> model
+        | Some model -> Model.for_override_model ~callable:override model
       in
       let direct_model =
         let direct_callable =

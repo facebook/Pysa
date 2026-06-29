@@ -204,6 +204,16 @@ module CallInfo = struct
         class_intervals: ClassIntervals.t;
         call_site: CallSite.t;
       }
+      (* Represents a CallInfo.Origin or CallInfo.CallSite from an overriding method `B.foo`, after
+         being joined into the override model `Override{A.foo}` (where B is a subclass of A). This
+         preserves the access path a frame had in the implementation's model before the override
+         model's shaping/broadening collapsed it. It carries no callee: the base `Override{A.foo}`
+         target is supplied by `apply_call` and expanded into concrete implementations at export. *)
+    | OverrideCall of {
+        port: AccessPath.Root.t;
+        path: AccessPath.Path.t;
+        class_intervals: ClassIntervals.t;
+      }
   [@@deriving compare, equal]
 
   let at_same_call_site left right =
@@ -217,7 +227,8 @@ module CallInfo = struct
     | Declaration _, _
     | Tito _, _
     | Origin _, _
-    | CallSite _, _ ->
+    | CallSite _, _
+    | OverrideCall _, _ ->
         false
 
 
@@ -256,6 +267,14 @@ module CallInfo = struct
           (AccessPath.create port path)
           ClassIntervals.pp
           class_intervals
+    | OverrideCall { port; path; class_intervals } ->
+        Format.fprintf
+          formatter
+          "OverrideCall(port=%a, class_intervals=%a)"
+          AccessPath.pp
+          (AccessPath.create port path)
+          ClassIntervals.pp
+          class_intervals
 
 
   let show = Format.asprintf "%a" pp
@@ -263,23 +282,30 @@ module CallInfo = struct
   (* Whether to show a call site as an extra trace *)
   let show_as_extra_trace = function
     | Origin _
-    | CallSite _ ->
+    | CallSite _
+    | OverrideCall _ ->
         true (* These are actual call sites *)
     | Declaration _
     | Tito _ ->
         false
 
 
-  (* Only called when emitting models before we compute the json so we can dedup *)
-  let expand_overrides ~override_graph ~is_valid_callee ~trace_kind trace =
+  (* Expand the base `Override{M}` target stored in a `CallSite` into the concrete overriding
+     implementations, dropping any that became invalid (e.g. because a taint tree was collapsed).
+     Returns `None` when no valid callee remains, so the frame is dropped entirely instead of
+     emitting `"resolves_to": []`. Non-`CallSite` frames are returned unchanged. *)
+  let expand_overrides_and_filter_valid ~override_graph ~is_valid_callee ~trace_kind trace =
     match trace with
     | CallSite { location; callees; port; path; class_intervals; call_site } ->
         let callees =
           OverrideGraph.SharedMemory.ReadOnly.expand_override_targets override_graph callees
           |> List.filter ~f:(fun callee -> is_valid_callee ~trace_kind ~port ~path ~callee)
         in
-        CallSite { location; callees; port; path; class_intervals; call_site }
-    | _ -> trace
+        if List.is_empty callees then
+          None
+        else
+          Some (CallSite { location; callees; port; path; class_intervals; call_site })
+    | _ -> Some trace
 
 
   (* Returns the (dictionary key * json) to emit *)
@@ -314,12 +340,16 @@ module CallInfo = struct
         in
         let class_intervals_json_list = class_intervals_to_json class_intervals in
         ("call", `Assoc call_json) :: class_intervals_json_list
+    | OverrideCall { port; path; class_intervals } ->
+        ("override_call", `Assoc ["port", `String (AccessPath.show (AccessPath.create port path))])
+        :: class_intervals_to_json class_intervals
 
 
   let replace_location ~location call_info =
     match call_info with
     | Tito _
-    | Declaration _ ->
+    | Declaration _
+    | OverrideCall _ ->
         call_info
     | Origin origin -> Origin { origin with location }
     | CallSite callsite -> CallSite { callsite with location }
@@ -328,7 +358,8 @@ module CallInfo = struct
   let class_intervals = function
     | Origin { class_intervals; _ }
     | CallSite { class_intervals; _ }
-    | Tito { class_intervals } ->
+    | Tito { class_intervals }
+    | OverrideCall { class_intervals; _ } ->
         class_intervals
     | Declaration _ -> ClassIntervals.top
 
@@ -338,6 +369,7 @@ module CallInfo = struct
     | Tito _ -> Tito { class_intervals }
     | Origin origin -> Origin { origin with class_intervals }
     | CallSite call_site -> CallSite { call_site with class_intervals }
+    | OverrideCall override_call -> OverrideCall { override_call with class_intervals }
 end
 
 (* Trace length: number of hops from the origin of the taint *)
@@ -404,20 +436,20 @@ module ExtraTraceFirstHop = struct
       | Sink _ -> TraceKind.Sink
 
 
-    let expand_overrides
+    let expand_overrides_and_filter_valid
         ~override_graph
         ~is_valid_callee
         ({ call_info; leaf_kind; _ } as extra_trace)
       =
-      {
-        extra_trace with
-        call_info =
-          CallInfo.expand_overrides
-            ~override_graph
-            ~trace_kind:(leaf_kind |> trace_kind |> Option.some)
-            ~is_valid_callee
-            call_info;
-      }
+      match
+        CallInfo.expand_overrides_and_filter_valid
+          ~override_graph
+          ~trace_kind:(leaf_kind |> trace_kind |> Option.some)
+          ~is_valid_callee
+          call_info
+      with
+      | Some call_info -> Some { extra_trace with call_info }
+      | None -> None
 
 
     let to_json { call_info; leaf_kind; message } =
@@ -447,7 +479,9 @@ module ExtraTraceFirstHop = struct
       let extra_traces =
         match expand_overrides with
         | Some override_graph ->
-            List.map ~f:(T.expand_overrides ~override_graph ~is_valid_callee) extra_traces
+            List.filter_map
+              ~f:(T.expand_overrides_and_filter_valid ~override_graph ~is_valid_callee)
+              extra_traces
         | None -> extra_traces
       in
       List.map ~f:T.to_json extra_traces
@@ -573,6 +607,7 @@ module ExportLeafNames = struct
     | Never, _ -> false
     | OnlyOnLeaves, CallInfo.Declaration _ -> true
     | OnlyOnLeaves, CallInfo.Origin _ -> true
+    | OnlyOnLeaves, CallInfo.OverrideCall _ -> true
     | OnlyOnLeaves, _ -> false
 end
 
@@ -1027,8 +1062,12 @@ end = struct
       | Some override_graph ->
           Map.transform
             Key
-            Map
-            ~f:(CallInfo.expand_overrides ~override_graph ~is_valid_callee ~trace_kind)
+            FilterMap
+            ~f:
+              (CallInfo.expand_overrides_and_filter_valid
+                 ~override_graph
+                 ~is_valid_callee
+                 ~trace_kind)
             taint
       | None -> taint
     in
@@ -1471,7 +1510,19 @@ end = struct
       | Some class_intervals -> (
           match call_info with
           | CallInfo.Origin _
-          | CallInfo.CallSite _ ->
+          | CallInfo.CallSite _
+          | CallInfo.OverrideCall _ ->
+              (* The `port`/`path` arguments point at the frame's node in the callee's taint tree.
+                 For an `OverrideCall`, that node may have been collapsed to an ancestor by the
+                 override model's shaping/broadening; its stored `port`/`path` is the original,
+                 deeper access path. Use it so the emitted frame points where the concrete
+                 implementations actually hold taint -- otherwise expanding the override at export
+                 would filter out every callee and drop the frame. *)
+              let port, path =
+                match call_info with
+                | CallInfo.OverrideCall { port; path; _ } -> port, path
+                | _ -> port, path
+              in
               let call_info =
                 CallInfo.CallSite
                   { location; callees = [callee]; port; path; class_intervals; call_site }
@@ -1494,7 +1545,6 @@ end = struct
                       ~f:CaptureVariableTraceLength.reset
                       local_taint
               in
-
               call_info, local_taint
           | CallInfo.Declaration { leaf_name_provided } ->
               let call_info = CallInfo.Origin { location; class_intervals; call_site } in
@@ -1583,22 +1633,10 @@ end = struct
       in
       match call_info with
       | CallInfo.Origin { class_intervals; _ } ->
-          let call_info =
-            CallInfo.Origin { location = Location.any; class_intervals; call_site = CallSite.any }
-          in
+          let call_info = CallInfo.OverrideCall { port; path; class_intervals } in
           call_info, local_taint
-      | CallSite { port; path; location = _; callees; class_intervals; call_site = _ } ->
-          let call_info =
-            CallInfo.CallSite
-              {
-                port;
-                path;
-                location = Location.any;
-                callees;
-                class_intervals;
-                call_site = CallSite.any;
-              }
-          in
+      | CallSite { port; path; location = _; callees = _; class_intervals; call_site = _ } ->
+          let call_info = CallInfo.OverrideCall { port; path; class_intervals } in
           call_info, local_taint
       | Declaration { leaf_name_provided = true } -> call_info, local_taint
       | Declaration { leaf_name_provided = false } ->
@@ -1615,6 +1653,7 @@ end = struct
           let call_info = CallInfo.Declaration { leaf_name_provided = true } in
           call_info, local_taint
       | Tito { class_intervals } -> Tito { class_intervals }, local_taint
+      | OverrideCall _ -> call_info, local_taint
     in
     Map.transform Map.KeyValue Map ~f:apply taint
 
