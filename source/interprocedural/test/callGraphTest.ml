@@ -100,7 +100,6 @@ let assert_call_graph_of_define
   =
   let module_name, pyre_api, configuration =
     TestHelper.setup_single_py_file
-      ~force_pyrefly:true
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
       ~context
@@ -162,7 +161,6 @@ let assert_higher_order_call_graph_of_define
   in
   let module_name, pyre_api, configuration =
     TestHelper.setup_single_py_file
-      ~force_pyrefly:true
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
       ~context
@@ -8323,7 +8321,6 @@ let test_higher_order_call_graph_of_define =
 let assert_resolve_decorator_callees ~source ~expected () context =
   let _, pyre_api, configuration =
     TestHelper.setup_single_py_file
-      ~force_pyrefly:true
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
       ~context

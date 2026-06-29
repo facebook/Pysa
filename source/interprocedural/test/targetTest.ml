@@ -18,7 +18,6 @@ let test_get_module_and_definition context =
     let pyre_api =
       Test.ScratchPyrePysaProject.setup
         ~context
-        ~force_pyrefly:true
         ~requires_type_of_expressions:false
         ["test.py", source]
       |> Test.ScratchPyrePysaProject.read_only_api

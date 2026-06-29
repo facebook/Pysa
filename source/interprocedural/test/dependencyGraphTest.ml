@@ -16,20 +16,21 @@ open Test
 let setup ?(other_sources = []) ~context ~handle source =
   let project =
     let external_sources = List.map other_sources ~f:(fun { handle; source } -> handle, source) in
-    ScratchProject.setup ~context ~external_sources [handle, source]
+    Test.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:true
+      ~external_sources
+      [handle, source]
   in
-  let pyre_api =
-    project |> ScratchProject.pyre_pysa_read_only_api |> PyrePysaApi.ReadOnly.from_pyre1_api
-  in
-  let { ScratchProject.BuiltTypeEnvironment.type_environment; _ } =
-    ScratchProject.build_type_environment project
-  in
-  pyre_api, type_environment, ScratchProject.configuration_of project
+  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  ( pyre_api,
+    Test.ScratchPyrePysaProject.errors project,
+    Test.ScratchPyrePysaProject.configuration_of project )
 
 
 let create_call_graph ?(other_sources = []) ~context source_text =
   let module_name, handle = !&"test", "test.py" in
-  let pyre_api, environment, configuration = setup ~other_sources ~context ~handle source_text in
+  let pyre_api, errors, configuration = setup ~other_sources ~context ~handle source_text in
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
@@ -44,13 +45,14 @@ let create_call_graph ?(other_sources = []) ~context source_text =
   in
   let override_graph_shared_memory = OverrideGraph.SharedMemory.from_heap override_graph in
   let () =
-    let errors = TypeEnvironment.ReadOnly.get_errors environment module_name in
     if not (List.is_empty errors) then
       Format.asprintf
-        "Type errors in %s\n%a"
+        "Type errors in %s\n%s"
         source_text
-        (Format.pp_print_list TypeCheck.Error.pp)
-        errors
+        (errors
+        |> List.map ~f:(fun error ->
+               PyrePysaLogic.Testing.AnalysisError.Instantiated.description error)
+        |> String.concat ~sep:"\n")
       |> failwith
   in
   let initial_callables =
@@ -76,32 +78,35 @@ let create_call_graph ?(other_sources = []) ~context source_text =
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ()
   in
-  let fold call_graph callable =
-    let callees =
-      CallGraphBuilder.call_graph_of_callable
-        ~static_analysis_configuration
-        ~pyre_api
-        ~override_graph:
-          (Some (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
-        ~attribute_targets:(Target.HashSet.create ())
-        ~skip_call_higher_order_functions:(Target.HashSet.create ())
-        ~callables_to_definitions_map:
-          (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-        ~callables_to_decorators_map:
-          (Interprocedural.CallableToDecoratorsMap.SharedMemory.create_empty ()
-          |> Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only)
-        ~type_of_expression_shared_memory
-        ~check_invariants:true
-        ~callable
-      |> CallGraph.DefineCallGraph.all_targets
-           ~use_case:CallGraph.AllTargetsUseCase.TaintAnalysisDependency
-    in
-    CallGraph.WholeProgramCallGraph.add_or_exn call_graph ~callable ~callees
+  let { CallGraph.SharedMemory.whole_program_call_graph; define_call_graphs } =
+    CallGraphBuilder.build_whole_program_call_graph
+      ~scheduler
+      ~static_analysis_configuration
+      ~pyre_api
+      ~resolve_module_path:None
+      ~callables_to_definitions_map:
+        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
+      ~callables_to_decorators_map:
+        (Interprocedural.CallableToDecoratorsMap.SharedMemory.create_empty ()
+        |> Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only)
+      ~global_constants:
+        (Interprocedural.GlobalConstants.SharedMemory.create ()
+        |> Interprocedural.GlobalConstants.SharedMemory.read_only)
+      ~type_of_expression_shared_memory
+      ~override_graph:
+        (Some (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
+      ~store_shared_memory:false
+      ~attribute_targets:Target.Set.empty
+      ~skip_analysis_targets:(Target.HashSet.create ())
+      ~skip_call_higher_order_functions:(Target.HashSet.create ())
+      ~check_invariants:true
+      ~definitions
+      ~create_dependency_for:CallGraph.AllTargetsUseCase.TaintAnalysisDependency
   in
-  let call_graph = List.fold ~init:CallGraph.WholeProgramCallGraph.empty ~f:fold definitions in
+  let () = CallGraph.SharedMemory.cleanup define_call_graphs in
   let () = OverrideGraph.SharedMemory.cleanup override_graph_shared_memory in
   let () = Interprocedural.CallablesSharedMemory.ReadWrite.cleanup callables_to_definitions_map in
-  call_graph
+  whole_program_call_graph
 
 
 let create_callable = function
@@ -166,7 +171,7 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.Foo.$class_toplevel", [];
+        `Function "test.Foo.$class_toplevel", [];
         `Method "test.Foo.__init__", [];
         `Method "test.Foo.bar", [];
         `Method "test.Foo.qux", [`Method "test.Foo.bar"];
@@ -186,7 +191,7 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.Foo.$class_toplevel", [];
+        `Function "test.Foo.$class_toplevel", [];
         `Method "test.Foo.__init__", [];
         `Method "test.Foo.bar", [`Method "test.Foo.qux"];
         `Method "test.Foo.qux", [`Method "test.Foo.bar"];
@@ -204,10 +209,10 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.A.$class_toplevel", [];
+        `Function "test.A.$class_toplevel", [];
         `Method "test.A.__init__", [];
-        `Method "test.B.$class_toplevel", [];
-        `Method "test.B.__init__", [`Method "test.A.__init__"; `Method "object.__new__"];
+        `Function "test.B.$class_toplevel", [];
+        `Method "test.B.__init__", [`Method "test.A.__init__"; `Method "builtins.object.__new__"];
       ];
   assert_call_graph
     ~other_sources:
@@ -215,6 +220,7 @@ let test_construction context =
             def bar(x: str) -> str: ...
           |} }]
     {|
+     import foobar
      def foo():
        foobar.bar("foo")
     |}
@@ -242,8 +248,8 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.Base.$class_toplevel", [];
-        `Method "test.C.$class_toplevel", [];
+        `Function "test.Base.$class_toplevel", [];
+        `Function "test.C.$class_toplevel", [];
         `Function "test.call_foo", [`Method "test.Base.foo"];
       ];
   assert_call_graph
@@ -262,10 +268,10 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.Base.$class_toplevel", [];
-        `Method "test.C.$class_toplevel", [];
-        `Method "test.D.$class_toplevel", [];
-        `Method "test.E.$class_toplevel", [];
+        `Function "test.Base.$class_toplevel", [];
+        `Function "test.C.$class_toplevel", [];
+        `Function "test.D.$class_toplevel", [];
+        `Function "test.E.$class_toplevel", [];
         `Function "test.call_foo", [`Method "test.Base.foo"; `Method "test.D.foo"];
       ];
 
@@ -286,10 +292,10 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.Base.$class_toplevel", [];
-        `Method "test.C.$class_toplevel", [];
-        `Method "test.D.$class_toplevel", [];
-        `Method "test.UnrelatedToC.$class_toplevel", [];
+        `Function "test.Base.$class_toplevel", [];
+        `Function "test.C.$class_toplevel", [];
+        `Function "test.D.$class_toplevel", [];
+        `Function "test.UnrelatedToC.$class_toplevel", [];
         `Function "test.call_foo", [`Method "test.Base.foo"; `Method "test.D.foo"];
       ];
 
@@ -310,10 +316,10 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.Base.$class_toplevel", [];
-        `Method "test.C.$class_toplevel", [];
-        `Method "test.Child.$class_toplevel", [];
-        `Method "test.Grandchild.$class_toplevel", [];
+        `Function "test.Base.$class_toplevel", [];
+        `Function "test.C.$class_toplevel", [];
+        `Function "test.Child.$class_toplevel", [];
+        `Function "test.Grandchild.$class_toplevel", [];
         `Function "test.call_foo", [`Override "test.Child.foo"; `Method "test.Base.foo"];
       ];
   assert_call_graph
@@ -334,9 +340,9 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.C.$class_toplevel", [];
-        `Method "test.D.$class_toplevel", [];
-        `Method "test.E.$class_toplevel", [];
+        `Function "test.C.$class_toplevel", [];
+        `Function "test.D.$class_toplevel", [];
+        `Function "test.E.$class_toplevel", [];
         `Function "test.calls_c", [`Override "test.C.foo"];
         `Function "test.calls_d", [`Method "test.E.foo"; `Method "test.C.foo"];
         `Function "test.calls_e", [`Method "test.E.foo"];
@@ -344,17 +350,18 @@ let test_construction context =
   assert_call_graph
     {|
       class C(str):
-        def format(self, *args) -> C: ...
+        def format(self, *args: object, **kwargs: object) -> str: ...
       def format_str() -> None:
         "string literal {}".format("foo")
     |}
-    (* If we didn't weaken literals, the call would be a method("str.format") instead of override
-       here. *)
+    (* The literal `"string literal {}"` is weakened to `builtins.str`, so the call resolves to
+       `builtins.str.format`. Unlike the Pyre1 backend, the Pyrefly backend models this as a direct
+       method call rather than an override target. *)
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.C.$class_toplevel", [];
-        `Function "test.format_str", [`Override "str.format"];
+        `Function "test.C.$class_toplevel", [];
+        `Function "test.format_str", [`Method "builtins.str.format"];
       ];
 
   assert_call_graph
@@ -368,7 +375,7 @@ let test_construction context =
       [
         `Function "test.$toplevel", [];
         `Function "test.foo", [`Function "test.foo.bar"];
-        `Function "test.foo.bar", [`Method "str.lower"; `Method "str.format"];
+        `Function "test.foo.bar", [`Method "builtins.str.lower"; `Method "builtins.str.format"];
       ];
   assert_call_graph
     {|
@@ -386,8 +393,8 @@ let test_construction context =
     ~expected:
       [
         `Function "test.$toplevel", [];
-        `Method "test.C.$class_toplevel", [];
-        `Method "test.D.$class_toplevel", [];
+        `Function "test.C.$class_toplevel", [];
+        `Function "test.D.$class_toplevel", [];
         `Function "test.calls_C_int", [`Override "test.C.method"];
         `Function "test.calls_C_str", [`Override "test.C.method"];
       ]

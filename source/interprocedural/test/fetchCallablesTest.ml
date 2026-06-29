@@ -15,7 +15,6 @@ let test_callables context =
       let project =
         Test.ScratchPyrePysaProject.setup
           ~context
-          ~force_pyrefly:true
           ~requires_type_of_expressions:false
           ((source_filename, source) :: additional_sources)
       in

@@ -84,8 +84,6 @@ module ReadOnly : sig
     global_module_paths_api:Analysis.GlobalModulePathsApi.t ->
     t
 
-  val from_pyre1_api : Analysis.PyrePysaEnvironment.ReadOnly.t -> t
-
   val from_pyrefly_api : PyreflyApi.ReadOnly.t -> t
 
   val is_pyre1 : t -> bool

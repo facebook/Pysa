@@ -14,9 +14,12 @@ open Test
 
 let test_partition_call_map context =
   let pyre_api =
-    ScratchProject.setup ~context []
-    |> ScratchProject.pyre_pysa_read_only_api
-    |> Interprocedural.PyrePysaApi.ReadOnly.from_pyre1_api
+    (* Pyrefly rejects an empty source set, so provide a dummy source file. *)
+    Test.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:true
+      ["test.py", "x = 0"]
+    |> Test.ScratchPyrePysaProject.read_only_api
   in
   let pyre_in_context =
     Interprocedural.PyrePysaApi.InContext.create_at_function_scope

@@ -34,7 +34,6 @@ let set_up_environment ?source ~context ~model_source ~validate () =
   let project =
     Test.ScratchPyrePysaProject.setup
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       [source_file_name, source]
   in

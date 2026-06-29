@@ -257,6 +257,7 @@ module ReadOnly : sig
     store_shared_memory:bool ->
     attribute_targets:Target.Set.t ->
     skip_analysis_targets:Target.HashSet.t ->
+    find_missing_flows:Configuration.MissingFlowKind.t option ->
     definitions:Target.t list ->
     create_dependency_for:CallGraph.AllTargetsUseCase.t ->
     redirect_to_decorated:(Target.t -> Target.t option) ->

@@ -562,14 +562,7 @@ let get_decorator_preprocessing_configuration ~handle models =
   }
 
 
-let initialize_pyre_and_fail_on_errors
-    ~context
-    ~force_pyre1
-    ~force_pyrefly
-    ~handle
-    ~source_content
-    ~models_source
-  =
+let initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_source =
   let configuration, pyre_api, errors =
     let decorator_preprocessing_configuration =
       get_decorator_preprocessing_configuration ~handle models_source
@@ -577,8 +570,6 @@ let initialize_pyre_and_fail_on_errors
     let project =
       Test.ScratchPyrePysaProject.setup
         ~context
-        ~force_pyre1
-        ~force_pyrefly
         ~requires_type_of_expressions:true
         ~decorator_preprocessing_configuration
         [handle, source_content]
@@ -618,19 +609,11 @@ let initialize
     ?(verify_empty_model_queries = true)
     ?model_path
     ?(maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth)
-    ?(force_pyre1 = false)
-    ?(force_pyrefly = false)
     ~context
     source_content
   =
   let configuration, pyre_api =
-    initialize_pyre_and_fail_on_errors
-      ~force_pyre1
-      ~force_pyrefly
-      ~context
-      ~handle
-      ~source_content
-      ~models_source
+    initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_source
   in
   let taint_configuration_shared_memory =
     TaintConfiguration.SharedMemory.from_heap taint_configuration
@@ -1156,7 +1139,6 @@ let end_to_end_integration_test path context =
         initialize
           ~handle
           ?models_source
-          ~force_pyrefly:true
           ~add_initial_models
           ~taint_configuration
           ~verify_empty_model_queries:false
@@ -1296,23 +1278,10 @@ let end_to_end_test_paths_found relative_path _ =
     assert_bool "No test paths to check." false
 
 
-let setup_single_py_file
-    ?(force_pyre1 = false)
-    ?(force_pyrefly = false)
-    ?(requires_type_of_expressions = true)
-    ~file_name
-    ~context
-    ~source
-    ()
-  =
+let setup_single_py_file ?(requires_type_of_expressions = true) ~file_name ~context ~source () =
   let test_module_name = Reference.create (String.chop_suffix_exn file_name ~suffix:".py") in
   let project =
-    Test.ScratchPyrePysaProject.setup
-      ~context
-      ~force_pyre1
-      ~force_pyrefly
-      ~requires_type_of_expressions
-      [file_name, source]
+    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions [file_name, source]
   in
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
   test_module_name, pyre_api, Test.ScratchPyrePysaProject.configuration_of project

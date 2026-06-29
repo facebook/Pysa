@@ -13,16 +13,11 @@ open Taint
 open Interprocedural
 open TestHelper
 
-let assert_taint ?(skip_for_pyrefly = false) ~context source expected =
+let assert_taint ~context source expected =
   let handle = "qualifier.py" in
   let qualifier = Ast.Reference.create "qualifier" in
   let project =
-    Test.ScratchPyrePysaProject.setup
-      ~context
-      ~force_pyrefly:true
-      ~force_pyre1:skip_for_pyrefly
-      ~requires_type_of_expressions:true
-      [handle, source]
+    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:true [handle, source]
   in
   let configuration = Test.ScratchPyrePysaProject.configuration_of project in
   let static_analysis_configuration =

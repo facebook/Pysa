@@ -63,7 +63,6 @@ let assert_invalid_model
   let project =
     Test.ScratchPyrePysaProject.setup
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       ~search_paths
       sources

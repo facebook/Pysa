@@ -33,7 +33,6 @@ let assert_higher_order_call_graph_fixpoint
   =
   let _, pyre_api, configuration =
     TestHelper.setup_single_py_file
-      ~force_pyrefly:true
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
       ~context

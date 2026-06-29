@@ -17,7 +17,6 @@ let setup ?(other_sources = []) ~context ~handle source =
     ScratchPyrePysaProject.setup
       ~external_sources
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       [handle, source]
   in

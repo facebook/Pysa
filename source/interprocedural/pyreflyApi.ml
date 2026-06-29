@@ -3203,6 +3203,7 @@ module ReadOnly = struct
       ~get_overriding_types
       ~global_is_string_literal
       ~attribute_targets
+      ~find_missing_flows
       ~callable
       json_call_graph
     =
@@ -3445,8 +3446,44 @@ module ReadOnly = struct
       | PyreflyExpressionCallees.Return callees ->
           ExpressionCallees.Return (instantiate_return_shim_callees callees)
     in
+    (* For the missing flow analysis (`--find-missing-flows=type`), we turn unresolved calls into
+       sinks, so that we may find sources flowing into those calls. This mirrors
+       `CallGraphBuilder.MissingFlowTypeAnalysis.add_unknown_callee` used on the Pyre1 path. *)
+    let add_unknown_callee ~location callees =
+      match callees with
+      | ExpressionCallees.Call ({ CallCallees.unresolved; call_targets; _ } as call_callees) -> (
+          match find_missing_flows with
+          | Some Configuration.MissingFlowKind.Type when Unresolved.is_unresolved unresolved ->
+              let target =
+                Format.asprintf
+                  "unknown-callee:%a:%a"
+                  Target.pp_pretty
+                  (Target.strip_parameters callable)
+                  Location.pp
+                  location
+              in
+              let call_target =
+                {
+                  CallTarget.target = Target.Regular.Object target |> Target.from_regular;
+                  implicit_receiver = false;
+                  implicit_dunder_call = false;
+                  index = 0;
+                  return_type = Some ReturnType.unknown;
+                  receiver_class = None;
+                  is_class_method = false;
+                  is_static_method = false;
+                }
+              in
+              ExpressionCallees.Call
+                { call_callees with CallCallees.call_targets = call_target :: call_targets }
+          | _ -> callees)
+      | _ -> callees
+    in
     let instantiate_call_edge expression_identifier callees call_graph =
       let callees = instantiate_expression_callees callees in
+      let callees =
+        add_unknown_callee ~location:(ExpressionIdentifier.location expression_identifier) callees
+      in
       DefineCallGraph.add_callees
         ~debug:false
         ~caller:callable
@@ -3481,6 +3518,7 @@ module ReadOnly = struct
       ~store_shared_memory
       ~attribute_targets
       ~skip_analysis_targets
+      ~find_missing_flows
       ~definitions:
         (* we don't actually use the provided definitions, and just load call graphs for all
            non-stub callables. This is better for performance. *)
@@ -3594,6 +3632,7 @@ module ReadOnly = struct
               ~get_overriding_types
               ~global_is_string_literal
               ~attribute_targets
+              ~find_missing_flows
               ~callable
               call_graph
             |> transform_call_graph api callable

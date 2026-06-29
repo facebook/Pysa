@@ -41,7 +41,7 @@ let assert_fixpoint
          _;
        } as test_environment)
     =
-    initialize ?models_source ~force_pyre1:true ~handle:"qualifier.py" ~context source
+    initialize ?models_source ~handle:"qualifier.py" ~context source
   in
   let { DependencyGraph.dependency_graph; callables_to_analyze; override_targets; _ } =
     DependencyGraph.build_whole_program_dependency_graph
@@ -120,6 +120,7 @@ let test_fixpoint context =
   assert_fixpoint
     ~context
     {|
+      from typing import Any
       from pysa import _test_source, _test_sink, _user_controlled
       def bar():
         return _test_source()
@@ -149,6 +150,8 @@ let test_fixpoint context =
         eval(x)
 
       class TestMethods:
+        taint: Any = ...
+
         def method_source(self):
           return some_source()
 
@@ -200,11 +203,11 @@ let test_fixpoint context =
           return y
 
       def test_deep_tito_no_match():
-        obj = deep_tito(_user_controlled(), _test_source())
+        obj: Any = deep_tito(_user_controlled(), _test_source())
         getattr('obj', obj.f.g)
 
       def test_deep_tito_match():
-        obj = deep_tito(_user_controlled(), _test_source())
+        obj: Any = deep_tito(_user_controlled(), _test_source())
         getattr('obj', obj.g.f)
 
       class Class:
@@ -215,7 +218,7 @@ let test_fixpoint context =
           return self.tainted
 
       def property_into_sink(input):
-        c: Class = ...
+        c: Class = Class()
         c.tainted = input
         _test_sink(c.property)
 

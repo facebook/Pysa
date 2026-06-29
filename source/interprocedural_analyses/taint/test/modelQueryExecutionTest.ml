@@ -33,7 +33,6 @@ let assert_generated_annotations context ~source ~query ~callable ~expected () =
   let project =
     Test.ScratchPyrePysaProject.setup
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
@@ -89,7 +88,6 @@ let assert_generated_annotations_for_attributes context ~source ~query ~name ~ex
   let project =
     Test.ScratchPyrePysaProject.setup
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
@@ -146,7 +144,6 @@ let assert_generated_annotations_for_globals context ~source ~query ~name ~expec
   let project =
     Test.ScratchPyrePysaProject.setup
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
@@ -5332,7 +5329,6 @@ let test_generated_cache context =
     let project =
       Test.ScratchPyrePysaProject.setup
         ~context
-        ~force_pyrefly:true
         ~requires_type_of_expressions:false
         ["test.py", source]
     in
@@ -5707,7 +5703,6 @@ let test_model_query_error context =
       try
         let _ =
           initialize
-            ~force_pyrefly:true
             ~models_source:queries
             ~context
             ~taint_configuration:TaintConfiguration.Heap.default

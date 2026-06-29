@@ -56,7 +56,6 @@ let set_up_environment
   let project =
     Test.ScratchPyrePysaProject.setup
       ~context
-      ~force_pyrefly:true
       ~requires_type_of_expressions:false
       [source_file_name, source]
   in
@@ -250,11 +249,7 @@ let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~e
   in
   let sources = ("test.py", source) :: sources in
   let pyre_api =
-    Test.ScratchPyrePysaProject.setup
-      ~context
-      ~force_pyrefly:true
-      ~requires_type_of_expressions:false
-      sources
+    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
     |> Test.ScratchPyrePysaProject.read_only_api
   in
   let taint_configuration =

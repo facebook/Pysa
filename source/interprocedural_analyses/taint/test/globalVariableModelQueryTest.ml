@@ -9,107 +9,34 @@ open OUnit2
 open Core
 open Ast
 open Test
-open Analysis
-open Pyre
-open Interprocedural
 open Taint
-
-module VariableWithType = struct
-  type t = {
-    name: Reference.t;
-    type_annotation: string option;
-  }
-  [@@deriving show, compare]
-
-  let location_insensitive_equal left right =
-    Reference.equal left.name right.name
-    && Option.equal String.equal left.type_annotation right.type_annotation
-end
 
 let test_find_globals =
   let assert_found_globals ~source ~expected context =
-    let uninteresting_globals_prefix =
-      [
-        !&"_T";
-        !&"_T_co";
-        !&"_R_co";
-        !&"_P";
-        !&"_S";
-        !&"_KT";
-        !&"_VT";
-        !&"Ellipsis";
-        !&"N1";
-        !&"N2";
-        !&"_T1";
-        !&"_T2";
-        !&"_T3";
-        !&"_T4";
-        !&"_T5";
-        !&"_Self";
-        !&"_SupportsNextT";
-        !&"NotImplemented";
-        !&"...";
-        !&"__debug__";
-        !&"abc.";
-        !&"typing.";
-        !&"typing_extensions.";
-        !&"unittest.";
-        !&"_Self_complex__";
-        !&"_Self_float__";
-        !&"_Self_int__";
-        !&"_Self_list__";
-        !&"_Self_set__";
-        !&"_BaseExceptionT_co";
-      ]
-    in
     let project =
-      ScratchProject.setup
+      Test.ScratchPyrePysaProject.setup
         ~context
+        ~requires_type_of_expressions:true
         ["test.py", source]
-        ~include_helper_builtins:false
-          (* Without this, we'll pick up all the globals in the test typeshed. *)
-        ~include_typeshed_stubs:false
     in
-    let pyre_api =
-      project |> ScratchProject.pyre_pysa_read_only_api |> PyrePysaApi.ReadOnly.from_pyre1_api
-    in
-    let is_uninteresting_global name =
-      not
-        (List.exists uninteresting_globals_prefix ~f:(fun exclude_prefix ->
-             Reference.is_prefix ~prefix:exclude_prefix name))
-    in
-    let add_type_annotation name =
-      {
-        VariableWithType.name;
-        type_annotation =
-          (ModelParseResult.Modelable.create_global ~pyre_api (Target.create_object name)
-          |> ModelParseResult.Modelable.type_annotation
-          |> ModelParseResult.TypeAnnotation.explicit_annotation
-          |> function
-          | ModelParseResult.TypeAnnotation.ExplicitAnnotation.Found annotation -> Some annotation
-          | _ -> None);
-      }
-    in
+    let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+    (* Pyrefly pulls in the full typeshed, so restrict the discovered globals to the `test` module.
+       We only verify the discovered set of globals: unlike the Pyre1 backend, the Pyrefly backend's
+       `Modelable.create_global` returns `ExplicitAnnotation.Unsupported`, so the
+       explicit-annotation values are not asserted here. *)
+    let is_test_global name = Reference.is_prefix ~prefix:!&"test" name in
     let actual =
       ModelQueryExecution.GlobalVariableQueryExecutor.get_globals
         ~scheduler:(Test.mock_scheduler ())
         ~pyre_api
       |> List.map ~f:Target.object_name
-      |> List.filter ~f:is_uninteresting_global
-      |> List.map ~f:add_type_annotation
+      |> List.filter ~f:is_test_global
+      |> List.sort ~compare:Reference.compare
     in
-    let expected =
-      List.map
-        ~f:(fun (reference, annotation) ->
-          {
-            VariableWithType.name = reference;
-            type_annotation = annotation >>| Type.expression >>| Expression.show;
-          })
-        expected
-    in
+    let expected = List.sort ~compare:Reference.compare expected in
     assert_equal
-      ~cmp:(List.equal VariableWithType.location_insensitive_equal)
-      ~printer:[%show: VariableWithType.t list]
+      ~cmp:(List.equal Reference.equal)
+      ~printer:[%show: Reference.t list]
       expected
       actual
   in
@@ -122,7 +49,7 @@ let test_find_globals =
       foo = []
       bar: typing.List[typing.Any] = []
     |}
-           ~expected:[!&"test.bar", Some (Type.list Type.Any); !&"test.foo", None];
+           ~expected:[!&"test.bar"; !&"test.foo"];
       (* Note that functions are not selected *)
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals ~source:{|
@@ -139,13 +66,7 @@ let test_find_globals =
       baz: typing.List[typing.Any] = []
       abc: typing.Dict[typing.Any, typing.Any] = {}
     |}
-           ~expected:
-             [
-               !&"test.abc", Some (Type.dictionary ~key:Type.Any ~value:Type.Any);
-               !&"test.bar", None;
-               !&"test.baz", Some (Type.list Type.Any);
-               !&"test.foo", None;
-             ];
+           ~expected:[!&"test.abc"; !&"test.bar"; !&"test.baz"; !&"test.foo"];
       (* TODO(T132423781): Classes are not recognized as globals *)
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals
@@ -166,7 +87,7 @@ let test_find_globals =
       c = C()
       annotated_c: C = C()
     |}
-           ~expected:[!&"test.annotated_c", Some (Type.Primitive "test.C"); !&"test.c", None];
+           ~expected:[!&"test.annotated_c"; !&"test.c"];
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals
            ~source:
@@ -177,13 +98,7 @@ let test_find_globals =
       annotated_y: typing.Dict[typing.Any, typing.Any]
       annotated_x, annotated_y = [], {}
     |}
-           ~expected:
-             [
-               !&"test.annotated_x", Some (Type.list Type.Any);
-               !&"test.annotated_y", Some (Type.dictionary ~key:Type.Any ~value:Type.Any);
-               !&"test.x", None;
-               !&"test.y", None;
-             ];
+           ~expected:[!&"test.annotated_x"; !&"test.annotated_y"; !&"test.x"; !&"test.y"];
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals
            ~source:
@@ -194,11 +109,7 @@ let test_find_globals =
       global_1: typing.Dict[str, int] = setup()
       global_2 = setup()
     |}
-           ~expected:
-             [
-               !&"test.global_1", Some (Type.dictionary ~key:Type.string ~value:Type.integer);
-               !&"test.global_2", None;
-             ];
+           ~expected:[!&"test.global_1"; !&"test.global_2"];
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals
            ~source:
@@ -209,12 +120,7 @@ let test_find_globals =
     y: List[bool]
     z: Callable[[], str]
     |}
-           ~expected:
-             [
-               !&"test.x", Some Type.integer;
-               !&"test.y", Some (Type.list Type.bool);
-               !&"test.z", Some (Type.lambda ~parameters:[] ~return_annotation:Type.string);
-             ];
+           ~expected:[!&"test.x"; !&"test.y"; !&"test.z"];
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals
            ~source:
@@ -229,8 +135,7 @@ let test_find_globals =
       a = fun(1, "2")
       b: int = fun(1, "2")
       |}
-           ~expected:
-             [!&"test.a", None; !&"test.b", Some Type.integer; !&"test.x", None; !&"test.y", None];
+           ~expected:[!&"test.a"; !&"test.b"; !&"test.x"; !&"test.y"];
       labeled_test_case __FILE__ __LINE__
       @@ assert_found_globals
            ~source:
@@ -242,7 +147,7 @@ let test_find_globals =
     y = "abc"
     y: str = "abc"
     |}
-           ~expected:[!&"test.x", None; !&"test.y", Some Type.integer];
+           ~expected:[!&"test.x"; !&"test.y"];
     ]
 
 

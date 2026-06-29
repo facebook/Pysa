@@ -5114,6 +5114,7 @@ let build_whole_program_call_graph_for_pyrefly
     ~attribute_targets
     ~skip_analysis_targets
     ~skip_call_higher_order_functions
+    ~find_missing_flows
     ~definitions
     ~create_dependency_for
   =
@@ -5739,6 +5740,7 @@ let build_whole_program_call_graph_for_pyrefly
     ~store_shared_memory
     ~attribute_targets
     ~skip_analysis_targets
+    ~find_missing_flows
     ~definitions
     ~create_dependency_for
     ~redirect_to_decorated:
@@ -5796,6 +5798,8 @@ let build_whole_program_call_graph
           ~store_shared_memory
           ~skip_analysis_targets
           ~skip_call_higher_order_functions
+          ~find_missing_flows:
+            static_analysis_configuration.Configuration.StaticAnalysis.find_missing_flows
           ~definitions
           ~create_dependency_for
   in
