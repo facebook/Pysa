@@ -117,6 +117,13 @@ let sample ?(integers = []) ?(normals = []) ?(metadata = true) () =
         | Some normal -> normal :: normals
         | None -> normals
       in
+      (* atlas_env_id tags the atlas Dev Docker container — the atlas analogue of
+         sandcastle_instance_id. From $ATLAS_ENV_ID; no column when unset. *)
+      let normals =
+        match environment_variable "ATLAS_ENV_ID" with
+        | Some normal -> normal :: normals
+        | None -> normals
+      in
       let normals =
         if Array.length (Sys.argv [@alert "-deprecated"]) >= 2 then
           ("command", (Sys.argv.(1) [@alert "-deprecated"])) :: normals
