@@ -3,7 +3,12 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# pyre-ignore-all-errors
+# pyre-strict
+
+# These errors are intrinsic to the runtime stubs of Pyre's special forms
+# (e.g. variadic `Generic`, `Callable[ParamSpec, ...]`, `TypeVarTuple`), which
+# Pyre normally type-checks via dedicated logic rather than the runtime types.
+# pyre-ignore-all-errors[11, 24, 31]
 import sys
 import unittest
 from typing import Any, Callable, Iterable, Iterator, List, TypeVar
@@ -20,12 +25,14 @@ class BasicTestCase(unittest.TestCase):
             def listify(
                 f: Callable[TParams, TReturn],
             ) -> Callable[TParams, List[TReturn]]:
-                def wrapped(*args: TParams.args, **kwargs: TParams.kwargs):
+                def wrapped(
+                    *args: TParams.args, **kwargs: TParams.kwargs
+                ) -> List[TReturn]:
                     return [f(*args, **kwargs)]
 
                 return wrapped
 
-            def foo():
+            def foo() -> int:
                 return 9
 
             listify(foo)
@@ -164,7 +171,7 @@ class BasicTestCase(unittest.TestCase):
         except Exception:
             self.fail("PyreReadOnly type is missing or broken")
 
-    def test_override(self):
+    def test_override(self) -> None:
         from .. import override
 
         class Base:
