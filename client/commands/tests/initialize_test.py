@@ -3,7 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# pyre-unsafe
+# pyre-strict
 
 import os
 import subprocess
@@ -11,7 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import call, mock_open, patch
+from unittest.mock import call, MagicMock, mock_open, patch
 
 from ...tests import setup
 from .. import initialize
@@ -28,18 +28,18 @@ class InitializeTest(unittest.TestCase):
     @patch("builtins.open")
     def test_initialize(
         self,
-        open,
-        subprocess_run,
-        isfile,
-        which,
-        _get_input,
-        _get_optional_input,
-        get_yes_no_input,
-        getcwd,
+        open: MagicMock,
+        subprocess_run: MagicMock,
+        isfile: MagicMock,
+        which: MagicMock,
+        _get_input: MagicMock,
+        _get_optional_input: MagicMock,
+        get_yes_no_input: MagicMock,
+        getcwd: MagicMock,
     ) -> None:
         get_yes_no_input.return_value = True
 
-        def exists(path):
+        def exists(path: str) -> bool:
             if str(path).endswith(".watchmanconfig"):
                 return False
             elif str(path).endswith(".pyre_configuration"):
@@ -70,7 +70,7 @@ class InitializeTest(unittest.TestCase):
             )
             open.assert_any_call(os.path.abspath(".watchmanconfig"), "w+")
 
-        def exists(path):
+        def exists(path: str) -> bool:
             return False
 
         isfile.side_effect = exists
