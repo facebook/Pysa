@@ -703,7 +703,7 @@ ModelQuery(
   name = "get_d1_decorator",
   find = "functions",
   where = Decorator(
-    fully_qualified_name.matches("d1"),
+    fully_qualified_callee.matches("d1"),
     arguments.contains(a, 2)
   ),
   ...
@@ -731,7 +731,7 @@ ModelQuery(
   name = "get_d1_decorator",
   find = "functions",
   where = Decorator(
-    fully_qualified_name.matches("d1"),
+    fully_qualified_callee.matches("d1"),
     arguments.contains(foo="Bar")
   ),
   ...
@@ -771,7 +771,7 @@ ModelQuery(
   name = "get_d1_decorator",
   find = "functions",
   where = Decorator(
-    fully_qualified_name.matches("d1"),
+    fully_qualified_callee.matches("d1"),
     arguments.equals(a, 2, foo="bar", baz="Boo")
   ),
   ...
@@ -913,7 +913,7 @@ ModelQuery(
   where = [
     name.equals("__init__"),
     cls.decorator(
-      fully_qualified_name.matches("d1"),
+      fully_qualified_callee.matches("d1"),
       arguments.contains(2)
     ),
   ],
@@ -968,7 +968,7 @@ ModelQuery(
     name.equals("__init__"),
     cls.any_child(
       cls.decorator(
-        fully_qualified_name.matches("d1"),
+        fully_qualified_callee.matches("d1"),
         arguments.contains(2)
       )
     ),
@@ -1019,7 +1019,7 @@ ModelQuery(
     name.equals("__init__"),
     cls.any_child(
       cls.decorator(
-        fully_qualified_name.matches("d1"),
+        fully_qualified_callee.matches("d1"),
         arguments.contains(2)
       ),
       is_transitive=True
@@ -1044,7 +1044,7 @@ ModelQuery(
     name.equals("__init__"),
     cls.any_child(
       cls.decorator(
-        fully_qualified_name.matches("d1"),
+        fully_qualified_callee.matches("d1"),
         arguments.contains(2)
       ),
       is_transitive=True,
@@ -1085,7 +1085,7 @@ ModelQuery(
     name.equals("__init__"),
     cls.any_parent(
       cls.decorator(
-        fully_qualified_name.matches("d1"),
+        fully_qualified_callee.matches("d1"),
         arguments.contains(2)
       )
     ),
@@ -1135,7 +1135,7 @@ ModelQuery(
   where = [
     cls.any_parent(
       cls.decorator(
-        fully_qualified_name.matches("d1"),
+        fully_qualified_callee.matches("d1"),
         arguments.contains(2)
       ),
       is_transitive=True
@@ -1160,7 +1160,7 @@ ModelQuery(
   where = [
     cls.any_parent(
       cls.decorator(
-        fully_qualified_name.matches("d1"),
+        fully_qualified_callee.matches("d1"),
         arguments.contains(2)
       ),
       is_transitive=True,

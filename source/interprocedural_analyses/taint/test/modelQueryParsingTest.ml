@@ -1070,7 +1070,7 @@ let test_query_parsing_find_methods context =
         };
       ]
     ();
-  assert_invalid_queries
+  assert_queries
     ~context
     ~model_source:
       {|
@@ -1081,7 +1081,31 @@ let test_query_parsing_find_methods context =
      model = [Returns([TaintSink[Test]])]
     )
   |}
-    ~expect:"Unsupported `fully_qualified_callee` constraint within a class constraint"
+    ~expect:
+      [
+        {
+          location = { start = { line = 2; column = 0 }; stop = { line = 7; column = 1 } };
+          name = "get_foo";
+          logging_group_name = None;
+          path = None;
+          where =
+            [
+              ClassConstraint
+                (DecoratorConstraint (FullyQualifiedCallee (Matches (Re2.create_exn "foo.*"))));
+            ];
+          find = Method;
+          models =
+            [
+              Return
+                [
+                  TaintAnnotation
+                    (ModelParseResult.TaintAnnotation.from_sink (Sinks.NamedSink "Test"));
+                ];
+            ];
+          expected_models = [];
+          unexpected_models = [];
+        };
+      ]
     ();
 
   assert_queries

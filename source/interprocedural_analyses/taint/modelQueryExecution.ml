@@ -610,13 +610,7 @@ let rec matches_decorator_constraint ~pyre_api ~name_captures ~decorator = funct
         ~name_constraint
         (decorator_name |> Reference.delocalize |> Reference.last)
   | ModelQuery.DecoratorConstraint.FullyQualifiedCallee name_constraint ->
-      let callees =
-        match CallableDecorator.callees decorator with
-        | Some callees -> callees
-        | None ->
-            (* This is forbidden during parsing *)
-            failwith "fully_qualified_callee is not supported within cls.decorator"
-      in
+      let callees = CallableDecorator.callees decorator in
       List.exists callees ~f:(fun callee ->
           matches_name_constraint ~name_captures ~name_constraint (Reference.show callee))
   | ModelQuery.DecoratorConstraint.ArgumentsConstraint arguments_constraint -> (
@@ -779,9 +773,6 @@ let rec parameter_matches_constraint ~pyre_api ~class_hierarchy_graph ~name_capt
 
 
 let class_matches_decorator_constraint ~name_captures ~pyre_api ~decorator_constraint class_name =
-  (* For now, we don't support `fully_qualified_callee` within `cls.decorator()` constraints.
-   * We could do it in the future by storing the result of the call to `get_class_summary` above
-   * in `Modelable.t` *)
   PyrePysaApi.ReadOnly.get_class_decorators_opt pyre_api class_name
   |> PyrePysaApi.AstResult.to_option
   >>| (fun decorators ->
@@ -791,7 +782,7 @@ let class_matches_decorator_constraint ~name_captures ~pyre_api ~decorator_const
                   matches_decorator_constraint
                     ~pyre_api
                     ~name_captures
-                    ~decorator:(CallableDecorator.create_without_callees decorator)
+                    ~decorator:(CallableDecorator.create_for_class ~pyre_api ~class_name decorator)
                     decorator_constraint)
             |> Option.value ~default:false))
   |> Option.value ~default:false

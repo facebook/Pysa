@@ -3001,6 +3001,23 @@ module ReadOnly = struct
     >>| List.map ~f:FullyQualifiedName.to_reference
 
 
+  let get_class_decorator_callees
+      { class_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ }
+      class_name
+      location
+    =
+    ClassMetadataSharedMemory.get
+      class_metadata_shared_memory
+      (FullyQualifiedName.from_reference_unchecked (Reference.create class_name))
+    |> assert_shared_memory_key_exists (fun () ->
+           Format.asprintf "missing class metadata: `%s`" class_name)
+    |> (fun { ClassMetadataSharedMemory.Metadata.decorator_callees; _ } -> decorator_callees)
+    |> Location.SerializableMap.find_opt location
+    >>| List.map
+          ~f:(CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory)
+    >>| List.map ~f:FullyQualifiedName.to_reference
+
+
   let get_methods_for_qualifier
       ({ module_callables_shared_memory; callable_metadata_shared_memory; _ } as api)
       ~exclude_test_modules

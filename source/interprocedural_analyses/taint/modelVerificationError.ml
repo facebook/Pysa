@@ -226,7 +226,6 @@ type kind =
   | UnsupportedClassConstraintCallee of Expression.t
   | UnsupportedDecoratorConstraint of Expression.t
   | UnsupportedDecoratorConstraintCallee of Expression.t
-  | UnsupportedFullyQualifiedCalleeInClassConstraint
   | UnsupportedIfCondition of Expression.t
   | UnsupportedVersionConstant of string
   | UnsupportedComparisonOperator of Expression.ComparisonOperator.operator
@@ -690,8 +689,6 @@ let rec description ?(within_error_group = false) error =
         (Expression.show constraint_name)
   | UnsupportedDecoratorConstraintCallee callee ->
       Format.sprintf "Unsupported callee for decorator constraint: `%s`" (Expression.show callee)
-  | UnsupportedFullyQualifiedCalleeInClassConstraint ->
-      "Unsupported `fully_qualified_callee` constraint within a class constraint"
   | UnsupportedIfCondition condition ->
       Format.sprintf
         "Unsupported if condition: `%s`. All models inside the if-block (along with those in \
@@ -903,7 +900,6 @@ let code { kind; _ } =
   | InvalidCrossRepositoryTaintAnchorString _ -> 71
   | InvalidCrossRepositoryTaintAnchorFormatString _ -> 72
   | UnmatchedPartialSinkKind _ -> 73
-  | UnsupportedFullyQualifiedCalleeInClassConstraint -> 74
   | MissingClass _ -> 75
   | DeprecatedIsAnnotatedType _ -> 76
   | DeprecatedParametricTaintAnnotation _ -> 77

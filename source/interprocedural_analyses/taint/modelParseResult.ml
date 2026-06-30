@@ -835,10 +835,10 @@ end
 module CallableDecorator = struct
   type t = {
     statement: Statement.Decorator.t;
-    callees: Reference.t list Lazy.t option;
+    callees: Reference.t list Lazy.t;
   }
 
-  let create ~pyre_api ~callables_to_definitions_map ~qualifier ~target statement =
+  let create_for_callable ~pyre_api ~callables_to_definitions_map ~qualifier ~target statement =
     let get_callees statement =
       let ({ Node.value = expression; _ } as decorator_expression) =
         Statement.Decorator.to_expression statement
@@ -890,15 +890,39 @@ module CallableDecorator = struct
           |> Option.value ~default:[]
           |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
     in
-    let callees = Some (lazy (get_callees statement)) in
+    let callees = lazy (get_callees statement) in
     { statement; callees }
 
 
-  let create_without_callees statement = { statement; callees = None }
+  let create_for_class ~pyre_api ~class_name statement =
+    let get_callees statement =
+      let ({ Node.value = expression; _ } as decorator_expression) =
+        Statement.Decorator.to_expression statement
+      in
+      let callee =
+        match expression with
+        | Expression.Expression.Call { callee; _ } -> callee
+        | Expression.Expression.Name _ -> decorator_expression
+        | _ -> decorator_expression
+      in
+      match pyre_api with
+      | PyrePysaApi.ReadOnly.Pyre1 _ ->
+          failwith "fully_qualified_callee within cls.decorator is not supported with Pyre1"
+      | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
+          Interprocedural.PyreflyApi.ReadOnly.get_class_decorator_callees
+            pyrefly_api
+            class_name
+            (Node.location callee)
+          |> Option.value ~default:[]
+          |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
+    in
+    let callees = lazy (get_callees statement) in
+    { statement; callees }
+
 
   let statement { statement; _ } = statement
 
-  let callees { callees; _ } = Option.map ~f:Lazy.force callees
+  let callees { callees; _ } = Lazy.force callees
 end
 
 module TypeAnnotation : sig
@@ -1062,7 +1086,7 @@ module Modelable = struct
              >>| List.filter_map ~f:Statement.Decorator.from_expression
              >>| List.map
                    ~f:
-                     (CallableDecorator.create
+                     (CallableDecorator.create_for_callable
                         ~pyre_api
                         ~callables_to_definitions_map
                         ~qualifier

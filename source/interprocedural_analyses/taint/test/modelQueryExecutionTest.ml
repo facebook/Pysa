@@ -3004,6 +3004,90 @@ let test_generated_annotations_class_decorator context =
     ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
+  assert_generated_annotations
+    ~source:
+      {|
+      def d1(c): ...
+      def d2(c): ...
+      @d1
+      class A:
+        def foo(): ...
+      @d2
+      class B:
+        def foo(): ...
+     |}
+    ~query:
+      {
+        location = Ast.Location.any;
+        name = "get_foo";
+        logging_group_name = None;
+        path = None;
+        where = [ClassConstraint (DecoratorConstraint (FullyQualifiedCallee (Equals "test.d1")))];
+        models = [Return [TaintAnnotation (source "Test")]];
+        find = Method;
+        expected_models = [];
+        unexpected_models = [];
+      }
+    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
+    ();
+  (* Negative: class B is decorated with d2, not d1 *)
+  assert_generated_annotations
+    ~source:
+      {|
+      def d1(c): ...
+      def d2(c): ...
+      @d1
+      class A:
+        def foo(): ...
+      @d2
+      class B:
+        def foo(): ...
+     |}
+    ~query:
+      {
+        location = Ast.Location.any;
+        name = "get_foo";
+        logging_group_name = None;
+        path = None;
+        where = [ClassConstraint (DecoratorConstraint (FullyQualifiedCallee (Equals "test.d1")))];
+        models = [Return [TaintAnnotation (source "Test")]];
+        find = Method;
+        expected_models = [];
+        unexpected_models = [];
+      }
+    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~expected:[]
+    ();
+  (* Matches variant *)
+  assert_generated_annotations
+    ~source:
+      {|
+      def d1(c): ...
+      def d2(c): ...
+      @d1
+      class A:
+        def foo(): ...
+     |}
+    ~query:
+      {
+        location = Ast.Location.any;
+        name = "get_foo";
+        logging_group_name = None;
+        path = None;
+        where =
+          [
+            ClassConstraint
+              (DecoratorConstraint (FullyQualifiedCallee (Matches (Re2.create_exn "test.d1"))));
+          ];
+        models = [Return [TaintAnnotation (source "Test")]];
+        find = Method;
+        expected_models = [];
+        unexpected_models = [];
+      }
+    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
+    ();
   ()
 
 

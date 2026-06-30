@@ -191,6 +191,8 @@ module ReadOnly : sig
     Ast.Location.t ->
     Ast.Reference.t list option
 
+  val get_class_decorator_callees : t -> string -> Ast.Location.t -> Ast.Reference.t list option
+
   val get_methods_for_qualifier
     :  t ->
     exclude_test_modules:bool ->
