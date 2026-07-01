@@ -79,11 +79,6 @@ module ReadOnly : sig
 
   val of_read_write_api : ReadWrite.t -> t
 
-  val from_pyre1_environment
-    :  type_environment:Analysis.TypeEnvironment.TypeEnvironmentReadOnly.t ->
-    global_module_paths_api:Analysis.GlobalModulePathsApi.t ->
-    t
-
   val from_pyrefly_api : PyreflyApi.ReadOnly.t -> t
 
   val is_pyre1 : t -> bool

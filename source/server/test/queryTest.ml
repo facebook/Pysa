@@ -553,6 +553,20 @@ let test_handle_query_basic context =
     ~query:(Format.sprintf "is_typechecked('%s')" path)
     (Single (Base.IsTypechecked [{ Base.path; is_typechecked = true }]))
   >>= fun () ->
+  assert_type_query_response
+    ~source:""
+    ~query:"model_query('/a.py', 'model_query_name')"
+    (Error
+       "model_query is no longer supported: the Pyre1 backend for Pysa has been deprecated. Use \
+        the Pyrefly-based Pysa query (`pysa pyrefly-query`) instead.")
+  >>= fun () ->
+  assert_type_query_response
+    ~source:""
+    ~query:"validate_taint_models()"
+    (Error
+       "validate_taint_models is no longer supported: the Pyre1 backend for Pysa has been \
+        deprecated. Use the Pyrefly-based Pysa tooling instead.")
+  >>= fun () ->
   let temporary_directory = OUnit2.bracket_tmpdir context in
   assert_type_query_response
     ~source:""

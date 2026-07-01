@@ -1228,19 +1228,10 @@ let rec process_request_exn
         >>| (fun maybe_type -> Single (Base.TypeAtLocation maybe_type))
         |> Option.value
              ~default:(Error (Format.sprintf "No module found for path `%s`" (PyrePath.show path)))
-    | ModelQuery { path; query_name } ->
-        let pyre_api =
-          Interprocedural.PyrePysaApi.ReadOnly.from_pyre1_environment
-            ~type_environment
-            ~global_module_paths_api
-        in
-        let path_of_qualifier =
-          Interprocedural.PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
-            ~repository_root:configuration.local_root
-            ~lookup_source:(BuildSystem.lookup_source build_system)
-            pyre_api
-        in
-        process_model_query ~pyre_api ~path_of_qualifier ~scheduler ~configuration ~path ~query_name
+    | ModelQuery _ ->
+        Error
+          "model_query is no longer supported: the Pyre1 backend for Pysa has been deprecated. Use \
+           the Pyrefly-based Pysa query (`pysa pyrefly-query`) instead."
     | ModulesOfPath path ->
         Single
           (Base.FoundModules
@@ -1380,25 +1371,10 @@ let rec process_request_exn
           Single (Base.TypesByPath results)
         else
           Error (Format.asprintf "Not able to get lookups in: %s" (get_error_paths errors))
-    | ValidateTaintModels { path; verify_dsl } ->
-        let pyre_api =
-          Interprocedural.PyrePysaApi.ReadOnly.from_pyre1_environment
-            ~type_environment
-            ~global_module_paths_api
-        in
-        let path_of_qualifier =
-          Interprocedural.PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
-            ~repository_root:configuration.local_root
-            ~lookup_source:(BuildSystem.lookup_source build_system)
-            pyre_api
-        in
-        process_validate_taint_models
-          ~pyre_api
-          ~path_of_qualifier
-          ~scheduler
-          ~configuration
-          ~path
-          ~verify_dsl
+    | ValidateTaintModels _ ->
+        Error
+          "validate_taint_models is no longer supported: the Pyre1 backend for Pysa has been \
+           deprecated. Use the Pyrefly-based Pysa tooling instead."
   in
   try process_request_exn () with
   | ClassHierarchy.Untracked untracked ->

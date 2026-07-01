@@ -124,10 +124,6 @@ module ReadOnly = struct
     | Pyrefly pyrefly_api -> Pyrefly (PyreflyApi.ReadOnly.of_read_write_api pyrefly_api)
 
 
-  let from_pyre1_environment ~type_environment ~global_module_paths_api =
-    Pyre1 (Pyre1Api.ReadOnly.create ~type_environment ~global_module_paths_api)
-
-
   let from_pyrefly_api pyrefly_api = Pyrefly pyrefly_api
 
   let is_pyre1 = function
