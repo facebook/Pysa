@@ -40,14 +40,7 @@ module NestedCallees : sig
     | None
 end
 
-val shim_calls_for_pyre1
-  :  resolve_expression_to_type:(Expression.t -> Type.t) ->
-  class_mro:(string -> string list) ->
-  callable_exists:(Reference.t -> bool) ->
-  Expression.Call.t ->
-  Shims.ShimArgumentMapping.t option
-
-val shim_calls_for_pyrefly
+val shim_calls
   :  class_mro:(string -> string list) ->
   callable_exists:(Reference.t -> bool) ->
   callees:CallTarget.t list ->

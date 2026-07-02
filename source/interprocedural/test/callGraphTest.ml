@@ -43,16 +43,7 @@ let compute_define_call_graph
   let definitions = FetchCallables.get_definitions initial_callables in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
-  let callables_to_definitions_map =
-    CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
-  in
+  let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
   let type_of_expression_shared_memory =
     Interprocedural.TypeOfExpressionSharedMemory.create
       ~pyre_api
@@ -112,8 +103,6 @@ let assert_call_graph_of_define
   in
   let callable =
     match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyre1 _ ->
-        failwith "Expected a pyrefly API, but got pyre1; this test only supports pyrefly"
     | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
         Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
           pyrefly_api
@@ -188,9 +177,7 @@ let assert_higher_order_call_graph_of_define
             Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
               pyrefly_api
               ~override:false
-              (Reference.create define_name)
-        | PyrePysaApi.ReadOnly.Pyre1 _ ->
-            failwith "Expected a pyrefly API, but got pyre1; this test only supports pyrefly")
+              (Reference.create define_name))
   in
   let maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth in
   let define_call_graph, callables_to_definitions_map, type_of_expression_shared_memory =
@@ -838,7 +825,7 @@ let test_call_graph_of_define =
                                {
                                  class_name = "test.C";
                                  method_name = "p@setter";
-                                 kind = PyreflyPropertySetter;
+                                 kind = PropertySetter;
                                });
                         ]
                       ~is_attribute:false
@@ -2043,7 +2030,7 @@ let test_call_graph_of_define =
                               {
                                 class_name = "test.C";
                                 method_name = "p@setter";
-                                kind = PyreflyPropertySetter;
+                                kind = PropertySetter;
                               });
                        ];
                      global_targets = [];
@@ -8374,20 +8361,7 @@ let assert_resolve_decorator_callees ~source ~expected () context =
   let definitions_and_stubs = FetchCallables.get ~definitions:true ~stubs:true initial_callables in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let callables_to_definitions_map =
-    CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
-  in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
-  in
+  let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
   let callables_to_decorators_map =
     CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
@@ -8399,35 +8373,28 @@ let assert_resolve_decorator_callees ~source ~expected () context =
       definitions_and_stubs
   in
   let pyrefly_define_call_graphs =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyre1 _ ->
-        failwith "Expected a pyrefly API, but got pyre1; this test only supports pyrefly"
-    | PyrePysaApi.ReadOnly.Pyrefly _ ->
-        let { CallGraph.SharedMemory.define_call_graphs; _ } =
-          CallGraphBuilder.build_whole_program_call_graph
-            ~scheduler
-            ~static_analysis_configuration
-            ~pyre_api
-            ~resolve_module_path:None
-            ~callables_to_definitions_map:
-              (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-            ~callables_to_decorators_map:
-              (CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
-            ~global_constants:
-              (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-            ~type_of_expression_shared_memory
-            ~override_graph:
-              (Some
-                 (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
-            ~store_shared_memory:true
-            ~attribute_targets:Target.Set.empty
-            ~skip_analysis_targets:(Target.HashSet.create ())
-            ~skip_call_higher_order_functions:(Target.HashSet.create ())
-            ~check_invariants:true
-            ~definitions
-            ~create_dependency_for:CallGraph.AllTargetsUseCase.Everything
-        in
-        Some define_call_graphs
+    let { CallGraph.SharedMemory.define_call_graphs; _ } =
+      CallGraphBuilder.build_whole_program_call_graph
+        ~scheduler
+        ~static_analysis_configuration
+        ~pyre_api
+        ~resolve_module_path:None
+        ~callables_to_definitions_map:
+          (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
+        ~callables_to_decorators_map:
+          (CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
+        ~global_constants:
+          (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
+        ~override_graph:
+          (Some (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
+        ~store_shared_memory:true
+        ~attribute_targets:Target.Set.empty
+        ~skip_analysis_targets:(Target.HashSet.create ())
+        ~skip_call_higher_order_functions:(Target.HashSet.create ())
+        ~definitions
+        ~create_dependency_for:CallGraph.AllTargetsUseCase.Everything
+    in
+    Some define_call_graphs
   in
   let actual =
     definitions
@@ -8444,21 +8411,16 @@ let assert_resolve_decorator_callees ~source ~expected () context =
                       _;
                     } ->
                  let call_graph =
-                   match pyre_api with
-                   | PyrePysaApi.ReadOnly.Pyre1 _ ->
-                       failwith
-                         "Expected a pyrefly API, but got pyre1; this test only supports pyrefly"
-                   | PyrePysaApi.ReadOnly.Pyrefly _ ->
-                       let define_call_graphs =
-                         pyrefly_define_call_graphs
-                         |> Option.value_exn ~message:"missing define call graphs from pyrefly"
-                         |> CallGraph.SharedMemory.read_only
-                       in
-                       CallGraph.SharedMemory.ReadOnly.get
-                         define_call_graphs
-                         ~cache:false
-                         ~callable:decorated_callable
-                       |> Option.value_exn ~message:"missing call graph for decorated target"
+                   let define_call_graphs =
+                     pyrefly_define_call_graphs
+                     |> Option.value_exn ~message:"missing define call graphs from pyrefly"
+                     |> CallGraph.SharedMemory.read_only
+                   in
+                   CallGraph.SharedMemory.ReadOnly.get
+                     define_call_graphs
+                     ~cache:false
+                     ~callable:decorated_callable
+                   |> Option.value_exn ~message:"missing call graph for decorated target"
                  in
 
                  TestResult.Decorators
@@ -9027,7 +8989,7 @@ let test_resolve_decorator_callees =
                    {
                      class_name = "test.MyClass";
                      method_name = "my_attr@setter";
-                     kind = PyreflyPropertySetter;
+                     kind = PropertySetter;
                    },
                  None );
              ]

@@ -10,9 +10,6 @@
  *)
 
 open Core
-open Pyre
-open Ast
-open Statement
 
 type t = {
   (* All callables:
@@ -36,110 +33,6 @@ let join left right =
     definitions = List.rev_append right.definitions left.definitions;
     stubs = List.rev_append right.stubs left.stubs;
   }
-
-
-let gather_raw_definitions
-    ~pyre1_api
-    ~source:{ Source.module_path = { ModulePath.qualifier; _ }; _ }
-  =
-  (* Ignoring parameters that are also function definitions,
-   * i.e def f(g): if not g: def g(): ...; g() *)
-  let filter_parameters define_name =
-    let define_name = Reference.show define_name in
-    if String.is_prefix ~prefix:"$parameter$" define_name then
-      let () =
-        Log.warning
-          "In module `%a`, the parameter name `%s` is used as a function name. This function will \
-           NOT be analyzed."
-          Reference.pp
-          qualifier
-          (String.sub define_name ~pos:11 ~len:(String.length define_name - 11))
-      in
-      false
-    else
-      true
-  in
-  let fetch_callables define_name =
-    let { Target.qualifier = define_qualifier; callables } =
-      Option.value_exn
-        ~message:"Missing definitions for define name"
-        (Target.get_definitions ~pyre1_api ~warn_multiple_definitions:true define_name)
-    in
-    if not (Reference.equal qualifier define_qualifier) then
-      let () =
-        Log.warning
-          "Function `%a` present in multiple qualifiers: `%a` and `%a`. This function will NOT be \
-           analyzed"
-          Reference.pp
-          define_name
-          Reference.pp
-          qualifier
-          Reference.pp
-          define_qualifier
-      in
-      None
-    else
-      Some callables
-  in
-  let merge_callables callables_left callables_right =
-    Target.Map.union
-      (fun target define_left define_right ->
-        (* TODO(T199841372): Pysa code should not assume that the raw AST has fully qualified
-           names. *)
-        Format.asprintf
-          "Unexpected callable `%a` with multiple define names: `%a` and `%a`"
-          Target.pp_internal
-          target
-          Reference.pp
-          define_left.Node.value.Define.signature.name
-          Reference.pp
-          define_right.Node.value.Define.signature.name
-        |> failwith)
-      callables_left
-      callables_right
-  in
-  Analysis.PyrePysaEnvironment.ReadOnly.get_define_names_for_qualifier pyre1_api qualifier
-  |> Reference.Set.of_list
-  |> Set.elements
-  |> List.filter ~f:filter_parameters
-  |> List.filter_map ~f:fetch_callables
-  |> List.fold ~init:Target.Map.empty ~f:merge_callables
-
-
-(** Traverse the AST to find all callables (functions and methods). *)
-let from_source_with_pyre1 ~configuration ~pyre1_api ~source =
-  if Analysis.PyrePysaEnvironment.ReadOnly.source_is_unit_test pyre1_api ~source then
-    empty
-  else
-    let definitions = gather_raw_definitions ~pyre1_api ~source in
-    let definitions =
-      if Ast.ModulePath.is_stub source.module_path then
-        Target.Map.filter
-          (fun _ { Node.value = define; _ } ->
-            not (Define.is_toplevel define || Define.is_class_toplevel define))
-          definitions
-      else
-        definitions
-    in
-    let is_internal =
-      Analysis.ArtifactPaths.(
-        is_internal_path
-          ~configuration
-          (artifact_path_of_module_path ~configuration source.module_path))
-    in
-    let add_definition definition { Node.value = define; _ } result =
-      if Define.is_stub define then
-        { result with stubs = definition :: result.stubs }
-      else if is_internal then
-        {
-          result with
-          internals = definition :: result.internals;
-          definitions = definition :: result.definitions;
-        }
-      else
-        { result with definitions = definition :: result.definitions }
-    in
-    Target.Map.fold add_definition definitions empty
 
 
 let from_qualifier_with_pyrefly ~pyrefly_api ~qualifier =
@@ -177,13 +70,9 @@ let from_qualifier_with_pyrefly ~pyrefly_api ~qualifier =
   List.fold define_names ~init:empty ~f:add_target
 
 
-let from_qualifier ~configuration ~pyre_api ~qualifier =
+let from_qualifier ~configuration:_ ~pyre_api ~qualifier =
   match pyre_api with
   | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api -> from_qualifier_with_pyrefly ~pyrefly_api ~qualifier
-  | PyrePysaApi.ReadOnly.Pyre1 pyre1_api ->
-      Analysis.PyrePysaEnvironment.ReadOnly.source_of_qualifier pyre1_api qualifier
-      >>| (fun source -> from_source_with_pyre1 ~configuration ~pyre1_api ~source)
-      |> Option.value ~default:empty
 
 
 let from_qualifiers ~scheduler ~scheduler_policy ~pyre_api ~configuration ~qualifiers =

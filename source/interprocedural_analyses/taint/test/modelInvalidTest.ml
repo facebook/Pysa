@@ -97,11 +97,7 @@ let assert_invalid_model
        absolute path), fall back to the search-path-relative path so rendering stays
        deterministic. *)
     match
-      PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
-        ~repository_root
-        ~lookup_source:(fun _ -> None)
-        pyre_api
-        qualifier
+      PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier ~repository_root pyre_api qualifier
     with
     | Some path when not (Filename.is_absolute path) -> Some path
     | _ -> PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api qualifier

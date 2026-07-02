@@ -16,14 +16,11 @@
 open Core
 open Ast
 open Statement
-open Pyre
 module TaintAccessPath = Analysis.TaintAccessPath
-module PyrePysaLogic = Analysis.PyrePysaLogic
 
 type kind =
   | Normal
-  | Pyre1PropertySetter
-  | PyreflyPropertySetter
+  | PropertySetter
   | Decorated
     (* This represents a callable but with all its decorators applied (i.e., the decorated
        function). By contrast, we use `Normal` to represent the undecorated function. *)
@@ -93,8 +90,7 @@ module Regular = struct
 
   let pp_kind formatter = function
     | Normal -> ()
-    | Pyre1PropertySetter -> Format.fprintf formatter "@setter"
-    | PyreflyPropertySetter ->
+    | PropertySetter ->
         (* Property setters already have '@setter' in their define name when using pyrefly. *)
         ()
     | Decorated -> Format.fprintf formatter "@decorated"
@@ -441,7 +437,7 @@ let create_override_from_reference ?kind reference =
 
 let from_define ~define_name ~define =
   let open Define in
-  let kind = if Define.is_property_setter define then Pyre1PropertySetter else Normal in
+  let kind = if Define.is_property_setter define then PropertySetter else Normal in
   match define.signature.legacy_parent with
   | Some _ -> create_method_from_reference ~kind define_name
   | None -> create_function ~kind define_name
@@ -607,62 +603,6 @@ end
 module Hashable = Core.Hashable.Make (T)
 module HashMap = Hashable.Table
 module HashSet = Hashable.Hash_set
-
-type definitions_result = {
-  qualifier: Reference.t;
-  (* Mapping from a target to its selected definition. *)
-  callables: Define.t Node.t Map.t;
-}
-
-(** This is the source of truth for the mapping of callables to definitions. All parts of the
-    analysis should use this (or `get_module_and_definition`) rather than walking over source files. *)
-let get_definitions ~pyre1_api ~warn_multiple_definitions define_name =
-  Analysis.PyrePysaEnvironment.ReadOnly.get_function_definition pyre1_api define_name
-  >>| PyrePysaLogic.qualifier_and_bodies_of_function_definition
-  >>| fun (qualifier, bodies) ->
-  let get_priority define =
-    (* Prefer the non-stub and non-overload definition, so we can analyze its body. *)
-    if not (Define.is_stub define) then
-      0
-    else if not (Define.is_overloaded_function define) then
-      -1
-    else
-      -2
-  in
-  let multiple_definitions = ref [] in
-  let resolve_multiple_defines left right =
-    if
-      warn_multiple_definitions
-      && (not (Define.is_stub left.Node.value))
-      && not (Define.is_stub right.Node.value)
-    then
-      multiple_definitions := define_name :: !multiple_definitions;
-    let left_priority = get_priority left.Node.value in
-    let right_priority = get_priority right.Node.value in
-    if left_priority > right_priority then
-      left
-    else if Int.equal left_priority right_priority then (* The last definition wins. *)
-      right
-    else
-      right
-  in
-  if warn_multiple_definitions then
-    !multiple_definitions
-    |> List.dedup_and_sort ~compare:Reference.compare
-    |> List.iter ~f:(fun define_name ->
-           Log.warning
-             "Found multiple definitions for the given symbol: `%a`. We will only consider the \
-              last definition."
-             Reference.pp
-             define_name);
-  {
-    qualifier;
-    callables =
-      bodies
-      |> List.map ~f:(fun body -> from_define ~define_name ~define:(Node.value body), body)
-      |> Map.of_alist ~f:resolve_multiple_defines;
-  }
-
 
 (* Define the meaning of `skip_analysis_targets`. We assume `skip_analysis_targets` only contains
    regular callables. *)

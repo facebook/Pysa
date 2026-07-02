@@ -455,7 +455,7 @@ let run_analyze
     =
     static_analysis_configuration_of analyze_configuration
   in
-  Server.BuildSystem.with_build_system source_paths ~f:(fun build_system ->
+  Server.BuildSystem.with_build_system source_paths ~f:(fun _build_system ->
       Scheduler.with_scheduler
         ~configuration:analysis_configuration
         ~should_log_exception:(function
@@ -469,11 +469,7 @@ let run_analyze
               if static_analysis_configuration.verify_taint_config_only then
                 verify_configuration ~static_analysis_configuration ()
               else
-                TaintAnalysis.run_taint_analysis
-                  ~static_analysis_configuration
-                  ~lookup_source:(Server.BuildSystem.lookup_source build_system)
-                  ~scheduler
-                  ());
+                TaintAnalysis.run_taint_analysis ~static_analysis_configuration ~scheduler ());
           Lwt.return (ExitStatus.CheckStatus CheckCommand.ExitStatus.Ok)))
 
 

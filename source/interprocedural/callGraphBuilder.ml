@@ -54,42 +54,11 @@ end
 (* Resolve a call to `str(x)` into `x.__str__()` or `x.__repr__()` *)
 let resolve_stringify_call
     ~pyre_in_context
-    ~type_of_expression_shared_memory
+    ~type_of_expression_shared_memory:_
     ~outer_expression_identifier
-    expression
+    _expression
   =
   match pyre_in_context with
-  | PyrePysaApi.InContext.Pyre1 _ -> (
-      let string_callee =
-        Node.create
-          ~location:(Node.location expression)
-          (Expression.Name
-             (Name.Attribute
-                {
-                  base = expression;
-                  attribute = "__str__";
-                  origin =
-                    Some
-                      (Origin.create
-                         ?base:(Ast.Expression.origin expression)
-                         ~location:(Node.location expression)
-                         Origin.ResolveStrCall);
-                }))
-      in
-      try
-        match
-          TypeOfExpressionSharedMemory.compute_or_retrieve_pyre_type
-            type_of_expression_shared_memory
-            ~pyre_in_context
-            string_callee
-          |> Type.callable_name
-        with
-        | Some name when Reference.equal name (Reference.create "object.__str__") ->
-            (* Call resolved to object.__str__, fallback to calling __repr__ if it exists. *)
-            ResolvedStringify.Repr
-        | _ -> ResolvedStringify.Str
-      with
-      | Analysis.ClassHierarchy.Untracked _ -> Str)
   | PyrePysaApi.InContext.Pyrefly pyrefly_api -> (
       (* When using pyrefly, use the callee of the artificial call resolved by pyrefly *)
       let call_graph = PyreflyApi.InContext.call_graph pyrefly_api in
@@ -169,7 +138,7 @@ let apply_identified_shim_call ~identified_callee ~arguments =
   | _ -> None
 
 
-let shim_special_calls_for_pyrefly ~callees ~arguments =
+let shim_special_calls ~callees ~arguments =
   let define_name_equals ~name call_target =
     SpecialCallResolution.CallTarget.target call_target
     |> Target.get_regular
@@ -289,21 +258,15 @@ let preprocess_special_calls
   | _ -> None
 
 
-let shim_for_call_for_pyrefly
-    ~pyrefly_api
-    ~callables_to_definitions_map
-    ~callees
-    ~nested_callees
-    ~arguments
-  =
-  match shim_special_calls_for_pyrefly ~callees ~arguments with
+let shim_for_call ~pyrefly_api ~callables_to_definitions_map ~callees ~nested_callees ~arguments =
+  match shim_special_calls ~callees ~arguments with
   | Some identified_callee -> Some identified_callee
   | None ->
       let callable_exists name =
         CallablesSharedMemory.ReadOnly.callable_from_reference callables_to_definitions_map name
         |> Option.is_some
       in
-      SpecialCallResolution.shim_calls_for_pyrefly
+      SpecialCallResolution.shim_calls
         ~class_mro:(PyreflyApi.ReadOnly.class_mro pyrefly_api)
         ~callable_exists
         ~callees
@@ -738,13 +701,8 @@ module HigherOrderCallGraph = struct
              let root =
                match root with
                | TaintAccessPath.Root.PositionalParameter { name; _ }
-               | TaintAccessPath.Root.NamedParameter { name } -> (
-                   match pyre_api with
-                   | PyrePysaApi.ReadOnly.Pyre1 _ ->
-                       Some
-                         (TaintAccessPath.Root.Variable
-                            (TaintAccessPath.Root.prepend_parameter_prefix name))
-                   | PyrePysaApi.ReadOnly.Pyrefly _ -> Some (TaintAccessPath.Root.Variable name))
+               | TaintAccessPath.Root.NamedParameter { name } ->
+                   Some (TaintAccessPath.Root.Variable name)
                | TaintAccessPath.Root.CapturedVariable captured_variable ->
                    Some
                      (PyrePysaApi.ReadOnly.state_root_of_captured_variable
@@ -1445,7 +1403,6 @@ module HigherOrderCallGraph = struct
             argument_callees
             |> filter_for_callee_targets original_call_targets
             |> filter_for_callee_targets original_init_targets
-        | _ -> argument_callees
       in
       let ( parameterized_call_targets,
             decorated_call_targets,
@@ -2188,7 +2145,6 @@ module HigherOrderCallGraph = struct
               Context.pyre_api
               ~module_qualifier:Context.module_qualifier
               ~define_name:Context.define_name
-              ~define:Context.define
               ~call_graph:Context.input_define_call_graph
               ~statement_key
           in
@@ -2286,11 +2242,7 @@ let higher_order_call_graph_of_define
           default_value)
   in
   let returned_callables =
-    let cfg =
-      PyrePysaLogic.Cfg.create
-        ~normalize_asserts:(PyrePysaApi.ReadOnly.is_pyre1 pyre_api)
-        (Node.value define)
-    in
+    let cfg = PyrePysaLogic.Cfg.create ~normalize_asserts:false (Node.value define) in
     Fixpoint.forward ~cfg ~initial:initial_state
     |> Fixpoint.exit
     >>| TransferFunction.get_returned_callables
@@ -2325,10 +2277,12 @@ let default_scheduler_policy =
     ()
 
 
-let build_whole_program_call_graph_for_pyrefly
+let build_whole_program_call_graph
     ~scheduler
-    ~scheduler_policies
-    ~pyrefly_api
+    ~static_analysis_configuration:
+      ({ Configuration.StaticAnalysis.scheduler_policies; _ } as static_analysis_configuration)
+    ~pyre_api
+    ~resolve_module_path
     ~callables_to_definitions_map
     ~callables_to_decorators_map
     ~global_constants
@@ -2337,10 +2291,13 @@ let build_whole_program_call_graph_for_pyrefly
     ~attribute_targets
     ~skip_analysis_targets
     ~skip_call_higher_order_functions
-    ~find_missing_flows
     ~definitions
     ~create_dependency_for
   =
+  let (PyrePysaApi.ReadOnly.Pyrefly pyrefly_api) = pyre_api in
+  let find_missing_flows =
+    static_analysis_configuration.Configuration.StaticAnalysis.find_missing_flows
+  in
   let transform_redirected_call_graph decorated_target call_graph =
     (* For call graph of decorated targets, add a call graph edge for the decorated function itself,
        in the return expression `decorator1(decorator2(original_function))` *)
@@ -2530,7 +2487,7 @@ let build_whole_program_call_graph_for_pyrefly
               CallCallees.pp
               original_call_callees
           in
-          shim_for_call_for_pyrefly
+          shim_for_call
             ~pyrefly_api
             ~callables_to_definitions_map
             ~callees:(fetch_special_call_targets original_call_callees)
@@ -2953,63 +2910,23 @@ let build_whole_program_call_graph_for_pyrefly
   let global_is_string_literal global =
     GlobalConstants.SharedMemory.ReadOnly.mem global_constants global
   in
-  PyreflyApi.ReadOnly.parse_call_graphs
-    pyrefly_api
-    ~scheduler
-    ~scheduler_policies
-    ~overrides_exist
-    ~get_overriding_types
-    ~global_is_string_literal
-    ~store_shared_memory
-    ~attribute_targets
-    ~skip_analysis_targets
-    ~find_missing_flows
-    ~definitions
-    ~create_dependency_for
-    ~redirect_to_decorated:
-      (CallableToDecoratorsMap.SharedMemory.redirect_to_decorated_opt callables_to_decorators_map)
-    ~transform_call_graph
-
-
-let build_whole_program_call_graph
-    ~scheduler
-    ~static_analysis_configuration:
-      ({ Configuration.StaticAnalysis.scheduler_policies; _ } as static_analysis_configuration)
-    ~pyre_api
-    ~resolve_module_path
-    ~callables_to_definitions_map
-    ~callables_to_decorators_map
-    ~global_constants
-    ~type_of_expression_shared_memory:_
-    ~override_graph
-    ~store_shared_memory
-    ~attribute_targets
-    ~skip_analysis_targets
-    ~skip_call_higher_order_functions
-    ~check_invariants:_
-    ~definitions
-    ~create_dependency_for
-  =
   let { CallGraph.SharedMemory.whole_program_call_graph; define_call_graphs } =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyre1 _ -> failwith "Pyre1 backend has been removed"
-    | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-        build_whole_program_call_graph_for_pyrefly
-          ~scheduler
-          ~scheduler_policies
-          ~pyrefly_api
-          ~callables_to_definitions_map
-          ~callables_to_decorators_map
-          ~global_constants
-          ~override_graph
-          ~attribute_targets
-          ~store_shared_memory
-          ~skip_analysis_targets
-          ~skip_call_higher_order_functions
-          ~find_missing_flows:
-            static_analysis_configuration.Configuration.StaticAnalysis.find_missing_flows
-          ~definitions
-          ~create_dependency_for
+    PyreflyApi.ReadOnly.parse_call_graphs
+      pyrefly_api
+      ~scheduler
+      ~scheduler_policies
+      ~overrides_exist
+      ~get_overriding_types
+      ~global_is_string_literal
+      ~store_shared_memory
+      ~attribute_targets
+      ~skip_analysis_targets
+      ~find_missing_flows
+      ~definitions
+      ~create_dependency_for
+      ~redirect_to_decorated:
+        (CallableToDecoratorsMap.SharedMemory.redirect_to_decorated_opt callables_to_decorators_map)
+      ~transform_call_graph
   in
   let () =
     let define_call_graphs_read_only = CallGraph.SharedMemory.read_only define_call_graphs in

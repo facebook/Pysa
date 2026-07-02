@@ -148,8 +148,8 @@ module SystemCondition = struct
         | ComparisonOperator.Equals -> Ok (String.equal actual_platform test_platform)
         | ComparisonOperator.NotEquals -> Ok (not (String.equal actual_platform test_platform))
         | unsupported -> Error (ModelVerificationError.UnsupportedPlatformComparison unsupported))
-    | UsingPyrefly -> Ok (PyrePysaApi.ReadOnly.is_pyrefly pyre_api)
-    | UsingPyre1 -> Ok (PyrePysaApi.ReadOnly.is_pyre1 pyre_api)
+    | UsingPyrefly -> Ok true
+    | UsingPyre1 -> Ok false
     | And (left, right) ->
         let open Result in
         evaluate ~pyre_api sys_info left
@@ -3354,17 +3354,11 @@ let check_decorators
 
 
 let resolved_callable_target
-    ~pyre_api
+    ~pyre_api:_
     { PyrePysaApi.ModelQueries.Function.define_name; is_property_setter; is_method; _ }
   =
   if is_property_setter then
-    let kind =
-      if PyrePysaApi.ReadOnly.is_pyrefly pyre_api then
-        Target.PyreflyPropertySetter
-      else
-        Target.Pyre1PropertySetter
-    in
-    Target.create_method_from_reference ~kind define_name
+    Target.create_method_from_reference ~kind:Target.PropertySetter define_name
   else if is_method then
     Target.create_method_from_reference define_name
   else
@@ -3722,19 +3716,6 @@ let create_models_from_signature
            look up the function metadata directly. *)
         let resolved_function =
           match pyre_api with
-          | PyrePysaApi.ReadOnly.Pyre1 _ -> (
-              match
-                PyrePysaApi.ModelQueries.resolve_user_qualified_name
-                  ~verify_class_attributes:false
-                  pyre_api
-                  ~is_property_getter
-                  ~is_property_setter
-                  define_name
-              with
-              | ResolutionResult.ModuleFound
-                  { results = [ModuleResolutionResult.Resolved (Global.Function function_)]; _ } ->
-                  function_
-              | _ -> failwith "expected a single resolved function for a resolved callable name")
           | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
               Interprocedural.PyreflyApi.ReadOnly.get_model_parser_function_info
                 pyrefly_api
@@ -4453,20 +4434,7 @@ let create_models_from_class
         let all_results = method_signatures |> List.map ~f:create_model_for_method |> List.concat in
         let all_models, all_errors = List.unzip all_results in
         List.concat all_models, List.concat all_errors
-    | None when PyrePysaApi.ReadOnly.is_pyrefly pyre_api -> failwith "unreachable"
-    | None ->
-        ( [],
-          [
-            make_verification_error
-              (ModelVerificationError.MissingClass
-                 {
-                   class_name = Reference.show user_provided_class_name;
-                   module_name =
-                     Reference.first
-                       (PyrePysaApi.ReadOnly.add_builtins_prefix pyre_api user_provided_class_name);
-                   module_path = None;
-                 });
-          ] )
+    | None -> failwith "unreachable"
   in
   let class_models, class_errors =
     List.map resolved_classes ~f:create_models_for_class |> List.unzip
@@ -5199,34 +5167,6 @@ let create_callable_model_from_annotations
   let define_name = Target.define_name_exn target in
   let callable_undecorated_signatures =
     match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyre1 _ -> (
-        (* TODO: As a workaround, we use `resolve_user_qualified_name` to get the undecorated
-           signatures, but this is far from ideal, since at this point, we already have a resolved
-           fully qualified name. *)
-        let decorators = Modelable.decorator_expressions_after_inlining modelable in
-        let is_property_getter, is_property_setter =
-          is_property_getter_setter ~decorators ~callable_name:(CallableName.Resolved define_name)
-        in
-        match
-          PyrePysaApi.ModelQueries.resolve_user_qualified_name
-            ~verify_class_attributes:false
-            pyre_api
-            ~is_property_getter
-            ~is_property_setter
-            define_name
-        with
-        | ResolutionResult.ModuleFound
-            {
-              results =
-                [
-                  ModuleResolutionResult.Resolved
-                    (PyrePysaApi.ModelQueries.Global.Function
-                      { PyrePysaApi.ModelQueries.Function.undecorated_signatures; _ });
-                ];
-              _;
-            } ->
-            undecorated_signatures
-        | _ -> None)
     | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
         Some
           (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name)

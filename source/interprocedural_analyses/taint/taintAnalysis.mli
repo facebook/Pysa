@@ -7,7 +7,6 @@
 
 val run_taint_analysis
   :  static_analysis_configuration:Configuration.StaticAnalysis.t ->
-  lookup_source:(ArtifactPath.t -> SourcePath.t option) ->
   scheduler:Scheduler.t ->
   unit ->
   unit

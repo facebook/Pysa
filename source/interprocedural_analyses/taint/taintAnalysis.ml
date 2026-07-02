@@ -118,25 +118,17 @@ let parse_model_modes
       enable_discarding = true;
     }
   in
-  let skip_type_checking_callables =
-    model_modes
-    |> Ast.Reference.SerializableMap.filter (fun _ modes ->
-           Model.ModeSet.contains Model.Mode.SkipAnalysis modes)
-    |> Ast.Reference.SerializableMap.keys
-    |> Ast.Reference.SerializableSet.of_list
-  in
   let () = StepLogger.finish step_logger in
-  decorator_preprocessing_configuration, skip_type_checking_callables
+  decorator_preprocessing_configuration
 
 
 let resolve_module_path
-    ~lookup_source
     ~absolute_source_path_of_qualifier
     ~static_analysis_configuration:
       { Configuration.StaticAnalysis.configuration = { local_root; _ }; repository_root; _ }
     qualifier
   =
-  match absolute_source_path_of_qualifier ~lookup_source qualifier with
+  match absolute_source_path_of_qualifier qualifier with
   | None -> None
   | Some path ->
       let root = Option.value repository_root ~default:local_root in
@@ -148,109 +140,17 @@ let resolve_module_path
         }
 
 
-let write_modules_to_file
-    ~static_analysis_configuration:
-      ({ Configuration.StaticAnalysis.configuration = { local_root; _ }; _ } as
-      static_analysis_configuration)
-    ~lookup_source
-    ~absolute_source_path_of_qualifier
-    ~path
-    qualifiers
-  =
-  let step_logger =
-    StepLogger.start
-      ~start_message:(Format.sprintf "Writing modules to `%s`" (PyrePath.absolute path))
-      ~end_message:"Wrote modules"
-      ()
-  in
-  let to_json_lines qualifier =
-    let path =
-      resolve_module_path
-        ~lookup_source
-        ~absolute_source_path_of_qualifier
-        ~static_analysis_configuration
-        qualifier
-      |> function
-      | Some { path; _ } -> `String (PyrePath.absolute path)
-      | None -> `Null
-    in
-    [
-      {
-        Interprocedural.NewlineDelimitedJson.Line.kind = Module;
-        data = `Assoc ["name", `String (Ast.Reference.show qualifier); "path", path];
-      };
-    ]
-  in
-  Interprocedural.NewlineDelimitedJson.write_file
-    ~path
-    ~configuration:(`Assoc ["repo", `String (PyrePath.absolute local_root)])
-    ~to_json_lines
-    qualifiers;
-  let () = StepLogger.finish step_logger in
-  ()
-
-
-let write_functions_to_file
-    ~static_analysis_configuration:
-      { Configuration.StaticAnalysis.configuration = { local_root; _ }; _ }
-    ~path
-    definitions
-  =
-  let step_logger =
-    StepLogger.start
-      ~start_message:(Format.sprintf "Writing functions to `%s`" (PyrePath.absolute path))
-      ~end_message:"Wrote functions"
-      ()
-  in
-  let to_json_lines definition =
-    [
-      {
-        Interprocedural.NewlineDelimitedJson.Line.kind = Function;
-        data = `Assoc ["name", `String (Ast.Reference.show definition)];
-      };
-    ]
-  in
-  Interprocedural.NewlineDelimitedJson.write_file
-    ~path
-    ~configuration:(`Assoc ["repo", `String (PyrePath.absolute local_root)])
-    ~to_json_lines
-    definitions;
-  let () = StepLogger.finish step_logger in
-  ()
-
-
 let create_pyre_read_write_api_and_perform_type_analysis
     ~scheduler
     ~static_analysis_configuration:
-      ({ Configuration.StaticAnalysis.configuration; pyrefly_results; save_results_to; _ } as
-      static_analysis_configuration)
-    ~lookup_source
+      { Configuration.StaticAnalysis.configuration; pyrefly_results; _ }
     ~decorator_configuration
-    ~skip_type_checking_callables
   =
-  let save_qualifiers_and_definitions absolute_source_path_of_qualifier qualifiers definitions =
-    match save_results_to with
-    | Some directory ->
-        write_modules_to_file
-          ~static_analysis_configuration
-          ~lookup_source
-          ~absolute_source_path_of_qualifier
-          ~path:(PyrePath.append directory ~element:"modules.json")
-          qualifiers;
-        write_functions_to_file
-          ~static_analysis_configuration
-          ~path:(PyrePath.append directory ~element:"functions.json")
-          definitions;
-        ()
-    | None -> ()
-  in
   PyrePysaApi.ReadWrite.create_with_cold_start
     ~scheduler
     ~configuration
     ~pyrefly_results
     ~decorator_configuration
-    ~skip_type_checking_callables
-    ~callback_with_qualifiers_and_definitions:save_qualifiers_and_definitions
 
 
 let parse_models_and_queries_from_sources
@@ -345,7 +245,6 @@ end
 let initialize_models
     ~scheduler
     ~pyre_api
-    ~lookup_source
     ~static_analysis_configuration:
       ({
          Configuration.StaticAnalysis.configuration = { local_root; _ };
@@ -366,7 +265,6 @@ let initialize_models
   let path_of_qualifier =
     PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
       ~repository_root:(Option.value repository_root ~default:local_root)
-      ~lookup_source
       pyre_api
   in
   let { ModelParseResult.models = regular_models; queries; errors } =
@@ -567,7 +465,6 @@ let run_taint_analysis
          scheduler_policies;
          _;
        } as static_analysis_configuration)
-    ~lookup_source
     ~scheduler
     ()
   =
@@ -576,24 +473,18 @@ let run_taint_analysis
   (* In order to save time, sanity check models before starting the analysis. *)
   let () = verify_model_syntax ~static_analysis_configuration in
 
-  (* Parse taint models to find:
-   * - decorators to inline or discard;
-   * - functions to skip for type checking;
+  (* Parse taint models to find decorators to inline or discard.
    *
    * This must be done early since decorator inlining is a preprocessing phase of
    * type-checking. *)
-  let decorator_configuration, skip_type_checking_callables =
-    parse_model_modes ~static_analysis_configuration
-  in
+  let decorator_configuration = parse_model_modes ~static_analysis_configuration in
 
   let pyre_read_write_api =
     create_pyre_read_write_api_and_perform_type_analysis
       ~scheduler
       ~scheduler_policies
       ~static_analysis_configuration
-      ~lookup_source
       ~decorator_configuration
-      ~skip_type_checking_callables
   in
   let pyre_api = PyrePysaApi.ReadOnly.of_read_write_api pyre_read_write_api in
 
@@ -676,9 +567,6 @@ let run_taint_analysis
     initial_callables
   in
 
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
   let step_logger =
     StepLogger.start
       ~start_message:"Building a map from callable names to definitions"
@@ -686,20 +574,7 @@ let run_taint_analysis
       ()
   in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy:
-        (Scheduler.Policy.from_configuration_or_default
-           scheduler_policies
-           Configuration.ScheduleIdentifier.CallablesSharedMemory
-           ~default:
-             (Scheduler.Policy.fixed_chunk_count
-                ~minimum_chunks_per_worker:1
-                ~minimum_chunk_size:1
-                ~preferred_chunks_per_worker:1
-                ()))
-      ~pyre_api
-      definitions_and_stubs
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let () = StepLogger.finish step_logger in
 
@@ -709,7 +584,6 @@ let run_taint_analysis
     initialize_models
       ~scheduler
       ~pyre_api
-      ~lookup_source
       ~static_analysis_configuration
       ~taint_configuration
       ~taint_configuration_shared_memory
@@ -766,7 +640,6 @@ let run_taint_analysis
 
   let resolve_module_path =
     resolve_module_path
-      ~lookup_source
       ~absolute_source_path_of_qualifier:
         (PyrePysaApi.ReadOnly.absolute_source_path_of_qualifier pyre_api)
       ~static_analysis_configuration
@@ -844,14 +717,12 @@ let run_taint_analysis
       ~skip_analysis_targets:skip_analysis_targets_hashset
       ~skip_call_higher_order_functions:
         (SharedModels.skip_call_higher_order_functions ~scheduler initial_models)
-      ~check_invariants:(TaintConfiguration.runtime_check_invariants ())
       ~definitions
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~callables_to_decorators_map:
         (Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
       ~global_constants:(Interprocedural.GlobalConstants.SharedMemory.read_only global_constants)
-      ~type_of_expression_shared_memory
       ~create_dependency_for:Interprocedural.CallGraph.AllTargetsUseCase.CallGraphDependency
   in
   let () =
@@ -967,8 +838,6 @@ let run_taint_analysis
       ~original_define_call_graphs
       ~call_graph_fixpoint:higher_order_call_graph_fixpoint
   in
-
-  let () = PyrePysaApi.ReadWrite.purge_sources_from_shared_memory pyre_read_write_api in
 
   let initial_models =
     MissingFlow.add_unknown_callee_models

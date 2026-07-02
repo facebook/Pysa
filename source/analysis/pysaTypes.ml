@@ -5,11 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* PysaTypes contains backend-agnostic type definitions shared between the Pyre1 and Pyrefly Pysa
-   backends. *)
+(* PysaTypes contains type definitions used by the Pyrefly Pysa backend. *)
 
 open Core
-module PyreType = Type
+
+(* Fake module containing all implicit "decorated" targets, which are functions that inline
+   decorators. *)
+let artificial_decorator_define_module = Ast.Reference.create "artificial_decorator_defines"
 
 module SysInfo = struct
   type t = {
@@ -202,35 +204,23 @@ module PyreflyType = struct
     { string = "unknown"; scalar_properties = ScalarTypeProperties.none; class_names = None }
 end
 
-(* Minimal abstraction for a type, provided from Pyre1 or Pyrefly and used by Pysa. See
-   `ReadOnly.Type` for more functions. *)
+(* Minimal abstraction for a type, provided from Pyrefly and used by Pysa. See `ReadOnly.Type` for
+   more functions. *)
 module PysaType = struct
   (* TODO(T225700656): We currently expose the representation for Pyrefly here instead of exposing
      it in Interprocedural.Pyrefly, because the current module defines other types that depend on
      `PysaType`, such as `FunctionDefinition.t`. The alternative would require to copy/paste all
      these type definitions, which is not ideal. *)
-  type t =
-    | Pyre1 of PyreType.t
-    | Pyrefly of PyreflyType.t
-  [@@deriving equal, compare, show]
-
-  let from_pyre1_type annotation = Pyre1 annotation
+  type t = Pyrefly of PyreflyType.t [@@deriving equal, compare, show]
 
   let from_pyrefly_type type_ = Pyrefly type_
 
   let as_pyrefly_type = function
     | Pyrefly type_ -> Some type_
-    | Pyre1 _ -> None
-
-
-  let as_pyre1_type = function
-    | Pyre1 type_ -> Some type_
-    | Pyrefly _ -> None
 
 
   (* Pretty print the type, usually meant for the user *)
   let pp_concise formatter = function
-    | Pyre1 type_ -> PyreType.pp_concise formatter type_
     | Pyrefly { PyreflyType.string; _ } ->
         (* Technically, this is the fully qualified representation, but we use it as the concise
            representation for now. *)
@@ -238,12 +228,10 @@ module PysaType = struct
 
 
   let show_fully_qualified = function
-    | Pyre1 type_ -> PyreType.show type_
     | Pyrefly { PyreflyType.string; _ } -> string
 
 
   let weaken_literals = function
-    | Pyre1 type_ -> Pyre1 (Type.weaken_literals type_)
     | Pyrefly type_ -> Pyrefly type_ (* pyrefly already weakens literals before exporting types *)
 end
 
@@ -318,11 +306,6 @@ end
 
 module MethodReference = struct
   type t =
-    | Pyre1 of {
-        class_name: Ast.Reference.t;
-        method_name: string;
-        is_property_setter: bool;
-      }
     | Pyrefly of {
         define_name: Ast.Reference.t;
         is_property_setter: bool;
@@ -330,7 +313,6 @@ module MethodReference = struct
   [@@deriving show]
 
   let class_name = function
-    | Pyre1 { class_name; _ } -> class_name
     | Pyrefly { define_name; _ } ->
         define_name |> Ast.Reference.prefix |> Option.value_exn ~message:"Expect a method name"
 end
@@ -421,73 +403,6 @@ module ModelQueries = struct
       return_annotation: PysaType.t;
     }
     [@@deriving equal, compare, show]
-
-    let toplevel =
-      {
-        parameters = FunctionParameters.List [];
-        return_annotation = PysaType.from_pyre1_type PyreType.NoneType;
-      }
-
-
-    let from_overload { PyreType.Callable.parameters; annotation } =
-      let fold_parameters (position, excluded, sofar) = function
-        | PyreType.Callable.CallableParamType.PositionalOnly { index; annotation; default } ->
-            ( position + 1,
-              excluded,
-              FunctionParameter.PositionalOnly
-                {
-                  name = None;
-                  position = index;
-                  annotation = PysaType.from_pyre1_type annotation;
-                  has_default = default;
-                }
-              :: sofar )
-        | PyreType.Callable.CallableParamType.Named { name; annotation; default } ->
-            let name = Ast.Identifier.sanitized name in
-            ( position + 1,
-              name :: excluded,
-              FunctionParameter.Named
-                {
-                  name;
-                  position;
-                  annotation = PysaType.from_pyre1_type annotation;
-                  has_default = default;
-                }
-              :: sofar )
-        | PyreType.Callable.CallableParamType.KeywordOnly { name; annotation; default } ->
-            let name = Ast.Identifier.sanitized name in
-            ( position + 1,
-              name :: excluded,
-              FunctionParameter.KeywordOnly
-                { name; annotation = PysaType.from_pyre1_type annotation; has_default = default }
-              :: sofar )
-        | PyreType.Callable.CallableParamType.Variable _ ->
-            position + 1, excluded, FunctionParameter.Variable { name = None; position } :: sofar
-        | PyreType.Callable.CallableParamType.Keywords annotation ->
-            ( position + 1,
-              [],
-              FunctionParameter.Keywords
-                { name = None; annotation = PysaType.from_pyre1_type annotation; excluded }
-              :: sofar )
-      in
-      let parameters =
-        match parameters with
-        | Defined parameters ->
-            let parameters =
-              parameters
-              |> List.fold ~init:(0, [], []) ~f:fold_parameters
-              |> (fun (_, _, parameters) -> parameters)
-              |> List.rev
-            in
-            FunctionParameters.List parameters
-        | Undefined -> FunctionParameters.Ellipsis
-        | FromParamSpec _ -> FunctionParameters.ParamSpec
-      in
-      { parameters; return_annotation = PysaType.from_pyre1_type annotation }
-
-
-    let from_callable_type { PyreType.Callable.implementation; overloads; _ } =
-      List.map ~f:from_overload (implementation :: overloads)
   end
 
   module Function = struct
@@ -605,12 +520,51 @@ module ModelQueries = struct
          in a file, and an entry may also indicate the module exists but the symbol was not found
          (Unresolved). *)
       | ModuleFound of {
-          (* Bare module name for all results. This is not necessarily a valid module qualifier. Can
-             only be None when using pyre1. *)
+          (* Bare module name for all results. This is not necessarily a valid module qualifier. *)
           module_name: Ast.Reference.t option;
           results: ModuleResolutionResult.t list;
         }
       (* No module prefix matched at all *)
       | BaseModuleNotFound
   end
+
+  let property_decorators =
+    Set.union Recognized.property_decorators Recognized.classproperty_decorators
+
+
+  let mangle_top_level_name name =
+    Ast.Reference.map_last
+      ~f:(function
+        | "__top_level__" -> Ast.Statement.toplevel_define_name
+        | "__class_top_level__" -> Ast.Statement.class_toplevel_define_name
+        | identifier -> identifier)
+      name
+
+
+  let demangle_class_attribute name =
+    let parts = Ast.Reference.as_list name in
+    if List.exists parts ~f:(String.equal "__class__") then
+      match List.rev parts with
+      | attribute :: "__class__" :: rest ->
+          attribute :: rest |> List.rev |> Ast.Reference.create_from_list
+      | _ -> name
+    else
+      name
+
+
+  let has_class_attribute_form name =
+    let name = Ast.Reference.as_list name in
+    List.exists ~f:(String.equal "__class__") name
+    &&
+    match List.rev name with
+    | _ :: "__class__" :: _ -> true
+    | _ -> false
+
+
+  let mangle_class_attribute name =
+    let parts = Ast.Reference.as_list name in
+    match List.rev parts with
+    | attribute :: rest ->
+        attribute :: "__class__" :: rest |> List.rev |> Ast.Reference.create_from_list
+    | [] -> name
 end

@@ -59,16 +59,7 @@ let assert_higher_order_call_graph_fixpoint
   let definitions = FetchCallables.get_definitions initial_callables in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
-  let callables_to_definitions_map =
-    CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
-  in
+  let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
   let type_of_expression_shared_memory =
     Interprocedural.TypeOfExpressionSharedMemory.create
       ~pyre_api
@@ -104,8 +95,6 @@ let assert_higher_order_call_graph_fixpoint
         (CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
       ~global_constants:
         (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-      ~type_of_expression_shared_memory
-      ~check_invariants:true
       ~create_dependency_for:Interprocedural.CallGraph.AllTargetsUseCase.CallGraphDependency
   in
   let dependency_graph =

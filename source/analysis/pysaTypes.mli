@@ -5,8 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* PysaTypes contains backend-agnostic type definitions shared between the Pyre1 and Pyrefly Pysa
-   backends. *)
+(* PysaTypes contains type definitions used by the Pyrefly Pysa backend. *)
+
+(* Fake module containing all implicit "decorated" targets, which are functions that inline
+   decorators. *)
+val artificial_decorator_define_module : Ast.Reference.t
 
 module SysInfo : sig
   type t = {
@@ -118,21 +121,14 @@ module PyreflyType : sig
   val top : t
 end
 
-(* Minimal abstraction for a type, provided from Pyre1 or Pyrefly and used by Pysa. See
-   `ReadOnly.Type` for more functions. *)
+(* Minimal abstraction for a type, provided from Pyrefly and used by Pysa. See `ReadOnly.Type` for
+   more functions. *)
 module PysaType : sig
-  type t =
-    | Pyre1 of Type.t
-    | Pyrefly of PyreflyType.t
-  [@@deriving equal, compare, show]
-
-  val from_pyre1_type : Type.t -> t
+  type t = Pyrefly of PyreflyType.t [@@deriving equal, compare, show]
 
   val from_pyrefly_type : PyreflyType.t -> t
 
   val as_pyrefly_type : t -> PyreflyType.t option
-
-  val as_pyre1_type : t -> Type.t option
 
   (* Pretty print the type, usually meant for the user *)
   val pp_concise : Format.formatter -> t -> unit
@@ -186,11 +182,6 @@ end
 
 module MethodReference : sig
   type t =
-    | Pyre1 of {
-        class_name: Ast.Reference.t;
-        method_name: string;
-        is_property_setter: bool;
-      }
     | Pyrefly of {
         define_name: Ast.Reference.t;
         is_property_setter: bool;
@@ -254,12 +245,6 @@ module ModelQueries : sig
       return_annotation: PysaType.t;
     }
     [@@deriving equal, compare, show]
-
-    val toplevel : t
-
-    val from_overload : Type.t Type.Callable.overload -> t
-
-    val from_callable_type : Type.Callable.t -> t list
   end
 
   module Function : sig
@@ -345,12 +330,21 @@ module ModelQueries : sig
          in a file, and an entry may also indicate the module exists but the symbol was not found
          (Unresolved). *)
       | ModuleFound of {
-          (* Bare module name for all results. This is not necessarily a valid module qualifier. Can
-             only be None when using pyre1. *)
+          (* Bare module name for all results. This is not necessarily a valid module qualifier. *)
           module_name: Ast.Reference.t option;
           results: ModuleResolutionResult.t list;
         }
       (* No module prefix matched at all *)
       | BaseModuleNotFound
   end
+
+  val property_decorators : Core.String.Set.t
+
+  val mangle_top_level_name : Ast.Reference.t -> Ast.Reference.t
+
+  val demangle_class_attribute : Ast.Reference.t -> Ast.Reference.t
+
+  val has_class_attribute_form : Ast.Reference.t -> bool
+
+  val mangle_class_attribute : Ast.Reference.t -> Ast.Reference.t
 end

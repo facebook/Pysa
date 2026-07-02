@@ -206,22 +206,19 @@ let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
       PyrePysaApi.ReadOnly.named_tuple_attributes pyre_api class_name |> Option.value ~default:[]
     in
     let prepend_init_model models =
-      match pyre_api with
-      | PyrePysaApi.ReadOnly.Pyrefly _ ->
-          let init_model =
-            ( Target.create_method (Reference.create class_name) "__init__",
+      let init_model =
+        ( Target.create_method (Reference.create class_name) "__init__",
+          {
+            Model.empty_model with
+            backward =
               {
-                Model.empty_model with
-                backward =
-                  {
-                    Model.Backward.taint_in_taint_out =
-                      taint_in_taint_out_for_positional_parameters ~class_name attributes;
-                    sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
-                  };
-              } )
-          in
-          init_model :: models
-      | PyrePysaApi.ReadOnly.Pyre1 _ -> models
+                Model.Backward.taint_in_taint_out =
+                  taint_in_taint_out_for_positional_parameters ~class_name attributes;
+                sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
+              };
+          } )
+      in
+      init_model :: models
     in
     (* If a user-specified __new__ exist, don't override it. *)
     (* TODO(T225700656): This is not doing the right check when using pyrefly, since

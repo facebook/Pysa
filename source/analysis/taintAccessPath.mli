@@ -14,9 +14,6 @@ module CapturedVariable : sig
         name: string;
         defining_function: Reference.t;
       }
-    (* When using pyre1, if the captured variable is a parameter of a function, there is no way to
-       know the defining function. *)
-    | Pyre1Parameter of { name: string }
   [@@deriving compare, equal, hash, sexp, show]
 
   val name : t -> string

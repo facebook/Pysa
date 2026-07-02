@@ -58,7 +58,7 @@ let test_get_module_and_definition context =
   |}
     ~target:
       (Target.Regular.Method
-         { class_name = "test.C"; method_name = "foo@setter"; kind = PyreflyPropertySetter })
+         { class_name = "test.C"; method_name = "foo@setter"; kind = PropertySetter })
     ~expected:
       (Some
          ( Reference.create "test",

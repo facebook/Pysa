@@ -10,13 +10,6 @@ open Statement
 module AstResult = PyrePysaApi.AstResult
 module CallableSignature = Analysis.PysaTypes.CallableSignature
 
-val callable_signature_from_define_for_pyre1
-  :  pyre1_api:Analysis.PyrePysaEnvironment.ReadOnly.t ->
-  target:Target.t ->
-  qualifier:Reference.t ->
-  Define.t Node.t ->
-  CallableSignature.t
-
 (* Exposed for testing purposes only. *)
 val get_signature_and_definition_for_test
   :  pyre_api:PyrePysaApi.ReadOnly.t ->
@@ -33,14 +26,8 @@ end
 module ReadWrite : sig
   type t
 
-  val empty : unit -> t
-
-  val from_callables
-    :  scheduler:Scheduler.t ->
-    scheduler_policy:Scheduler.Policy.t ->
-    pyre_api:PyrePysaApi.ReadOnly.t ->
-    Target.t list ->
-    t
+  (* Create a [CallablesSharedMemory] that includes all available callables from the given API. *)
+  val from_pyre_api : pyre_api:PyrePysaApi.ReadOnly.t -> t
 
   val cleanup : t -> unit
 

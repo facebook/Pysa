@@ -32,10 +32,6 @@ module DecoratedDefineBody = struct
   }
 end
 
-let ignored_decorator_prefixes_for_higher_order =
-  ["sqlalchemy.testing"; "pytest"] |> SerializableStringSet.of_list
-
-
 let ignored_decorators_for_higher_order =
   [
     "property";
@@ -90,25 +86,6 @@ let ignored_decorators_for_higher_order =
   @ CallablesSharedMemory.static_method_decorators
   @ Recognized.ignored_decorators_for_higher_order
   |> SerializableStringSet.of_list
-
-
-let should_keep_decorator_pyre1 decorator =
-  if
-    Analysis.DecoratorPreprocessing.has_any_decorator_action
-      ~actions:(Analysis.DecoratorPreprocessing.Action.Set.of_list [Discard])
-      decorator
-  then
-    false
-  else
-    match Ast.Statement.Decorator.from_expression decorator with
-    | Some { Decorator.name = { Node.value = decorator_name; _ }; _ } ->
-        let decorator_name = Reference.show decorator_name in
-        (not (SerializableStringSet.mem decorator_name ignored_decorators_for_higher_order))
-        && not
-             (SerializableStringSet.exists
-                (fun prefix -> String.is_prefix ~prefix decorator_name)
-                ignored_decorator_prefixes_for_higher_order)
-    | None -> true
 
 
 let pyrefly_ignored_builtin_decorators =
@@ -189,7 +166,6 @@ let collect_decorators ~pyre_api ~callables_to_definitions_map callable =
       } ->
       let decorators =
         match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyre1 _ -> List.filter ~f:should_keep_decorator_pyre1 decorators
         | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
             List.filter ~f:(should_keep_decorator_pyrefly ~pyrefly_api ~callable) decorators
       in
@@ -455,7 +431,7 @@ module SharedMemory = struct
     }
 
 
-  let register_decorator_defines decorators ~pyre_api callables_to_definitions_map =
+  let register_decorator_defines decorators callables_to_definitions_map =
     let read_only_decorators = read_only decorators in
     decorators
     |> targets_with_decorators
@@ -468,26 +444,18 @@ module SharedMemory = struct
            in
            let decorated_callable = Target.set_kind Target.Decorated callable in
            let signature =
-             match pyre_api with
-             | PyrePysaApi.ReadOnly.Pyre1 pyre1_api ->
-                 CallablesSharedMemory.callable_signature_from_define_for_pyre1
-                   ~pyre1_api
-                   ~target:callable
-                   ~qualifier:Analysis.PyrePysaEnvironment.artificial_decorator_define_module
-                   define
-             | PyrePysaApi.ReadOnly.Pyrefly _ ->
-                 {
-                   CallablesSharedMemory.CallableSignature.qualifier =
-                     Analysis.PyrePysaEnvironment.artificial_decorator_define_module;
-                   define_name = Target.define_name_exn callable;
-                   location = AstResult.Some Location.any;
-                   parameters = AstResult.Some [];
-                   return_annotation = AstResult.Some None;
-                   decorators = AstResult.Some [];
-                   captures = [];
-                   method_kind = None;
-                   is_stub_like = false;
-                 }
+             {
+               CallablesSharedMemory.CallableSignature.qualifier =
+                 Analysis.PysaTypes.artificial_decorator_define_module;
+               define_name = Target.define_name_exn callable;
+               location = AstResult.Some Location.any;
+               parameters = AstResult.Some [];
+               return_annotation = AstResult.Some None;
+               decorators = AstResult.Some [];
+               captures = [];
+               method_kind = None;
+               is_stub_like = false;
+             }
            in
            decorated_callable, signature, define)
     |> CallablesSharedMemory.ReadWrite.add_alist_sequential callables_to_definitions_map

@@ -8,8 +8,8 @@
 open Core
 
 (* PyrePysaApi is a wrapper around a type checker API, which exposes source code, ASTs and type
-   information about the code to analyze. Right now, this wraps either the old Pyre 1 API provided
-   by `Analysis.PyrePysaEnvironment` or the Pyrefly API provided by `Interprocedural.Pyrefly`. *)
+   information about the code to analyze. This wraps the Pyrefly API provided by
+   `Interprocedural.Pyrefly`. *)
 
 module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
 module TypeModifier = Analysis.PysaTypes.TypeModifier
@@ -20,14 +20,10 @@ module PyreClassSummary = Analysis.ClassSummary
 module AstResult = Analysis.PysaTypes.AstResult
 module TaintAccessPath = Analysis.TaintAccessPath
 
-(* Abstraction for information about a class, provided from Pyre1 or Pyrefly and used by Pysa. See
+(* Abstraction for information about a class, provided from Pyrefly and used by Pysa. See
    `ReadOnly.ClassSummary` for more functions. *)
 module PysaClassSummary : sig
   type t
-
-  val pyre1_find_attribute : t -> string -> PyreClassSummary.Attribute.t option
-
-  val pyre1_get_attributes : t -> PyreClassSummary.Attribute.t list
 end
 
 module ReadWrite : sig
@@ -39,17 +35,7 @@ module ReadWrite : sig
     configuration:Configuration.Analysis.t ->
     pyrefly_results:PyrePath.t ->
     decorator_configuration:Analysis.DecoratorPreprocessing.Configuration.t ->
-    skip_type_checking_callables:Ast.Reference.SerializableSet.t ->
-    callback_with_qualifiers_and_definitions:
-      ((lookup_source:(ArtifactPath.t -> SourcePath.t option) -> Ast.Reference.t -> string option) ->
-      Ast.Reference.t list ->
-      Ast.Reference.t list ->
-      unit) ->
     t
-
-  val configuration : t -> Configuration.Analysis.t
-
-  val purge_sources_from_shared_memory : t -> unit
 
   val parse_type_of_expressions
     :  t ->
@@ -59,38 +45,25 @@ module ReadWrite : sig
 end
 
 module ReadOnly : sig
-  type t =
-    | Pyre1 of Analysis.PyrePysaEnvironment.ReadOnly.t
-    | Pyrefly of PyreflyApi.ReadOnly.t
+  type t = Pyrefly of PyreflyApi.ReadOnly.t
 
   val of_read_write_api : ReadWrite.t -> t
 
   val from_pyrefly_api : PyreflyApi.ReadOnly.t -> t
 
-  val is_pyre1 : t -> bool
-
-  val is_pyrefly : t -> bool
-
   val explicit_qualifiers : t -> Ast.Reference.t list
 
   val all_sys_infos : t -> Analysis.PysaTypes.SysInfo.t list
 
-  val absolute_source_path_of_qualifier
-    :  lookup_source:(ArtifactPath.t -> SourcePath.t option) ->
-    t ->
-    Ast.Reference.t ->
-    string option
+  val absolute_source_path_of_qualifier : t -> Ast.Reference.t -> string option
 
   val repository_relative_path_of_qualifier
     :  repository_root:PyrePath.t ->
-    lookup_source:(ArtifactPath.t -> SourcePath.t option) ->
     t ->
     Ast.Reference.t ->
     string option
 
   val search_path_relative_path_of_qualifier : t -> Ast.Reference.t -> string option
-
-  val source_of_qualifier : t -> Ast.Reference.t -> Ast.Source.t option
 
   val get_class_names_for_qualifier
     :  t ->
@@ -112,14 +85,6 @@ module ReadOnly : sig
 
   val get_qualifier_top_level_define_name : t -> Ast.Reference.t -> Ast.Reference.t
 
-  val module_exists : t -> Ast.Reference.t -> bool
-
-  val parse_annotation
-    :  t ->
-    ?validation:Analysis.AttributeResolution.type_validation_policy ->
-    Ast.Expression.t ->
-    Type.t
-
   val get_class_summary : t -> string -> PysaClassSummary.t option
 
   val get_class_decorators_opt : t -> string -> Ast.Expression.t list AstResult.t
@@ -131,47 +96,16 @@ module ReadOnly : sig
     string ->
     string list option
 
-  val source_is_unit_test : t -> source:Ast.Source.t -> bool
-
   val class_immediate_parents : t -> string -> string list
 
   val class_mro : t -> string -> string list
-
-  val parse_reference : t -> Ast.Reference.t -> Type.t
-
-  val class_exists : t -> string -> bool
-
-  val get_variable : t -> string -> Type.Variable.t option
-
-  val resolve_define
-    :  t ->
-    callable_name:Ast.Reference.t option ->
-    implementation:Ast.Statement.Define.Signature.t option ->
-    overloads:Ast.Statement.Define.Signature.t list ->
-    scoped_type_variables:Type.Variable.t Ast.Identifier.Map.t option ->
-    Analysis.AttributeResolution.resolved_define
-
-  val resolve_define_undecorated
-    :  t ->
-    callable_name:Ast.Reference.t option ->
-    implementation:Ast.Statement.Define.Signature.t option ->
-    overloads:Ast.Statement.Define.Signature.t list ->
-    scoped_type_variables:Type.Variable.t Ast.Identifier.Map.t option ->
-    Analysis.AnnotatedAttribute.decorated_method
-
-  val global : t -> Ast.Reference.t -> Analysis.AttributeResolution.Global.t option
 
   val get_overriden_base_method
     :  t ->
     Analysis.PysaTypes.MethodReference.t ->
     Analysis.PysaTypes.MethodReference.t option
 
-  val target_from_method_reference : t -> Analysis.PysaTypes.MethodReference.t -> Target.t
-
-  val get_captured_variable_from_nonlocal_target
-    :  t ->
-    Ast.Identifier.t ->
-    TaintAccessPath.CapturedVariable.t
+  val target_from_method_reference : Analysis.PysaTypes.MethodReference.t -> Target.t
 
   val get_callable_captures : t -> Ast.Reference.t -> TaintAccessPath.CapturedVariable.t list
 
@@ -187,49 +121,6 @@ module ReadOnly : sig
     TaintAccessPath.NormalizedParameter.t list ->
     (TaintAccessPath.NormalizedParameter.t * PysaType.t list) list
 
-  val annotation_parser : t -> Analysis.AnnotatedCallable.annotation_parser
-
-  val less_or_equal : t -> left:Type.t -> right:Type.t -> bool
-
-  val resolve_exports
-    :  t ->
-    ?from:Ast.Reference.t ->
-    Ast.Reference.t ->
-    Analysis.ResolvedReference.t option
-
-  val location_of_global : t -> Ast.Reference.t -> Ast.Location.WithModule.t option
-
-  val get_function_definition : t -> Ast.Reference.t -> Analysis.FunctionDefinition.t option
-
-  val attribute_from_class_name
-    :  t ->
-    ?transitive:bool ->
-    ?accessed_through_class:bool ->
-    ?accessed_through_readonly:bool ->
-    ?special_method:bool ->
-    string ->
-    name:string ->
-    type_for_lookup:Type.t ->
-    Analysis.AnnotatedAttribute.instantiated option
-
-  val has_transitive_successor : t -> successor:string -> string -> bool
-
-  val has_transitive_successor_ignoring_untracked
-    :  t ->
-    reflexive:bool ->
-    predecessor:string ->
-    successor:string ->
-    bool
-
-  val exists_matching_class_decorator
-    :  t ->
-    ?dependency:Analysis.SharedMemoryKeys.DependencyKey.registered ->
-    names:string list ->
-    Analysis.ClassSummary.t Ast.Node.t ->
-    bool
-
-  val generic_parameters_as_variables : t -> string -> Type.Variable.t list option
-
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
   val state_root_of_captured_variable
@@ -237,22 +128,10 @@ module ReadOnly : sig
     TaintAccessPath.CapturedVariable.t ->
     TaintAccessPath.Root.t
 
-  val decorated_define : t -> Ast.Statement.Define.t Ast.Node.t -> Ast.Statement.Define.t Ast.Node.t
-
   (* TODO(T225700656): Move this in the ClassSummary module *)
   val named_tuple_attributes : t -> string -> string list option
 
-  val resolve_expression_to_type_info : t -> Ast.Expression.t -> Analysis.TypeInfo.Unit.t
-
-  val get_unannotated_global
-    :  t ->
-    ?dependency:Analysis.SharedMemoryKeys.DependencyKey.registered ->
-    Ast.Reference.t ->
-    Analysis.Module.UnannotatedGlobal.t option
-
   val all_classes : t -> scheduler:Scheduler.t -> string list
-
-  val all_unannotated_globals : t -> scheduler:Scheduler.t -> Ast.Reference.t list
 
   val ensures_qualified : t -> Ast.Source.t -> Ast.Source.t
 
@@ -284,9 +163,7 @@ module ReadOnly : sig
 end
 
 module InContext : sig
-  type t =
-    | Pyre1 of Analysis.PyrePysaEnvironment.InContext.t
-    | Pyrefly of PyreflyApi.InContext.t
+  type t = Pyrefly of PyreflyApi.InContext.t
 
   val create_at_function_scope
     :  ReadOnly.t ->
@@ -299,16 +176,11 @@ module InContext : sig
     :  ReadOnly.t ->
     module_qualifier:Ast.Reference.t ->
     define_name:Ast.Reference.t ->
-    define:Ast.Statement.Define.t Ast.Node.t ->
     call_graph:CallGraph.DefineCallGraph.t ->
     statement_key:int ->
     t
 
   val pyre_api : t -> ReadOnly.t
-
-  val is_pyre1 : t -> bool
-
-  val is_pyrefly : t -> bool
 
   val is_global : t -> reference:Ast.Reference.t -> bool
 

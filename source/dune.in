@@ -409,11 +409,9 @@
 (tests
  (names
   decoratorsTest
-  specialCallResolutionTest
   internalTaintIntegrationTest)
  (modules
   decoratorsTest
-  specialCallResolutionTest
   internalTaintIntegrationTest)
  (preprocess
   (pps

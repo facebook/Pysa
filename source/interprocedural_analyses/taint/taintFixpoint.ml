@@ -139,9 +139,7 @@ module Analysis = struct
     in
     let cfg =
       TaintProfiler.track_duration ~profiler ~name:"Control flow graph" ~f:(fun () ->
-          PyrePysaLogic.Cfg.create
-            ~normalize_asserts:(PyrePysaApi.ReadOnly.is_pyre1 pyre_api)
-            define.value)
+          PyrePysaLogic.Cfg.create ~normalize_asserts:false define.value)
     in
     if Interprocedural.PysaDump.should_dump_cfg ~define:(Ast.Node.value define) ~callable then
       Log.dump

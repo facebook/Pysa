@@ -10,8 +10,7 @@ open Statement
 
 type kind =
   | Normal
-  | Pyre1PropertySetter
-  | PyreflyPropertySetter
+  | PropertySetter
   | Decorated
 [@@deriving show, sexp, compare, hash, equal]
 
@@ -222,20 +221,6 @@ module List : sig
 
   val show_pretty_with_kind : t -> string
 end
-
-type definitions_result = {
-  qualifier: Reference.t;
-  (* Mapping from a target to its selected definition. *)
-  callables: Define.t Node.t Map.t;
-}
-
-(** This is the source of truth for the mapping of callables to definitions. All parts of the
-    analysis should use this (or `get_module_and_definition`) rather than walking over source files. *)
-val get_definitions
-  :  pyre1_api:Analysis.PyrePysaEnvironment.ReadOnly.t ->
-  warn_multiple_definitions:bool ->
-  Reference.t ->
-  definitions_result option
 
 (* Define the meaning of `skip_analysis_targets`. We assume `skip_analysis_targets` only contains
    regular callables. *)

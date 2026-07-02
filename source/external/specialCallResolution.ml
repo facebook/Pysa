@@ -49,8 +49,4 @@ module NestedCallees = struct
     | None
 end
 
-let shim_calls_for_pyre1 ~resolve_expression_to_type:_ ~class_mro:_ ~callable_exists:_ _ = None
-
-let shim_calls_for_pyrefly ~class_mro:_ ~callable_exists:_ ~callees:_ ~nested_callees:_ ~arguments:_
-  =
-  None
+let shim_calls ~class_mro:_ ~callable_exists:_ ~callees:_ ~nested_callees:_ ~arguments:_ = None

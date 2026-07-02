@@ -60,7 +60,6 @@ module SharedMemory : sig
 
   val register_decorator_defines
     :  t ->
-    pyre_api:PyrePysaApi.ReadOnly.t ->
     CallablesSharedMemory.ReadWrite.t ->
     CallablesSharedMemory.ReadWrite.t
 

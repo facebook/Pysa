@@ -13,100 +13,67 @@ open Ast
 open Interprocedural
 module PysaType = PyrePysaApi.PysaType
 module ScalarTypeProperties = PyrePysaApi.ScalarTypeProperties
-module FunctionParameter = PyrePysaApi.ModelQueries.FunctionParameter
-module FunctionParameters = PyrePysaApi.ModelQueries.FunctionParameters
-module FunctionSignature = PyrePysaApi.ModelQueries.FunctionSignature
 module Function = PyrePysaApi.ModelQueries.Function
 module Global = PyrePysaApi.ModelQueries.Global
 
-let convert_to_pyrefly_global global =
-  (* Manually convert all the type used in this file. *)
-  let convert_to_pyrefly_type annotation =
-    match PysaType.as_pyre1_type annotation with
-    | Some Type.NoneType ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "None";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = None;
-          }
-    | Some Type.Any ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "Any";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = None;
-          }
-    | Some (Type.Primitive "int") ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "int";
-            scalar_properties = ScalarTypeProperties.integer;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 5));
-          }
-    | Some (Type.Primitive "str") ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "str";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 10));
-          }
-    | Some (Type.Primitive "test.Foo") ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "test.Foo";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 0));
-          }
-    | Some (Type.Primitive "test.Bar") ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "test.Bar";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 1));
-          }
-    | Some annotation ->
-        failwith (Format.asprintf "unimplemented: pyrefly representation for %a" Type.pp annotation)
-    | None -> annotation
-  in
-  let convert_to_pyrefly_parameter = function
-    | FunctionParameter.PositionalOnly { name; position; annotation; has_default } ->
-        FunctionParameter.PositionalOnly
-          { name; position; annotation = convert_to_pyrefly_type annotation; has_default }
-    | FunctionParameter.Named { name; position; annotation; has_default } ->
-        FunctionParameter.Named
-          { name; position; annotation = convert_to_pyrefly_type annotation; has_default }
-    | FunctionParameter.KeywordOnly { name; annotation; has_default } ->
-        FunctionParameter.KeywordOnly
-          { name; annotation = convert_to_pyrefly_type annotation; has_default }
-    | FunctionParameter.Variable { name; position } -> FunctionParameter.Variable { name; position }
-    | FunctionParameter.Keywords { name; annotation; excluded } ->
-        FunctionParameter.Keywords
-          { name; annotation = convert_to_pyrefly_type annotation; excluded }
-  in
-  let convert_to_pyrefly_parameters = function
-    | FunctionParameters.List parameters ->
-        FunctionParameters.List (List.map ~f:convert_to_pyrefly_parameter parameters)
-    | parameter -> parameter
-  in
-  let convert_to_pyrefly_signature { FunctionSignature.parameters; return_annotation } =
-    {
-      FunctionSignature.parameters = convert_to_pyrefly_parameters parameters;
-      return_annotation = convert_to_pyrefly_type return_annotation;
-    }
-  in
-  match global with
-  | Global.Function ({ Function.undecorated_signatures; _ } as function_) ->
-      let undecorated_signatures =
-        undecorated_signatures >>| List.map ~f:convert_to_pyrefly_signature
-      in
-      Global.Function
+(* Build the Pyrefly type representation for the small set of types used in this file. *)
+let pyrefly_type = function
+  | Type.NoneType ->
+      PysaType.from_pyrefly_type
         {
-          function_ with
-          (* pyrefly doesn't have the concept of imported names. *)
-          imported_name = None;
-          undecorated_signatures;
+          PysaTypes.PyreflyType.string = "None";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = None;
         }
+  | Type.Any ->
+      PysaType.from_pyrefly_type
+        {
+          PysaTypes.PyreflyType.string = "Any";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = None;
+        }
+  | Type.Primitive "int" ->
+      PysaType.from_pyrefly_type
+        {
+          PysaTypes.PyreflyType.string = "int";
+          scalar_properties = ScalarTypeProperties.integer;
+          class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 5));
+        }
+  | Type.Primitive "str" ->
+      PysaType.from_pyrefly_type
+        {
+          PysaTypes.PyreflyType.string = "str";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 10));
+        }
+  | Type.Primitive "test.Foo" ->
+      PysaType.from_pyrefly_type
+        {
+          PysaTypes.PyreflyType.string = "test.Foo";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 0));
+        }
+  | Type.Primitive "test.Bar" ->
+      PysaType.from_pyrefly_type
+        {
+          PysaTypes.PyreflyType.string = "test.Bar";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 1));
+        }
+  | annotation ->
+      (* Fallback used only for expectations that are discarded under Pyrefly (e.g. cases with
+         `~pyrefly_expect:None`). *)
+      PysaType.from_pyrefly_type
+        {
+          PysaTypes.PyreflyType.string = Format.asprintf "%a" Type.pp annotation;
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = None;
+        }
+
+
+(* Pyrefly does not have the concept of imported names. *)
+let convert_to_pyrefly_global = function
+  | Global.Function function_ -> Global.Function { function_ with Function.imported_name = None }
   | global -> global
 
 
@@ -135,15 +102,10 @@ let test_resolve_user_qualified_name context =
     in
     let expect =
       match pyrefly_expect with
-      | Some pyrefly_expect when PyrePysaApi.ReadOnly.is_pyrefly pyre_api -> pyrefly_expect
-      | _ -> expect
+      | Some pyrefly_expect -> pyrefly_expect
+      | None -> expect
     in
-    let expect =
-      if PyrePysaApi.ReadOnly.is_pyrefly pyre_api then
-        expect >>| convert_to_pyrefly_global
-      else
-        expect
-    in
+    let expect = expect >>| convert_to_pyrefly_global in
     let expected_list = Option.to_list expect in
     let () = PyrePysaApi.ModelQueries.invalidate_cache pyre_api in
     let printer globals =
@@ -153,18 +115,13 @@ let test_resolve_user_qualified_name context =
   in
   let create_parameter ?(annotation = Type.Any) ?(position = 0) name =
     PysaTypes.ModelQueries.FunctionParameter.Named
-      {
-        name;
-        position;
-        annotation = PysaTypes.PysaType.from_pyre1_type annotation;
-        has_default = false;
-      }
+      { name; position; annotation = pyrefly_type annotation; has_default = false }
   in
   let create_signature ?(return_annotation = Type.NoneType) parameters =
     {
       PysaTypes.ModelQueries.FunctionSignature.parameters =
         PysaTypes.ModelQueries.FunctionParameters.List parameters;
-      return_annotation = PysaTypes.PysaType.from_pyre1_type return_annotation;
+      return_annotation = pyrefly_type return_annotation;
     }
   in
   let create_callable

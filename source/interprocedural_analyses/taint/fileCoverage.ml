@@ -8,7 +8,6 @@
 open Core
 open Data_structures
 open Pyre
-module PyrePysaEnvironment = Analysis.PyrePysaEnvironment
 
 module File = struct
   module T = struct

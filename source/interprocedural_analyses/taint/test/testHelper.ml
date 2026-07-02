@@ -105,18 +105,15 @@ let outcome
   }
 
 
-let create_callable ~pyre_api kind define_name =
+let create_callable ~pyre_api:_ kind define_name =
   let name = Reference.create define_name in
   match kind with
   | `Method -> Target.create_method_from_reference name
   | `Function -> Target.create_function name
   | `PropertySetter ->
-      if PyrePysaApi.ReadOnly.is_pyrefly pyre_api then
-        Target.create_method_from_reference
-          ~kind:Target.PyreflyPropertySetter
-          (Reference.create (Format.sprintf "%s@setter" define_name))
-      else
-        Target.create_method_from_reference ~kind:Target.Pyre1PropertySetter name
+      Target.create_method_from_reference
+        ~kind:Target.PropertySetter
+        (Reference.create (Format.sprintf "%s@setter" define_name))
   | `Override -> Target.create_override_from_reference name
   | `Object -> Target.create_object name
 
@@ -595,10 +592,6 @@ let initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_
   configuration, pyre_api
 
 
-let source_from_qualifier ~pyre_api qualifier =
-  qualifier |> PyrePysaApi.ReadOnly.source_of_qualifier pyre_api |> Option.value_exn
-
-
 let initialize
     ?(handle = "test.py")
     ?models_source
@@ -636,25 +629,8 @@ let initialize
   let class_hierarchy_graph = ClassHierarchyGraph.Heap.from_qualifier ~pyre_api ~qualifier in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let qualifiers = PyrePysaApi.ReadOnly.explicit_qualifiers pyre_api in
-  let all_initial_callables =
-    (* Also include typeshed stubs so that we can build `qualifiers_defines` for them. *)
-    Interprocedural.FetchCallables.from_qualifiers
-      ~scheduler
-      ~scheduler_policy
-      ~configuration
-      ~pyre_api
-      ~qualifiers
-  in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get all_initial_callables ~definitions:true ~stubs:true
-  in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let type_of_expression_shared_memory =
     Interprocedural.TypeOfExpressionSharedMemory.create
@@ -811,7 +787,6 @@ let initialize
         ~skip_analysis_targets
         ~skip_call_higher_order_functions:
           (SharedModels.skip_call_higher_order_functions ~scheduler initial_models)
-        ~check_invariants:true
         ~definitions
         ~callables_to_definitions_map:
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
@@ -819,7 +794,6 @@ let initialize
           (Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only
              callables_to_decorators_map)
         ~global_constants:(Interprocedural.GlobalConstants.SharedMemory.read_only global_constants)
-        ~type_of_expression_shared_memory
         ~create_dependency_for:Interprocedural.CallGraph.AllTargetsUseCase.CallGraphDependency
     with
     | Interprocedural.PyreflyApi.PyreflyFileFormatError { path; error } ->
@@ -899,7 +873,7 @@ let call_graph_of_callable
     ~callables_to_definitions_map
     ~callables_to_decorators_map
     ~global_constants
-    ~type_of_expression_shared_memory
+    ~type_of_expression_shared_memory:_
     ~check_invariants:_
     ~module_name:_
     ~callable
@@ -914,13 +888,11 @@ let call_graph_of_callable
         ~callables_to_definitions_map
         ~callables_to_decorators_map
         ~global_constants
-        ~type_of_expression_shared_memory
         ~override_graph
         ~store_shared_memory:true
         ~attribute_targets:(Target.Set.of_list object_targets)
         ~skip_analysis_targets:(Target.HashSet.create ())
         ~skip_call_higher_order_functions:(Target.HashSet.create ())
-        ~check_invariants:true
         ~definitions:[callable]
         ~create_dependency_for:CallGraph.AllTargetsUseCase.Everything
     with

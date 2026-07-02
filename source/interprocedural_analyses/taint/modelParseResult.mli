@@ -458,8 +458,6 @@ module TypeAnnotation : sig
       | Found of string
   end
 
-  val from_pyre1 : pyre_api:Analysis.PyrePysaEnvironment.ReadOnly.t -> Ast.Expression.t option -> t
-
   val create
     :  inferred_type:PyrePysaApi.PysaType.t option ->
     explicit_annotation:ExplicitAnnotation.t ->

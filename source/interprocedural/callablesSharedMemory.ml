@@ -17,35 +17,6 @@ let static_method_decorators = ["staticmethod"; "abstractstaticmethod"; "abc.abs
 
 module CallableSignature = Analysis.PysaTypes.CallableSignature
 
-let callable_signature_from_define_for_pyre1 ~pyre1_api ~target ~qualifier define =
-  let method_kind =
-    match Target.get_regular target with
-    | Target.Regular.Method { method_name = "__new__"; _ } -> Some Target.MethodKind.Static
-    | Target.Regular.Method _ ->
-        let define = Node.value define in
-        if List.exists class_method_decorators ~f:(Ast.Statement.Define.has_decorator define) then
-          Some Target.MethodKind.Class
-        else if List.exists static_method_decorators ~f:(Ast.Statement.Define.has_decorator define)
-        then
-          Some Target.MethodKind.Static
-        else
-          Some Target.MethodKind.Instance
-    | _ -> None
-  in
-  {
-    CallableSignature.qualifier;
-    location = AstResult.Some define.Node.location;
-    define_name = define.Node.value.signature.name;
-    parameters = AstResult.Some define.Node.value.signature.parameters;
-    return_annotation = AstResult.Some define.Node.value.signature.return_annotation;
-    decorators = AstResult.Some define.Node.value.signature.decorators;
-    captures =
-      Analysis.PyrePysaEnvironment.ReadOnly.get_captures_from_define pyre1_api define.Node.value;
-    method_kind;
-    is_stub_like = Define.is_stub define.Node.value;
-  }
-
-
 let get_signature_and_definition ~pyre_api callable =
   let define_name = Target.define_name_exn callable in
   match pyre_api with
@@ -54,15 +25,6 @@ let get_signature_and_definition ~pyre_api callable =
       >>| fun signature ->
       let define = PyreflyApi.ReadOnly.get_define_opt pyrefly_api define_name in
       signature, define
-  | PyrePysaApi.ReadOnly.Pyre1 pyre1_api ->
-      Target.get_definitions ~pyre1_api ~warn_multiple_definitions:false define_name
-      >>= fun { Target.qualifier; callables; _ } ->
-      Target.Map.find_opt callable callables
-      >>| fun define ->
-      let signature =
-        callable_signature_from_define_for_pyre1 ~pyre1_api ~target:callable ~qualifier define
-      in
-      signature, AstResult.Some define
 
 
 let get_signature_and_definition_for_test = get_signature_and_definition
@@ -100,18 +62,10 @@ module ReadWrite = struct
   type t = {
     defines: DefinesSharedMemory.t;
     signatures: SignaturesSharedMemory.t;
-    (* When using pyrefly, read from the pyrefly API first, and fall back to shared memory if the
-       callable does not exist (for artificial defines such as decorated targets). *)
-    pyrefly_api: PyreflyApi.ReadOnly.t option;
+    (* Read from the pyrefly API first, and fall back to shared memory if the callable does not
+       exist (for artificial defines such as decorated targets). *)
+    pyrefly_api: PyreflyApi.ReadOnly.t;
   }
-
-  let empty () =
-    {
-      defines = DefinesSharedMemory.create ();
-      signatures = SignaturesSharedMemory.create ();
-      pyrefly_api = None;
-    }
-
 
   let cleanup { defines; signatures; _ } =
     let keys = SignaturesSharedMemory.KeySet.of_list (DefinesSharedMemory.keys defines) in
@@ -121,54 +75,16 @@ module ReadWrite = struct
     ()
 
 
-  let from_callables ~scheduler ~scheduler_policy ~pyre_api callables =
+  (* Create a [CallablesSharedMemory] that includes all available callables from the given API.
+     Lookups are served directly by the pyrefly API, where signatures are pre-computed when parsing
+     sources, so no callables need to be materialized into shared memory here. *)
+  let from_pyre_api ~pyre_api =
     match pyre_api with
     | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-        (* For pyrefly, signatures are pre-computed when parsing sources. *)
         {
           defines = DefinesSharedMemory.create ();
           signatures = SignaturesSharedMemory.create ();
-          pyrefly_api = Some pyrefly_api;
-        }
-    | PyrePysaApi.ReadOnly.Pyre1 _ ->
-        let define_shared_memory = DefinesSharedMemory.create () in
-        let signature_shared_memory = SignaturesSharedMemory.create () in
-        let define_shared_memory_add_only = DefinesSharedMemory.add_only define_shared_memory in
-        let define_empty_shared_memory =
-          DefinesSharedMemory.AddOnly.create_empty define_shared_memory_add_only
-        in
-        let map =
-          List.fold ~init:define_empty_shared_memory ~f:(fun define_shared_memory target ->
-              match get_signature_and_definition ~pyre_api target with
-              | None -> define_shared_memory
-              | Some (signature, define) ->
-                  let define_and_qualifier =
-                    AstResult.map define ~f:(fun define ->
-                        {
-                          DefineAndQualifier.define;
-                          qualifier = signature.CallableSignature.qualifier;
-                        })
-                  in
-                  SignaturesSharedMemory.add signature_shared_memory target signature;
-                  DefinesSharedMemory.AddOnly.add define_shared_memory target define_and_qualifier)
-        in
-        let define_shared_memory_add_only =
-          Scheduler.map_reduce
-            scheduler
-            ~policy:scheduler_policy
-            ~initial:define_shared_memory_add_only
-            ~map
-            ~reduce:(fun left right ->
-              DefinesSharedMemory.AddOnly.merge_same_handle_disjoint_keys
-                ~smaller:left
-                ~larger:right)
-            ~inputs:callables
-            ()
-        in
-        {
-          defines = DefinesSharedMemory.from_add_only define_shared_memory_add_only;
-          signatures = signature_shared_memory;
-          pyrefly_api = None;
+          pyrefly_api;
         }
 
 
@@ -190,7 +106,7 @@ module ReadOnly = struct
   type t = {
     defines: DefinesSharedMemory.ReadOnly.t;
     signatures: SignaturesSharedMemory.t;
-    pyrefly_api: PyreflyApi.ReadOnly.t option;
+    pyrefly_api: PyreflyApi.ReadOnly.t;
   }
 
   let read_only { ReadWrite.defines; signatures; pyrefly_api } =
@@ -226,11 +142,8 @@ module ReadOnly = struct
 
 
   let get_define { defines; pyrefly_api; _ } target =
-    match pyrefly_api with
-    | Some pyrefly_api -> (
-        match get_define_from_pyrefly ~pyrefly_api target with
-        | Some result -> result
-        | None -> get_define_from_shared_memory ~defines target)
+    match get_define_from_pyrefly ~pyrefly_api target with
+    | Some result -> result
     | None -> get_define_from_shared_memory ~defines target
 
 
@@ -244,11 +157,8 @@ module ReadOnly = struct
 
 
   let get_signature { signatures; pyrefly_api; _ } target =
-    match pyrefly_api with
-    | Some pyrefly_api -> (
-        match get_signature_from_pyrefly ~pyrefly_api target with
-        | Some _ as result -> result
-        | None -> get_signature_from_shared_memory ~signatures target)
+    match get_signature_from_pyrefly ~pyrefly_api target with
+    | Some _ as result -> result
     | None -> get_signature_from_shared_memory ~signatures target
 
 
@@ -286,11 +196,8 @@ module ReadOnly = struct
     let method_target = target |> Target.get_regular |> Target.Regular.override_to_method in
     let method_kind =
       let method_target_as_target = method_target |> Target.from_regular in
-      match pyrefly_api with
-      | Some pyrefly_api -> (
-          match get_method_kind_from_pyrefly ~pyrefly_api method_target_as_target with
-          | Some result -> result
-          | None -> get_method_kind_from_shared_memory ~signatures method_target)
+      match get_method_kind_from_pyrefly ~pyrefly_api method_target_as_target with
+      | Some result -> result
       | None -> get_method_kind_from_shared_memory ~signatures method_target
     in
     match method_kind, method_target with
@@ -312,11 +219,8 @@ module ReadOnly = struct
 
 
   let is_stub_like { signatures; pyrefly_api; _ } target =
-    match pyrefly_api with
-    | Some pyrefly_api -> (
-        match is_stub_like_from_pyrefly ~pyrefly_api target with
-        | Some _ as result -> result
-        | None -> is_stub_like_from_shared_memory ~signatures target)
+    match is_stub_like_from_pyrefly ~pyrefly_api target with
+    | Some _ as result -> result
     | None -> is_stub_like_from_shared_memory ~signatures target
 
 
@@ -331,11 +235,8 @@ module ReadOnly = struct
 
 
   let get_captures { signatures; pyrefly_api; _ } target =
-    match pyrefly_api with
-    | Some pyrefly_api -> (
-        match get_captures_from_pyrefly ~pyrefly_api target with
-        | Some _ as result -> result
-        | None -> get_captures_from_shared_memory ~signatures target)
+    match get_captures_from_pyrefly ~pyrefly_api target with
+    | Some _ as result -> result
     | None -> get_captures_from_shared_memory ~signatures target
 
 
@@ -360,11 +261,8 @@ module ReadOnly = struct
 
 
   let callable_from_reference { defines; pyrefly_api; _ } name =
-    match pyrefly_api with
-    | Some pyrefly_api -> (
-        match callable_from_reference_from_pyrefly ~pyrefly_api name with
-        | Some _ as result -> result
-        | None -> callable_from_reference_from_shared_memory ~defines name)
+    match callable_from_reference_from_pyrefly ~pyrefly_api name with
+    | Some _ as result -> result
     | None -> callable_from_reference_from_shared_memory ~defines name
 
 
@@ -378,8 +276,5 @@ module ReadOnly = struct
   let mem_from_shared_memory ~signatures target = SignaturesSharedMemory.mem signatures target
 
   let mem { signatures; pyrefly_api; _ } target =
-    match pyrefly_api with
-    | Some pyrefly_api ->
-        mem_from_pyrefly ~pyrefly_api target || mem_from_shared_memory ~signatures target
-    | None -> mem_from_shared_memory ~signatures target
+    mem_from_pyrefly ~pyrefly_api target || mem_from_shared_memory ~signatures target
 end

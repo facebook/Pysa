@@ -14,15 +14,6 @@ open Taint
 module PyrePysaApi = Interprocedural.PyrePysaApi
 module AccessPath = Analysis.TaintAccessPath
 
-let get_stubs_and_definitions ~pyre_api ~configuration ~source_file_name =
-  let qualifier = Ast.Reference.create (String.chop_suffix_exn source_file_name ~suffix:".py") in
-  let initial_callables =
-    Interprocedural.FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier
-  in
-  ( Interprocedural.FetchCallables.get_stubs initial_callables,
-    Interprocedural.FetchCallables.get_definitions initial_callables )
-
-
 let set_up_environment
     ?source
     ?rules
@@ -60,7 +51,6 @@ let set_up_environment
       [source_file_name, source]
   in
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  let configuration = Test.ScratchPyrePysaProject.configuration_of project in
   let taint_configuration =
     let named name = { AnnotationParser.KindDefinition.name; kind = Named; location = None } in
     let sources =
@@ -132,13 +122,8 @@ let set_up_environment
   let source = Test.trim_extra_indentation model_source in
 
   PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
-  let stubs, definitions = get_stubs_and_definitions ~pyre_api ~configuration ~source_file_name in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler:(Test.mock_scheduler ())
-      ~scheduler_policy:(Scheduler.Policy.legacy_fixed_chunk_count ())
-      ~pyre_api
-      (List.rev_append stubs definitions)
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.parse
@@ -209,8 +194,8 @@ let assert_model
   let get_errors _ = [] in
   let expect =
     match pyrefly_expect with
-    | Some pyrefly_expect when PyrePysaApi.ReadOnly.is_pyrefly pyre_api -> pyrefly_expect
-    | _ -> expect
+    | Some pyrefly_expect -> pyrefly_expect
+    | None -> expect
   in
   List.iter ~f:(check_expectation ~pyre_api ~taint_configuration ~get_model ~get_errors) expect
 

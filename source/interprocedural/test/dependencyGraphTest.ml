@@ -61,23 +61,8 @@ let create_call_graph ?(other_sources = []) ~context source_text =
   in
   let definitions = FetchCallables.get_definitions initial_callables in
   let scheduler = Test.mock_scheduler () in
-  let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
-  in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let { CallGraph.SharedMemory.whole_program_call_graph; define_call_graphs } =
     CallGraphBuilder.build_whole_program_call_graph
@@ -93,14 +78,12 @@ let create_call_graph ?(other_sources = []) ~context source_text =
       ~global_constants:
         (Interprocedural.GlobalConstants.SharedMemory.create ()
         |> Interprocedural.GlobalConstants.SharedMemory.read_only)
-      ~type_of_expression_shared_memory
       ~override_graph:
         (Some (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
       ~store_shared_memory:false
       ~attribute_targets:Target.Set.empty
       ~skip_analysis_targets:(Target.HashSet.create ())
       ~skip_call_higher_order_functions:(Target.HashSet.create ())
-      ~check_invariants:true
       ~definitions
       ~create_dependency_for:CallGraph.AllTargetsUseCase.TaintAnalysisDependency
   in

@@ -30,17 +30,8 @@ let assert_taint ~context source expected =
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
   let initial_models = TestHelper.get_initial_models ~pyre_api in
   let initial_callables = FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier in
-  let scheduler = Test.mock_scheduler () in
-  let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let type_of_expression_shared_memory =
     Interprocedural.TypeOfExpressionSharedMemory.create
@@ -70,9 +61,7 @@ let assert_taint ~context source expected =
         ~module_name:qualifier
         ~callable
     in
-    let cfg =
-      Cfg.create ~normalize_asserts:(PyrePysaApi.ReadOnly.is_pyre1 pyre_api) (Ast.Node.value define)
-    in
+    let cfg = Cfg.create ~normalize_asserts:false (Ast.Node.value define) in
     let taint_configuration = TaintConfiguration.Heap.default in
     let backward =
       BackwardAnalysis.run

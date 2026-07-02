@@ -27,14 +27,9 @@ module CapturedVariable = struct
         name: string;
         defining_function: Reference.t;
       }
-    (* When using pyre1, if the captured variable is a parameter of a function, there is no way to
-       know the defining function. *)
-    | Pyre1Parameter of { name: string }
   [@@deriving compare, equal, hash, sexp, show]
 
-  let name = function
-    | FromFunction { name; _ } -> name
-    | Pyre1Parameter { name } -> name
+  let name (FromFunction { name; _ }) = name
 end
 
 (** Roots representing parameters, locals, and special return value in models. *)
@@ -103,8 +98,6 @@ module Root = struct
       | Variable name -> Format.fprintf formatter "local(%s)" name
       | CapturedVariable (CapturedVariable.FromFunction { name; defining_function }) ->
           Format.fprintf formatter "captured_variable(%s, %a)" name Reference.pp defining_function
-      | CapturedVariable (Pyre1Parameter { name }) ->
-          Format.fprintf formatter "captured_variable(%s, parameter)" name
 
 
     let show = Format.asprintf "%a" pp
@@ -119,8 +112,6 @@ module Root = struct
       | Variable name -> Format.fprintf formatter "local(%s)" name
       | CapturedVariable (CapturedVariable.FromFunction { name; defining_function }) ->
           Format.fprintf formatter "captured_variable(%s, %a)" name Reference.pp defining_function
-      | CapturedVariable (Pyre1Parameter { name }) ->
-          Format.fprintf formatter "captured_variable(%s, parameter)" name
 
 
     let show_for_issue_handle = Format.asprintf "%a" pp_for_issue_handle

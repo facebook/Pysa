@@ -68,7 +68,7 @@ module Heap = struct
       >>= fun base_callable ->
       Some
         {
-          base_callable = PyrePysaApi.ReadOnly.target_from_method_reference pyre_api base_callable;
+          base_callable = PyrePysaApi.ReadOnly.target_from_method_reference base_callable;
           overriding_class = Analysis.PysaTypes.MethodReference.class_name method_reference;
         }
   end

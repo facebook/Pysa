@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* Features: implements features, which are bits of informations carried on a
+(* Features: implements features, which are bits of information carried on a
  * taint. Those are essential to help users triage issues.
  * These features are used to build the taint representation in `Domains`.
  *)
@@ -242,8 +242,7 @@ module LeafPort = struct
       | AccessPath.Root.LocalResult -> "return"
       | AccessPath.Root.PositionalParameter { name; _ }
       | AccessPath.Root.NamedParameter { name }
-      | AccessPath.Root.CapturedVariable (AccessPath.CapturedVariable.FromFunction { name; _ })
-      | AccessPath.Root.CapturedVariable (AccessPath.CapturedVariable.Pyre1Parameter { name }) ->
+      | AccessPath.Root.CapturedVariable (AccessPath.CapturedVariable.FromFunction { name; _ }) ->
           name
       | AccessPath.Root.StarParameter _ -> "*"
       | AccessPath.Root.StarStarParameter _ -> "**"
@@ -523,11 +522,6 @@ module ViaFeature = struct
     let object_target = Reference.create object_target in
     let feature =
       match pyre_in_context with
-      | PyrePysaApi.InContext.Pyre1 _ ->
-          object_target
-          |> PyrePysaApi.InContext.resolve_reference pyre_in_context
-          |> Type.weaken_literals
-          |> Type.show
       | PyrePysaApi.InContext.Pyrefly pyrefly_in_context ->
           let pyre_api = Interprocedural.PyreflyApi.InContext.pyre_api pyrefly_in_context in
           Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type

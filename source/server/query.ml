@@ -626,9 +626,6 @@ let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_qu
     Taint.StepLogger.finish step_logger;
     class_hierarchy_graph
   in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
   let callables_to_definitions_map =
     let step_logger =
       Taint.StepLogger.start
@@ -637,16 +634,7 @@ let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_qu
         ()
     in
     let callables_to_definitions_map =
-      Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-        ~scheduler
-        ~scheduler_policy:
-          (Scheduler.Policy.fixed_chunk_count
-             ~minimum_chunks_per_worker:1
-             ~minimum_chunk_size:1
-             ~preferred_chunks_per_worker:1
-             ())
-        ~pyre_api
-        definitions_and_stubs
+      Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
     in
     Taint.StepLogger.finish step_logger;
     callables_to_definitions_map

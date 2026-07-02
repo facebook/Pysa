@@ -1274,8 +1274,6 @@ module IdentifierCallees = struct
       | AccessPath.CapturedVariable.FromFunction { name; defining_function } ->
           `Assoc
             ["name", `String name; "defining_function", `String (Reference.show defining_function)]
-      | AccessPath.CapturedVariable.Pyre1Parameter { name } ->
-          `Assoc ["name", `String name; "parameter", `Bool true]
     in
     []
     |> JsonHelper.add_list "globals" global_targets CallTarget.to_json

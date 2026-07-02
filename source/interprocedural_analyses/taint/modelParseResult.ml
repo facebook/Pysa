@@ -852,7 +852,6 @@ module CallableDecorator = struct
         | _ -> decorator_expression
       in
       match pyre_api with
-      | PyrePysaApi.ReadOnly.Pyre1 _ -> failwith "Pyre1 backend has been removed"
       | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
           Interprocedural.PyreflyApi.ReadOnly.get_callable_decorator_callees
             pyrefly_api
@@ -877,8 +876,6 @@ module CallableDecorator = struct
         | _ -> decorator_expression
       in
       match pyre_api with
-      | PyrePysaApi.ReadOnly.Pyre1 _ ->
-          failwith "fully_qualified_callee within cls.decorator is not supported with Pyre1"
       | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
           Interprocedural.PyreflyApi.ReadOnly.get_class_decorator_callees
             pyrefly_api
@@ -905,8 +902,6 @@ module TypeAnnotation : sig
       | NotFound
       | Found of string
   end
-
-  val from_pyre1 : pyre_api:Analysis.PyrePysaEnvironment.ReadOnly.t -> Expression.t option -> t
 
   val create
     :  inferred_type:PyrePysaApi.PysaType.t option ->
@@ -938,19 +933,6 @@ end = struct
     explicit_annotation: ExplicitAnnotation.t Lazy.t;
     inferred_type: PyrePysaApi.PysaType.t option Lazy.t;
   }
-
-  let from_pyre1 ~pyre_api = function
-    | Some expression ->
-        {
-          explicit_annotation = lazy (ExplicitAnnotation.Found (Expression.show expression));
-          inferred_type =
-            lazy
-              (Analysis.PyrePysaEnvironment.ReadOnly.parse_annotation pyre_api expression
-              |> PyrePysaApi.PysaType.from_pyre1_type
-              |> Option.some);
-        }
-    | None -> { explicit_annotation = lazy ExplicitAnnotation.NotFound; inferred_type = lazy None }
-
 
   let create ~inferred_type ~explicit_annotation =
     { explicit_annotation = lazy explicit_annotation; inferred_type = lazy inferred_type }
@@ -1029,15 +1011,6 @@ module Modelable = struct
     let undecorated_signatures =
       lazy
         (match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyre1 pyre_api ->
-            Lazy.force define_signature
-            |> fun { CallablesSharedMemory.CallableSignature.parameters; return_annotation; _ } ->
-            Analysis.PyrePysaEnvironment.ModelQueries.FunctionSignature.from_pyre1_ast
-              ~pyre_api
-              ~parameters:(PyrePysaApi.AstResult.value_exn ~message:"unreachable" parameters)
-              ~return_annotation:
-                (PyrePysaApi.AstResult.value_exn ~message:"unreachable" return_annotation)
-            |> fun signature -> [signature]
         | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
             Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures
               pyrefly_api
@@ -1067,9 +1040,6 @@ module Modelable = struct
     let captures =
       lazy
         (match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyre1 _ ->
-            Lazy.force define_signature
-            |> fun { CallablesSharedMemory.CallableSignature.captures; _ } -> captures
         | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
             PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.define_name_exn target))
     in
@@ -1086,13 +1056,6 @@ module Modelable = struct
          in
          let attribute = Reference.last target_name in
          match pyre_api with
-         | PyrePysaApi.ReadOnly.Pyre1 pyre1_api ->
-             Analysis.PyrePysaEnvironment.ReadOnly.get_class_attribute_annotation
-               pyre1_api
-               ~include_generated_attributes:false
-               ~class_name
-               ~attribute
-             |> TypeAnnotation.from_pyre1 ~pyre_api:pyre1_api
          | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
              let inferred_type =
                Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
@@ -1120,9 +1083,6 @@ module Modelable = struct
     let type_annotation =
       lazy
         (match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyre1 pyre1_api ->
-            Analysis.PyrePysaEnvironment.ReadOnly.get_global_annotation pyre1_api target_name
-            |> TypeAnnotation.from_pyre1 ~pyre_api:pyre1_api
         | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
             let qualifier = Option.value_exn (Reference.prefix target_name) in
             let name = Reference.last target_name in

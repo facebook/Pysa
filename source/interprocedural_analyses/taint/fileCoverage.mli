@@ -7,8 +7,6 @@
 
 type t
 
-module PyrePysaEnvironment = Analysis.PyrePysaEnvironment
-
 (* Add the files that contain any of the given callables. *)
 val from_callables
   :  scheduler:Scheduler.t ->

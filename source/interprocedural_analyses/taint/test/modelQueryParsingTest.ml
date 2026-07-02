@@ -11,19 +11,6 @@ module PyrePysaApi = Interprocedural.PyrePysaApi
 open Taint
 open ModelParseResult.ModelQuery
 
-let get_stubs_and_definitions ~source_file_name ~project =
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  let qualifier = Ast.Reference.create (String.chop_suffix_exn source_file_name ~suffix:".py") in
-  let initial_callables =
-    Interprocedural.FetchCallables.from_qualifier
-      ~configuration:(Test.ScratchPyrePysaProject.configuration_of project)
-      ~pyre_api
-      ~qualifier
-  in
-  ( Interprocedural.FetchCallables.get_stubs initial_callables,
-    Interprocedural.FetchCallables.get_definitions initial_callables )
-
-
 let set_up_environment ?source ~context ~model_source ~validate () =
   let source =
     match source with
@@ -48,13 +35,8 @@ let set_up_environment ?source ~context ~model_source ~validate () =
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
 
   PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
-  let stubs, definitions = get_stubs_and_definitions ~source_file_name ~project in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler:(Test.mock_scheduler ())
-      ~scheduler_policy:(Scheduler.Policy.legacy_fixed_chunk_count ())
-      ~pyre_api
-      (List.rev_append stubs definitions)
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.parse

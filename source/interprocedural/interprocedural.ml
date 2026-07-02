@@ -15,7 +15,6 @@ module CallableToDecoratorsMap = CallableToDecoratorsMap
 module CallGraph = CallGraph
 module CallGraphBuilder = CallGraphBuilder
 module CallGraphFixpoint = CallGraphFixpoint
-module CallResolution = CallResolution
 module OverrideGraph = OverrideGraph
 module DependencyGraph = DependencyGraph
 module Error = Error

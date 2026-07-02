@@ -37,21 +37,8 @@ let assert_generated_annotations context ~source ~query ~callable ~expected () =
       ["test.py", source]
   in
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-  let initial_callables =
-    FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier:!&"test"
-  in
-  let scheduler = Test.mock_scheduler () in
-  let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.Heap.from_qualifiers
@@ -92,21 +79,8 @@ let assert_generated_annotations_for_attributes context ~source ~query ~name ~ex
       ["test.py", source]
   in
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-  let initial_callables =
-    FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier:!&"test"
-  in
-  let scheduler = Test.mock_scheduler () in
-  let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let definitions_and_stubs =
-    Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-  in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.Heap.from_qualifiers
@@ -148,19 +122,8 @@ let assert_generated_annotations_for_globals context ~source ~query ~name ~expec
       ["test.py", source]
   in
   let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-  let initial_callables =
-    FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier:!&"test"
-  in
-  let definitions_and_stubs = FetchCallables.get ~definitions:true ~stubs:true initial_callables in
-  let scheduler = Test.mock_scheduler () in
-  let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-      ~scheduler
-      ~scheduler_policy
-      ~pyre_api
-      definitions_and_stubs
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.Heap.from_qualifiers
@@ -403,7 +366,7 @@ let test_generated_annotations_function_name context =
       }
     ~callable:
       (Target.Regular.Method
-         { class_name = "test.Foo"; method_name = "bar@setter"; kind = PyreflyPropertySetter })
+         { class_name = "test.Foo"; method_name = "bar@setter"; kind = PropertySetter })
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -5417,21 +5380,8 @@ let test_generated_cache context =
         ["test.py", source]
     in
     let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-    let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-    let initial_callables =
-      FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier:!&"test"
-    in
-    let scheduler = Test.mock_scheduler () in
-    let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-    let definitions_and_stubs =
-      Interprocedural.FetchCallables.get initial_callables ~definitions:true ~stubs:true
-    in
     let callables_to_definitions_map =
-      Interprocedural.CallablesSharedMemory.ReadWrite.from_callables
-        ~scheduler
-        ~scheduler_policy
-        ~pyre_api
-        definitions_and_stubs
+      Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
     in
     let class_hierarchy_graph =
       ClassHierarchyGraph.Heap.from_qualifiers

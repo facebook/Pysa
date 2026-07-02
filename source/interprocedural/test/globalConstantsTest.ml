@@ -16,28 +16,7 @@ let test_from_source context =
       Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false all_sources
     in
     let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-    let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-    let scheduler = Test.mock_scheduler () in
-    let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-    let qualifiers = PyrePysaApi.ReadOnly.explicit_qualifiers pyre_api in
-    let all_initial_callables =
-      Interprocedural.FetchCallables.from_qualifiers
-        ~scheduler
-        ~scheduler_policy
-        ~configuration
-        ~pyre_api
-        ~qualifiers
-    in
-    let definitions_and_stubs =
-      Interprocedural.FetchCallables.get all_initial_callables ~definitions:true ~stubs:true
-    in
-    let callables_to_definitions_map =
-      CallablesSharedMemory.ReadWrite.from_callables
-        ~scheduler
-        ~scheduler_policy
-        ~pyre_api
-        definitions_and_stubs
-    in
+    let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
     let global_constants =
       GlobalConstants.Heap.from_qualifier
         ~pyre_api
@@ -112,28 +91,7 @@ let test_from_qualifiers context =
       Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
     in
     let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-    let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-    let scheduler = Test.mock_scheduler () in
-    let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-    let qualifiers = PyrePysaApi.ReadOnly.explicit_qualifiers pyre_api in
-    let all_initial_callables =
-      Interprocedural.FetchCallables.from_qualifiers
-        ~scheduler
-        ~scheduler_policy
-        ~configuration
-        ~pyre_api
-        ~qualifiers
-    in
-    let definitions_and_stubs =
-      Interprocedural.FetchCallables.get all_initial_callables ~definitions:true ~stubs:true
-    in
-    let callables_to_definitions_map =
-      CallablesSharedMemory.ReadWrite.from_callables
-        ~scheduler
-        ~scheduler_policy
-        ~pyre_api
-        definitions_and_stubs
-    in
+    let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
     let qualifiers =
       List.map sources ~f:(fun (qualifier, _) -> ModulePath.qualifier_from_relative_path qualifier)
     in

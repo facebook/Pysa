@@ -12,7 +12,6 @@ open Core
 open Pyre
 open Data_structures
 open Ast
-module Pyre1Api = Analysis.PyrePysaEnvironment
 module PysaType = Analysis.PysaTypes.PysaType
 module AstResult = Analysis.PysaTypes.AstResult
 module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
@@ -271,7 +270,7 @@ module CallableMetadata = struct
   let create_target { is_property_setter; parent_is_class; _ } ~override define_name =
     let kind =
       if is_property_setter then
-        Target.PyreflyPropertySetter
+        Target.PropertySetter
       else
         Target.Normal
     in
@@ -2564,8 +2563,7 @@ module ReadOnly = struct
   let all_sys_infos { all_sys_infos; _ } = all_sys_infos
 
   let artifact_path_of_qualifier { module_infos_shared_memory; _ } qualifier =
-    if Reference.equal qualifier Analysis.PyrePysaEnvironment.artificial_decorator_define_module
-    then
+    if Reference.equal qualifier Analysis.PysaTypes.artificial_decorator_define_module then
       None
     else
       ModuleInfosSharedMemory.get
@@ -2889,7 +2887,6 @@ module ReadOnly = struct
       method_reference
     =
     match method_reference with
-    | Analysis.PysaTypes.MethodReference.Pyre1 _ -> None
     | Analysis.PysaTypes.MethodReference.Pyrefly { define_name; is_property_setter } ->
         CallableMetadataSharedMemory.get
           callable_metadata_shared_memory
@@ -4183,8 +4180,8 @@ module ModelQueries = struct
     =
     let name =
       name
-      |> Pyre1Api.ModelQueries.mangle_top_level_name
-      |> Pyre1Api.ModelQueries.demangle_class_attribute
+      |> Analysis.PysaTypes.ModelQueries.mangle_top_level_name
+      |> Analysis.PysaTypes.ModelQueries.demangle_class_attribute
       |> add_builtins_prefix
     in
     (* Find the module qualifier(s) for a given name by trying progressively shorter prefixes. For

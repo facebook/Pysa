@@ -863,7 +863,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
     let apply_captured_variable_side_effects state =
       let propagate_captured_variables state root =
         match root with
-        | AccessPath.Root.CapturedVariable captured_variable -> (
+        | AccessPath.Root.CapturedVariable captured_variable ->
             (* Treat any function call, even those that wrap a closure write, as a closure write *)
             let taint =
               ForwardState.read ~root ~path:[] forward.generations
@@ -880,34 +880,16 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
                    ~is_static_method
                    ~call_info_intervals
             in
-            let state =
-              (* TODO(T169657906): Programatically decide between weak and strong storing of
-                 taint *)
-              store_taint
-                ~weak:true
-                ~root:
-                  (PyrePysaApi.InContext.propagate_captured_variable
-                     pyre_in_context
-                     captured_variable)
-                ~path:[]
-                taint
-                state
-            in
-            match pyre_in_context with
-            | PyrePysaApi.InContext.Pyrefly _ -> state
-            | PyrePysaApi.InContext.Pyre1 _ ->
-                (* Propagate captured variable taint up until the function where the nonlocal
-                   variable is initialized. This is only necessary for Pyre1. *)
-                let is_prefix =
-                  match captured_variable with
-                  | AccessPath.CapturedVariable.FromFunction { defining_function; _ } ->
-                      Reference.is_prefix ~prefix:FunctionContext.define_name defining_function
-                  | AccessPath.CapturedVariable.Pyre1Parameter _ -> false
-                in
-                if not is_prefix then
-                  store_taint ~weak:true ~root ~path:[] taint state
-                else
-                  state)
+            (* TODO(T169657906): Programatically decide between weak and strong storing of taint *)
+            store_taint
+              ~weak:true
+              ~root:
+                (PyrePysaApi.InContext.propagate_captured_variable
+                   pyre_in_context
+                   captured_variable)
+              ~path:[]
+              taint
+              state
         | _ -> state
       in
       List.fold ~init:state ~f:propagate_captured_variables (ForwardState.roots forward.generations)
@@ -2934,18 +2916,14 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
 
           let global_taint, state =
             let as_reference =
-              match FunctionContext.pyre_api with
-              | PyrePysaApi.ReadOnly.Pyre1 _ ->
-                  identifier |> Reference.create |> Reference.delocalize |> Option.some
-              | PyrePysaApi.ReadOnly.Pyrefly _ ->
-                  CallGraph.DefineCallGraph.resolve_identifier
-                    FunctionContext.call_graph_of_define
-                    ~location
-                    ~identifier
-                  >>| (fun { CallGraph.IdentifierCallees.global_targets; _ } -> global_targets)
-                  >>= List.hd
-                  >>| CallGraph.CallTarget.target
-                  >>| Target.object_name
+              CallGraph.DefineCallGraph.resolve_identifier
+                FunctionContext.call_graph_of_define
+                ~location
+                ~identifier
+              >>| (fun { CallGraph.IdentifierCallees.global_targets; _ } -> global_targets)
+              >>= List.hd
+              >>| CallGraph.CallTarget.target
+              >>| Target.object_name
             in
             let global_string =
               as_reference
@@ -3172,18 +3150,6 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           match captured_variable with
           | Some _ -> ForwardState.Tree.add_local_breadcrumb (Features.captured_variable ()) taint
           | _ -> taint
-        in
-        let state =
-          match captured_variable with
-          | Some captured_variable when PyrePysaApi.InContext.is_pyre1 pyre_in_context ->
-              (* Propagate taint for nonlocal assignment. *)
-              store_taint
-                ~weak
-                ~root:(AccessPath.Root.CapturedVariable captured_variable)
-                ~path:fields
-                taint
-                state
-          | _ -> state
         in
         (* Propagate taint for assignment. *)
         let access_path =
@@ -3560,7 +3526,6 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
             pyre_api
             ~module_qualifier:FunctionContext.qualifier
             ~define_name:FunctionContext.define_name
-            ~define:FunctionContext.definition
             ~call_graph:FunctionContext.call_graph_of_define
             ~statement_key
         in

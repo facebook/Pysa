@@ -315,18 +315,14 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
   let globals_to_constants = function
     | { Node.value = Expression.Name (Name.Identifier identifier); location } as value -> (
         let as_reference =
-          match FunctionContext.pyre_api with
-          | PyrePysaApi.ReadOnly.Pyre1 _ ->
-              identifier |> Reference.create |> Reference.delocalize |> Option.some
-          | PyrePysaApi.ReadOnly.Pyrefly _ ->
-              CallGraph.DefineCallGraph.resolve_identifier
-                FunctionContext.call_graph_of_define
-                ~location
-                ~identifier
-              >>| (fun { CallGraph.IdentifierCallees.global_targets; _ } -> global_targets)
-              >>= List.hd
-              >>| CallGraph.CallTarget.target
-              >>| Target.object_name
+          CallGraph.DefineCallGraph.resolve_identifier
+            FunctionContext.call_graph_of_define
+            ~location
+            ~identifier
+          >>| (fun { CallGraph.IdentifierCallees.global_targets; _ } -> global_targets)
+          >>= List.hd
+          >>| CallGraph.CallTarget.target
+          >>| Target.object_name
         in
         let global_string =
           as_reference
@@ -3032,7 +3028,6 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
             pyre_api
             ~module_qualifier:FunctionContext.qualifier
             ~define_name:FunctionContext.define_name
-            ~define:FunctionContext.definition
             ~call_graph:FunctionContext.call_graph_of_define
             ~statement_key
         in
@@ -3059,7 +3054,6 @@ end
 let get_normalized_parameters
     ~pyre_api
     ~define_name
-    ~captures
     ~entry_state_roots
     { Statement.Define.signature = { parameters; _ }; _ }
   =
@@ -3071,19 +3065,9 @@ let get_normalized_parameters
            root, AccessPath.Root.Variable qualified_name, annotations)
   in
   let captures =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyre1 _ ->
-        List.map
-          ~f:(fun capture ->
-            let state_root =
-              PyrePysaApi.ReadOnly.state_root_of_captured_variable pyre_api capture
-            in
-            AccessPath.Root.CapturedVariable capture, state_root, [])
-          captures
-    | PyrePysaApi.ReadOnly.Pyrefly _ ->
-        entry_state_roots
-        |> List.filter ~f:AccessPath.Root.is_captured_variable
-        |> List.map ~f:(fun root -> root, root, [])
+    entry_state_roots
+    |> List.filter ~f:AccessPath.Root.is_captured_variable
+    |> List.map ~f:(fun root -> root, root, [])
   in
   List.append normalized_parameters captures
 
@@ -3400,13 +3384,7 @@ let run
   let module Fixpoint = PyrePysaLogic.Fixpoint.Make (State) in
   let initial = State.{ taint = initial_taint } in
   let () = State.log "Backward analysis of callable: `%a`" Target.pp_pretty callable in
-  let captures =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyre1 pyre1_api ->
-        Analysis.PyrePysaEnvironment.ReadOnly.get_captures_from_define pyre1_api define.value
-    | PyrePysaApi.ReadOnly.Pyrefly _ ->
-        PyrePysaApi.ReadOnly.get_callable_captures pyre_api define_name
-  in
+  let captures = PyrePysaApi.ReadOnly.get_callable_captures pyre_api define_name in
   let entry_state =
     (* TODO(T156333229): hide side effect work behind feature flag *)
     match define.value.signature.parameters, captures with
@@ -3437,7 +3415,6 @@ let run
     get_normalized_parameters
       ~pyre_api
       ~define_name
-      ~captures
       ~entry_state_roots:
         (entry_state
         >>| (fun { State.taint } -> BackwardState.roots taint)

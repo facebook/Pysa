@@ -35,7 +35,6 @@ let run_pyrefly_query ~pyrefly_results ~query ~configuration ~repository_root ~s
       let path_of_qualifier =
         Interprocedural.PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
           ~repository_root:(Option.value repository_root ~default:configuration.local_root)
-          ~lookup_source:(fun _ -> failwith "lookup_source is not used by pyrefly")
           pyre_api
       in
       Server.Query.process_model_query
@@ -50,7 +49,6 @@ let run_pyrefly_query ~pyrefly_results ~query ~configuration ~repository_root ~s
       let path_of_qualifier =
         Interprocedural.PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
           ~repository_root:(Option.value repository_root ~default:configuration.local_root)
-          ~lookup_source:(fun _ -> failwith "lookup_source is not used by pyrefly")
           pyre_api
       in
       Server.Query.process_validate_taint_models
