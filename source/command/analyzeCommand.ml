@@ -30,6 +30,7 @@ end
 module AnalyzeConfiguration = struct
   type t = {
     base: CommandStartup.BaseConfiguration.t;
+    pyrefly_results: PyrePath.t;
     additional_logging_sections: string list;
     dump_call_graph: PyrePath.t option;
     dump_model_query_results: PyrePath.t option;
@@ -60,7 +61,6 @@ module AnalyzeConfiguration = struct
     transform_filter: string list option;
     save_results_to: PyrePath.t option;
     output_format: Configuration.TaintOutputFormat.t;
-    pyrefly_results: PyrePath.t option;
     strict: bool;
     taint_model_paths: PyrePath.t list;
     check_invariants: bool;
@@ -82,7 +82,7 @@ module AnalyzeConfiguration = struct
     try
       match CommandStartup.BaseConfiguration.of_yojson json with
       | Result.Error _ as error -> error
-      | Result.Ok base ->
+      | Result.Ok base -> (
           let additional_logging_sections =
             json |> string_list_member "additional_logging_sections" ~default:[]
           in
@@ -165,51 +165,57 @@ module AnalyzeConfiguration = struct
             | `Null -> Configuration.SchedulerPolicies.empty
             | json -> Configuration.SchedulerPolicies.of_yojson json |> Result.ok_or_failwith
           in
-          Result.Ok
-            {
-              base;
-              additional_logging_sections;
-              pyrefly_results;
-              dump_call_graph;
-              dump_model_query_results;
-              find_missing_flows;
-              disable_model_shaping;
-              infer_self_tito;
-              infer_argument_tito;
-              maximum_model_source_tree_width;
-              maximum_model_sink_tree_width;
-              maximum_model_tito_tree_width;
-              maximum_tree_depth_after_widening;
-              maximum_return_access_path_width;
-              maximum_return_access_path_depth_after_widening;
-              maximum_tito_collapse_depth;
-              maximum_tito_positions;
-              maximum_overrides_to_analyze;
-              maximum_trace_length;
-              maximum_tito_depth;
-              maximum_capture_trace_length;
-              no_verify;
-              verify_dsl;
-              verify_taint_config_only;
-              group_missing_module_errors;
-              repository_root;
-              rule_filter;
-              source_filter;
-              sink_filter;
-              transform_filter;
-              save_results_to;
-              output_format;
-              strict;
-              taint_model_paths;
-              check_invariants;
-              limit_entrypoints;
-              compact_ocaml_heap;
-              compute_coverage;
-              scheduler_policies;
-              higher_order_call_graph_max_iterations;
-              maximum_target_depth;
-              maximum_parameterized_targets_at_call_site;
-            }
+          match pyrefly_results with
+          | None ->
+              Result.Error
+                "The `analyze` command requires `pyrefly_results`: the Pyre1 backend has been \
+                 removed and Pyrefly is now the only supported type provider for Pysa."
+          | Some pyrefly_results ->
+              Result.Ok
+                {
+                  base;
+                  additional_logging_sections;
+                  pyrefly_results;
+                  dump_call_graph;
+                  dump_model_query_results;
+                  find_missing_flows;
+                  disable_model_shaping;
+                  infer_self_tito;
+                  infer_argument_tito;
+                  maximum_model_source_tree_width;
+                  maximum_model_sink_tree_width;
+                  maximum_model_tito_tree_width;
+                  maximum_tree_depth_after_widening;
+                  maximum_return_access_path_width;
+                  maximum_return_access_path_depth_after_widening;
+                  maximum_tito_collapse_depth;
+                  maximum_tito_positions;
+                  maximum_overrides_to_analyze;
+                  maximum_trace_length;
+                  maximum_tito_depth;
+                  maximum_capture_trace_length;
+                  no_verify;
+                  verify_dsl;
+                  verify_taint_config_only;
+                  group_missing_module_errors;
+                  repository_root;
+                  rule_filter;
+                  source_filter;
+                  sink_filter;
+                  transform_filter;
+                  save_results_to;
+                  output_format;
+                  strict;
+                  taint_model_paths;
+                  check_invariants;
+                  limit_entrypoints;
+                  compact_ocaml_heap;
+                  compute_coverage;
+                  scheduler_policies;
+                  higher_order_call_graph_max_iterations;
+                  maximum_target_depth;
+                  maximum_parameterized_targets_at_call_site;
+                })
     with
     | Type_error (message, _)
     | Undefined (message, _) ->
@@ -220,7 +226,6 @@ end
 let analysis_configuration_of
     ~taint_model_paths
     ~strict
-    ~use_pyrefly_results
     {
       CommandStartup.BaseConfiguration.source_paths;
       search_paths;
@@ -244,7 +249,7 @@ let analysis_configuration_of
       include_suppressed_errors;
       shared_memory =
         { Configuration.SharedMemory.heap_size; dependency_table_power; hash_table_power };
-      enable_type_comments;
+      enable_type_comments = _;
       remote_logging = _;
       profiling_output = _;
       memory_profiling_output = _;
@@ -274,14 +279,13 @@ let analysis_configuration_of
     ~shared_memory_heap_size:heap_size
     ~shared_memory_dependency_table_power_from_configuration:dependency_table_power
     ~shared_memory_hash_table_power:hash_table_power
-    ~enable_type_comments
+    ~enable_type_comments:false
     ~source_paths:(Configuration.SourcePaths.to_search_paths source_paths)
     ~enable_readonly_analysis
     ~enable_strict_override_check
     ~enable_strict_any_check
     ~enable_unawaited_awaitable_analysis
     ~include_suppressed_errors
-    ~use_pyrefly_results
     ()
 
 
@@ -358,13 +362,7 @@ let static_analysis_configuration_of
       maximum_parameterized_targets_at_call_site;
     }
   =
-  let configuration =
-    analysis_configuration_of
-      ~taint_model_paths
-      ~strict
-      ~use_pyrefly_results:(Option.is_some pyrefly_results)
-      base
-  in
+  let configuration = analysis_configuration_of ~taint_model_paths ~strict base in
   {
     Configuration.StaticAnalysis.configuration;
     repository_root;

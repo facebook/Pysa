@@ -78,17 +78,9 @@ let run_command query output_file configuration_file =
       analyze_configuration) ->
       AnalyzeCommand.setup_global_states analyze_configuration;
       let configuration =
-        AnalyzeCommand.analysis_configuration_of
-          ~taint_model_paths
-          ~strict
-          ~use_pyrefly_results:true
-          base
+        AnalyzeCommand.analysis_configuration_of ~taint_model_paths ~strict base
       in
-      let pyrefly_results =
-        match pyrefly_results with
-        | Some path -> PyrePath.absolute path
-        | None -> failwith "`pyrefly_results` must be set in the configuration file"
-      in
+      let pyrefly_results = PyrePath.absolute pyrefly_results in
       let query_response =
         Scheduler.with_scheduler
           ~configuration

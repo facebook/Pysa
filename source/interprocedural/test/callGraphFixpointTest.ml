@@ -43,6 +43,7 @@ let assert_higher_order_call_graph_fixpoint
     Configuration.StaticAnalysis.create
       ~maximum_target_depth
       ~higher_order_call_graph_max_iterations:max_iterations
+      ~pyrefly_results:(PyrePath.create_absolute "/pyrefly_results")
       configuration
       ()
   in

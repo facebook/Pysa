@@ -34,6 +34,7 @@ let create_call_graph ?(other_sources = []) ~context source_text =
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
+      ~pyrefly_results:(PyrePath.create_absolute "/pyrefly_results")
       configuration
       ()
   in

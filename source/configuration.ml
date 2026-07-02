@@ -452,7 +452,6 @@ module Analysis = struct
       ?(enable_strict_any_check = default_enable_strict_any_check)
       ?(enable_unawaited_awaitable_analysis = default_enable_unawaited_awaitable_analysis)
       ?(include_suppressed_errors = default_include_suppressed_errors)
-      ?(use_pyrefly_results = false)
       ~source_paths
       ()
     =
@@ -465,15 +464,6 @@ module Analysis = struct
         shared_memory_dependency_table_power_from_configuration
       else
         1
-    in
-    let enable_type_comments =
-      if use_pyrefly_results then
-        (* "Disabling parsing type comments due to using Pyrefly results, so that the locations of
-           statements that contain type comments can be consistent between Pyre parser and Pyrefly
-           parser". *)
-        false
-      else
-        enable_type_comments
     in
     {
       parallel;
@@ -790,7 +780,7 @@ module StaticAnalysis = struct
     repository_root: PyrePath.t option;
     save_results_to: PyrePath.t option;
     output_format: TaintOutputFormat.t;
-    pyrefly_results: PyrePath.t option;
+    pyrefly_results: PyrePath.t;
     dump_call_graph: PyrePath.t option;
     verify_models: bool;
     verify_dsl: bool;
@@ -847,7 +837,7 @@ module StaticAnalysis = struct
       ?repository_root
       ?save_results_to
       ?(output_format = TaintOutputFormat.Json)
-      ?pyrefly_results
+      ~pyrefly_results
       ?dump_call_graph
       ?(verify_models = true)
       ?(verify_dsl = true)

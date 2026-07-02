@@ -21,6 +21,7 @@ end
 module AnalyzeConfiguration : sig
   type t = {
     base: CommandStartup.BaseConfiguration.t;
+    pyrefly_results: PyrePath.t;
     additional_logging_sections: string list;
     dump_call_graph: PyrePath.t option;
     dump_model_query_results: PyrePath.t option;
@@ -51,7 +52,6 @@ module AnalyzeConfiguration : sig
     transform_filter: string list option;
     save_results_to: PyrePath.t option;
     output_format: Configuration.TaintOutputFormat.t;
-    pyrefly_results: PyrePath.t option;
     strict: bool;
     taint_model_paths: PyrePath.t list;
     check_invariants: bool;
@@ -73,7 +73,6 @@ val setup_global_states : AnalyzeConfiguration.t -> unit
 val analysis_configuration_of
   :  taint_model_paths:PyrePath.t list ->
   strict:bool ->
-  use_pyrefly_results:bool ->
   CommandStartup.BaseConfiguration.t ->
   Configuration.Analysis.t
 

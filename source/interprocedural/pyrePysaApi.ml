@@ -36,9 +36,13 @@ module PysaClassSummary = struct
 end
 
 module ReadWrite = struct
+  (* The `Pyre1` variant is unreachable now that `create_with_cold_start` unconditionally builds a
+     `Pyrefly` value. It is kept (and removed in a later phase) alongside `pyrePysaEnvironment.ml`,
+     hence the suppression of the unused-constructor warning. *)
   type t =
     | Pyre1 of Pyre1Api.ReadWrite.t
     | Pyrefly of PyreflyApi.ReadWrite.t
+  [@@warning "-37"]
 
   let create_with_cold_start
       ~scheduler
@@ -46,28 +50,17 @@ module ReadWrite = struct
       ~configuration
       ~pyrefly_results
       ~decorator_configuration
-      ~skip_type_checking_callables
-      ~callback_with_qualifiers_and_definitions
+      ~skip_type_checking_callables:_
+      ~callback_with_qualifiers_and_definitions:_
     =
-    match pyrefly_results with
-    | Some pyrefly_results ->
-        (* This is required by CallableToDecoratorsMap *)
-        let () = Analysis.DecoratorPreprocessing.setup_preprocessing decorator_configuration in
-        Pyrefly
-          (PyreflyApi.ReadWrite.create_from_directory
-             ~scheduler
-             ~scheduler_policies
-             ~configuration
-             pyrefly_results)
-    | None ->
-        Pyre1
-          (Pyre1Api.ReadWrite.create_with_cold_start
-             ~scheduler
-             ~scheduler_policies
-             ~configuration
-             ~decorator_configuration
-             ~skip_type_checking_callables
-             ~callback_with_qualifiers_and_definitions)
+    (* This is required by CallableToDecoratorsMap *)
+    let () = Analysis.DecoratorPreprocessing.setup_preprocessing decorator_configuration in
+    Pyrefly
+      (PyreflyApi.ReadWrite.create_from_directory
+         ~scheduler
+         ~scheduler_policies
+         ~configuration
+         pyrefly_results)
 
 
   let configuration = function

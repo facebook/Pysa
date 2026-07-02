@@ -24,11 +24,14 @@ let test_json_parsing context =
           actual
   in
 
+  let dummy_base_json =
+    ("pyrefly_results", `String "/pyrefly_results") :: BaseConfigurationTest.dummy_base_json
+  in
   let dummy_analyze_configuration =
     {
       AnalyzeConfiguration.base = BaseConfigurationTest.dummy_base_configuration;
       additional_logging_sections = [];
-      pyrefly_results = None;
+      pyrefly_results = PyrePath.create_absolute "/pyrefly_results";
       dump_call_graph = None;
       dump_model_query_results = None;
       find_missing_flows = None;
@@ -72,146 +75,133 @@ let test_json_parsing context =
   in
 
   assert_parsed
-    (`Assoc (("dump_call_graph", `String "/call-graph") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("dump_call_graph", `String "/call-graph") :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
         dump_call_graph = Some (PyrePath.create_absolute "/call-graph");
       };
   assert_parsed
-    (`Assoc
-      (("dump_model_query_results", `String "/model-query") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("dump_model_query_results", `String "/model-query") :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
         dump_model_query_results = Some (PyrePath.create_absolute "/model-query");
       };
   assert_parsed
-    (`Assoc (("find_missing_flows", `String "obscure") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("find_missing_flows", `String "obscure") :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
         find_missing_flows = Some Configuration.MissingFlowKind.Obscure;
       };
   assert_parsed
-    (`Assoc (("disable_model_shaping", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("disable_model_shaping", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with disable_model_shaping = true };
   assert_parsed
-    (`Assoc (("infer_self_tito", `Bool false) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("infer_self_tito", `Bool false) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with infer_self_tito = false };
   assert_parsed
-    (`Assoc (("infer_argument_tito", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("infer_argument_tito", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with infer_argument_tito = true };
   assert_parsed
-    (`Assoc (("maximum_tito_depth", `Int 5) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_tito_depth", `Int 5) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_tito_depth = Some 5 };
   assert_parsed
-    (`Assoc (("maximum_trace_length", `Int 5) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_trace_length", `Int 5) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_trace_length = Some 5 };
   assert_parsed
-    (`Assoc (("maximum_model_source_tree_width", `Int 30) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_model_source_tree_width", `Int 30) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_model_source_tree_width = Some 30 };
   assert_parsed
-    (`Assoc (("maximum_model_sink_tree_width", `Int 30) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_model_sink_tree_width", `Int 30) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_model_sink_tree_width = Some 30 };
   assert_parsed
-    (`Assoc (("maximum_model_tito_tree_width", `Int 30) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_model_tito_tree_width", `Int 30) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_model_tito_tree_width = Some 30 };
   assert_parsed
-    (`Assoc
-      (("maximum_tree_depth_after_widening", `Int 5) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_tree_depth_after_widening", `Int 5) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_tree_depth_after_widening = Some 5 };
   assert_parsed
-    (`Assoc (("maximum_return_access_path_width", `Int 5) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_return_access_path_width", `Int 5) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_return_access_path_width = Some 5 };
   assert_parsed
-    (`Assoc
-      (("maximum_return_access_path_depth_after_widening", `Int 5)
-      :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_return_access_path_depth_after_widening", `Int 5) :: dummy_base_json))
     ~expected:
       { dummy_analyze_configuration with maximum_return_access_path_depth_after_widening = Some 5 };
   assert_parsed
-    (`Assoc (("maximum_tito_collapse_depth", `Int 6) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_tito_collapse_depth", `Int 6) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_tito_collapse_depth = Some 6 };
   assert_parsed
-    (`Assoc (("maximum_tito_positions", `Int 50) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_tito_positions", `Int 50) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_tito_positions = Some 50 };
   assert_parsed
-    (`Assoc (("no_verify", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("no_verify", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with no_verify = true };
   assert_parsed
-    (`Assoc (("verify_dsl", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("verify_dsl", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with verify_dsl = true };
   assert_parsed
-    (`Assoc (("repository_root", `String "/root") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("repository_root", `String "/root") :: dummy_base_json))
     ~expected:
       { dummy_analyze_configuration with repository_root = Some (PyrePath.create_absolute "/root") };
   assert_parsed
-    (`Assoc (("rule_filter", `List [`Int 1; `Int 2]) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("rule_filter", `List [`Int 1; `Int 2]) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with rule_filter = Some [1; 2] };
   assert_parsed
     (`Assoc
-      (("source_filter", `List [`String "UserControlled"; `String "Header"])
-      :: BaseConfigurationTest.dummy_base_json))
+      (("source_filter", `List [`String "UserControlled"; `String "Header"]) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with source_filter = Some ["UserControlled"; "Header"] };
   assert_parsed
-    (`Assoc
-      (("sink_filter", `List [`String "SQL"; `String "RCE"])
-      :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("sink_filter", `List [`String "SQL"; `String "RCE"]) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with sink_filter = Some ["SQL"; "RCE"] };
   assert_parsed
     (`Assoc
-      (("transform_filter", `List [`String "FileSystem"; `String "MyTransform"])
-      :: BaseConfigurationTest.dummy_base_json))
+      (("transform_filter", `List [`String "FileSystem"; `String "MyTransform"]) :: dummy_base_json))
     ~expected:
       { dummy_analyze_configuration with transform_filter = Some ["FileSystem"; "MyTransform"] };
   assert_parsed
-    (`Assoc (("save_results_to", `String "/result") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("save_results_to", `String "/result") :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
         save_results_to = Some (PyrePath.create_absolute "/result");
       };
   assert_parsed
-    (`Assoc (("output_format", `String "json") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("output_format", `String "json") :: dummy_base_json))
     ~expected:
       { dummy_analyze_configuration with output_format = Configuration.TaintOutputFormat.Json };
   assert_parsed
-    (`Assoc (("output_format", `String "sharded-json") :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("output_format", `String "sharded-json") :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
         output_format = Configuration.TaintOutputFormat.ShardedJson;
       };
   assert_parsed
-    (`Assoc (("strict", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("strict", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with strict = true };
   assert_parsed
-    (`Assoc
-      (("taint_model_paths", `List [`String "/taint"; `String "/model"])
-      :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("taint_model_paths", `List [`String "/taint"; `String "/model"]) :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
         taint_model_paths = [PyrePath.create_absolute "/taint"; PyrePath.create_absolute "/model"];
       };
   assert_parsed
-    (`Assoc (("check_invariants", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("check_invariants", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with check_invariants = true };
   assert_parsed
-    (`Assoc (("compute_coverage", `Bool true) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("compute_coverage", `Bool true) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with compute_coverage = true };
   assert_parsed
-    (`Assoc
-      (("higher_order_call_graph_max_iterations", `Int 101) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("higher_order_call_graph_max_iterations", `Int 101) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with higher_order_call_graph_max_iterations = Some 101 };
   assert_parsed
-    (`Assoc (("maximum_target_depth", `Int 412) :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_target_depth", `Int 412) :: dummy_base_json))
     ~expected:{ dummy_analyze_configuration with maximum_target_depth = Some 412 };
   assert_parsed
-    (`Assoc
-      (("maximum_parameterized_targets_at_call_site", `Int 410)
-      :: BaseConfigurationTest.dummy_base_json))
+    (`Assoc (("maximum_parameterized_targets_at_call_site", `Int 410) :: dummy_base_json))
     ~expected:
       { dummy_analyze_configuration with maximum_parameterized_targets_at_call_site = Some 410 };
   assert_parsed
@@ -227,7 +217,7 @@ let test_json_parsing context =
                    "preferred_chunk_size", `Int 100;
                  ] );
            ] )
-      :: BaseConfigurationTest.dummy_base_json))
+      :: dummy_base_json))
     ~expected:
       {
         dummy_analyze_configuration with
@@ -244,9 +234,8 @@ let test_json_parsing context =
             ];
       };
   assert_parsed
-    (`Assoc (("pyrefly_results", `String "/foo") :: BaseConfigurationTest.dummy_base_json))
-    ~expected:
-      { dummy_analyze_configuration with pyrefly_results = Some (PyrePath.create_absolute "/foo") };
+    (`Assoc (("pyrefly_results", `String "/foo") :: dummy_base_json))
+    ~expected:{ dummy_analyze_configuration with pyrefly_results = PyrePath.create_absolute "/foo" };
   ()
 
 

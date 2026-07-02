@@ -623,6 +623,7 @@ let initialize
       ~maximum_target_depth
       ~higher_order_call_graph_max_iterations:
         Configuration.StaticAnalysis.default_higher_order_call_graph_max_iterations_in_tests
+      ~pyrefly_results:(PyrePath.create_absolute "/pyrefly_results")
       configuration
       ?find_missing_flows
       ()

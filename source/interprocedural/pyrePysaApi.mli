@@ -37,7 +37,7 @@ module ReadWrite : sig
     :  scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
     configuration:Configuration.Analysis.t ->
-    pyrefly_results:PyrePath.t option ->
+    pyrefly_results:PyrePath.t ->
     decorator_configuration:Analysis.DecoratorPreprocessing.Configuration.t ->
     skip_type_checking_callables:Ast.Reference.SerializableSet.t ->
     callback_with_qualifiers_and_definitions:

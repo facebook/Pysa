@@ -28,6 +28,7 @@ let assert_taint ?models ?models_source ~context source expect =
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
+      ~pyrefly_results:(PyrePath.create_absolute "/pyrefly_results")
       configuration
       ()
   in

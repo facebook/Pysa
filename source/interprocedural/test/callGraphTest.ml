@@ -24,7 +24,11 @@ let compute_define_call_graph
     ()
   =
   let static_analysis_configuration =
-    Configuration.StaticAnalysis.create ~maximum_target_depth configuration ()
+    Configuration.StaticAnalysis.create
+      ~maximum_target_depth
+      ~pyrefly_results:(PyrePath.create_absolute "/pyrefly_results")
+      configuration
+      ()
   in
   let override_graph_heap =
     OverrideGraph.Heap.from_qualifier
@@ -8330,6 +8334,7 @@ let assert_resolve_decorator_callees ~source ~expected () context =
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
+      ~pyrefly_results:(PyrePath.create_absolute "/pyrefly_results")
       configuration
       ()
   in

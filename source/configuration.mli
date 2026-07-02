@@ -186,7 +186,6 @@ module Analysis : sig
     ?enable_strict_any_check:bool ->
     ?enable_unawaited_awaitable_analysis:bool ->
     ?include_suppressed_errors:bool ->
-    ?use_pyrefly_results:bool ->
     source_paths:SearchPath.t list ->
     unit ->
     t
@@ -296,7 +295,7 @@ module StaticAnalysis : sig
     (* A directory to write files in. *)
     save_results_to: PyrePath.t option;
     output_format: TaintOutputFormat.t;
-    pyrefly_results: PyrePath.t option;
+    pyrefly_results: PyrePath.t;
     dump_call_graph: PyrePath.t option;
     verify_models: bool;
     verify_dsl: bool;
@@ -349,7 +348,7 @@ module StaticAnalysis : sig
     ?repository_root:PyrePath.t ->
     ?save_results_to:PyrePath.t ->
     ?output_format:TaintOutputFormat.t ->
-    ?pyrefly_results:PyrePath.t ->
+    pyrefly_results:PyrePath.t ->
     ?dump_call_graph:PyrePath.t ->
     ?verify_models:bool ->
     ?verify_dsl:bool ->
