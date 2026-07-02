@@ -7,7 +7,7 @@
 
 open Core
 open OUnit2
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 open Taint
 open ModelParseResult.ModelQuery
 
@@ -32,16 +32,15 @@ let set_up_environment ?source ~context ~model_source ~validate () =
     TaintConfiguration.Heap.{ empty with sources; sinks; transforms }
   in
   let source = Test.trim_extra_indentation model_source in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
 
-  PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.parse
-      ~pyre_api
-      ~path_of_qualifier:(PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+      ~pyrefly_api
+      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
       ~source
       ~taint_configuration
       ~source_sink_filter:(Some taint_configuration.source_sink_filter)

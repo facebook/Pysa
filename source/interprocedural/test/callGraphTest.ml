@@ -17,7 +17,7 @@ open Shims
 let compute_define_call_graph
     ~callable
     ~module_name
-    ~pyre_api
+    ~pyrefly_api
     ~configuration
     ~object_targets
     ~maximum_target_depth
@@ -32,22 +32,22 @@ let compute_define_call_graph
   in
   let override_graph_heap =
     OverrideGraph.Heap.from_qualifier
-      ~pyre_api
+      ~pyrefly_api
       ~skip_overrides_targets:Reference.SerializableSet.empty
       module_name
   in
   let override_graph_shared_memory = OverrideGraph.SharedMemory.from_heap override_graph_heap in
-  let initial_callables =
-    FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier:module_name
-  in
+  let initial_callables = FetchCallables.from_qualifier ~pyrefly_api ~qualifier:module_name in
   let definitions = FetchCallables.get_definitions initial_callables in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
+  let callables_to_definitions_map =
+    CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
+  in
   let callables_to_decorators_map =
     CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
-      ~pyre_api
+      ~pyrefly_api
       ~scheduler_policy
       ~callables_to_definitions_map:
         (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
@@ -56,7 +56,7 @@ let compute_define_call_graph
   in
   let call_graph =
     TestHelper.call_graph_of_callable
-      ~pyre_api
+      ~pyrefly_api
       ~static_analysis_configuration
       ~override_graph:
         (Some (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
@@ -85,7 +85,7 @@ let assert_call_graph_of_define
     ()
     context
   =
-  let module_name, pyre_api, configuration =
+  let module_name, pyrefly_api, configuration =
     TestHelper.setup_single_py_file
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
@@ -94,19 +94,17 @@ let assert_call_graph_of_define
       ()
   in
   let callable =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-        Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
-          pyrefly_api
-          ~override:false
-          (Reference.create define_name)
+    Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
+      pyrefly_api
+      ~override:false
+      (Reference.create define_name)
   in
   let expected = DefineCallGraphForTest.from_expected expected in
   let actual, callables_to_definitions_map =
     compute_define_call_graph
       ~callable
       ~module_name
-      ~pyre_api
+      ~pyrefly_api
       ~configuration
       ~object_targets
       ~maximum_target_depth
@@ -144,7 +142,7 @@ let assert_higher_order_call_graph_of_define
         call_graph = expected_call_graph;
       }
   in
-  let module_name, pyre_api, configuration =
+  let module_name, pyrefly_api, configuration =
     TestHelper.setup_single_py_file
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
@@ -155,7 +153,7 @@ let assert_higher_order_call_graph_of_define
   let override_graph_shared_memory =
     module_name
     |> OverrideGraph.Heap.from_qualifier
-         ~pyre_api
+         ~pyrefly_api
          ~skip_overrides_targets:Reference.SerializableSet.empty
     |> OverrideGraph.SharedMemory.from_heap
   in
@@ -163,20 +161,18 @@ let assert_higher_order_call_graph_of_define
   let callable =
     match callable with
     | Some callable -> callable
-    | None -> (
-        match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-            Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
-              pyrefly_api
-              ~override:false
-              (Reference.create define_name))
+    | None ->
+        Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
+          pyrefly_api
+          ~override:false
+          (Reference.create define_name)
   in
   let maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth in
   let define_call_graph, callables_to_definitions_map =
     compute_define_call_graph
       ~callable:(Target.strip_parameters callable)
       ~module_name
-      ~pyre_api
+      ~pyrefly_api
       ~configuration
       ~object_targets
       ~maximum_target_depth
@@ -187,13 +183,13 @@ let assert_higher_order_call_graph_of_define
     |> Target.strip_parameters
     |> CallablesSharedMemory.ReadOnly.get_define
          (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-    |> PyrePysaApi.AstResult.value_exn
+    |> PyreflyApi.AstResult.value_exn
          ~message:(Format.asprintf "Found no definition for `%a`" Target.pp_pretty callable)
   in
   let actual =
     CallGraphBuilder.higher_order_call_graph_of_define
       ~define_call_graph
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~skip_analysis_targets:(Target.HashSet.create ())
@@ -8301,7 +8297,7 @@ let test_higher_order_call_graph_of_define =
 
 
 let assert_resolve_decorator_callees ~source ~expected () context =
-  let _, pyre_api, configuration =
+  let _, pyrefly_api, configuration =
     TestHelper.setup_single_py_file
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
@@ -8317,11 +8313,11 @@ let assert_resolve_decorator_callees ~source ~expected () context =
       ()
   in
   let qualifier = Reference.create "test" in
-  let initial_callables = FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier in
+  let initial_callables = FetchCallables.from_qualifier ~pyrefly_api ~qualifier in
   let override_graph_shared_memory =
     qualifier
     |> OverrideGraph.Heap.from_qualifier
-         ~pyre_api
+         ~pyrefly_api
          ~skip_overrides_targets:Reference.SerializableSet.empty
     |> OverrideGraph.SharedMemory.from_heap
   in
@@ -8352,12 +8348,14 @@ let assert_resolve_decorator_callees ~source ~expected () context =
   let definitions_and_stubs = FetchCallables.get ~definitions:true ~stubs:true initial_callables in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
+  let callables_to_definitions_map =
+    CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
+  in
   let callables_to_decorators_map =
     CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
       ~scheduler_policy
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~skip_analysis_targets:(Target.HashSet.create ())
@@ -8368,7 +8366,7 @@ let assert_resolve_decorator_callees ~source ~expected () context =
       CallGraphBuilder.build_whole_program_call_graph
         ~scheduler
         ~static_analysis_configuration
-        ~pyre_api
+        ~pyrefly_api
         ~resolve_module_path:None
         ~callables_to_definitions_map:
           (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)

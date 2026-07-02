@@ -32,15 +32,15 @@ let assert_taint ?models ?models_source ~context source expect =
       configuration
       ()
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let models =
     models >>| Test.trim_extra_indentation |> Option.value ~default:TestHelper.initial_models_source
   in
   let initial_models =
     let { ModelParseResult.models; errors; _ } =
       ModelParser.parse
-        ~pyre_api
-        ~path_of_qualifier:(PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+        ~pyrefly_api
+        ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
         ~source:models
         ~taint_configuration:TaintConfiguration.Heap.default
         ~source_sink_filter:None
@@ -65,17 +65,15 @@ let assert_taint ?models ?models_source ~context source expect =
     in
     models
   in
-  let initial_callables =
-    Interprocedural.FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier
-  in
+  let initial_callables = Interprocedural.FetchCallables.from_qualifier ~pyrefly_api ~qualifier in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let analyze_and_store_in_order models (callable, define) =
     let () = Log.log ~section:`Taint "Analyzing %a" Target.pp callable in
     let call_graph_of_define =
       TestHelper.call_graph_of_callable
-        ~pyre_api
+        ~pyrefly_api
         ~static_analysis_configuration
         ~override_graph:
           (Some (OverrideGraph.SharedMemory.create () |> OverrideGraph.SharedMemory.read_only))
@@ -99,7 +97,7 @@ let assert_taint ?models ?models_source ~context source expect =
         ~taint_configuration
         ~string_combine_partial_sink_tree:
           (Taint.CallModel.StringFormatCall.declared_partial_sink_tree taint_configuration)
-        ~pyre_api
+        ~pyrefly_api
         ~class_interval_graph:(ClassIntervalSetGraph.SharedMemory.create ())
         ~global_constants:
           (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
@@ -121,7 +119,7 @@ let assert_taint ?models ?models_source ~context source expect =
         Interprocedural.CallablesSharedMemory.ReadOnly.get_define
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
           callable
-        |> PyrePysaApi.AstResult.value_exn ~message:"missing ast"
+        |> PyreflyApi.AstResult.value_exn ~message:"missing ast"
       in
       callable, define
     in
@@ -138,7 +136,7 @@ let assert_taint ?models ?models_source ~context source expect =
   List.iter
     ~f:
       (check_expectation
-         ~pyre_api
+         ~pyrefly_api
          ~taint_configuration:TaintConfiguration.Heap.default
          ~get_model
          ~get_errors)

@@ -38,7 +38,7 @@ module SharedMemory : sig
   val create
     :  scheduler:Scheduler.t ->
     scheduler_policy:Scheduler.Policy.t ->
-    pyre_api:PyrePysaApi.ReadOnly.t ->
+    pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
     skip_analysis_targets:Target.HashSet.t ->
     Target.t list ->

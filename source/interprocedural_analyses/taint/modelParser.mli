@@ -10,7 +10,7 @@ module PyrePysaLogic = Analysis.PyrePysaLogic
 val get_model_sources : paths:PyrePath.t list -> (PyrePath.t * string) list
 
 val parse
-  :  pyre_api:Interprocedural.PyrePysaApi.ReadOnly.t ->
+  :  pyrefly_api:Interprocedural.PyreflyApi.ReadOnly.t ->
   path_of_qualifier:(Ast.Reference.t -> string option) ->
   ?path:PyrePath.t ->
   source:string ->
@@ -40,7 +40,7 @@ val decorator_actions_from_modes
 
 (* Exposed for model queries. *)
 val create_callable_model_from_annotations
-  :  pyre_api:Interprocedural.PyrePysaApi.ReadOnly.t ->
+  :  pyrefly_api:Interprocedural.PyreflyApi.ReadOnly.t ->
   modelable:ModelParseResult.Modelable.t ->
   source_sink_filter:SourceSinkFilter.t option ->
   is_obscure:bool ->
@@ -49,7 +49,7 @@ val create_callable_model_from_annotations
 
 (* Exposed for model queries. *)
 val create_attribute_model_from_annotations
-  :  pyre_api:Interprocedural.PyrePysaApi.ReadOnly.t ->
+  :  pyrefly_api:Interprocedural.PyreflyApi.ReadOnly.t ->
   name:Ast.Reference.t ->
   source_sink_filter:SourceSinkFilter.t option ->
   ModelParseResult.TaintAnnotation.t list ->

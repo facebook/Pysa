@@ -10,16 +10,12 @@ open Ast
 type t
 
 (** Traverse the AST to find all callables (functions and methods). *)
-val from_qualifier
-  :  configuration:Configuration.Analysis.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
-  qualifier:Reference.t ->
-  t
+val from_qualifier : pyrefly_api:PyreflyApi.ReadOnly.t -> qualifier:Reference.t -> t
 
 val from_qualifiers
   :  scheduler:Scheduler.t ->
   scheduler_policy:Scheduler.Policy.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
+  pyrefly_api:PyreflyApi.ReadOnly.t ->
   configuration:Configuration.Analysis.t ->
   qualifiers:Reference.t list ->
   t

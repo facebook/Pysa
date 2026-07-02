@@ -11,7 +11,7 @@ open Core
 open Ast
 open Expression
 module AccessPath = Analysis.TaintAccessPath
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 type parameter_requirements = {
   anonymous_parameters_positions: Int.Set.t;
@@ -22,7 +22,7 @@ type parameter_requirements = {
 
 let create_parameters_requirements parameters =
   let get_parameters_requirements requirements parameter =
-    let open PyrePysaApi.ModelQueries.FunctionParameter in
+    let open PyreflyApi.ModelQueries.FunctionParameter in
     match parameter with
     | PositionalOnly { position; name; _ } ->
         {
@@ -89,7 +89,7 @@ let verify_imported_model ~path ~location ~friendly_name ~imported_name =
 
 let model_compatible_errors
     ~callable_signature:
-      ({ PyrePysaApi.ModelQueries.FunctionSignature.parameters = callable_parameters; _ } as
+      ({ PyreflyApi.ModelQueries.FunctionSignature.parameters = callable_parameters; _ } as
       callable_signature)
     ~add_overload_in_error
     ~normalized_model_parameters
@@ -154,7 +154,7 @@ let model_compatible_errors
           IncompatibleModelError.UnexpectedDoubleStarredParameter :: errors, requirements
   in
   match callable_parameters with
-  | PyrePysaApi.ModelQueries.FunctionParameters.List parameters ->
+  | PyreflyApi.ModelQueries.FunctionParameters.List parameters ->
       let parameter_requirements = create_parameters_requirements parameters in
       let errors, _ =
         List.foldi

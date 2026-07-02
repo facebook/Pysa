@@ -680,7 +680,7 @@ module type TAINT_DOMAIN = sig
 
   (* Add trace info at call-site *)
   val apply_call
-    :  pyre_in_context:PyrePysaApi.InContext.t ->
+    :  pyrefly_in_context:PyreflyApi.InContext.t ->
     call_site:CallSite.t ->
     location:Location.t ->
     callee:Target.t ->
@@ -1369,7 +1369,7 @@ end = struct
 
 
   let apply_call
-      ~pyre_in_context
+      ~pyrefly_in_context
       ~call_site
       ~location
       ~callee
@@ -1394,7 +1394,7 @@ end = struct
           ~f:Features.ViaFeatureSet.add
           ~init:Features.ViaFeatureSet.bottom
           local_taint
-        |> Features.expand_via_features ~pyre_in_context ~callee ~arguments
+        |> Features.expand_via_features ~pyrefly_in_context ~callee ~arguments
         |> Features.BreadcrumbMayAlwaysSet.of_set
       in
       let local_breadcrumbs = LocalTaintDomain.get LocalTaintDomain.Slots.Breadcrumb local_taint in
@@ -1730,7 +1730,7 @@ module MakeTaintTree (Taint : TAINT_DOMAIN) () = struct
   include T
 
   let apply_call
-      ~pyre_in_context
+      ~pyrefly_in_context
       ~call_site
       ~location
       ~callee
@@ -1744,7 +1744,7 @@ module MakeTaintTree (Taint : TAINT_DOMAIN) () = struct
     let transform_path (path, tip) =
       ( path,
         Taint.apply_call
-          ~pyre_in_context
+          ~pyrefly_in_context
           ~call_site
           ~location
           ~callee
@@ -1838,15 +1838,15 @@ module MakeTaintTree (Taint : TAINT_DOMAIN) () = struct
       transform Taint.Self Map ~f:(Taint.add_local_breadcrumbs ~add_on_tito breadcrumbs) taint_tree
 
 
-  let add_local_type_breadcrumbs ~pyre_in_context ~expression taint =
+  let add_local_type_breadcrumbs ~pyrefly_in_context ~expression taint =
     let open Ast in
     match expression.Node.value with
     | Expression.Expression.Name (Expression.Name.Identifier _) ->
         (* Add scalar breadcrumbs only for variables, for performance reasons *)
         let type_breadcrumbs =
-          let type_ = PyrePysaApi.InContext.type_of_expression pyre_in_context expression in
+          let type_ = PyreflyApi.InContext.type_of_expression pyrefly_in_context expression in
           Features.type_breadcrumbs_from_annotation
-            ~pyre_api:(PyrePysaApi.InContext.pyre_api pyre_in_context)
+            ~pyrefly_api:(PyreflyApi.InContext.pyrefly_api pyrefly_in_context)
             type_
           |> Features.BreadcrumbMayAlwaysSet.of_set
         in

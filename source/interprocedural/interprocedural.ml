@@ -8,7 +8,6 @@
 (* Taint: here we expose modules for the `pyrelib.interprocedural` library *)
 
 module PyreflyApi = PyreflyApi
-module PyrePysaApi = PyrePysaApi
 module FixpointAnalysis = FixpointAnalysis
 module CallablesSharedMemory = CallablesSharedMemory
 module CallableToDecoratorsMap = CallableToDecoratorsMap

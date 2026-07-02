@@ -5,8 +5,8 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* Module that implements the PyrePysaApi using the results from a pyrefly run with
-   --report-pysa. *)
+(* Type checker API used by Pysa, which exposes source code, ASTs and type information about the
+   code to analyze, using the results from a pyrefly run with --report-pysa. *)
 
 open Core
 open Pyre
@@ -14,6 +14,10 @@ open Data_structures
 open Ast
 module PysaType = Analysis.PysaTypes.PysaType
 module AstResult = Analysis.PysaTypes.AstResult
+module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
+module TypeModifier = Analysis.PysaTypes.TypeModifier
+module ClassWithModifiers = Analysis.PysaTypes.ClassWithModifiers
+module ClassNamesFromType = Analysis.PysaTypes.ClassNamesFromType
 module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
 module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
 module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
@@ -2475,6 +2479,18 @@ module ReadWrite = struct
        with a type) *)
     Memory.SharedMemory.collect `aggressive;
     ()
+
+
+  let create_with_cold_start
+      ~scheduler
+      ~scheduler_policies
+      ~configuration
+      ~pyrefly_results
+      ~decorator_configuration
+    =
+    (* This is required by CallableToDecoratorsMap *)
+    let () = Analysis.DecoratorPreprocessing.setup_preprocessing decorator_configuration in
+    create_from_directory ~scheduler ~scheduler_policies ~configuration pyrefly_results
 end
 
 (* Read-only API that can be sent to workers. Cheap to copy. *)
@@ -3578,7 +3594,7 @@ module ReadOnly = struct
                Format.asprintf "missing module callables: `%a`" ModuleQualifier.pp module_qualifier)
       in
       (* Filter to only callables that would be in `definitions`, replicating the logic from
-         `FetchCallables.from_qualifier_with_pyrefly`. *)
+         `FetchCallables.from_qualifier`. *)
       let relevant_callables =
         List.filter_map module_callables ~f:(fun qualified_name ->
             let ({
@@ -3964,6 +3980,33 @@ module ReadOnly = struct
         mro
     else
       None
+
+
+  let repository_relative_path_of_qualifier ~repository_root api qualifier =
+    let open Core.Option.Monad_infix in
+    absolute_source_path_of_qualifier api qualifier
+    >>| fun path ->
+    match
+      PyrePath.get_relative_to_root ~root:repository_root ~path:(PyrePath.create_absolute path)
+    with
+    | Some relative -> relative
+    | None -> path
+
+
+  let target_from_method_reference
+      (Analysis.PysaTypes.MethodReference.Pyrefly { define_name; is_property_setter })
+    =
+    let kind = if is_property_setter then Target.PropertySetter else Target.Normal in
+    Target.create_method_from_reference ~kind define_name
+
+
+  (* Turn a captured variable root into a root for the state. Used to assign user provided sources
+     for captured variables at the beginning of the forward analysis. *)
+  let state_root_of_captured_variable _api captured_variable =
+    AccessPath.Root.CapturedVariable captured_variable
+
+
+  let ensures_qualified _api source = Preprocessing.qualify source
 end
 
 (* List of symbols exported from the 'builtins' module. To keep it short, this only contains symbols
@@ -4160,6 +4203,19 @@ module ModelQueries = struct
   module Global = Analysis.PysaTypes.ModelQueries.Global
   module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
   module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
+  module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
+  module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
+  module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+
+  let property_decorators = Analysis.PysaTypes.ModelQueries.property_decorators
+
+  let mangle_top_level_name = Analysis.PysaTypes.ModelQueries.mangle_top_level_name
+
+  let demangle_class_attribute = Analysis.PysaTypes.ModelQueries.demangle_class_attribute
+
+  let has_class_attribute_form = Analysis.PysaTypes.ModelQueries.has_class_attribute_form
+
+  let mangle_class_attribute = Analysis.PysaTypes.ModelQueries.mangle_class_attribute
 
   let resolve_user_qualified_name
       {
@@ -4472,7 +4528,7 @@ module InContext = struct
       }
 
 
-  let pyre_api = function
+  let pyrefly_api = function
     | FunctionScope { api; _ } -> api
     | StatementScope { api; _ } -> api
 
@@ -4502,10 +4558,6 @@ module InContext = struct
     failwith "unimplemented: PyreflyApi.InContext.resolve_reference"
 
 
-  let resolve_assignment api _ = api
-
-  let resolve_generators api _ = api
-
   let resolve_expression_to_type _ _ =
     (* TODO(T225700656): Support resolve_expression_to_type *)
     failwith "unimplemented: PyreflyApi.InContext.resolve_expression_to_type"
@@ -4533,14 +4585,45 @@ module InContext = struct
     | _ -> AccessPath.Root.Variable identifier
 
 
-  let propagate_captured_variable pyrefly_in_context ~defining_function ~name =
-    if Reference.equal defining_function (define_name pyrefly_in_context) then
-      (* We have reached the function that originated the variable. We should treat it as a regular
-         variable now. *)
-      AccessPath.Root.Variable name
-    else
-      AccessPath.Root.CapturedVariable
-        (AccessPath.CapturedVariable.FromFunction { name; defining_function })
+  (* Propagate a captured variable from a callee to a caller. Return the new root representing that
+     variable in the caller. *)
+  let propagate_captured_variable pyrefly_in_context = function
+    | AccessPath.CapturedVariable.FromFunction { name; defining_function } ->
+        if Reference.equal defining_function (define_name pyrefly_in_context) then
+          (* We have reached the function that originated the variable. We should treat it as a
+             regular variable now. *)
+          AccessPath.Root.Variable name
+        else
+          AccessPath.Root.CapturedVariable
+            (AccessPath.CapturedVariable.FromFunction { name; defining_function })
+
+
+  let access_path_of_expression pyrefly_in_context ~self_variable expression =
+    AccessPath.of_expression
+      ~root_of_identifier:(root_of_identifier pyrefly_in_context)
+      ~self_variable
+      expression
+
+
+  (* Turn a captured variable root into a root for the state. Used to assign user provided sources
+     for captured variables at the beginning of the forward analysis. *)
+  let state_root_of_captured_variable api captured_variable =
+    ReadOnly.state_root_of_captured_variable (pyrefly_api api) captured_variable
+
+
+  (* Compute the type of the given expression. *)
+  let type_of_expression pyrefly_context expression =
+    match Ast.Expression.origin expression with
+    | Some _ ->
+        (* This is an artificial expression that pyrefly doesn't know about. *)
+        PysaType.from_pyrefly_type Analysis.PysaTypes.PyreflyType.top
+    | None ->
+        let define_name = define_name pyrefly_context in
+        ReadOnly.get_type_of_expression
+          (pyrefly_api pyrefly_context)
+          ~define_name
+          ~location:(Ast.Node.location expression)
+        |> Option.value ~default:(PysaType.from_pyrefly_type Analysis.PysaTypes.PyreflyType.top)
 end
 
 (* Exposed for testing purposes *)

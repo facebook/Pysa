@@ -8,7 +8,7 @@
 (* ModelParseResult: defines the result of parsing pysa model files (`.pysa`). *)
 
 module AccessPath = Analysis.TaintAccessPath
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 module CollapseDepth : sig
   type t =
@@ -430,7 +430,7 @@ module CallableDecorator : sig
   type t
 
   val create_for_callable
-    :  pyre_api:PyrePysaApi.ReadOnly.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:Interprocedural.CallablesSharedMemory.ReadOnly.t ->
     qualifier:Ast.Reference.t ->
     target:Target.t ->
@@ -438,7 +438,7 @@ module CallableDecorator : sig
     t
 
   val create_for_class
-    :  pyre_api:PyrePysaApi.ReadOnly.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     class_name:string ->
     Ast.Statement.Decorator.t ->
     t
@@ -459,15 +459,15 @@ module TypeAnnotation : sig
   end
 
   val create
-    :  inferred_type:PyrePysaApi.PysaType.t option ->
+    :  inferred_type:PyreflyApi.PysaType.t option ->
     explicit_annotation:ExplicitAnnotation.t ->
     t
 
-  val from_inferred_type : PyrePysaApi.PysaType.t option -> t
+  val from_inferred_type : PyreflyApi.PysaType.t option -> t
 
   val is_annotated : t -> bool
 
-  val inferred_type : t -> PyrePysaApi.PysaType.t option
+  val inferred_type : t -> PyreflyApi.PysaType.t option
 
   val explicit_annotation : t -> ExplicitAnnotation.t
 
@@ -482,14 +482,14 @@ module Modelable : sig
   type t
 
   val create_callable
-    :  pyre_api:PyrePysaApi.ReadOnly.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:Interprocedural.CallablesSharedMemory.ReadOnly.t ->
     Target.t ->
     t
 
-  val create_attribute : pyre_api:PyrePysaApi.ReadOnly.t -> Target.t -> t
+  val create_attribute : pyrefly_api:PyreflyApi.ReadOnly.t -> Target.t -> t
 
-  val create_global : pyre_api:PyrePysaApi.ReadOnly.t -> Target.t -> t
+  val create_global : pyrefly_api:PyreflyApi.ReadOnly.t -> Target.t -> t
 
   val target : t -> Target.t
 
@@ -497,11 +497,11 @@ module Modelable : sig
 
   val type_annotation : t -> TypeAnnotation.t
 
-  val undecorated_signatures : t -> PyrePysaApi.ModelQueries.FunctionSignature.t list
+  val undecorated_signatures : t -> PyreflyApi.ModelQueries.FunctionSignature.t list
 
-  val return_annotations : t -> PyrePysaApi.PysaType.t list
+  val return_annotations : t -> PyreflyApi.PysaType.t list
 
-  val parameters_of_signatures : t -> PyrePysaApi.ModelQueries.FunctionParameter.t list
+  val parameters_of_signatures : t -> PyreflyApi.ModelQueries.FunctionParameter.t list
 
   val captures : t -> Analysis.TaintAccessPath.CapturedVariable.t list
 

@@ -15,11 +15,13 @@ let test_from_source context =
     let project =
       Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false all_sources
     in
-    let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-    let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
+    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let callables_to_definitions_map =
+      CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
+    in
     let global_constants =
       GlobalConstants.Heap.from_qualifier
-        ~pyre_api
+        ~pyrefly_api
         ~callables_to_definitions_map:
           (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
         (Reference.create test_source_qualifier)
@@ -90,13 +92,15 @@ let test_from_qualifiers context =
     let project =
       Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
     in
-    let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-    let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
+    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let callables_to_definitions_map =
+      CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
+    in
     let qualifiers =
       List.map sources ~f:(fun (qualifier, _) -> ModulePath.qualifier_from_relative_path qualifier)
     in
     GlobalConstants.Heap.from_qualifiers
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~qualifiers

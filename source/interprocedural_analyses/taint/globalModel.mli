@@ -11,7 +11,7 @@ open Interprocedural
 type t
 
 val from_expression
-  :  pyre_in_context:Interprocedural.PyrePysaApi.InContext.t ->
+  :  pyrefly_in_context:Interprocedural.PyreflyApi.InContext.t ->
   call_graph:CallGraph.DefineCallGraph.t ->
   get_callee_model:(Target.t -> Model.t option) ->
   expression:Expression.t ->

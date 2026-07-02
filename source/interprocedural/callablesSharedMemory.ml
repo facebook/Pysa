@@ -9,7 +9,7 @@ open Core
 open Ast
 open Statement
 open Pyre
-module AstResult = PyrePysaApi.AstResult
+module AstResult = PyreflyApi.AstResult
 
 let class_method_decorators = ["classmethod"; "abstractclassmethod"; "abc.abstractclassmethod"]
 
@@ -17,14 +17,12 @@ let static_method_decorators = ["staticmethod"; "abstractstaticmethod"; "abc.abs
 
 module CallableSignature = Analysis.PysaTypes.CallableSignature
 
-let get_signature_and_definition ~pyre_api callable =
+let get_signature_and_definition ~pyrefly_api callable =
   let define_name = Target.define_name_exn callable in
-  match pyre_api with
-  | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-      PyreflyApi.ReadOnly.get_callable_signature_opt pyrefly_api define_name
-      >>| fun signature ->
-      let define = PyreflyApi.ReadOnly.get_define_opt pyrefly_api define_name in
-      signature, define
+  PyreflyApi.ReadOnly.get_callable_signature_opt pyrefly_api define_name
+  >>| fun signature ->
+  let define = PyreflyApi.ReadOnly.get_define_opt pyrefly_api define_name in
+  signature, define
 
 
 let get_signature_and_definition_for_test = get_signature_and_definition
@@ -78,14 +76,12 @@ module ReadWrite = struct
   (* Create a [CallablesSharedMemory] that includes all available callables from the given API.
      Lookups are served directly by the pyrefly API, where signatures are pre-computed when parsing
      sources, so no callables need to be materialized into shared memory here. *)
-  let from_pyre_api ~pyre_api =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-        {
-          defines = DefinesSharedMemory.create ();
-          signatures = SignaturesSharedMemory.create ();
-          pyrefly_api;
-        }
+  let from_pyrefly_api ~pyrefly_api =
+    {
+      defines = DefinesSharedMemory.create ();
+      signatures = SignaturesSharedMemory.create ();
+      pyrefly_api;
+    }
 
 
   let add_alist_sequential ({ signatures; _ } as handle) entries =

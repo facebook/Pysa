@@ -9,20 +9,20 @@ open Ast
 
 (* This must be called *once* before analyzing a statement in a control flow graph. *)
 val preprocess_statement
-  :  pyre_in_context:PyrePysaApi.InContext.t ->
+  :  pyrefly_in_context:PyreflyApi.InContext.t ->
   callable:Target.t ->
   Ast.Statement.t ->
   Ast.Statement.t
 
 (* This must be called *once* before analyzing a generator. *)
 val preprocess_generator
-  :  pyre_in_context:PyrePysaApi.InContext.t ->
+  :  pyrefly_in_context:PyreflyApi.InContext.t ->
   callable:Target.t ->
   Ast.Expression.Comprehension.Generator.t ->
-  Ast.Statement.Assign.t * PyrePysaApi.InContext.t
+  Ast.Statement.Assign.t
 
 val preprocess_parameter_default_value
-  :  pyre_in_context:PyrePysaApi.InContext.t ->
+  :  pyrefly_in_context:PyreflyApi.InContext.t ->
   callable:Target.t ->
   Ast.Expression.t ->
   Ast.Expression.t
@@ -64,13 +64,13 @@ module HigherOrderCallGraph : sig
     val of_list : (Analysis.TaintAccessPath.Root.t * CallGraph.CallTarget.Set.t) list -> t
 
     val initialize_from_roots
-      :  pyre_api:PyrePysaApi.ReadOnly.t ->
+      :  pyrefly_api:PyreflyApi.ReadOnly.t ->
       callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
       (Analysis.TaintAccessPath.Root.t * Target.ParameterValue.t) list ->
       t
 
     val initialize_from_callable
-      :  pyre_api:PyrePysaApi.ReadOnly.t ->
+      :  pyrefly_api:PyreflyApi.ReadOnly.t ->
       callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
       Target.t ->
       t
@@ -81,7 +81,7 @@ val default_scheduler_policy : Scheduler.Policy.t
 
 val higher_order_call_graph_of_define
   :  define_call_graph:CallGraph.DefineCallGraph.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
+  pyrefly_api:PyreflyApi.ReadOnly.t ->
   callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
   skip_analysis_targets:Target.HashSet.t ->
   called_when_parameter:Target.HashSet.t ->
@@ -104,7 +104,7 @@ val higher_order_call_graph_of_define
 val build_whole_program_call_graph
   :  scheduler:Scheduler.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
+  pyrefly_api:PyreflyApi.ReadOnly.t ->
   resolve_module_path:(Reference.t -> RepositoryPath.t option) option ->
   callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
   callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.ReadOnly.t ->

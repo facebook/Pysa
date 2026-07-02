@@ -10,7 +10,7 @@ open Ast
 open Statement
 open Expression
 module PyrePysaLogic = Analysis.PyrePysaLogic
-module AstResult = PyrePysaApi.AstResult
+module AstResult = PyreflyApi.AstResult
 
 module Heap = struct
   type t = StringLiteral.t Reference.Map.t [@@deriving show, equal]
@@ -23,7 +23,7 @@ module Heap = struct
 
   let empty = Reference.Map.empty
 
-  let from_qualifier ~pyre_api ~callables_to_definitions_map qualifier =
+  let from_qualifier ~pyrefly_api ~callables_to_definitions_map qualifier =
     let extract_string = function
       (* __module__ affects name resolution, due to __module__ specifying the module something was
          defined in, so a solution is just to skip __module__ assignments *)
@@ -60,7 +60,7 @@ module Heap = struct
     in
     let open Option.Monad_infix in
     qualifier
-    |> PyrePysaApi.ReadOnly.get_qualifier_top_level_define_name pyre_api
+    |> PyreflyApi.ReadOnly.get_qualifier_top_level_define_name pyrefly_api
     |> Target.create_function
     |> CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
     |> AstResult.to_option
@@ -71,7 +71,7 @@ module Heap = struct
     |> Source.create_from_module_path
          ~typecheck_flags:(Source.TypecheckFlags.create_for_testing ())
          ~module_path:{ ModulePath.raw = ModulePath.Raw.empty; qualifier; should_type_check = true }
-    |> PyrePysaApi.ReadOnly.ensures_qualified pyre_api
+    |> PyreflyApi.ReadOnly.ensures_qualified pyrefly_api
     |> Preprocessing.toplevel_assigns
     |> List.concat_map ~f:Preprocessing.toplevel_expand_tuple_assign
     |> List.filter_map ~f:extract_string
@@ -79,9 +79,9 @@ module Heap = struct
     |> Ast.Reference.Map.of_alist_reduce ~f:(fun _old updated -> updated)
 
 
-  let from_qualifiers ~pyre_api ~callables_to_definitions_map ~qualifiers =
+  let from_qualifiers ~pyrefly_api ~callables_to_definitions_map ~qualifiers =
     let build_per_qualifier qualifier =
-      from_qualifier ~pyre_api ~callables_to_definitions_map qualifier
+      from_qualifier ~pyrefly_api ~callables_to_definitions_map qualifier
     in
     let reduce =
       let merge ~key = function
@@ -124,7 +124,7 @@ module SharedMemory = struct
   let from_qualifiers
       ~scheduler
       ~scheduler_policies
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map
       ~qualifiers
     =
@@ -151,7 +151,7 @@ module SharedMemory = struct
       ~map:(fun qualifiers ->
         add_heap
           empty_handle
-          (Heap.from_qualifiers ~pyre_api ~callables_to_definitions_map ~qualifiers))
+          (Heap.from_qualifiers ~pyrefly_api ~callables_to_definitions_map ~qualifiers))
       ~reduce:(fun smaller larger -> T.AddOnly.merge_same_handle_disjoint_keys ~smaller ~larger)
       ~inputs:qualifiers
       ()

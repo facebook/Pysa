@@ -11,7 +11,7 @@ open OUnit2
 open Test
 open TestHelper
 open Taint
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 module AccessPath = Analysis.TaintAccessPath
 
 let set_up_environment
@@ -50,7 +50,7 @@ let set_up_environment
       ~requires_type_of_expressions:false
       [source_file_name, source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let taint_configuration =
     let named name = { AnnotationParser.KindDefinition.name; kind = Named; location = None } in
     let sources =
@@ -121,14 +121,13 @@ let set_up_environment
   in
   let source = Test.trim_extra_indentation model_source in
 
-  PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.parse
-      ~pyre_api
-      ~path_of_qualifier:(PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+      ~pyrefly_api
+      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
       ~source
       ~taint_configuration
       ~source_sink_filter:(Some taint_configuration.source_sink_filter)
@@ -150,7 +149,7 @@ let set_up_environment
        (List.to_string errors ~f:ModelVerificationError.display))
     (List.is_empty errors);
 
-  parse_result, pyre_api, taint_configuration
+  parse_result, pyrefly_api, taint_configuration
 
 
 let assert_model
@@ -166,7 +165,7 @@ let assert_model
     ~expect
     ()
   =
-  let { ModelParseResult.models; _ }, pyre_api, taint_configuration =
+  let { ModelParseResult.models; _ }, pyrefly_api, taint_configuration =
     set_up_environment
       ?source
       ?rules
@@ -197,7 +196,7 @@ let assert_model
     | Some pyrefly_expect -> pyrefly_expect
     | None -> expect
   in
-  List.iter ~f:(check_expectation ~pyre_api ~taint_configuration ~get_model ~get_errors) expect
+  List.iter ~f:(check_expectation ~pyrefly_api ~taint_configuration ~get_model ~get_errors) expect
 
 
 let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~expect () =
@@ -232,7 +231,7 @@ let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~e
             |}
   in
   let sources = ("test.py", source) :: sources in
-  let pyre_api =
+  let pyrefly_api =
     Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
     |> Test.ScratchPyrePysaProject.read_only_api
   in
@@ -257,10 +256,9 @@ let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~e
   in
   let error_message =
     let path = path >>| PyrePath.create_absolute in
-    PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
     ModelParser.parse
-      ~pyre_api
-      ~path_of_qualifier:(PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+      ~pyrefly_api
+      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
       ~taint_configuration
       ~source_sink_filter:None
       ?path
@@ -3449,7 +3447,7 @@ let test_demangle_class_attributes _ =
   let assert_demangle ~expected name =
     assert_equal
       (Ast.Reference.create expected)
-      (PyrePysaApi.ModelQueries.demangle_class_attribute (Ast.Reference.create name))
+      (PyreflyApi.ModelQueries.demangle_class_attribute (Ast.Reference.create name))
   in
   assert_demangle ~expected:"a.B" "a.B";
   assert_demangle ~expected:"a.B" "a.__class__.B";

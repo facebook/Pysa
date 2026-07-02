@@ -16,13 +16,13 @@ module Heap : sig
   val empty : t
 
   val from_qualifier
-    :  pyre_api:PyrePysaApi.ReadOnly.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
     Ast.Reference.t ->
     t
 
   val from_qualifiers
-    :  pyre_api:PyrePysaApi.ReadOnly.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
     qualifiers:Reference.t list ->
     t
@@ -38,7 +38,7 @@ module SharedMemory : sig
   val from_qualifiers
     :  scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
-    pyre_api:PyrePysaApi.ReadOnly.t ->
+    pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
     qualifiers:Reference.t list ->
     t

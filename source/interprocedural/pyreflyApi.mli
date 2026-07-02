@@ -5,12 +5,16 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* Module that implements the PyrePysaApi using the results from a pyrefly run with
-   --report-pysa. *)
+(* Type checker API used by Pysa, which exposes source code, ASTs and type information about the
+   code to analyze, using the results from a pyrefly run with --report-pysa. *)
 
 open Core
 module PysaType = Analysis.PysaTypes.PysaType
 module AstResult = Analysis.PysaTypes.AstResult
+module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
+module TypeModifier = Analysis.PysaTypes.TypeModifier
+module ClassWithModifiers = Analysis.PysaTypes.ClassWithModifiers
+module ClassNamesFromType = Analysis.PysaTypes.ClassNamesFromType
 
 module FormatError : sig
   type t =
@@ -102,6 +106,14 @@ module ReadWrite : sig
     :  t ->
     scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
+    t
+
+  val create_with_cold_start
+    :  scheduler:Scheduler.t ->
+    scheduler_policies:Configuration.SchedulerPolicies.t ->
+    configuration:Configuration.Analysis.t ->
+    pyrefly_results:PyrePath.t ->
+    decorator_configuration:Analysis.DecoratorPreprocessing.Configuration.t ->
     t
 
   val cleanup : t -> scheduler:Scheduler.t -> unit
@@ -300,6 +312,23 @@ module ReadOnly : sig
   end
 
   val named_tuple_attributes : t -> string -> string list option
+
+  val repository_relative_path_of_qualifier
+    :  repository_root:PyrePath.t ->
+    t ->
+    Ast.Reference.t ->
+    string option
+
+  val target_from_method_reference : Analysis.PysaTypes.MethodReference.t -> Target.t
+
+  (* Turn a captured variable root into a root for the state. Used to assign user provided sources
+     for captured variables at the beginning of the forward analysis. *)
+  val state_root_of_captured_variable
+    :  t ->
+    Analysis.TaintAccessPath.CapturedVariable.t ->
+    Analysis.TaintAccessPath.Root.t
+
+  val ensures_qualified : t -> Ast.Source.t -> Ast.Source.t
 end
 
 val add_builtins_prefix : Ast.Reference.t -> Ast.Reference.t
@@ -322,6 +351,19 @@ module ModelQueries : sig
   module Global = Analysis.PysaTypes.ModelQueries.Global
   module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
   module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
+  module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
+  module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
+  module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+
+  val property_decorators : String.Set.t
+
+  val mangle_top_level_name : Ast.Reference.t -> Ast.Reference.t
+
+  val demangle_class_attribute : Ast.Reference.t -> Ast.Reference.t
+
+  val has_class_attribute_form : Ast.Reference.t -> bool
+
+  val mangle_class_attribute : Ast.Reference.t -> Ast.Reference.t
 
   val resolve_user_qualified_name
     :  ReadOnly.t ->
@@ -355,15 +397,13 @@ module InContext : sig
     statement_key:int ->
     t
 
-  val pyre_api : t -> ReadOnly.t
+  val pyrefly_api : t -> ReadOnly.t
 
   val call_graph : t -> CallGraph.DefineCallGraph.t
 
   val is_global : t -> reference:Ast.Reference.t -> bool
 
   val resolve_reference : t -> Ast.Reference.t -> Type.t
-
-  val resolve_assignment : t -> Ast.Statement.Assign.t -> t
 
   val resolve_expression_to_type : t -> Ast.Expression.t -> Type.t
 
@@ -377,8 +417,6 @@ module InContext : sig
     string ->
     Analysis.AnnotatedAttribute.instantiated option
 
-  val resolve_generators : t -> Ast.Expression.Comprehension.Generator.t list -> t
-
   val module_qualifier : t -> Ast.Reference.t
 
   val define_name : t -> Ast.Reference.t
@@ -389,11 +427,28 @@ module InContext : sig
     identifier:Ast.Identifier.t ->
     Analysis.TaintAccessPath.Root.t
 
+  (* Propagate a captured variable from a callee to a caller. Return the new root representing that
+     variable in the caller. *)
   val propagate_captured_variable
     :  t ->
-    defining_function:Ast.Reference.t ->
-    name:Ast.Identifier.t ->
+    Analysis.TaintAccessPath.CapturedVariable.t ->
     Analysis.TaintAccessPath.Root.t
+
+  val access_path_of_expression
+    :  t ->
+    self_variable:Analysis.TaintAccessPath.Root.t option ->
+    Ast.Expression.t ->
+    Analysis.TaintAccessPath.t option
+
+  (* Turn a captured variable root into a root for the state. Used to assign user provided sources
+     for captured variables at the beginning of the forward analysis. *)
+  val state_root_of_captured_variable
+    :  t ->
+    Analysis.TaintAccessPath.CapturedVariable.t ->
+    Analysis.TaintAccessPath.Root.t
+
+  (* Compute the type of the given expression. *)
+  val type_of_expression : t -> Ast.Expression.t -> Analysis.PysaTypes.PysaType.t
 end
 
 (* Exposed for testing purposes *)

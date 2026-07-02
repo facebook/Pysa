@@ -10,7 +10,7 @@
 open Core
 open Pyre
 open Taint
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
 
 let initialize_and_verify_configuration
@@ -146,7 +146,7 @@ let create_pyre_read_write_api_and_perform_type_analysis
       { Configuration.StaticAnalysis.configuration; pyrefly_results; _ }
     ~decorator_configuration
   =
-  PyrePysaApi.ReadWrite.create_with_cold_start
+  PyreflyApi.ReadWrite.create_with_cold_start
     ~scheduler
     ~configuration
     ~pyrefly_results
@@ -155,7 +155,7 @@ let create_pyre_read_write_api_and_perform_type_analysis
 
 let parse_models_and_queries_from_sources
     ~scheduler
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~taint_configuration
     ~source_sink_filter
@@ -167,7 +167,7 @@ let parse_models_and_queries_from_sources
     let taint_configuration = TaintConfiguration.SharedMemory.get taint_configuration in
     List.fold sources ~init:ModelParseResult.empty ~f:(fun state (path, source) ->
         ModelParser.parse
-          ~pyre_api
+          ~pyrefly_api
           ~path_of_qualifier
           ~path
           ~source
@@ -195,7 +195,7 @@ let parse_models_and_queries_from_sources
 
 let parse_models_and_queries_from_configuration
     ~scheduler
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~static_analysis_configuration:
       { Configuration.StaticAnalysis.verify_models; group_missing_module_errors; configuration; _ }
@@ -203,12 +203,12 @@ let parse_models_and_queries_from_configuration
     ~source_sink_filter
     ~callables_to_definitions_map
   =
-  let all_sys_infos = PyrePysaApi.ReadOnly.all_sys_infos pyre_api in
+  let all_sys_infos = PyreflyApi.ReadOnly.all_sys_infos pyrefly_api in
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.get_model_sources ~paths:configuration.taint_model_paths
     |> parse_models_and_queries_from_sources
          ~scheduler
-         ~pyre_api
+         ~pyrefly_api
          ~path_of_qualifier
          ~taint_configuration
          ~source_sink_filter
@@ -244,7 +244,7 @@ end
 
 let initialize_models
     ~scheduler
-    ~pyre_api
+    ~pyrefly_api
     ~static_analysis_configuration:
       ({
          Configuration.StaticAnalysis.configuration = { local_root; _ };
@@ -263,14 +263,14 @@ let initialize_models
     StepLogger.start ~start_message:"Parsing taint models" ~end_message:"Parsed taint models" ()
   in
   let path_of_qualifier =
-    PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
+    PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
       ~repository_root:(Option.value repository_root ~default:local_root)
-      pyre_api
+      pyrefly_api
   in
   let { ModelParseResult.models = regular_models; queries; errors } =
     parse_models_and_queries_from_configuration
       ~scheduler
-      ~pyre_api
+      ~pyrefly_api
       ~path_of_qualifier
       ~static_analysis_configuration
       ~taint_configuration:taint_configuration_shared_memory
@@ -296,7 +296,7 @@ let initialize_models
         let verbose = Option.is_some taint_configuration.dump_model_query_results_path in
         let model_query_results =
           ModelQueryExecution.generate_models_from_queries
-            ~pyre_api
+            ~pyrefly_api
             ~scheduler
             ~scheduler_policies
             ~class_hierarchy_graph
@@ -339,7 +339,7 @@ let initialize_models
     ClassModels.infer
       ~scheduler
       ~scheduler_policies
-      ~pyre_api
+      ~pyrefly_api
       ~user_models:(SharedModels.read_only models)
     |> SharedModels.join_with_registry_sequential models ~model_join:Model.join_user_models
   in
@@ -486,7 +486,7 @@ let run_taint_analysis
       ~static_analysis_configuration
       ~decorator_configuration
   in
-  let pyre_api = PyrePysaApi.ReadOnly.of_read_write_api pyre_read_write_api in
+  let pyrefly_api = PyreflyApi.ReadOnly.of_read_write_api pyre_read_write_api in
 
   if compact_ocaml_heap_flag then
     compact_ocaml_heap ~name:"after type check";
@@ -497,7 +497,7 @@ let run_taint_analysis
     TaintConfiguration.SharedMemory.from_heap taint_configuration
   in
 
-  let qualifiers = PyrePysaApi.ReadOnly.explicit_qualifiers pyre_api in
+  let qualifiers = PyreflyApi.ReadOnly.explicit_qualifiers pyrefly_api in
 
   let class_hierarchy_graph =
     let step_logger =
@@ -510,7 +510,7 @@ let run_taint_analysis
       Interprocedural.ClassHierarchyGraph.Heap.from_qualifiers
         ~scheduler
         ~scheduler_policies
-        ~pyre_api
+        ~pyrefly_api
         ~qualifiers
     in
     let () = StepLogger.finish step_logger in
@@ -556,7 +556,7 @@ let run_taint_analysis
                   ~preferred_chunks_per_worker:1
                   ()))
         ~configuration
-        ~pyre_api
+        ~pyrefly_api
         ~qualifiers
     in
     let () =
@@ -574,7 +574,7 @@ let run_taint_analysis
       ()
   in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let () = StepLogger.finish step_logger in
 
@@ -583,7 +583,7 @@ let run_taint_analysis
   let { ModelGenerationResult.models = initial_models; errors = model_verification_errors; _ } =
     initialize_models
       ~scheduler
-      ~pyre_api
+      ~pyrefly_api
       ~static_analysis_configuration
       ~taint_configuration
       ~taint_configuration_shared_memory
@@ -610,7 +610,7 @@ let run_taint_analysis
     Interprocedural.OverrideGraph.build_whole_program_overrides
       ~static_analysis_configuration
       ~scheduler
-      ~pyre_api
+      ~pyrefly_api
       ~skip_overrides_targets
       ~maximum_overrides
       ~analyze_all_overrides_targets
@@ -631,7 +631,7 @@ let run_taint_analysis
     Interprocedural.GlobalConstants.SharedMemory.from_qualifiers
       ~scheduler
       ~scheduler_policies
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~qualifiers
@@ -641,17 +641,17 @@ let run_taint_analysis
   let resolve_module_path =
     resolve_module_path
       ~absolute_source_path_of_qualifier:
-        (PyrePysaApi.ReadOnly.absolute_source_path_of_qualifier pyre_api)
+        (PyreflyApi.ReadOnly.absolute_source_path_of_qualifier pyrefly_api)
       ~static_analysis_configuration
   in
 
   let pyre_read_write_api =
-    PyrePysaApi.ReadWrite.parse_type_of_expressions
+    PyreflyApi.ReadWrite.parse_type_of_expressions
       pyre_read_write_api
       ~scheduler
       ~scheduler_policies
   in
-  let pyre_api = PyrePysaApi.ReadOnly.of_read_write_api pyre_read_write_api in
+  let pyrefly_api = PyreflyApi.ReadOnly.of_read_write_api pyre_read_write_api in
 
   let attribute_targets = SharedModels.object_targets initial_models in
   let skip_analysis_targets = SharedModels.skip_analysis ~scheduler initial_models in
@@ -673,7 +673,7 @@ let run_taint_analysis
              scheduler_policies
              Configuration.ScheduleIdentifier.CallableToDecoratorsMap
              ~default:Interprocedural.CallGraphBuilder.default_scheduler_policy)
-        ~pyre_api
+        ~pyrefly_api
         ~callables_to_definitions_map:
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
         ~skip_analysis_targets:skip_analysis_targets_hashset
@@ -701,7 +701,7 @@ let run_taint_analysis
     Interprocedural.CallGraphBuilder.build_whole_program_call_graph
       ~scheduler
       ~static_analysis_configuration
-      ~pyre_api
+      ~pyrefly_api
       ~resolve_module_path:(Some resolve_module_path)
       ~override_graph:(Some override_graph_shared_memory_read_only)
       ~store_shared_memory:true
@@ -791,7 +791,7 @@ let run_taint_analysis
                   ()))
         ~static_analysis_configuration
         ~resolve_module_path:(Some resolve_module_path)
-        ~pyre_api
+        ~pyrefly_api
         ~call_graph:original_call_graphs
         ~dependency_graph:original_dependency_graph
         ~override_graph_shared_memory
@@ -883,7 +883,7 @@ let run_taint_analysis
       ~context:
         {
           Taint.TaintFixpoint.Context.taint_configuration = taint_configuration_shared_memory;
-          pyre_api;
+          pyrefly_api;
           class_interval_graph = class_interval_graph_shared_memory;
           get_define_call_graph;
           global_constants = Interprocedural.GlobalConstants.SharedMemory.read_only global_constants;

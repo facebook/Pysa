@@ -11,7 +11,7 @@ open Ast
 open Statement
 open Expression
 open Pyre
-module AstResult = PyrePysaApi.AstResult
+module AstResult = PyreflyApi.AstResult
 
 module Decorators = struct
   type t = {
@@ -152,7 +152,7 @@ let should_keep_decorator_pyrefly ~pyrefly_api ~callable decorator =
         || is_decorator_skipped_by_model ())
 
 
-let collect_decorators ~pyre_api ~callables_to_definitions_map callable =
+let collect_decorators ~pyrefly_api ~callables_to_definitions_map callable =
   callable
   |> Option.some_if (Target.is_normal callable)
   >>| CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map
@@ -165,9 +165,7 @@ let collect_decorators ~pyre_api ~callables_to_definitions_map callable =
         _;
       } ->
       let decorators =
-        match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-            List.filter ~f:(should_keep_decorator_pyrefly ~pyrefly_api ~callable) decorators
+        List.filter ~f:(should_keep_decorator_pyrefly ~pyrefly_api ~callable) decorators
       in
       if List.is_empty decorators then
         None
@@ -288,7 +286,7 @@ module SharedMemory = struct
   let create
       ~scheduler
       ~scheduler_policy
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map
       ~skip_analysis_targets
       callables
@@ -301,7 +299,7 @@ module SharedMemory = struct
     let empty_shared_memory = T.AddOnly.create_empty shared_memory_add_only in
     let map =
       List.fold ~init:empty_shared_memory ~f:(fun shared_memory target ->
-          match collect_decorators ~pyre_api ~callables_to_definitions_map target with
+          match collect_decorators ~pyrefly_api ~callables_to_definitions_map target with
           | Some value -> T.AddOnly.add shared_memory target value
           | None -> shared_memory)
     in

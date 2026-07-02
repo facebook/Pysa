@@ -11,7 +11,7 @@
 open Core
 open Ast
 module AccessPath = Analysis.TaintAccessPath
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 module IncompatibleModelError = struct
   type reason =
@@ -32,7 +32,7 @@ module IncompatibleModelError = struct
 
   type t = {
     reason: reason;
-    overload: PyrePysaApi.ModelQueries.FunctionSignature.t option;
+    overload: PyreflyApi.ModelQueries.FunctionSignature.t option;
   }
   [@@deriving equal, compare, show]
 
@@ -99,7 +99,7 @@ type kind =
     }
   | IncompatibleModelError of {
       name: string;
-      callable_signatures: PyrePysaApi.ModelQueries.FunctionSignature.t list;
+      callable_signatures: PyreflyApi.ModelQueries.FunctionSignature.t list;
       errors: IncompatibleModelError.t list;
       define_location: SourceLocation.t option;
     }
@@ -302,12 +302,12 @@ type t = {
 
 let pp_function_signature
     formatter
-    { PyrePysaApi.ModelQueries.FunctionSignature.parameters; return_annotation }
+    { PyreflyApi.ModelQueries.FunctionSignature.parameters; return_annotation }
   =
   let () = Format.fprintf formatter "def " in
   let () =
     match parameters with
-    | PyrePysaApi.ModelQueries.FunctionParameters.List parameters ->
+    | PyreflyApi.ModelQueries.FunctionParameters.List parameters ->
         let pp_parameter index parameter =
           let () =
             if index > 0 then
@@ -315,7 +315,7 @@ let pp_function_signature
           in
           let () =
             match parameter with
-            | PyrePysaApi.ModelQueries.FunctionParameter.PositionalOnly { name = Some name; _ }
+            | PyreflyApi.ModelQueries.FunctionParameter.PositionalOnly { name = Some name; _ }
             | Named { name; _ }
             | KeywordOnly { name; _ }
             | Variable { name = Some name; _ }
@@ -327,13 +327,13 @@ let pp_function_signature
             | Keywords { name = None; _ } -> Format.fprintf formatter "**kwargs"
           in
           let () =
-            match PyrePysaApi.ModelQueries.FunctionParameter.annotation parameter with
+            match PyreflyApi.ModelQueries.FunctionParameter.annotation parameter with
             | Some annotation ->
-                Format.fprintf formatter ": %a" PyrePysaApi.PysaType.pp_concise annotation
+                Format.fprintf formatter ": %a" PyreflyApi.PysaType.pp_concise annotation
             | None -> ()
           in
           let () =
-            if PyrePysaApi.ModelQueries.FunctionParameter.has_default parameter then
+            if PyreflyApi.ModelQueries.FunctionParameter.has_default parameter then
               Format.fprintf formatter " = ..."
           in
           ()
@@ -342,11 +342,11 @@ let pp_function_signature
         List.iteri parameters ~f:pp_parameter;
         Format.fprintf formatter ")";
         ()
-    | PyrePysaApi.ModelQueries.FunctionParameters.Ellipsis -> Format.fprintf formatter "(...)"
-    | PyrePysaApi.ModelQueries.FunctionParameters.ParamSpec ->
+    | PyreflyApi.ModelQueries.FunctionParameters.Ellipsis -> Format.fprintf formatter "(...)"
+    | PyreflyApi.ModelQueries.FunctionParameters.ParamSpec ->
         Format.fprintf formatter "(ParamSpec[T])"
   in
-  Format.fprintf formatter " -> %a: ..." PyrePysaApi.PysaType.pp_concise return_annotation
+  Format.fprintf formatter " -> %a: ..." PyreflyApi.PysaType.pp_concise return_annotation
 
 
 let pp_function_signatures formatter signatures =

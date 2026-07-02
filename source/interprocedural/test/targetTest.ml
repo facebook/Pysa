@@ -15,7 +15,7 @@ module AccessPath = Analysis.TaintAccessPath
 
 let test_get_module_and_definition context =
   let assert_get_module_and_definition ~source ~target ~expected () =
-    let pyre_api =
+    let pyrefly_api =
       Test.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:false
@@ -25,9 +25,9 @@ let test_get_module_and_definition context =
     let actual =
       target
       |> Target.from_regular
-      |> CallablesSharedMemory.get_signature_and_definition_for_test ~pyre_api
+      |> CallablesSharedMemory.get_signature_and_definition_for_test ~pyrefly_api
       >>= fun ({ CallablesSharedMemory.CallableSignature.qualifier; _ }, define) ->
-      PyrePysaApi.AstResult.to_option define
+      PyreflyApi.AstResult.to_option define
       >>| (fun { Node.value = { Statement.Define.body; _ }; _ } -> body)
       >>| fun define -> qualifier, define
     in

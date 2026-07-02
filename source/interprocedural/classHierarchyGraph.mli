@@ -31,7 +31,7 @@ module Heap : sig
 
   val show : t -> string
 
-  val from_qualifier : pyre_api:PyrePysaApi.ReadOnly.t -> qualifier:Reference.t -> t
+  val from_qualifier : pyrefly_api:PyreflyApi.ReadOnly.t -> qualifier:Reference.t -> t
 
   val create : roots:class_name list -> edges:(class_name * class_name list) list -> t
 
@@ -42,7 +42,7 @@ module Heap : sig
   val from_qualifiers
     :  scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
-    pyre_api:PyrePysaApi.ReadOnly.t ->
+    pyrefly_api:PyreflyApi.ReadOnly.t ->
     qualifiers:Reference.t list ->
     t
 end

@@ -17,15 +17,15 @@ let assert_class_models ~context ?user_models ~source ~expected () =
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let user_models =
     match user_models with
     | Some user_models ->
         let { ModelParseResult.models; errors; _ } =
           ModelParser.parse
-            ~pyre_api
+            ~pyrefly_api
             ~path_of_qualifier:
-              (PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+              (PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
             ~source:(Test.trim_extra_indentation user_models)
             ~taint_configuration:TaintConfiguration.Heap.default
             ~source_sink_filter:None
@@ -53,7 +53,7 @@ let assert_class_models ~context ?user_models ~source ~expected () =
     ClassModels.infer
       ~scheduler:(Test.mock_scheduler ())
       ~scheduler_policies:Configuration.SchedulerPolicies.empty
-      ~pyre_api
+      ~pyrefly_api
       ~user_models:(TaintFixpoint.SharedModels.read_only user_models)
   in
   let get_model = Registry.get actual_models in
@@ -61,7 +61,7 @@ let assert_class_models ~context ?user_models ~source ~expected () =
   List.iter
     ~f:
       (check_expectation
-         ~pyre_api
+         ~pyrefly_api
          ~taint_configuration:TaintConfiguration.Heap.default
          ~get_model
          ~get_errors)

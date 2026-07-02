@@ -27,18 +27,18 @@ let assert_taint ~context source expected =
       configuration
       ()
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  let initial_models = TestHelper.get_initial_models ~pyre_api in
-  let initial_callables = FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let initial_models = TestHelper.get_initial_models ~pyrefly_api in
+  let initial_callables = FetchCallables.from_qualifier ~pyrefly_api ~qualifier in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let analyze_and_store_in_order models (callable, define) =
     let () = Log.log ~section:`Taint "Analyzing %a" Target.pp callable in
     let call_graph_of_define =
       TestHelper.call_graph_of_callable
         ~static_analysis_configuration
-        ~pyre_api
+        ~pyrefly_api
         ~override_graph:
           (Some (OverrideGraph.SharedMemory.create () |> OverrideGraph.SharedMemory.read_only))
         ~object_targets:(initial_models |> Registry.object_targets |> Target.Set.elements)
@@ -61,7 +61,7 @@ let assert_taint ~context source expected =
         ~taint_configuration
         ~string_combine_partial_sink_tree:
           (Taint.CallModel.StringFormatCall.declared_partial_sink_tree taint_configuration)
-        ~pyre_api
+        ~pyrefly_api
         ~class_interval_graph:(ClassIntervalSetGraph.SharedMemory.create ())
         ~global_constants:
           (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
@@ -84,7 +84,7 @@ let assert_taint ~context source expected =
         Interprocedural.CallablesSharedMemory.ReadOnly.get_define
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
           callable
-        |> PyrePysaApi.AstResult.value_exn ~message:"missing ast"
+        |> PyreflyApi.AstResult.value_exn ~message:"missing ast"
       in
       callable, define
     in
@@ -101,7 +101,7 @@ let assert_taint ~context source expected =
   List.iter
     ~f:
       (check_expectation
-         ~pyre_api
+         ~pyrefly_api
          ~taint_configuration:TaintConfiguration.Heap.default
          ~get_model
          ~get_errors)

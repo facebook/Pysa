@@ -7,12 +7,12 @@
 
 open Ast
 open Statement
-module AstResult = PyrePysaApi.AstResult
+module AstResult = PyreflyApi.AstResult
 module CallableSignature = Analysis.PysaTypes.CallableSignature
 
 (* Exposed for testing purposes only. *)
 val get_signature_and_definition_for_test
-  :  pyre_api:PyrePysaApi.ReadOnly.t ->
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
   Target.t ->
   (CallableSignature.t * Define.t Node.t AstResult.t) option
 
@@ -27,7 +27,7 @@ module ReadWrite : sig
   type t
 
   (* Create a [CallablesSharedMemory] that includes all available callables from the given API. *)
-  val from_pyre_api : pyre_api:PyrePysaApi.ReadOnly.t -> t
+  val from_pyrefly_api : pyrefly_api:PyreflyApi.ReadOnly.t -> t
 
   val cleanup : t -> unit
 

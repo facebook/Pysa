@@ -10,7 +10,7 @@ open Core
 open Interprocedural
 open Pyre
 module PyrePysaLogic = Analysis.PyrePysaLogic
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 module AccessPath = Analysis.TaintAccessPath
 
 (* ModelParseResult: defines the result of parsing pysa model files (`.pysa`). *)
@@ -838,7 +838,13 @@ module CallableDecorator = struct
     callees: Reference.t list Lazy.t;
   }
 
-  let create_for_callable ~pyre_api ~callables_to_definitions_map:_ ~qualifier:_ ~target statement =
+  let create_for_callable
+      ~pyrefly_api
+      ~callables_to_definitions_map:_
+      ~qualifier:_
+      ~target
+      statement
+    =
     let get_callees statement =
       let ({ Node.value = expression; _ } as decorator_expression) =
         Statement.Decorator.to_expression statement
@@ -851,20 +857,18 @@ module CallableDecorator = struct
             (* Regular decorator, such as `@foo` *) decorator_expression
         | _ -> decorator_expression
       in
-      match pyre_api with
-      | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-          Interprocedural.PyreflyApi.ReadOnly.get_callable_decorator_callees
-            pyrefly_api
-            (Target.define_name_exn target)
-            (Node.location callee)
-          |> Option.value ~default:[]
-          |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
+      Interprocedural.PyreflyApi.ReadOnly.get_callable_decorator_callees
+        pyrefly_api
+        (Target.define_name_exn target)
+        (Node.location callee)
+      |> Option.value ~default:[]
+      |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
     in
     let callees = lazy (get_callees statement) in
     { statement; callees }
 
 
-  let create_for_class ~pyre_api ~class_name statement =
+  let create_for_class ~pyrefly_api ~class_name statement =
     let get_callees statement =
       let ({ Node.value = expression; _ } as decorator_expression) =
         Statement.Decorator.to_expression statement
@@ -875,14 +879,12 @@ module CallableDecorator = struct
         | Expression.Expression.Name _ -> decorator_expression
         | _ -> decorator_expression
       in
-      match pyre_api with
-      | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-          Interprocedural.PyreflyApi.ReadOnly.get_class_decorator_callees
-            pyrefly_api
-            class_name
-            (Node.location callee)
-          |> Option.value ~default:[]
-          |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
+      Interprocedural.PyreflyApi.ReadOnly.get_class_decorator_callees
+        pyrefly_api
+        class_name
+        (Node.location callee)
+      |> Option.value ~default:[]
+      |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
     in
     let callees = lazy (get_callees statement) in
     { statement; callees }
@@ -904,15 +906,15 @@ module TypeAnnotation : sig
   end
 
   val create
-    :  inferred_type:PyrePysaApi.PysaType.t option ->
+    :  inferred_type:PyreflyApi.PysaType.t option ->
     explicit_annotation:ExplicitAnnotation.t ->
     t
 
-  val from_inferred_type : PyrePysaApi.PysaType.t option -> t
+  val from_inferred_type : PyreflyApi.PysaType.t option -> t
 
   val is_annotated : t -> bool
 
-  val inferred_type : t -> PyrePysaApi.PysaType.t option
+  val inferred_type : t -> PyreflyApi.PysaType.t option
 
   val explicit_annotation : t -> ExplicitAnnotation.t
 
@@ -931,7 +933,7 @@ end = struct
 
   type t = {
     explicit_annotation: ExplicitAnnotation.t Lazy.t;
-    inferred_type: PyrePysaApi.PysaType.t option Lazy.t;
+    inferred_type: PyreflyApi.PysaType.t option Lazy.t;
   }
 
   let create ~inferred_type ~explicit_annotation =
@@ -971,7 +973,7 @@ end = struct
   (* Show the parsed annotation from pyre *)
   let show_fully_qualified_annotation { inferred_type; _ } =
     match Lazy.force inferred_type with
-    | Some inferred_type -> PyrePysaApi.PysaType.show_fully_qualified inferred_type
+    | Some inferred_type -> PyreflyApi.PysaType.show_fully_qualified inferred_type
     | None -> "typing.Any"
 end
 
@@ -983,7 +985,7 @@ module Modelable = struct
         (* The syntactic definition of the function, including the AST for each parameters. *)
         define_signature: CallablesSharedMemory.CallableSignature.t Lazy.t;
         (* The semantic (undecorated) signature(s) of the function. *)
-        undecorated_signatures: PyrePysaApi.ModelQueries.FunctionSignature.t list Lazy.t;
+        undecorated_signatures: PyreflyApi.ModelQueries.FunctionSignature.t list Lazy.t;
         decorators: CallableDecorator.t list Lazy.t;
         captures: Analysis.TaintAccessPath.CapturedVariable.t list Lazy.t;
       }
@@ -996,7 +998,7 @@ module Modelable = struct
         type_annotation: TypeAnnotation.t Lazy.t;
       }
 
-  let create_callable ~pyre_api ~callables_to_definitions_map target =
+  let create_callable ~pyrefly_api ~callables_to_definitions_map target =
     let define_signature =
       lazy
         (match CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map target with
@@ -1010,18 +1012,16 @@ module Modelable = struct
     in
     let undecorated_signatures =
       lazy
-        (match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-            Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures
-              pyrefly_api
-              (Target.define_name_exn target))
+        (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures
+           pyrefly_api
+           (Target.define_name_exn target))
     in
     let decorators =
       lazy
         (define_signature
         |> Lazy.force
         |> (fun { CallablesSharedMemory.CallableSignature.define_name; decorators; qualifier; _ } ->
-             PyrePysaApi.AstResult.to_option decorators
+             PyreflyApi.AstResult.to_option decorators
              >>| (fun decorators ->
                    PyrePysaLogic.DecoratorPreprocessing
                    .original_decorators_from_preprocessed_signature
@@ -1031,22 +1031,19 @@ module Modelable = struct
              >>| List.map
                    ~f:
                      (CallableDecorator.create_for_callable
-                        ~pyre_api
+                        ~pyrefly_api
                         ~callables_to_definitions_map
                         ~qualifier
                         ~target))
         |> Option.value ~default:[])
     in
     let captures =
-      lazy
-        (match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-            PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.define_name_exn target))
+      lazy (PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.define_name_exn target))
     in
     Callable { target; define_signature; undecorated_signatures; decorators; captures }
 
 
-  let create_attribute ~pyre_api target =
+  let create_attribute ~pyrefly_api target =
     let target_name = Target.object_name target in
     let type_annotation =
       lazy
@@ -1055,46 +1052,39 @@ module Modelable = struct
            Reference.prefix target_name >>| Reference.show |> Option.value ~default:""
          in
          let attribute = Reference.last target_name in
-         match pyre_api with
-         | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-             let inferred_type =
-               Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
-                 pyrefly_api
-                 ~class_name
-                 ~attribute
-               |> Option.some
-             in
-             let explicit_annotation =
-               Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_explicit_annotation
-                 pyrefly_api
-                 ~class_name
-                 ~attribute
-               |> function
-               | Some annotation -> TypeAnnotation.ExplicitAnnotation.Found annotation
-               | None -> TypeAnnotation.ExplicitAnnotation.NotFound
-             in
-             TypeAnnotation.create ~inferred_type ~explicit_annotation)
+         let inferred_type =
+           Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
+             pyrefly_api
+             ~class_name
+             ~attribute
+           |> Option.some
+         in
+         let explicit_annotation =
+           Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_explicit_annotation
+             pyrefly_api
+             ~class_name
+             ~attribute
+           |> function
+           | Some annotation -> TypeAnnotation.ExplicitAnnotation.Found annotation
+           | None -> TypeAnnotation.ExplicitAnnotation.NotFound
+         in
+         TypeAnnotation.create ~inferred_type ~explicit_annotation)
     in
     Attribute { target_name; type_annotation }
 
 
-  let create_global ~pyre_api target =
+  let create_global ~pyrefly_api target =
     let target_name = Target.object_name target in
     let type_annotation =
       lazy
-        (match pyre_api with
-        | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-            let qualifier = Option.value_exn (Reference.prefix target_name) in
-            let name = Reference.last target_name in
-            let inferred_type =
-              Interprocedural.PyreflyApi.ReadOnly.get_global_inferred_type
-                pyrefly_api
-                ~qualifier
-                ~name
-            in
-            TypeAnnotation.create
-              ~inferred_type
-              ~explicit_annotation:TypeAnnotation.ExplicitAnnotation.Unsupported)
+        (let qualifier = Option.value_exn (Reference.prefix target_name) in
+         let name = Reference.last target_name in
+         let inferred_type =
+           Interprocedural.PyreflyApi.ReadOnly.get_global_inferred_type pyrefly_api ~qualifier ~name
+         in
+         TypeAnnotation.create
+           ~inferred_type
+           ~explicit_annotation:TypeAnnotation.ExplicitAnnotation.Unsupported)
     in
     Global { target_name; type_annotation }
 
@@ -1131,7 +1121,7 @@ module Modelable = struct
     | Callable { undecorated_signatures; _ } ->
         undecorated_signatures
         |> Lazy.force
-        |> List.map ~f:(fun { PyrePysaApi.ModelQueries.FunctionSignature.return_annotation; _ } ->
+        |> List.map ~f:(fun { PyreflyApi.ModelQueries.FunctionSignature.return_annotation; _ } ->
                return_annotation)
     | Attribute _
     | Global _ ->
@@ -1142,10 +1132,10 @@ module Modelable = struct
     | Callable { undecorated_signatures; _ } ->
         undecorated_signatures
         |> Lazy.force
-        |> List.map ~f:(fun { PyrePysaApi.ModelQueries.FunctionSignature.parameters; _ } ->
+        |> List.map ~f:(fun { PyreflyApi.ModelQueries.FunctionSignature.parameters; _ } ->
                parameters)
         |> List.filter_map ~f:(function
-               | PyrePysaApi.ModelQueries.FunctionParameters.List parameters -> Some parameters
+               | PyreflyApi.ModelQueries.FunctionParameters.List parameters -> Some parameters
                | _ -> None)
         |> List.concat
     | Attribute _
@@ -1164,7 +1154,7 @@ module Modelable = struct
     | Callable { define_signature; _ } ->
         Lazy.force define_signature
         |> (fun { CallablesSharedMemory.CallableSignature.decorators; _ } -> decorators)
-        |> PyrePysaApi.AstResult.to_option
+        |> PyreflyApi.AstResult.to_option
         |> Option.value ~default:[]
     | Attribute _
     | Global _ ->

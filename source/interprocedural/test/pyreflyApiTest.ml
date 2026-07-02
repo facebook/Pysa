@@ -829,11 +829,623 @@ let test_strip_path_prefix _ =
   ()
 
 
+module PyrePysaApi = struct
+  open Pyre
+  open Analysis
+  module PysaType = PyreflyApi.PysaType
+  module ScalarTypeProperties = PyreflyApi.ScalarTypeProperties
+  module Function = PyreflyApi.ModelQueries.Function
+  module Global = PyreflyApi.ModelQueries.Global
+
+  (* Build the Pyrefly type representation for the small set of types used in this file. *)
+  let pyrefly_type = function
+    | Type.NoneType ->
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = "None";
+            scalar_properties = ScalarTypeProperties.none;
+            class_names = None;
+          }
+    | Type.Any ->
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = "Any";
+            scalar_properties = ScalarTypeProperties.none;
+            class_names = None;
+          }
+    | Type.Primitive "int" ->
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = "int";
+            scalar_properties = ScalarTypeProperties.integer;
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 5));
+          }
+    | Type.Primitive "str" ->
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = "str";
+            scalar_properties = ScalarTypeProperties.none;
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 10));
+          }
+    | Type.Primitive "test.Foo" ->
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = "test.Foo";
+            scalar_properties = ScalarTypeProperties.none;
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 0));
+          }
+    | Type.Primitive "test.Bar" ->
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = "test.Bar";
+            scalar_properties = ScalarTypeProperties.none;
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 1));
+          }
+    | annotation ->
+        (* Fallback used only for expectations that are discarded under Pyrefly (e.g. cases with
+           `~pyrefly_expect:None`). *)
+        PysaType.from_pyrefly_type
+          {
+            PysaTypes.PyreflyType.string = Format.asprintf "%a" Type.pp annotation;
+            scalar_properties = ScalarTypeProperties.none;
+            class_names = None;
+          }
+
+
+  (* Pyrefly does not have the concept of imported names. *)
+  let convert_to_pyrefly_global = function
+    | Global.Function function_ -> Global.Function { function_ with Function.imported_name = None }
+    | global -> global
+
+
+  let test_resolve_user_qualified_name context =
+    let assert_resolve ~context ?pyrefly_expect sources name ~expect =
+      let pyrefly_api =
+        Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
+        |> Test.ScratchPyrePysaProject.read_only_api
+      in
+      let module ResolutionResult = PyreflyApi.ModelQueries.ResolutionResult in
+      let module ModuleResolutionResult = PyreflyApi.ModelQueries.ModuleResolutionResult in
+      let actual =
+        PyreflyApi.ModelQueries.resolve_user_qualified_name
+          ~verify_class_attributes:false
+          pyrefly_api
+          ~is_property_getter:false
+          ~is_property_setter:false
+          (Ast.Reference.create name)
+        |> (function
+             | ResolutionResult.ModuleFound { results; _ } ->
+                 List.filter_map results ~f:(function
+                     | ModuleResolutionResult.Resolved global -> Some global
+                     | ModuleResolutionResult.Unresolved _ -> None)
+             | ResolutionResult.BaseModuleNotFound -> [])
+        |> List.map ~f:Global.strip_location_and_module
+      in
+      let expect =
+        match pyrefly_expect with
+        | Some pyrefly_expect -> pyrefly_expect
+        | None -> expect
+      in
+      let expect = expect >>| convert_to_pyrefly_global in
+      let expected_list = Option.to_list expect in
+      let printer globals =
+        List.map globals ~f:Global.show |> String.concat ~sep:", " |> Format.asprintf "[%s]"
+      in
+      assert_equal ~printer expected_list actual
+    in
+    let create_parameter ?(annotation = Type.Any) ?(position = 0) name =
+      PysaTypes.ModelQueries.FunctionParameter.Named
+        { name; position; annotation = pyrefly_type annotation; has_default = false }
+    in
+    let create_signature ?(return_annotation = Type.NoneType) parameters =
+      {
+        PysaTypes.ModelQueries.FunctionSignature.parameters =
+          PysaTypes.ModelQueries.FunctionParameters.List parameters;
+        return_annotation = pyrefly_type return_annotation;
+      }
+    in
+    let create_callable
+        ~define_name
+        ?imported_name
+        ?(is_method = false)
+        ?(signatures = [create_signature []])
+        ()
+      =
+      let define_name = Reference.create define_name in
+      {
+        Function.define_name;
+        imported_name = imported_name >>| Reference.create;
+        undecorated_signatures = Some signatures;
+        is_property_getter = false;
+        is_property_setter = false;
+        is_method;
+        module_qualifier = None;
+        location = None;
+      }
+    in
+    (* Most common cases. *)
+    assert_resolve
+      ~context
+      ["test.py", {|
+      def foo() -> None:
+        return
+    |}]
+      "test.foo"
+      ~expect:
+        (Some
+           (Global.Function (create_callable ~define_name:"test.foo" ~imported_name:"test.foo" ())));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      class Foo:
+        def bar(self) -> None:
+          return
+    |}]
+      "test.Foo.bar"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Foo.bar"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       [create_parameter ~annotation:(Type.Primitive "test.Foo") "self"];
+                   ]
+                 ())));
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          from typing import Callable
+          foo: Callable[[], None] = lambda: None
+        |}
+        );
+      ]
+      "test.foo"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.foo"
+                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
+                 ())))
+      ~pyrefly_expect:
+        (Some
+           (Global.ModuleGlobal
+              { name = Reference.create "test.foo"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          from typing import Callable
+          class Foo:
+            bar: Callable[[], None] = lambda: None
+        |}
+        );
+      ]
+      "test.Foo.bar"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Foo.bar"
+                 ~is_method:true
+                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
+                 ())));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      class Foo:
+        pass
+    |}]
+      "test.Foo"
+      ~expect:
+        (Some (Global.Class { class_name = "test.Foo"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      class Foo:
+        class Bar:
+          pass
+    |}]
+      "test.Foo.Bar"
+      ~expect:
+        (Some
+           (Global.Class { class_name = "test.Foo.Bar"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      def foo() -> None:
+        return None
+    |}]
+      "test"
+      ~expect:(Some (Global.Module { qualifier = Reference.create "test" }));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      class Foo:
+        x: int = 1
+    |}]
+      "test.Foo.x"
+      ~expect:
+        (Some
+           (Global.ClassAttribute
+              { name = Reference.create "test.Foo.x"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      x: int = 1
+    |}]
+      "test.x"
+      ~expect:
+        (Some
+           (Global.ModuleGlobal
+              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      ["test.py", {|
+      from typing import Any
+      x: Any = 1
+    |}]
+      "test.x"
+      ~expect:
+        (Some
+           (Global.UnknownModuleGlobal
+              { name = Reference.create "test.x"; module_qualifier = None; location = None }))
+      ~pyrefly_expect:
+        (Some
+           (Global.ModuleGlobal
+              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          from typing import Type
+          class Foo:
+            pass
+          x: Type[Foo] = Foo
+        |}
+        );
+      ]
+      "test.x"
+      ~expect:
+        (Some
+           (Global.ModuleGlobal
+              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+
+    (* Symbol is not found. *)
+    assert_resolve
+      ~context
+      ["test.py", {|
+      def foo() -> None:
+        return
+    |}]
+      "test.bar"
+      ~expect:None;
+    assert_resolve
+      ~context
+      ["test.py", {|
+      class Foo:
+        def bar() -> None:
+          return
+    |}]
+      "test.Foo.baz"
+      ~expect:None;
+    assert_resolve
+      ~context
+      ["test.py", {|
+      class Foo:
+        pass
+    |}]
+      "test.Bar"
+      ~expect:None;
+    assert_resolve ~context ["foo.py", "x: int = 1"] "bar" ~expect:None;
+
+    (* Decorators. *)
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          class Memoize:
+            def __init__(self, f):
+              self.f = f
+            def __call__(self, *args, **kwargs):
+              pass
+
+          def memoize(f) -> Memoize:
+            return Memoize(f)
+
+          @memoize
+          def foo(x: int) -> int:
+            return x
+        |}
+        );
+      ]
+      "test.foo"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.foo"
+                 ~imported_name:"test.foo"
+                 ~signatures:
+                   [
+                     create_signature
+                       ~return_annotation:Type.integer
+                       [create_parameter ~annotation:Type.integer "x"];
+                   ]
+                 ())));
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          class Memoize:
+            def __init__(self, f):
+              self.f = f
+            def __call__(self, *args, **kwargs):
+              pass
+
+          def memoize(f) -> Memoize:
+            return Memoize(f)
+
+          class Bar:
+            @memoize
+            def baz(self, x: int) -> int:
+              return x
+        |}
+        );
+      ]
+      "test.Bar.baz"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Bar.baz"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       ~return_annotation:Type.integer
+                       [
+                         create_parameter ~annotation:(Type.Primitive "test.Bar") "self";
+                         create_parameter ~annotation:Type.integer ~position:1 "x";
+                       ];
+                   ]
+                 ())));
+
+    (* Overloads *)
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          from typing import overload
+          class Foo:
+            @overload
+            def bar(self, x: int) -> str: ...
+            @overload
+            def bar(self, x: str) -> int: ...
+        |}
+        );
+      ]
+      "test.Foo.bar"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Foo.bar"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       ~return_annotation:Type.string
+                       [
+                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
+                         create_parameter ~annotation:Type.integer ~position:1 "x";
+                       ];
+                     create_signature
+                       ~return_annotation:Type.string
+                       [
+                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
+                         create_parameter ~annotation:Type.integer ~position:1 "x";
+                       ];
+                     create_signature
+                       ~return_annotation:Type.integer
+                       [
+                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
+                         create_parameter ~annotation:Type.string ~position:1 "x";
+                       ];
+                   ]
+                 ())))
+      ~pyrefly_expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Foo.bar"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       ~return_annotation:Type.string
+                       [
+                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
+                         create_parameter ~annotation:Type.integer ~position:1 "x";
+                       ];
+                     create_signature
+                       ~return_annotation:Type.integer
+                       [
+                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
+                         create_parameter ~annotation:Type.string ~position:1 "x";
+                       ];
+                   ]
+                 ())));
+
+    (* Top. *)
+    assert_resolve
+      ~context
+      [
+        ( "test.py",
+          {|
+          class Foo:
+            def bar(self):
+              pass
+            baz = bar
+        |}
+        );
+      ]
+      "test.Foo.baz"
+      ~expect:
+        (Some
+           (Global.UnknownClassAttribute
+              { name = Reference.create "test.Foo.baz"; module_qualifier = None; location = None }))
+      ~pyrefly_expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Foo.baz"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       ~return_annotation:Type.NoneType
+                       [create_parameter ~annotation:(Type.Primitive "test.Foo") "self"];
+                   ]
+                 ())));
+
+    (* Definition in type stub. *)
+    assert_resolve
+      ~context
+      ["test.pyi", {|
+      def foo() -> None: ...
+    |}]
+      "test.foo"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.foo"
+                 ~imported_name:"test.foo"
+                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
+                 ())));
+    assert_resolve
+      ~context
+      ["test.pyi", {|
+      class Foo:
+        def bar(self) -> None: ...
+    |}]
+      "test.Foo.bar"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.Foo.bar"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       ~return_annotation:Type.NoneType
+                       [create_parameter ~annotation:(Type.Primitive "test.Foo") "self"];
+                   ]
+                 ())));
+    assert_resolve
+      ~context
+      [
+        ( "test.pyi",
+          {|
+          from typing import Callable
+          foo: Callable[[], None]
+        |} );
+      ]
+      "test.foo"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"test.foo"
+                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
+                 ())))
+      ~pyrefly_expect:
+        (Some
+           (Global.ModuleGlobal
+              { name = Reference.create "test.foo"; module_qualifier = None; location = None }));
+    assert_resolve
+      ~context
+      ["test.pyi", {|
+      x: int = 1
+    |}]
+      "test.x"
+      ~expect:
+        (Some
+           (Global.ModuleGlobal
+              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+
+    (* Deeply nested code, where outer packages are not importable *)
+    assert_resolve
+      ~context
+      [
+        "outer/middle/inner/a.py", {|
+      def foo() -> None: ...
+    |};
+        "outer/middle/inner/b.py", {|
+      from .a import foo
+    |};
+      ]
+      "outer.middle.inner.b.foo"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"outer.middle.inner.b.foo"
+                 ~imported_name:"outer.middle.inner.a.foo"
+                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
+                 ())))
+      ~pyrefly_expect:None;
+    assert_resolve
+      ~context
+      [
+        "outer/middle/inner/a.py", {|
+      class Foo:
+        def bar(self) -> None: ...
+    |};
+        "outer/middle/inner/b.py", {|
+      from .a import Foo
+    |};
+      ]
+      "outer.middle.inner.b.Foo.bar"
+      ~expect:
+        (Some
+           (Global.Function
+              (create_callable
+                 ~define_name:"outer.middle.inner.b.Foo.bar"
+                 ~imported_name:"outer.middle.inner.a.Foo.bar"
+                 ~is_method:true
+                 ~signatures:
+                   [
+                     create_signature
+                       [
+                         create_parameter
+                           ~annotation:(Type.Primitive "outer.middle.inner.a.Foo")
+                           "self";
+                       ];
+                   ]
+                 ())))
+      ~pyrefly_expect:None;
+    ()
+end
+
 let () =
   "pyreflyApi"
   >::: [
          "module_qualifiers" >:: test_module_qualifiers;
          "fully_qualified_names" >:: test_fully_qualified_names;
          "strip_path_prefix" >:: test_strip_path_prefix;
+         "resolve_user_qualified_name" >:: PyrePysaApi.test_resolve_user_qualified_name;
        ]
   |> Test.run

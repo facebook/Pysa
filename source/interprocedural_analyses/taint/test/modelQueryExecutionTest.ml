@@ -36,28 +36,28 @@ let assert_generated_annotations context ~source ~query ~callable ~expected () =
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.Heap.from_qualifiers
       ~scheduler:(mock_scheduler ())
       ~scheduler_policies:Configuration.SchedulerPolicies.empty
-      ~pyre_api
+      ~pyrefly_api
       ~qualifiers:[Ast.Reference.create "test"]
     |> ClassHierarchyGraph.SharedMemory.from_heap ~store_transitive_children_for:[]
   in
   let actual =
     ModelQueryExecution.CallableQueryExecutor.generate_annotations_from_query_on_target
       ~verbose:false
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~class_hierarchy_graph
       ~modelable:
         (ModelQueryExecution.CallableQueryExecutor.make_modelable
-           ~pyre_api
+           ~pyrefly_api
            ~callables_to_definitions_map:
              (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
            (Target.from_regular callable))
@@ -78,15 +78,15 @@ let assert_generated_annotations_for_attributes context ~source ~query ~name ~ex
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.Heap.from_qualifiers
       ~scheduler:(mock_scheduler ())
       ~scheduler_policies:Configuration.SchedulerPolicies.empty
-      ~pyre_api
+      ~pyrefly_api
       ~qualifiers:[Ast.Reference.create "test"]
     |> ClassHierarchyGraph.SharedMemory.from_heap ~store_transitive_children_for:[]
   in
@@ -94,13 +94,13 @@ let assert_generated_annotations_for_attributes context ~source ~query ~name ~ex
   let actual =
     ModelQueryExecution.AttributeQueryExecutor.generate_annotations_from_query_on_target
       ~verbose:false
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~class_hierarchy_graph
       ~modelable:
         (ModelQueryExecution.AttributeQueryExecutor.make_modelable
-           ~pyre_api
+           ~pyrefly_api
            ~callables_to_definitions_map:
              (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
            target)
@@ -121,15 +121,15 @@ let assert_generated_annotations_for_globals context ~source ~query ~name ~expec
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.Heap.from_qualifiers
       ~scheduler:(mock_scheduler ())
       ~scheduler_policies:Configuration.SchedulerPolicies.empty
-      ~pyre_api
+      ~pyrefly_api
       ~qualifiers:[Ast.Reference.create "test"]
     |> ClassHierarchyGraph.SharedMemory.from_heap ~store_transitive_children_for:[]
   in
@@ -137,13 +137,13 @@ let assert_generated_annotations_for_globals context ~source ~query ~name ~expec
   let actual =
     ModelQueryExecution.GlobalVariableQueryExecutor.generate_annotations_from_query_on_target
       ~verbose:false
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~class_hierarchy_graph
       ~modelable:
         (ModelQueryExecution.GlobalVariableQueryExecutor.make_modelable
-           ~pyre_api
+           ~pyrefly_api
            ~callables_to_definitions_map:
              (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
            target)
@@ -5379,22 +5379,22 @@ let test_generated_cache context =
         ~requires_type_of_expressions:false
         ["test.py", source]
     in
-    let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
     let callables_to_definitions_map =
-      Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+      Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
     in
     let class_hierarchy_graph =
       ClassHierarchyGraph.Heap.from_qualifiers
         ~scheduler:(mock_scheduler ())
         ~scheduler_policies:Configuration.SchedulerPolicies.empty
-        ~pyre_api
+        ~pyrefly_api
         ~qualifiers:[Ast.Reference.create "test"]
       |> ClassHierarchyGraph.SharedMemory.from_heap ~store_transitive_children_for:[]
     in
     let actual =
       ModelQueryExecution.CallableQueryExecutor.generate_cache_from_queries_on_targets
         ~verbose:false
-        ~pyre_api
+        ~pyrefly_api
         ~callables_to_definitions_map:
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
         ~class_hierarchy_graph

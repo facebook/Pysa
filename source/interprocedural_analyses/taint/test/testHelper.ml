@@ -15,7 +15,7 @@ open Pyre
 open Taint
 open Interprocedural
 module AccessPath = Analysis.TaintAccessPath
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
 
 type parameter_sinks = {
@@ -105,7 +105,7 @@ let outcome
   }
 
 
-let create_callable ~pyre_api:_ kind define_name =
+let create_callable ~pyrefly_api:_ kind define_name =
   let name = Reference.create define_name in
   match kind with
   | `Method -> Target.create_method_from_reference name
@@ -121,7 +121,7 @@ let create_callable ~pyre_api:_ kind define_name =
 let check_expectation
     ~get_model
     ~get_errors
-    ~pyre_api
+    ~pyrefly_api
     ~taint_configuration
     {
       kind;
@@ -141,7 +141,7 @@ let check_expectation
       analysis_modes = expected_analysis_modes;
     }
   =
-  let callable = create_callable ~pyre_api kind define_name in
+  let callable = create_callable ~pyrefly_api kind define_name in
   let extract_sinks_by_parameter_name (root, sink_tree) sink_map =
     match AccessPath.Root.parameter_name root with
     | Some name ->
@@ -394,7 +394,7 @@ let check_expectation
     let to_analysis_error =
       Error.instantiate
         ~show_error_traces:true
-        ~lookup:(PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+        ~lookup:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
     in
     get_errors callable
     |> List.map ~f:(Issue.to_error ~taint_configuration)
@@ -450,11 +450,11 @@ let filter_unused_test_modules_errors errors =
   List.filter ~f:filter errors
 
 
-let get_initial_models ~pyre_api =
+let get_initial_models ~pyrefly_api =
   let { ModelParseResult.models; errors; _ } =
     ModelParser.parse
-      ~pyre_api
-      ~path_of_qualifier:(PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+      ~pyrefly_api
+      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
       ~source:initial_models_source
       ~taint_configuration:TaintConfiguration.Heap.default
       ~source_sink_filter:None
@@ -495,7 +495,7 @@ module TestEnvironment = struct
     stubs: Target.t list;
     initial_models: TaintFixpoint.SharedModels.t;
     model_query_results: ModelQueryExecution.ExecutionResult.t;
-    pyre_api: PyrePysaApi.ReadOnly.t;
+    pyrefly_api: PyreflyApi.ReadOnly.t;
     class_interval_graph: ClassIntervalSetGraph.Heap.t;
     class_interval_graph_shared_memory: ClassIntervalSetGraph.SharedMemory.t;
     global_constants: GlobalConstants.SharedMemory.t;
@@ -518,7 +518,7 @@ module TestEnvironment = struct
         stubs = _;
         initial_models;
         model_query_results = _;
-        pyre_api = _;
+        pyrefly_api = _;
         class_interval_graph;
         class_interval_graph_shared_memory;
         global_constants;
@@ -557,7 +557,7 @@ let get_decorator_preprocessing_configuration ~handle models =
 
 
 let initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_source =
-  let configuration, pyre_api, errors =
+  let configuration, pyrefly_api, errors =
     let decorator_preprocessing_configuration =
       get_decorator_preprocessing_configuration ~handle models_source
     in
@@ -569,9 +569,9 @@ let initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_
         [handle, source_content]
     in
     let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-    let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
     let errors = Test.ScratchPyrePysaProject.errors project in
-    configuration, pyre_api, errors
+    configuration, pyrefly_api, errors
   in
   (if not (List.is_empty errors) then
      let errors =
@@ -587,7 +587,7 @@ let initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_
        |> String.concat ~sep:"\n"
      in
      failwithf "Type errors were found in `%s`:\n%s" handle errors ());
-  configuration, pyre_api
+  configuration, pyrefly_api
 
 
 let initialize
@@ -602,7 +602,7 @@ let initialize
     ~context
     source_content
   =
-  let configuration, pyre_api =
+  let configuration, pyrefly_api =
     initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_source
   in
   let taint_configuration_shared_memory =
@@ -619,16 +619,14 @@ let initialize
       ()
   in
   let qualifier = Reference.create (String.chop_suffix_exn handle ~suffix:".py") in
-  let initial_callables_in_source =
-    FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier
-  in
+  let initial_callables_in_source = FetchCallables.from_qualifier ~pyrefly_api ~qualifier in
   let stubs = FetchCallables.get_stubs initial_callables_in_source in
   let definitions = FetchCallables.get_definitions initial_callables_in_source in
-  let class_hierarchy_graph = ClassHierarchyGraph.Heap.from_qualifier ~pyre_api ~qualifier in
+  let class_hierarchy_graph = ClassHierarchyGraph.Heap.from_qualifier ~pyrefly_api ~qualifier in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let user_models, model_query_results =
     let models_source =
@@ -641,12 +639,11 @@ let initialize
     match models_source with
     | None -> SharedModels.create (), ModelQueryExecution.ExecutionResult.create_empty ()
     | Some source ->
-        PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
         let { ModelParseResult.models = regular_models; errors; queries } =
           ModelParser.parse
-            ~pyre_api
+            ~pyrefly_api
             ~path_of_qualifier:
-              (PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api)
+              (PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
             ?path:model_path
             ~source:(Test.trim_extra_indentation source)
             ~taint_configuration
@@ -677,7 +674,7 @@ let initialize
 
         let model_query_results =
           ModelQueryExecution.generate_models_from_queries
-            ~pyre_api
+            ~pyrefly_api
             ~scheduler
             ~scheduler_policies:Configuration.SchedulerPolicies.empty
             ~class_hierarchy_graph
@@ -718,7 +715,7 @@ let initialize
     ClassModels.infer
       ~scheduler
       ~scheduler_policies:Configuration.SchedulerPolicies.empty
-      ~pyre_api
+      ~pyrefly_api
       ~user_models:(SharedModels.read_only user_models)
     |> SharedModels.join_with_registry_sequential user_models ~model_join:Model.join_user_models
   in
@@ -726,7 +723,7 @@ let initialize
   let { OverrideGraph.Heap.overrides = override_graph_heap; _ } =
     qualifier
     |> OverrideGraph.Heap.from_qualifier
-         ~pyre_api
+         ~pyrefly_api
          ~skip_overrides_targets:(SharedModels.skip_overrides ~scheduler initial_models)
     |> OverrideGraph.Heap.cap_overrides
          ~analyze_all_overrides_targets:
@@ -740,7 +737,7 @@ let initialize
 
   let global_constants =
     GlobalConstants.Heap.from_qualifier
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       qualifier
@@ -759,7 +756,7 @@ let initialize
     Interprocedural.CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
       ~scheduler_policy
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~skip_analysis_targets
@@ -770,7 +767,7 @@ let initialize
       CallGraphBuilder.build_whole_program_call_graph
         ~scheduler
         ~static_analysis_configuration
-        ~pyre_api
+        ~pyrefly_api
         ~resolve_module_path:None
         ~override_graph:(Some override_graph_shared_memory_read_only)
         ~store_shared_memory:true
@@ -808,7 +805,7 @@ let initialize
       ~scheduler_policy
       ~static_analysis_configuration
       ~resolve_module_path:None
-      ~pyre_api
+      ~pyrefly_api
       ~call_graph
       ~dependency_graph
       ~override_graph_shared_memory
@@ -845,7 +842,7 @@ let initialize
     model_query_results;
     stubs;
     initial_models;
-    pyre_api;
+    pyrefly_api;
     class_interval_graph;
     class_interval_graph_shared_memory;
     global_constants;
@@ -855,7 +852,7 @@ let initialize
 
 
 let call_graph_of_callable
-    ~pyre_api
+    ~pyrefly_api
     ~static_analysis_configuration
     ~override_graph
     ~object_targets
@@ -871,7 +868,7 @@ let call_graph_of_callable
       CallGraphBuilder.build_whole_program_call_graph
         ~scheduler:(Test.mock_scheduler ())
         ~static_analysis_configuration
-        ~pyre_api
+        ~pyrefly_api
         ~resolve_module_path:None
         ~callables_to_definitions_map
         ~callables_to_decorators_map
@@ -1054,7 +1051,7 @@ let end_to_end_integration_test path context =
       taint_configuration_shared_memory;
       whole_program_call_graph;
       get_define_call_graph;
-      pyre_api;
+      pyrefly_api;
       override_graph_heap;
       override_graph_shared_memory;
       initial_models;
@@ -1129,7 +1126,7 @@ let end_to_end_integration_test path context =
         ~context:
           {
             TaintFixpoint.Context.taint_configuration = taint_configuration_shared_memory;
-            pyre_api;
+            pyrefly_api;
             class_interval_graph = class_interval_graph_shared_memory;
             get_define_call_graph;
             global_constants =
@@ -1144,7 +1141,7 @@ let end_to_end_integration_test path context =
         ~state:fixpoint_state
     in
     let resolve_module_path qualifier =
-      PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api qualifier
+      PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api qualifier
       >>| fun filename ->
       { RepositoryPath.filename = Some filename; path = PyrePath.create_absolute filename }
     in
@@ -1208,5 +1205,5 @@ let setup_single_py_file ?(requires_type_of_expressions = true) ~file_name ~cont
   let project =
     Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions [file_name, source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  test_module_name, pyre_api, Test.ScratchPyrePysaProject.configuration_of project
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  test_module_name, pyrefly_api, Test.ScratchPyrePysaProject.configuration_of project

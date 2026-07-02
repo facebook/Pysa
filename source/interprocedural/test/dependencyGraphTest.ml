@@ -22,15 +22,15 @@ let setup ?(other_sources = []) ~context ~handle source =
       ~external_sources
       [handle, source]
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
-  ( pyre_api,
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  ( pyrefly_api,
     Test.ScratchPyrePysaProject.errors project,
     Test.ScratchPyrePysaProject.configuration_of project )
 
 
 let create_call_graph ?(other_sources = []) ~context source_text =
   let module_name, handle = !&"test", "test.py" in
-  let pyre_api, errors, configuration = setup ~other_sources ~context ~handle source_text in
+  let pyrefly_api, errors, configuration = setup ~other_sources ~context ~handle source_text in
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
@@ -40,7 +40,7 @@ let create_call_graph ?(other_sources = []) ~context source_text =
   in
   let override_graph =
     OverrideGraph.Heap.from_qualifier
-      ~pyre_api
+      ~pyrefly_api
       ~skip_overrides_targets:Reference.SerializableSet.empty
       module_name
   in
@@ -56,19 +56,17 @@ let create_call_graph ?(other_sources = []) ~context source_text =
         |> String.concat ~sep:"\n")
       |> failwith
   in
-  let initial_callables =
-    FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier:module_name
-  in
+  let initial_callables = FetchCallables.from_qualifier ~pyrefly_api ~qualifier:module_name in
   let definitions = FetchCallables.get_definitions initial_callables in
   let scheduler = Test.mock_scheduler () in
   let callables_to_definitions_map =
-    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+    Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
   let { CallGraph.SharedMemory.whole_program_call_graph; define_call_graphs } =
     CallGraphBuilder.build_whole_program_call_graph
       ~scheduler
       ~static_analysis_configuration
-      ~pyre_api
+      ~pyrefly_api
       ~resolve_module_path:None
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)

@@ -12,8 +12,7 @@
   overrideGraphTest
   changedPathsTest
   globalConstantsTest
-  pyreflyApiTest
-  pyrePysaApiTest)
+  pyreflyApiTest)
  (deps
   (env_var PYREFLY_BINARY)
   %{workspace_root}/pyrefly.exe)

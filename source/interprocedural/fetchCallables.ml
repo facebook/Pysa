@@ -35,7 +35,7 @@ let join left right =
   }
 
 
-let from_qualifier_with_pyrefly ~pyrefly_api ~qualifier =
+let from_qualifier ~pyrefly_api ~qualifier =
   let define_names =
     PyreflyApi.ReadOnly.get_define_names_for_qualifier
       pyrefly_api
@@ -70,15 +70,10 @@ let from_qualifier_with_pyrefly ~pyrefly_api ~qualifier =
   List.fold define_names ~init:empty ~f:add_target
 
 
-let from_qualifier ~configuration:_ ~pyre_api ~qualifier =
-  match pyre_api with
-  | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api -> from_qualifier_with_pyrefly ~pyrefly_api ~qualifier
-
-
-let from_qualifiers ~scheduler ~scheduler_policy ~pyre_api ~configuration ~qualifiers =
+let from_qualifiers ~scheduler ~scheduler_policy ~pyrefly_api ~configuration:_ ~qualifiers =
   let map qualifiers =
     let callables_of_qualifier callables qualifier =
-      from_qualifier ~configuration ~pyre_api ~qualifier |> join callables
+      from_qualifier ~pyrefly_api ~qualifier |> join callables
     in
     List.fold qualifiers ~f:callables_of_qualifier ~init:empty
   in

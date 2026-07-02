@@ -15,10 +15,9 @@
  *)
 
 open Core
-open Pyre
 open Ast
 open Domains
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 module FeatureSet = struct
   type t = {
@@ -45,7 +44,7 @@ module FeatureSet = struct
     }
 end
 
-let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
+let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
   let step_logger =
     StepLogger.start
       ~start_message:"Computing inferred models"
@@ -184,7 +183,7 @@ let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
 
   let compute_dataclass_models class_name class_summary =
     let attributes =
-      PyrePysaApi.ReadOnly.ClassSummary.dataclass_ordered_attributes pyre_api class_summary
+      PyreflyApi.ReadOnly.ClassSummary.dataclass_ordered_attributes pyrefly_api class_summary
     in
     [
       ( Target.create_method (Reference.create class_name) "__init__",
@@ -203,7 +202,7 @@ let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
      field names. *)
   let compute_named_tuple_models class_name class_summary =
     let attributes =
-      PyrePysaApi.ReadOnly.named_tuple_attributes pyre_api class_name |> Option.value ~default:[]
+      PyreflyApi.ReadOnly.named_tuple_attributes pyrefly_api class_name |> Option.value ~default:[]
     in
     let prepend_init_model models =
       let init_model =
@@ -223,7 +222,7 @@ let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
     (* If a user-specified __new__ exist, don't override it. *)
     (* TODO(T225700656): This is not doing the right check when using pyrefly, since
        `get_class_attributes` doesn't return functions. *)
-    (if PyrePysaApi.ReadOnly.ClassSummary.has_custom_new pyre_api class_summary then
+    (if PyreflyApi.ReadOnly.ClassSummary.has_custom_new pyrefly_api class_summary then
        []
     else
       (* Should not omit this model. Otherwise the mode is "obscure", thus leading to a tito model,
@@ -233,7 +232,7 @@ let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
   in
   let compute_typed_dict_models class_name class_summary =
     let fields =
-      PyrePysaApi.ReadOnly.ClassSummary.typed_dictionary_attributes pyre_api class_summary
+      PyreflyApi.ReadOnly.ClassSummary.typed_dictionary_attributes pyrefly_api class_summary
     in
     let self =
       AccessPath.Root.PositionalParameter { position = 0; name = "self"; positional_only = false }
@@ -287,21 +286,19 @@ let infer ~scheduler ~scheduler_policies ~pyre_api ~user_models =
     ]
   in
   let compute_models class_name class_summary =
-    if PyrePysaApi.ReadOnly.ClassSummary.is_dataclass pyre_api class_summary then
+    if PyreflyApi.ReadOnly.ClassSummary.is_dataclass pyrefly_api class_summary then
       compute_dataclass_models class_name class_summary
-    else if PyrePysaApi.ReadOnly.ClassSummary.is_named_tuple pyre_api class_summary then
+    else if PyreflyApi.ReadOnly.ClassSummary.is_named_tuple pyrefly_api class_summary then
       compute_named_tuple_models class_name class_summary
-    else if PyrePysaApi.ReadOnly.ClassSummary.is_typed_dict pyre_api class_summary then
+    else if PyreflyApi.ReadOnly.ClassSummary.is_typed_dict pyrefly_api class_summary then
       compute_typed_dict_models class_name class_summary
     else
       []
   in
   let inferred_models class_name =
-    PyrePysaApi.ReadOnly.get_class_summary pyre_api class_name
-    >>| compute_models class_name
-    |> Option.value ~default:[]
+    PyreflyApi.ReadOnly.get_class_summary pyrefly_api class_name |> compute_models class_name
   in
-  let all_classes = PyrePysaApi.ReadOnly.all_classes pyre_api ~scheduler in
+  let all_classes = PyreflyApi.ReadOnly.all_classes pyrefly_api ~scheduler in
   let models =
     let scheduler_policy =
       Scheduler.Policy.from_configuration_or_default

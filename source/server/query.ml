@@ -526,7 +526,7 @@ let parse_request query =
 
 
 let parse_model_queries
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~scheduler
     ~taint_configuration
@@ -543,7 +543,7 @@ let parse_model_queries
   let sources = Taint.ModelParser.get_model_sources ~paths:model_paths in
   let parse_model_source (path, source) =
     Taint.ModelParser.parse
-      ~pyre_api
+      ~pyrefly_api
       ~path_of_qualifier
       ~path
       ~source
@@ -584,8 +584,8 @@ let parse_model_queries
   result
 
 
-let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_queries =
-  let qualifiers = Interprocedural.PyrePysaApi.ReadOnly.explicit_qualifiers pyre_api in
+let setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model_queries =
+  let qualifiers = Interprocedural.PyreflyApi.ReadOnly.explicit_qualifiers pyrefly_api in
   let initial_callables =
     let step_logger =
       Taint.StepLogger.start
@@ -603,7 +603,7 @@ let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_qu
              ~preferred_chunks_per_worker:1
              ())
         ~configuration
-        ~pyre_api
+        ~pyrefly_api
         ~qualifiers
     in
     Taint.StepLogger.finish step_logger;
@@ -620,7 +620,7 @@ let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_qu
       Interprocedural.ClassHierarchyGraph.Heap.from_qualifiers
         ~scheduler
         ~scheduler_policies:Configuration.SchedulerPolicies.empty
-        ~pyre_api
+        ~pyrefly_api
         ~qualifiers
     in
     Taint.StepLogger.finish step_logger;
@@ -634,13 +634,13 @@ let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_qu
         ()
     in
     let callables_to_definitions_map =
-      Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
+      Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
     in
     Taint.StepLogger.finish step_logger;
     callables_to_definitions_map
   in
   Taint.ModelQueryExecution.generate_models_from_queries
-    ~pyre_api
+    ~pyrefly_api
     ~scheduler
     ~scheduler_policies:Configuration.SchedulerPolicies.empty
     ~class_hierarchy_graph
@@ -656,7 +656,7 @@ let setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_qu
 
 
 let process_model_query
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~scheduler
     ~configuration:({ Configuration.Analysis.taint_model_paths; _ } as configuration)
@@ -684,13 +684,13 @@ let process_model_query
       | Error (error :: _) -> Result.Error (Taint.TaintConfiguration.Error.show error)
       | Error _ -> failwith "Taint.TaintConfiguration.create returned empty errors list"
       | Ok taint_configuration -> (
-          let all_sys_infos = Interprocedural.PyrePysaApi.ReadOnly.all_sys_infos pyre_api in
+          let all_sys_infos = Interprocedural.PyreflyApi.ReadOnly.all_sys_infos pyrefly_api in
           let parse_result =
             let filter_query { Taint.ModelParseResult.ModelQuery.name; _ } =
               String.equal name query_name
             in
             parse_model_queries
-              ~pyre_api
+              ~pyrefly_api
               ~path_of_qualifier
               ~scheduler
               ~taint_configuration
@@ -732,7 +732,7 @@ let process_model_query
                    (List.map ~f:show_query_location queries |> String.concat ~sep:"\n"))
           | { Taint.ModelParseResult.queries = [query]; _ } ->
               let model_query_results =
-                setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration [query]
+                setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration [query]
               in
               let models =
                 Taint.ModelQueryExecution.ExecutionResult.get_models model_query_results
@@ -774,7 +774,7 @@ let process_model_query
 
 
 let process_validate_taint_models
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~scheduler
     ~configuration
@@ -807,9 +807,9 @@ let process_validate_taint_models
     taint_configuration
   in
   let { Taint.ModelParseResult.queries = model_queries; errors = model_parse_errors; _ } =
-    let all_sys_infos = Interprocedural.PyrePysaApi.ReadOnly.all_sys_infos pyre_api in
+    let all_sys_infos = Interprocedural.PyreflyApi.ReadOnly.all_sys_infos pyrefly_api in
     parse_model_queries
-      ~pyre_api
+      ~pyrefly_api
       ~path_of_qualifier
       ~scheduler
       ~taint_configuration
@@ -819,7 +819,7 @@ let process_validate_taint_models
   in
   let model_query_errors =
     if verify_dsl then
-      setup_and_execute_model_queries ~pyre_api ~scheduler ~configuration model_queries
+      setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model_queries
       |> Taint.ModelQueryExecution.ExecutionResult.get_errors
     else
       []

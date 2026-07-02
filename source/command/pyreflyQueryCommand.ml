@@ -18,7 +18,7 @@ let output_query_response ~output_file ~content =
 
 
 let run_pyrefly_query ~pyrefly_results ~query ~configuration ~repository_root ~scheduler =
-  let create_pyre_api () =
+  let create_pyrefly_api () =
     pyrefly_results
     |> PyrePath.create_absolute
     |> Interprocedural.PyreflyApi.ReadWrite.create_from_directory
@@ -26,33 +26,32 @@ let run_pyrefly_query ~pyrefly_results ~query ~configuration ~repository_root ~s
          ~scheduler_policies:Configuration.SchedulerPolicies.empty
          ~configuration
     |> Interprocedural.PyreflyApi.ReadOnly.of_read_write_api
-    |> Interprocedural.PyrePysaApi.ReadOnly.from_pyrefly_api
   in
   match Server.Query.parse_request query with
   | Result.Error message -> Server.Query.Response.Error message
   | Result.Ok (ModelQuery { path; query_name }) ->
-      let pyre_api = create_pyre_api () in
+      let pyrefly_api = create_pyrefly_api () in
       let path_of_qualifier =
-        Interprocedural.PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
+        Interprocedural.PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
           ~repository_root:(Option.value repository_root ~default:configuration.local_root)
-          pyre_api
+          pyrefly_api
       in
       Server.Query.process_model_query
-        ~pyre_api
+        ~pyrefly_api
         ~path_of_qualifier
         ~scheduler
         ~configuration
         ~path
         ~query_name
   | Result.Ok (ValidateTaintModels { path; verify_dsl }) ->
-      let pyre_api = create_pyre_api () in
+      let pyrefly_api = create_pyrefly_api () in
       let path_of_qualifier =
-        Interprocedural.PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier
+        Interprocedural.PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
           ~repository_root:(Option.value repository_root ~default:configuration.local_root)
-          pyre_api
+          pyrefly_api
       in
       Server.Query.process_validate_taint_models
-        ~pyre_api
+        ~pyrefly_api
         ~path_of_qualifier
         ~scheduler
         ~configuration

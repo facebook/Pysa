@@ -24,7 +24,7 @@ module Heap : sig
   val show : t -> string
 
   val from_qualifier
-    :  pyre_api:PyrePysaApi.ReadOnly.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     skip_overrides_targets:Reference.SerializableSet.t ->
     Reference.t ->
     t
@@ -87,7 +87,7 @@ type whole_program_overrides = {
 val build_whole_program_overrides
   :  scheduler:Scheduler.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
+  pyrefly_api:PyreflyApi.ReadOnly.t ->
   skip_overrides_targets:Reference.SerializableSet.t ->
   maximum_overrides:int option ->
   analyze_all_overrides_targets:Target.Set.t ->

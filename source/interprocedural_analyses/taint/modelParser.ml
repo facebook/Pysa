@@ -20,8 +20,8 @@ open Statement
 open Domains
 open ModelParseResult
 module PyrePysaLogic = Analysis.PyrePysaLogic
-module ResolutionResult = PyrePysaApi.ModelQueries.ResolutionResult
-module ModuleResolutionResult = PyrePysaApi.ModelQueries.ModuleResolutionResult
+module ResolutionResult = PyreflyApi.ModelQueries.ResolutionResult
+module ModuleResolutionResult = PyreflyApi.ModelQueries.ModuleResolutionResult
 
 module SystemCondition = struct
   type t =
@@ -134,7 +134,7 @@ module SystemCondition = struct
     | IsNot -> Error ComparisonOperator.IsNot
 
 
-  let rec evaluate ~pyre_api sys_info condition =
+  let rec evaluate ~pyrefly_api sys_info condition =
     let open Analysis.PysaTypes.SysInfo in
     match condition with
     | PythonVersionCondition { operator; version = test_version } -> (
@@ -152,15 +152,15 @@ module SystemCondition = struct
     | UsingPyre1 -> Ok false
     | And (left, right) ->
         let open Result in
-        evaluate ~pyre_api sys_info left
+        evaluate ~pyrefly_api sys_info left
         >>= fun left_result ->
-        evaluate ~pyre_api sys_info right >>| fun right_result -> left_result && right_result
+        evaluate ~pyrefly_api sys_info right >>| fun right_result -> left_result && right_result
     | Or (left, right) ->
         let open Result in
-        evaluate ~pyre_api sys_info left
+        evaluate ~pyrefly_api sys_info left
         >>= fun left_result ->
-        evaluate ~pyre_api sys_info right >>| fun right_result -> left_result || right_result
-    | Not inner -> evaluate ~pyre_api sys_info inner |> Result.map ~f:not
+        evaluate ~pyrefly_api sys_info right >>| fun right_result -> left_result || right_result
+    | Not inner -> evaluate ~pyrefly_api sys_info inner |> Result.map ~f:not
 end
 
 let model_verification_error ~path ~location kind = { ModelVerificationError.kind; path; location }
@@ -1048,43 +1048,43 @@ let rec parse_annotations
   parse_annotation (Node.value annotation)
 
 
-let get_class_attributes ~pyre_api = function
+let get_class_attributes ~pyrefly_api = function
   | "object" -> Some []
   | class_name ->
-      PyrePysaApi.ReadOnly.get_class_attributes
-        pyre_api
+      PyreflyApi.ReadOnly.get_class_attributes
+        pyrefly_api
         ~include_generated_attributes:false
         ~only_simple_assignments:true
         class_name
 
 
-let get_class_attributes_transitive ~pyre_api class_name =
-  let successors = PyrePysaApi.ReadOnly.class_mro pyre_api class_name in
-  class_name :: successors |> List.filter_map ~f:(get_class_attributes ~pyre_api) |> List.concat
+let get_class_attributes_transitive ~pyrefly_api class_name =
+  let successors = PyreflyApi.ReadOnly.class_mro pyrefly_api class_name in
+  class_name :: successors |> List.filter_map ~f:(get_class_attributes ~pyrefly_api) |> List.concat
 
 
-let paths_for_source_or_sink ~pyre_api ~kind ~root ~root_annotations ~features =
+let paths_for_source_or_sink ~pyrefly_api ~kind ~root ~root_annotations ~features =
   let open Core.Result in
   let all_static_field_paths () =
     let allow_modifier = function
-      | PyrePysaApi.TypeModifier.Optional
-      | PyrePysaApi.TypeModifier.Coroutine
-      | PyrePysaApi.TypeModifier.Awaitable
-      | PyrePysaApi.TypeModifier.ReadOnly ->
+      | PyreflyApi.TypeModifier.Optional
+      | PyreflyApi.TypeModifier.Coroutine
+      | PyreflyApi.TypeModifier.Awaitable
+      | PyreflyApi.TypeModifier.ReadOnly ->
           true
-      | PyrePysaApi.TypeModifier.TypeVariableBound
-      | PyrePysaApi.TypeModifier.TypeVariableConstraint
-      | PyrePysaApi.TypeModifier.Type ->
+      | PyreflyApi.TypeModifier.TypeVariableBound
+      | PyreflyApi.TypeModifier.TypeVariableConstraint
+      | PyreflyApi.TypeModifier.Type ->
           false
     in
     let attributes =
       root_annotations
-      |> List.map ~f:(PyrePysaApi.ReadOnly.Type.get_class_names pyre_api)
-      |> List.map ~f:(fun { PyrePysaApi.ClassNamesFromType.classes; _ } -> classes)
+      |> List.map ~f:(PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api)
+      |> List.map ~f:(fun { PyreflyApi.ClassNamesFromType.classes; _ } -> classes)
       |> List.concat
-      |> List.filter_map ~f:(fun { PyrePysaApi.ClassWithModifiers.modifiers; class_name } ->
+      |> List.filter_map ~f:(fun { PyreflyApi.ClassWithModifiers.modifiers; class_name } ->
              if List.for_all ~f:allow_modifier modifiers then Some class_name else None)
-      |> List.concat_map ~f:(get_class_attributes_transitive ~pyre_api)
+      |> List.concat_map ~f:(get_class_attributes_transitive ~pyrefly_api)
       |> List.filter ~f:(Fn.non Ast.Expression.is_dunder_attribute)
       |> List.dedup_and_sort ~compare:Identifier.compare
     in
@@ -1225,17 +1225,17 @@ let output_path_for_tito ~input_root ~kind ~features =
         (Format.asprintf "Invalid mix of ReturnPath and UpdatePath for %a annotation" Sinks.pp kind)
 
 
-let type_breadcrumbs_from_annotations ~pyre_api annotations =
+let type_breadcrumbs_from_annotations ~pyrefly_api annotations =
   annotations
   |> List.map ~f:(fun annotation ->
-         PyrePysaApi.ReadOnly.Type.scalar_properties pyre_api annotation
+         PyreflyApi.ReadOnly.Type.scalar_properties pyrefly_api annotation
          |> Features.type_breadcrumbs)
   |> List.reduce ~f:Features.BreadcrumbSet.inter
   |> Option.value ~default:Features.BreadcrumbSet.empty
 
 
 let introduce_sink_taint
-    ~pyre_api
+    ~pyrefly_api
     ~root
     ~root_annotations
     ~features:
@@ -1285,7 +1285,7 @@ let introduce_sink_taint
       leaf_names |> List.map ~f:Features.LeafNameInterned.intern |> Features.LeafNameSet.of_list
     in
     let type_breadcrumbs =
-      type_breadcrumbs_from_annotations ~pyre_api root_annotations
+      type_breadcrumbs_from_annotations ~pyrefly_api root_annotations
       |> Features.BreadcrumbMayAlwaysSet.of_set
     in
     let breadcrumbs =
@@ -1315,7 +1315,7 @@ let introduce_sink_taint
       |> transform_call_information
       |> BackwardState.Tree.create_leaf
     in
-    paths_for_source_or_sink ~pyre_api ~kind:"sink" ~root ~root_annotations ~features
+    paths_for_source_or_sink ~pyrefly_api ~kind:"sink" ~root ~root_annotations ~features
     >>| fun paths ->
     let sink_taint =
       List.fold paths ~init:sink_taint ~f:(fun sink_taint path ->
@@ -1327,7 +1327,7 @@ let introduce_sink_taint
 
 
 let introduce_taint_in_taint_out
-    ~pyre_api
+    ~pyrefly_api
     ~root
     ~root_annotations
     ~result_annotations
@@ -1351,8 +1351,8 @@ let introduce_taint_in_taint_out
   (* For tito, both the parameter and the return type can provide type based breadcrumbs *)
   let type_breadcrumbs =
     Features.BreadcrumbSet.union
-      (type_breadcrumbs_from_annotations ~pyre_api root_annotations)
-      (type_breadcrumbs_from_annotations ~pyre_api result_annotations)
+      (type_breadcrumbs_from_annotations ~pyrefly_api root_annotations)
+      (type_breadcrumbs_from_annotations ~pyrefly_api result_annotations)
     |> Features.BreadcrumbMayAlwaysSet.of_set
   in
   let breadcrumbs =
@@ -1436,7 +1436,7 @@ let introduce_taint_in_taint_out
 
 
 let introduce_source_taint
-    ~pyre_api
+    ~pyrefly_api
     ~root
     ~root_annotations
     ~is_generation
@@ -1471,7 +1471,7 @@ let introduce_source_taint
     |> Option.value ~default:true
   then
     let type_breadcrumbs =
-      type_breadcrumbs_from_annotations ~pyre_api root_annotations
+      type_breadcrumbs_from_annotations ~pyrefly_api root_annotations
       |> Features.BreadcrumbMayAlwaysSet.of_set
     in
     let breadcrumbs =
@@ -1512,7 +1512,7 @@ let introduce_source_taint
       |> transform_call_information
       |> ForwardState.Tree.create_leaf
     in
-    paths_for_source_or_sink ~pyre_api ~kind:"source" ~root ~root_annotations ~features
+    paths_for_source_or_sink ~pyrefly_api ~kind:"source" ~root ~root_annotations ~features
     >>| fun paths ->
     let sources =
       List.fold paths ~init:ForwardState.empty ~f:(fun sources path ->
@@ -2712,9 +2712,9 @@ let parse_model_clause
 
 
 let parameters_of_callable_signatures signatures =
-  let parameters_of_signature { PyrePysaApi.ModelQueries.FunctionSignature.parameters; _ } =
+  let parameters_of_signature { PyreflyApi.ModelQueries.FunctionSignature.parameters; _ } =
     match parameters with
-    | PyrePysaApi.ModelQueries.FunctionParameters.List parameters -> parameters
+    | PyreflyApi.ModelQueries.FunctionParameters.List parameters -> parameters
     | _ -> []
   in
   List.concat_map ~f:parameters_of_signature signatures
@@ -2731,47 +2731,47 @@ let port_annotations_from_signature ~root ~callable_signatures =
           parameters_of_callable_signatures callable_signatures
           |> List.filter_map ~f:(fun parameter ->
                  match parameter with
-                 | PyrePysaApi.ModelQueries.FunctionParameter.PositionalOnly
+                 | PyreflyApi.ModelQueries.FunctionParameter.PositionalOnly
                      { position = parameter_position; _ }
                    when Int.equal parameter_position position ->
                      Some parameter
-                 | PyrePysaApi.ModelQueries.FunctionParameter.PositionalOnly
+                 | PyreflyApi.ModelQueries.FunctionParameter.PositionalOnly
                      { name = Some parameter_name; _ }
                    when String.equal (Identifier.sanitized parameter_name) name ->
                      Some parameter
-                 | PyrePysaApi.ModelQueries.FunctionParameter.Named
+                 | PyreflyApi.ModelQueries.FunctionParameter.Named
                      { position = parameter_position; _ }
                    when Int.equal parameter_position position ->
                      Some parameter
-                 | PyrePysaApi.ModelQueries.FunctionParameter.Named { name = parameter_name; _ }
+                 | PyreflyApi.ModelQueries.FunctionParameter.Named { name = parameter_name; _ }
                    when String.equal (Identifier.sanitized parameter_name) name ->
                      Some parameter
-                 | PyrePysaApi.ModelQueries.FunctionParameter.KeywordOnly
+                 | PyreflyApi.ModelQueries.FunctionParameter.KeywordOnly
                      { name = parameter_name; _ }
                    when String.equal (Identifier.sanitized parameter_name) name ->
                      Some parameter
                  | _ -> None)
-          |> List.filter_map ~f:PyrePysaApi.ModelQueries.FunctionParameter.annotation
+          |> List.filter_map ~f:PyreflyApi.ModelQueries.FunctionParameter.annotation
       | AccessPath.Root.NamedParameter { name; _ } ->
           parameters_of_callable_signatures callable_signatures
           |> List.filter_map ~f:(fun parameter ->
                  match parameter with
-                 | PyrePysaApi.ModelQueries.FunctionParameter.PositionalOnly
+                 | PyreflyApi.ModelQueries.FunctionParameter.PositionalOnly
                      { name = Some parameter_name; _ }
                    when String.equal (Identifier.sanitized parameter_name) name ->
                      Some parameter
-                 | PyrePysaApi.ModelQueries.FunctionParameter.Named { name = parameter_name; _ }
+                 | PyreflyApi.ModelQueries.FunctionParameter.Named { name = parameter_name; _ }
                    when String.equal (Identifier.sanitized parameter_name) name ->
                      Some parameter
-                 | PyrePysaApi.ModelQueries.FunctionParameter.KeywordOnly
+                 | PyreflyApi.ModelQueries.FunctionParameter.KeywordOnly
                      { name = parameter_name; _ }
                    when String.equal (Identifier.sanitized parameter_name) name ->
                      Some parameter
                  | _ -> None)
-          |> List.filter_map ~f:PyrePysaApi.ModelQueries.FunctionParameter.annotation
+          |> List.filter_map ~f:PyreflyApi.ModelQueries.FunctionParameter.annotation
       | AccessPath.Root.LocalResult ->
           List.map
-            ~f:(fun { PyrePysaApi.ModelQueries.FunctionSignature.return_annotation; _ } ->
+            ~f:(fun { PyreflyApi.ModelQueries.FunctionSignature.return_annotation; _ } ->
               return_annotation)
             callable_signatures
       | _ -> [])
@@ -2928,7 +2928,7 @@ let fix_constructors_and_property_setters_annotations ~callable ~source_sink_fil
 
 
 let add_taint_annotation_to_model
-    ~pyre_api
+    ~pyrefly_api
     ~path
     ~location
     ~friendly_name
@@ -2955,7 +2955,7 @@ let add_taint_annotation_to_model
               ~callable_signatures:callable_undecorated_signatures
           in
           introduce_sink_taint
-            ~pyre_api
+            ~pyrefly_api
             ~root
             ~root_annotations
             ~features
@@ -2970,7 +2970,7 @@ let add_taint_annotation_to_model
               ~callable_signatures:callable_undecorated_signatures
           in
           introduce_source_taint
-            ~pyre_api
+            ~pyrefly_api
             ~root
             ~root_annotations
             ~is_generation:true
@@ -3004,7 +3004,7 @@ let add_taint_annotation_to_model
               ~callable_signatures:callable_undecorated_signatures
           in
           introduce_sink_taint
-            ~pyre_api
+            ~pyrefly_api
             ~root
             ~root_annotations
             ~features
@@ -3019,7 +3019,7 @@ let add_taint_annotation_to_model
               ~callable_signatures:callable_undecorated_signatures
           in
           introduce_source_taint
-            ~pyre_api
+            ~pyrefly_api
             ~root
             ~root_annotations
             ~is_generation:generation_if_source
@@ -3040,7 +3040,7 @@ let add_taint_annotation_to_model
               ~callable_signatures:callable_undecorated_signatures
           in
           introduce_taint_in_taint_out
-            ~pyre_api
+            ~pyrefly_api
             ~root
             ~root_annotations
             ~result_annotations
@@ -3055,7 +3055,7 @@ let add_taint_annotation_to_model
               ~callable_signatures:callable_undecorated_signatures
           in
           introduce_sink_taint
-            ~pyre_api
+            ~pyrefly_api
             ~root
             ~root_annotations
             ~features
@@ -3354,8 +3354,8 @@ let check_decorators
 
 
 let resolved_callable_target
-    ~pyre_api:_
-    { PyrePysaApi.ModelQueries.Function.define_name; is_property_setter; is_method; _ }
+    ~pyrefly_api:_
+    { PyreflyApi.ModelQueries.Function.define_name; is_property_setter; is_method; _ }
   =
   if is_property_setter then
     Target.create_method_from_reference ~kind:Target.PropertySetter define_name
@@ -3617,7 +3617,7 @@ let is_property_getter_setter ~decorators ~callable_name =
   in
   let is_property_getter =
     Set.exists
-      PyrePysaApi.ModelQueries.property_decorators
+      PyreflyApi.ModelQueries.property_decorators
       ~f:(Define.Signature.has_decorator define_signature)
   in
   let is_property_setter = Define.Signature.is_property_setter define_signature in
@@ -3625,8 +3625,8 @@ let is_property_getter_setter ~decorators ~callable_name =
 
 
 let source_location_of_global ~path_of_qualifier global =
-  let module_qualifier = PyrePysaApi.ModelQueries.Global.module_qualifier global in
-  let location = PyrePysaApi.ModelQueries.Global.location global in
+  let module_qualifier = PyreflyApi.ModelQueries.Global.module_qualifier global in
+  let location = PyreflyApi.ModelQueries.Global.location global in
   module_qualifier
   >>= path_of_qualifier
   >>| fun path -> { ModelVerificationError.SourceLocation.path; location }
@@ -3686,7 +3686,7 @@ let aggregate_model_definition_errors
 
 
 let create_models_from_signature
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~path
     ~taint_configuration
@@ -3702,8 +3702,8 @@ let create_models_from_signature
       location;
     }
   =
-  let module Global = PyrePysaApi.ModelQueries.Global in
-  let module Function = PyrePysaApi.ModelQueries.Function in
+  let module Global = PyreflyApi.ModelQueries.Global in
+  let module Function = PyreflyApi.ModelQueries.Function in
   let make_verification_error kind = { ModelVerificationError.kind; path; location } in
   (* Make sure we know about what we model. *)
   let is_property_getter, is_property_setter =
@@ -3715,18 +3715,14 @@ let create_models_from_signature
         (* The name is already resolved (e.g., from class_method_signatures). Skip resolution and
            look up the function metadata directly. *)
         let resolved_function =
-          match pyre_api with
-          | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-              Interprocedural.PyreflyApi.ReadOnly.get_model_parser_function_info
-                pyrefly_api
-                define_name
+          Interprocedural.PyreflyApi.ReadOnly.get_model_parser_function_info pyrefly_api define_name
         in
         [resolved_function], [], resolved_function.Function.module_qualifier
     | CallableName.UserProvided user_provided_callable_name -> (
         let resolution_result =
-          PyrePysaApi.ModelQueries.resolve_user_qualified_name
+          PyreflyApi.ModelQueries.resolve_user_qualified_name
             ~verify_class_attributes:false
-            pyre_api
+            pyrefly_api
             ~is_property_getter
             ~is_property_setter
             user_provided_callable_name
@@ -3734,8 +3730,7 @@ let create_models_from_signature
         match resolution_result with
         | ResolutionResult.BaseModuleNotFound ->
             let module_name =
-              Reference.first
-                (PyrePysaApi.ReadOnly.add_builtins_prefix pyre_api user_provided_callable_name)
+              Reference.first (PyreflyApi.add_builtins_prefix user_provided_callable_name)
             in
             ( [],
               [
@@ -3822,7 +3817,7 @@ let create_models_from_signature
       (* TODO(T180849788): Consolidate `callable_signature` accesses into an API *)
       match callable with
       | {
-       PyrePysaApi.ModelQueries.Function.undecorated_signatures =
+       PyreflyApi.ModelQueries.Function.undecorated_signatures =
          Some callable_undecorated_signatures;
        _;
       } ->
@@ -3833,13 +3828,13 @@ let create_models_from_signature
           in
           let add_parameter_to_position map parameter =
             match parameter with
-            | PyrePysaApi.ModelQueries.FunctionParameter.Named { name; position; _ } ->
+            | PyreflyApi.ModelQueries.FunctionParameter.Named { name; position; _ } ->
                 let name = Identifier.sanitized name in
                 add_into_map
                   map
                   name
                   (AccessPath.Root.PositionalParameter { name; position; positional_only = false })
-            | PyrePysaApi.ModelQueries.FunctionParameter.KeywordOnly { name; _ } ->
+            | PyreflyApi.ModelQueries.FunctionParameter.KeywordOnly { name; _ } ->
                 let name = Identifier.sanitized name in
                 add_into_map map name (AccessPath.Root.NamedParameter { name })
             | _ -> map
@@ -3932,7 +3927,9 @@ let create_models_from_signature
         | _ -> false
       in
       let parse_annotation ~generation_if_source taint_annotation =
-        let captured_variables = PyrePysaApi.ReadOnly.get_callable_captures pyre_api define_name in
+        let captured_variables =
+          PyreflyApi.ReadOnly.get_callable_captures pyrefly_api define_name
+        in
         taint_annotation
         |> parse_annotations
              ~path
@@ -4061,7 +4058,7 @@ let create_models_from_signature
       ~origin:DefineDecoratorCapturedVariables
       ~top_level_decorators:taint_decorators
     >>= fun captured_variables_annotations ->
-    let callable = resolved_callable_target ~pyre_api callable in
+    let callable = resolved_callable_target ~pyrefly_api callable in
     let default_model = if is_obscure callable then Model.obscure_model else Model.empty_model in
     let all_annotations =
       return_annotations
@@ -4078,7 +4075,7 @@ let create_models_from_signature
            ~path
            ~location
            ~friendly_name:(Reference.show (CallableName.reference callable_name))
-           ~pyre_api
+           ~pyrefly_api
            ~callable_undecorated_signatures
            ~source_sink_filter)
     >>| fun model -> { MatchedModel.model; target = callable; location = define_location }
@@ -4099,19 +4096,19 @@ let create_models_from_signature
 
 
 let create_models_from_attribute
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~path
     ~taint_configuration
     ~source_sink_filter
     { annotations; decorators; location; user_provided_attribute_name }
   =
-  let module Global = PyrePysaApi.ModelQueries.Global in
+  let module Global = PyreflyApi.ModelQueries.Global in
   let make_verification_error kind = { ModelVerificationError.kind; path; location } in
   let resolution_result =
-    PyrePysaApi.ModelQueries.resolve_user_qualified_name
+    PyreflyApi.ModelQueries.resolve_user_qualified_name
       ~verify_class_attributes:true
-      pyre_api
+      pyrefly_api
       ~is_property_getter:false
       ~is_property_setter:false
       user_provided_attribute_name
@@ -4120,8 +4117,7 @@ let create_models_from_attribute
     match resolution_result with
     | ResolutionResult.BaseModuleNotFound ->
         let module_name =
-          Reference.first
-            (PyrePysaApi.ReadOnly.add_builtins_prefix pyre_api user_provided_attribute_name)
+          Reference.first (PyreflyApi.add_builtins_prefix user_provided_attribute_name)
         in
         ( [],
           [
@@ -4138,15 +4134,15 @@ let create_models_from_attribute
                   (* Secondary class check — does the class part exist? *)
                   let class_name =
                     user_provided_attribute_name
-                    |> PyrePysaApi.ReadOnly.add_builtins_prefix pyre_api
-                    |> PyrePysaApi.ModelQueries.demangle_class_attribute
+                    |> PyreflyApi.add_builtins_prefix
+                    |> PyreflyApi.ModelQueries.demangle_class_attribute
                     |> Reference.prefix
                     |> Option.value ~default:Reference.empty
                   in
                   let class_resolution =
-                    PyrePysaApi.ModelQueries.resolve_user_qualified_name
+                    PyreflyApi.ModelQueries.resolve_user_qualified_name
                       ~verify_class_attributes:false
-                      pyre_api
+                      pyrefly_api
                       ~is_property_getter:false
                       ~is_property_setter:false
                       class_name
@@ -4157,7 +4153,7 @@ let create_models_from_attribute
                     | ResolutionResult.ModuleFound { results; _ } ->
                         List.filter results ~f:(function
                             | ModuleResolutionResult.Resolved global ->
-                                PyrePysaApi.ModelQueries.Global.module_qualifier global
+                                PyreflyApi.ModelQueries.Global.module_qualifier global
                                 |> Option.exists ~f:(Reference.equal module_qualifier)
                             | ModuleResolutionResult.Unresolved { module_qualifier = qualifier; _ }
                               ->
@@ -4245,13 +4241,13 @@ let create_models_from_attribute
            ~path
            ~location
            ~friendly_name:(Reference.show user_provided_attribute_name)
-           ~pyre_api
+           ~pyrefly_api
            ~callable_undecorated_signatures:None
            ~source_sink_filter)
     >>| fun model ->
     let target_name =
-      if PyrePysaApi.ModelQueries.has_class_attribute_form user_provided_attribute_name then
-        PyrePysaApi.ModelQueries.mangle_class_attribute attribute_name
+      if PyreflyApi.ModelQueries.has_class_attribute_form user_provided_attribute_name then
+        PyreflyApi.ModelQueries.mangle_class_attribute attribute_name
       else
         attribute_name
     in
@@ -4273,7 +4269,7 @@ let create_models_from_attribute
 
 
 let create_models_from_class
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~path
     ~taint_configuration
@@ -4288,12 +4284,12 @@ let create_models_from_class
       location;
     }
   =
-  let module Global = PyrePysaApi.ModelQueries.Global in
+  let module Global = PyreflyApi.ModelQueries.Global in
   let make_verification_error kind = { ModelVerificationError.kind; path; location } in
   let resolution_result =
-    PyrePysaApi.ModelQueries.resolve_user_qualified_name
+    PyreflyApi.ModelQueries.resolve_user_qualified_name
       ~verify_class_attributes:false
-      pyre_api
+      pyrefly_api
       ~is_property_getter:false
       ~is_property_setter:false
       user_provided_class_name
@@ -4302,8 +4298,7 @@ let create_models_from_class
     match resolution_result with
     | ResolutionResult.BaseModuleNotFound ->
         let module_name =
-          Reference.first
-            (PyrePysaApi.ReadOnly.add_builtins_prefix pyre_api user_provided_class_name)
+          Reference.first (PyreflyApi.add_builtins_prefix user_provided_class_name)
         in
         ( [],
           [
@@ -4359,7 +4354,7 @@ let create_models_from_class
     match
       resolved_class_name
       |> Reference.create
-      |> PyrePysaApi.ModelQueries.class_method_signatures pyre_api
+      |> PyreflyApi.ModelQueries.class_method_signatures pyrefly_api
     with
     | Some method_signatures ->
         let create_model_for_method = function
@@ -4396,7 +4391,7 @@ let create_models_from_class
                   ~define_name:raw_method_name
                   ~define_decorators
                 |> create_models_from_signature
-                     ~pyre_api
+                     ~pyrefly_api
                      ~path_of_qualifier
                      ~path
                      ~taint_configuration
@@ -4453,7 +4448,7 @@ let is_obscure ~callables_to_definitions_map call_target =
 
 
 let parse_expected_models
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~taint_configuration
     ~source_sink_filter
@@ -4463,7 +4458,7 @@ let parse_expected_models
   List.map models ~f:(fun (parsed_signature, model_source) ->
       let models, verification_errors =
         create_models_from_signature
-          ~pyre_api
+          ~pyrefly_api
           ~path_of_qualifier
           ~path:None
           ~taint_configuration
@@ -4565,7 +4560,7 @@ let mangle_private_variable name =
 
 
 let rec parse_statement
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~path
     ~taint_configuration
@@ -4812,7 +4807,7 @@ let rec parse_statement
             >>| List.map
                   ~f:
                     (parse_statement
-                       ~pyre_api
+                       ~pyrefly_api
                        ~path_of_qualifier
                        ~path
                        ~taint_configuration
@@ -4869,7 +4864,7 @@ let rec parse_statement
                 | Error errors -> Error errors
                 | Ok parsed_signatures ->
                     parse_expected_models
-                      ~pyre_api
+                      ~pyrefly_api
                       ~path_of_qualifier
                       ~taint_configuration
                       ~source_sink_filter
@@ -4929,7 +4924,7 @@ let rec parse_statement
       | Ok condition -> (
           match
             List.map all_sys_infos ~f:(fun sys_info ->
-                SystemCondition.evaluate ~pyre_api sys_info condition)
+                SystemCondition.evaluate ~pyrefly_api sys_info condition)
             |> Result.all
           with
           | Error error_kind -> [Error (model_verification_error ~path ~location error_kind)]
@@ -4941,7 +4936,7 @@ let rec parse_statement
                 |> List.map
                      ~f:
                        (parse_statement
-                          ~pyre_api
+                          ~pyrefly_api
                           ~path_of_qualifier
                           ~path
                           ~taint_configuration
@@ -4974,7 +4969,7 @@ let verify_no_duplicate_model_query_names ~path statements =
 
 
 let create
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ~path
     ~taint_configuration
@@ -4992,7 +4987,7 @@ let create
           |> List.map
                ~f:
                  (parse_statement
-                    ~pyre_api
+                    ~pyrefly_api
                     ~path_of_qualifier
                     ~path
                     ~taint_configuration
@@ -5014,7 +5009,7 @@ let create
   let create_models_or_queries_from_statement = function
     | ParsedSignature parsed_signature ->
         create_models_from_signature
-          ~pyre_api
+          ~pyrefly_api
           ~path_of_qualifier
           ~path
           ~taint_configuration
@@ -5024,7 +5019,7 @@ let create
         |> fun (models, errors) -> List.map models ~f:(fun model -> Model model), errors
     | ParsedAttribute parsed_attribute ->
         create_models_from_attribute
-          ~pyre_api
+          ~pyrefly_api
           ~path_of_qualifier
           ~path
           ~taint_configuration
@@ -5033,7 +5028,7 @@ let create
         |> fun (models, errors) -> List.map models ~f:(fun model -> Model model), errors
     | ParsedClass parsed_class ->
         create_models_from_class
-          ~pyre_api
+          ~pyrefly_api
           ~path_of_qualifier
           ~path
           ~taint_configuration
@@ -5072,7 +5067,7 @@ let parse_model_modes ~path ~source =
   let parse_statement modes = function
     | { Node.value = Statement.Define { signature = { name = define_name; decorators; _ }; _ }; _ }
       ->
-        let define_name = PyrePysaApi.ModelQueries.mangle_top_level_name define_name in
+        let define_name = PyreflyApi.ModelQueries.mangle_top_level_name define_name in
         let taint_decorators, _ = ParsedStatement.partition_taint_decorators decorators in
         let get_mode modes { Decorator.name = { Node.value = mode_name; _ }; _ } =
           match Model.Mode.from_string (Reference.show mode_name) with
@@ -5121,7 +5116,7 @@ let decorator_actions_from_modes model_modes =
 
 
 let parse
-    ~pyre_api
+    ~pyrefly_api
     ~path_of_qualifier
     ?path
     ~source
@@ -5133,7 +5128,7 @@ let parse
   =
   let new_models_and_queries, errors =
     create
-      ~pyre_api
+      ~pyrefly_api
       ~path_of_qualifier
       ~path
       ~taint_configuration
@@ -5157,7 +5152,7 @@ let parse
 
 
 let create_callable_model_from_annotations
-    ~pyre_api
+    ~pyrefly_api
     ~modelable
     ~source_sink_filter
     ~is_obscure
@@ -5166,10 +5161,7 @@ let create_callable_model_from_annotations
   let target = Modelable.target modelable in
   let define_name = Target.define_name_exn target in
   let callable_undecorated_signatures =
-    match pyre_api with
-    | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-        Some
-          (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name)
+    Some (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name)
   in
   let default_model = if is_obscure then Model.obscure_model else Model.empty_model in
   let annotations =
@@ -5183,14 +5175,14 @@ let create_callable_model_from_annotations
         ~path:None
         ~location:Location.any
         ~friendly_name:"Model query"
-        ~pyre_api
+        ~pyrefly_api
         ~callable_undecorated_signatures
         ~source_sink_filter
         accumulator
         model_annotation)
 
 
-let create_attribute_model_from_annotations ~pyre_api ~name ~source_sink_filter annotations =
+let create_attribute_model_from_annotations ~pyrefly_api ~name ~source_sink_filter annotations =
   let open Core.Result in
   List.fold_result annotations ~init:Model.empty_model ~f:(fun accumulator annotation ->
       let model_annotation =
@@ -5215,7 +5207,7 @@ let create_attribute_model_from_annotations ~pyre_api ~name ~source_sink_filter 
         ~path:None
         ~location:Location.any
         ~friendly_name:"Model query"
-        ~pyre_api
+        ~pyrefly_api
         ~callable_undecorated_signatures:None
         ~source_sink_filter
         accumulator

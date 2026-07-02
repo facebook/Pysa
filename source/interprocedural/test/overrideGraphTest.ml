@@ -34,10 +34,10 @@ let test_method_overrides context =
     let qualifier_name = "test" in
     let handle = Format.asprintf "%s.py" qualifier_name in
     let qualifier = Ast.Reference.create qualifier_name in
-    let pyre_api = setup ~other_sources ~context ~handle source in
+    let pyrefly_api = setup ~other_sources ~context ~handle source in
     let overrides_map =
       OverrideGraph.Heap.from_qualifier
-        ~pyre_api
+        ~pyrefly_api
         ~skip_overrides_targets:Ast.Reference.SerializableSet.empty
         qualifier
     in

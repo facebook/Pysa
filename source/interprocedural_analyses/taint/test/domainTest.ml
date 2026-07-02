@@ -13,7 +13,7 @@ open Core
 open Test
 
 let test_partition_call_map context =
-  let pyre_api =
+  let pyrefly_api =
     (* Pyrefly rejects an empty source set, so provide a dummy source file. *)
     Test.ScratchPyrePysaProject.setup
       ~context
@@ -21,9 +21,9 @@ let test_partition_call_map context =
       ["test.py", "x = 0"]
     |> Test.ScratchPyrePysaProject.read_only_api
   in
-  let pyre_in_context =
-    Interprocedural.PyrePysaApi.InContext.create_at_function_scope
-      pyre_api
+  let pyrefly_in_context =
+    Interprocedural.PyreflyApi.InContext.create_at_function_scope
+      pyrefly_api
       ~module_qualifier:!&"test"
       ~define_name:!&"test.__toplevel__"
       ~call_graph:Interprocedural.CallGraph.DefineCallGraph.empty
@@ -37,7 +37,7 @@ let test_partition_call_map context =
   in
   let call_taint1 =
     ForwardTaint.apply_call
-      ~pyre_in_context
+      ~pyrefly_in_context
       ~call_site:CallSite.any
       ~location:Location.any
       ~callee
@@ -51,7 +51,7 @@ let test_partition_call_map context =
   in
   let call_taint2 =
     ForwardTaint.apply_call
-      ~pyre_in_context
+      ~pyrefly_in_context
       ~call_site:CallSite.any
       ~location:Location.any
       ~callee

@@ -15,7 +15,7 @@ val verify_signature
   friendly_name:Reference.t ->
   imported_name:Reference.t option ->
   define_location:ModelVerificationError.SourceLocation.t option Lazy.t ->
-  Interprocedural.PyrePysaApi.ModelQueries.FunctionSignature.t list option ->
+  Interprocedural.PyreflyApi.ModelQueries.FunctionSignature.t list option ->
   (unit, ModelVerificationError.t) result
 
 val filter_unused_stdlib_modules_errors

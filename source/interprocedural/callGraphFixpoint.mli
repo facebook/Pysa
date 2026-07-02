@@ -18,7 +18,7 @@ val compute
   scheduler_policy:Scheduler.Policy.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
   resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) option ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
+  pyrefly_api:PyreflyApi.ReadOnly.t ->
   callables_to_definitions_map:CallablesSharedMemory.ReadWrite.t ->
   callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.t ->
   call_graph:CallGraph.SharedMemory.call_graphs ->

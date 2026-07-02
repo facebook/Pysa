@@ -8,6 +8,6 @@
 val infer
   :  scheduler:Scheduler.t ->
   scheduler_policies:Configuration.SchedulerPolicies.t ->
-  pyre_api:Interprocedural.PyrePysaApi.ReadOnly.t ->
+  pyrefly_api:Interprocedural.PyreflyApi.ReadOnly.t ->
   user_models:SharedModels.ReadOnly.t ->
   Registry.t

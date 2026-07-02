@@ -17,11 +17,11 @@ open Pyre
 open Domains
 module CallGraph = Interprocedural.CallGraph
 module AccessPath = Analysis.TaintAccessPath
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 type t = {
   models: Model.WithCallTarget.t list;
-  pyre_in_context: PyrePysaApi.InContext.t;
+  pyrefly_in_context: PyreflyApi.InContext.t;
   location: Location.t;
   interval: Interprocedural.ClassIntervalSet.t;
 }
@@ -45,23 +45,23 @@ let get_global_targets ~call_graph ~expression =
   | _ -> []
 
 
-let from_expression ~pyre_in_context ~call_graph ~get_callee_model ~expression ~interval =
+let from_expression ~pyrefly_in_context ~call_graph ~get_callee_model ~expression ~interval =
   let fetch_model ({ CallGraph.CallTarget.target; _ } as call_target) =
     let model =
-      CallModel.at_callsite ~pyre_in_context ~get_callee_model ~call_target:target ~arguments:[]
+      CallModel.at_callsite ~pyrefly_in_context ~get_callee_model ~call_target:target ~arguments:[]
     in
     { Model.WithCallTarget.model; call_target }
   in
   let models = get_global_targets ~call_graph ~expression |> List.map ~f:fetch_model in
   let location = Node.location expression in
-  { models; pyre_in_context; location; interval }
+  { models; pyrefly_in_context; location; interval }
 
 
 let global_root =
   AccessPath.Root.PositionalParameter { position = 0; name = "$global"; positional_only = false }
 
 
-let get_source { models; pyre_in_context; location; interval } =
+let get_source { models; pyrefly_in_context; location; interval } =
   let to_source
       existing
       {
@@ -72,7 +72,7 @@ let get_source { models; pyre_in_context; location; interval } =
     =
     ForwardState.read ~root:AccessPath.Root.LocalResult ~path:[] generations
     |> ForwardState.Tree.apply_call
-         ~pyre_in_context
+         ~pyrefly_in_context
          ~call_site:(CallSite.create location)
          ~location
          ~callee:target
@@ -86,7 +86,7 @@ let get_source { models; pyre_in_context; location; interval } =
   List.fold ~init:ForwardState.Tree.bottom ~f:to_source models
 
 
-let get_sinks { models; pyre_in_context; location; interval } =
+let get_sinks { models; pyrefly_in_context; location; interval } =
   let to_sink_tree_with_identifier
       {
         Model.WithCallTarget.call_target = { target; _ } as call_target;
@@ -97,7 +97,7 @@ let get_sinks { models; pyre_in_context; location; interval } =
     let sink_tree =
       BackwardState.read ~root:global_root ~path:[] sink_taint
       |> BackwardState.Tree.apply_call
-           ~pyre_in_context
+           ~pyrefly_in_context
            ~call_site:(CallSite.create location)
            ~location
            ~callee:target

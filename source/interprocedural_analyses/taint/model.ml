@@ -604,7 +604,7 @@ let add_obscure_sink ~callables_to_definitions_map ~call_target model =
       | Some
           {
             CallablesSharedMemory.CallableSignature.parameters =
-              PyrePysaApi.AstResult.Some parameters;
+              PyreflyApi.AstResult.Some parameters;
             _;
           } ->
           let open Domains in

@@ -17,14 +17,14 @@
 
 open Core
 open Pyre
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
-module AstResult = Interprocedural.PyrePysaApi.AstResult
+module AstResult = Interprocedural.PyreflyApi.AstResult
 
 module Context = struct
   type t = {
     taint_configuration: TaintConfiguration.SharedMemory.t;
-    pyre_api: PyrePysaApi.ReadOnly.t;
+    pyrefly_api: PyreflyApi.ReadOnly.t;
     class_interval_graph: Interprocedural.ClassIntervalSetGraph.SharedMemory.t;
     (* Avoid copying a large-sized closure for each worker, to reduce the memory usage. *)
     get_define_call_graph: Target.t -> Interprocedural.CallGraph.DefineCallGraph.t option;
@@ -111,7 +111,7 @@ module Analysis = struct
   let analyze_define_with_sanitizers_and_modes
       ~taint_configuration
       ~string_combine_partial_sink_tree
-      ~pyre_api
+      ~pyrefly_api
       ~class_interval_graph
       ~global_constants
       ~get_define_call_graph
@@ -151,7 +151,7 @@ module Analysis = struct
             ~profiler
             ~taint_configuration
             ~string_combine_partial_sink_tree
-            ~pyre_api
+            ~pyrefly_api
             ~class_interval_graph
             ~global_constants
             ~qualifier
@@ -169,7 +169,7 @@ module Analysis = struct
             ~profiler
             ~taint_configuration
             ~string_combine_partial_sink_tree
-            ~pyre_api
+            ~pyrefly_api
             ~class_interval_graph
             ~global_constants
             ~qualifier
@@ -211,7 +211,7 @@ module Analysis = struct
       ~context:
         {
           Context.taint_configuration;
-          pyre_api;
+          pyrefly_api;
           class_interval_graph;
           get_define_call_graph;
           global_constants;
@@ -240,7 +240,7 @@ module Analysis = struct
       analyze_define_with_sanitizers_and_modes
         ~taint_configuration
         ~string_combine_partial_sink_tree
-        ~pyre_api
+        ~pyrefly_api
         ~class_interval_graph
         ~global_constants
         ~get_define_call_graph

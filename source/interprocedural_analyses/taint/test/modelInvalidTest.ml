@@ -10,7 +10,7 @@ open Core
 open OUnit2
 open Test
 open Taint
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 let assert_invalid_model
     ?path
@@ -67,7 +67,7 @@ let assert_invalid_model
       ~search_paths
       sources
   in
-  let pyre_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
   let { Configuration.Analysis.local_root = repository_root; _ } =
     Test.ScratchPyrePysaProject.configuration_of project
   in
@@ -97,16 +97,18 @@ let assert_invalid_model
        absolute path), fall back to the search-path-relative path so rendering stays
        deterministic. *)
     match
-      PyrePysaApi.ReadOnly.repository_relative_path_of_qualifier ~repository_root pyre_api qualifier
+      PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
+        ~repository_root
+        pyrefly_api
+        qualifier
     with
     | Some path when not (Filename.is_absolute path) -> Some path
-    | _ -> PyrePysaApi.ReadOnly.search_path_relative_path_of_qualifier pyre_api qualifier
+    | _ -> PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api qualifier
   in
   let error_message =
     let path = path >>| PyrePath.create_absolute in
-    PyrePysaApi.ModelQueries.invalidate_cache pyre_api;
     ModelParser.parse
-      ~pyre_api
+      ~pyrefly_api
       ~path_of_qualifier
       ~taint_configuration
       ~source_sink_filter:None

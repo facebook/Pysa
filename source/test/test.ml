@@ -3704,7 +3704,7 @@ module ScratchPyrePysaProject : sig
 
   val errors : t -> AnalysisError.Instantiated.t list
 
-  val read_only_api : t -> Interprocedural.PyrePysaApi.ReadOnly.t
+  val read_only_api : t -> Interprocedural.PyreflyApi.ReadOnly.t
 
   val configuration_of : t -> Configuration.Analysis.t
 end = struct
@@ -3860,7 +3860,7 @@ end = struct
           project
 
 
-  let read_only_api { pyrefly_api; _ } = Interprocedural.PyrePysaApi.ReadOnly.Pyrefly pyrefly_api
+  let read_only_api { pyrefly_api; _ } = pyrefly_api
 
   let errors { pyrefly_api; _ } = Interprocedural.PyreflyApi.ReadOnly.parse_type_errors pyrefly_api
 

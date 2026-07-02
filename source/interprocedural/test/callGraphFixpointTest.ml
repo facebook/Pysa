@@ -31,7 +31,7 @@ let assert_higher_order_call_graph_fixpoint
     ()
     context
   =
-  let _, pyre_api, configuration =
+  let _, pyrefly_api, configuration =
     TestHelper.setup_single_py_file
       ~requires_type_of_expressions:true
       ~file_name:"test.py"
@@ -50,21 +50,23 @@ let assert_higher_order_call_graph_fixpoint
   let qualifier = Ast.Reference.create "test" in
   let override_graph_heap =
     OverrideGraph.Heap.from_qualifier
-      ~pyre_api
+      ~pyrefly_api
       ~skip_overrides_targets:Ast.Reference.SerializableSet.empty
       qualifier
   in
   let override_graph_shared_memory = OverrideGraph.SharedMemory.from_heap override_graph_heap in
-  let initial_callables = FetchCallables.from_qualifier ~configuration ~pyre_api ~qualifier in
+  let initial_callables = FetchCallables.from_qualifier ~pyrefly_api ~qualifier in
   let definitions = FetchCallables.get_definitions initial_callables in
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
-  let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
+  let callables_to_definitions_map =
+    CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
+  in
   let callables_to_decorators_map =
     CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
       ~scheduler_policy
-      ~pyre_api
+      ~pyrefly_api
       ~callables_to_definitions_map:
         (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
       ~skip_analysis_targets
@@ -74,7 +76,7 @@ let assert_higher_order_call_graph_fixpoint
     CallGraphBuilder.build_whole_program_call_graph
       ~scheduler
       ~static_analysis_configuration
-      ~pyre_api
+      ~pyrefly_api
       ~resolve_module_path:None
       ~override_graph:(Some (OverrideGraph.SharedMemory.read_only override_graph_shared_memory))
       ~store_shared_memory:true
@@ -105,7 +107,7 @@ let assert_higher_order_call_graph_fixpoint
       ~scheduler_policy
       ~static_analysis_configuration
       ~resolve_module_path:None
-      ~pyre_api
+      ~pyrefly_api
       ~call_graph
       ~dependency_graph
       ~override_graph_shared_memory

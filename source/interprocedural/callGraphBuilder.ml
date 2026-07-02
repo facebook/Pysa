@@ -20,7 +20,7 @@ open Pyre
 open CallGraph
 module TaintAccessPath = Analysis.TaintAccessPath
 module PyrePysaLogic = Analysis.PyrePysaLogic
-module AstResult = PyrePysaApi.AstResult
+module AstResult = PyreflyApi.AstResult
 
 let log ~debug format =
   if debug then
@@ -52,41 +52,36 @@ module ResolvedStringify = struct
 end
 
 (* Resolve a call to `str(x)` into `x.__str__()` or `x.__repr__()` *)
-let resolve_stringify_call ~pyre_in_context ~outer_expression_identifier _expression =
-  match pyre_in_context with
-  | PyrePysaApi.InContext.Pyrefly pyrefly_api -> (
-      (* When using pyrefly, use the callee of the artificial call resolved by pyrefly *)
-      let call_graph = PyreflyApi.InContext.call_graph pyrefly_api in
-      match
-        DefineCallGraph.resolve_expression
-          call_graph
-          ~expression_identifier:outer_expression_identifier
-      with
-      | Some
-          (ExpressionCallees.Call { CallCallees.call_targets = { CallTarget.target; _ } :: _; _ })
-        -> (
-          (* Note: the result is only used to create artificial AST nodes. It does not affect the
-             analysis. *)
-          let method_name =
-            Target.collect_nested_regular_targets target
-            |> List.find_map ~f:(fun regular ->
-                   match regular with
-                   | Target.Regular.Method { Target.Method.method_name; _ }
-                   | Target.Regular.Override { Target.Method.method_name; _ } ->
-                       ResolvedStringify.from_method_name method_name
-                   | _ -> None)
-          in
-          match method_name with
-          | Some resolved -> resolved
-          | None -> ResolvedStringify.Repr)
-      | Some (ExpressionCallees.Call { CallCallees.unresolved = Unresolved.True _; _ }) ->
-          ResolvedStringify.Repr
-      | _ ->
-          Format.asprintf
-            "Missing or unexpected call graph edge for expression identifier %a"
-            ExpressionIdentifier.pp
-            outer_expression_identifier
-          |> failwith)
+let resolve_stringify_call ~pyrefly_in_context ~outer_expression_identifier _expression =
+  (* When using pyrefly, use the callee of the artificial call resolved by pyrefly *)
+  let call_graph = PyreflyApi.InContext.call_graph pyrefly_in_context in
+  match
+    DefineCallGraph.resolve_expression call_graph ~expression_identifier:outer_expression_identifier
+  with
+  | Some (ExpressionCallees.Call { CallCallees.call_targets = { CallTarget.target; _ } :: _; _ })
+    -> (
+      (* Note: the result is only used to create artificial AST nodes. It does not affect the
+         analysis. *)
+      let method_name =
+        Target.collect_nested_regular_targets target
+        |> List.find_map ~f:(fun regular ->
+               match regular with
+               | Target.Regular.Method { Target.Method.method_name; _ }
+               | Target.Regular.Override { Target.Method.method_name; _ } ->
+                   ResolvedStringify.from_method_name method_name
+               | _ -> None)
+      in
+      match method_name with
+      | Some resolved -> resolved
+      | None -> ResolvedStringify.Repr)
+  | Some (ExpressionCallees.Call { CallCallees.unresolved = Unresolved.True _; _ }) ->
+      ResolvedStringify.Repr
+  | _ ->
+      Format.asprintf
+        "Missing or unexpected call graph edge for expression identifier %a"
+        ExpressionIdentifier.pp
+        outer_expression_identifier
+      |> failwith
 
 
 (* Rewrite certain calls for the interprocedural analysis (e.g, pysa).
@@ -164,7 +159,7 @@ let shim_special_calls ~callees ~arguments =
  * are considered additional calls, where preprocessing completely removes the
  * original call. This is preferred for things like `str`/`iter`/`next`. *)
 let preprocess_special_calls
-    ~pyre_in_context
+    ~pyrefly_in_context
     ~location:call_location
     {
       Call.callee = { Node.location = callee_location; _ } as callee;
@@ -193,7 +188,7 @@ let preprocess_special_calls
       in
       let method_name =
         resolve_stringify_call
-          ~pyre_in_context
+          ~pyrefly_in_context
           ~outer_expression_identifier:(ExpressionIdentifier.ArtificialCall origin)
           value
         |> ResolvedStringify.to_method_name
@@ -287,20 +282,20 @@ let create_shim_callee_expression ~debug ~callable ~location ~call shim =
       None
 
 
-let preprocess_call ~pyre_in_context ~location original_call =
-  preprocess_special_calls ~pyre_in_context ~location original_call
+let preprocess_call ~pyrefly_in_context ~location original_call =
+  preprocess_special_calls ~pyrefly_in_context ~location original_call
   |> Option.value ~default:original_call
 
 
-let rec preprocess_expression ~pyre_in_context ~callable expression =
+let rec preprocess_expression ~pyrefly_in_context ~callable expression =
   (* This uses `Expression.Mapper` to recursively rewrite the given expression.
    *
    * Each `map_XXX` function is responsible for calling `Mapper.map` on sub-expressions to
    * properly recurse down the AST. This is why we sometimes call `default_map_XXX`.
    *
-   * The mapper will use the same `pyre_in_context` for all sub-expressions. If
+   * The mapper will use the same `pyrefly_in_context` for all sub-expressions. If
    * we need to update the context (for instance, for generators), we need to call
-   * `preprocess_expression ~pyre_in_context` with the new context instead of
+   * `preprocess_expression ~pyrefly_in_context` with the new context instead of
    * calling `Mapper.map`. This is why this function is recursive.
    *)
   let map_binary_operator ~mapper ~location ({ BinaryOperator.left; _ } as binary_operator) =
@@ -333,34 +328,24 @@ let rec preprocess_expression ~pyre_in_context ~callable expression =
     |> Node.create ~location
   in
   let map_comprehension_generators generators =
-    let fold_generator
-        (generators, outer_pyre_context)
-        ({ Comprehension.Generator.target; iterator; conditions; async } as generator)
-      =
-      let inner_pyre_context =
-        Statement.generator_assignment generator
-        |> PyrePysaApi.InContext.resolve_assignment outer_pyre_context
-      in
-      (* We need to preprocess conditions with the new pyre context. We need to call
-         `preprocess_expression` instead of `Mapper.map` *)
+    let fold_generator generators { Comprehension.Generator.target; iterator; conditions; async } =
       let conditions =
-        List.map ~f:(preprocess_expression ~pyre_in_context:inner_pyre_context ~callable) conditions
+        List.map ~f:(preprocess_expression ~pyrefly_in_context ~callable) conditions
       in
       (* We explicitly do NOT preprocess the target and iterator since we need to call
-         `generator_assignment` + `resolve_assignment` during the taint fixpoint, using the original
-         expressions. Updating the `target` and `iterator` here would lead to inconsistencies of the
-         type context. *)
+         `generator_assignment` during the taint fixpoint, using the original expressions. Updating
+         the `target` and `iterator` here would lead to inconsistencies of the type context. *)
       let generator = { Comprehension.Generator.target; iterator; conditions; async } in
-      generator :: generators, inner_pyre_context
+      generator :: generators
     in
-    let reversed_generators, pyre_in_context =
-      List.fold ~f:fold_generator ~init:([], pyre_in_context) generators
-    in
-    List.rev reversed_generators, pyre_in_context
+    List.rev (List.fold ~f:fold_generator ~init:[] generators)
   in
   let map_comprehension ~mapper:_ ~location ~make_node { Comprehension.element; generators } =
-    let generators, pyre_in_context = map_comprehension_generators generators in
-    { Comprehension.element = preprocess_expression ~pyre_in_context ~callable element; generators }
+    let generators = map_comprehension_generators generators in
+    {
+      Comprehension.element = preprocess_expression ~pyrefly_in_context ~callable element;
+      generators;
+    }
     |> make_node
     |> Node.create ~location
   in
@@ -376,20 +361,20 @@ let rec preprocess_expression ~pyre_in_context ~callable expression =
       ~location
       { Comprehension.element = Dictionary.Entry.KeyValue.{ key; value }; generators }
     =
-    let generators, pyre_in_context = map_comprehension_generators generators in
+    let generators = map_comprehension_generators generators in
     Expression.DictionaryComprehension
       {
         Comprehension.element =
           {
-            Dictionary.Entry.KeyValue.key = preprocess_expression ~pyre_in_context ~callable key;
-            value = preprocess_expression ~pyre_in_context ~callable value;
+            Dictionary.Entry.KeyValue.key = preprocess_expression ~pyrefly_in_context ~callable key;
+            value = preprocess_expression ~pyrefly_in_context ~callable value;
           };
         generators;
       }
     |> Node.create ~location
   in
   let map_call ~mapper ~location call =
-    preprocess_call ~pyre_in_context ~location call
+    preprocess_call ~pyrefly_in_context ~location call
     |> Mapper.default_map_call_node ~mapper ~location
   in
   Mapper.map
@@ -504,11 +489,11 @@ let preprocess_assignments statement =
 let preprocess_parameter_default_value = preprocess_expression
 
 (* This must be called *once* before analyzing a statement in a control flow graph. *)
-let preprocess_statement ~pyre_in_context ~callable statement =
+let preprocess_statement ~pyrefly_in_context ~callable statement =
   (* First, preprocess assignments *)
   let { Node.location; value } = preprocess_assignments statement in
   (* Then, preprocess expressions nested witin the statement *)
-  let preprocess_expression = preprocess_expression ~pyre_in_context ~callable in
+  let preprocess_expression = preprocess_expression ~pyrefly_in_context ~callable in
   let value =
     match value with
     | Statement.Assign { target; value; annotation; origin } ->
@@ -561,24 +546,14 @@ let preprocess_statement ~pyre_in_context ~callable statement =
 
 
 (* This must be called *once* before analyzing a generator. *)
-let preprocess_generator ~pyre_in_context:outer_pyre_context ~callable generator =
-  let ({ Assign.target; value; annotation; origin } as assignment) =
-    Statement.generator_assignment generator
-  in
-  (* Since generators create variables that Pyre sees as scoped within the generator, handle them by
-     adding the generator's bindings to the resolution. This returns the type context inside the
-     generator/conditions. *)
-  let inner_pyre_context = PyrePysaApi.InContext.resolve_assignment outer_pyre_context assignment in
-  let assignment =
-    {
-      Assign.target = preprocess_expression ~pyre_in_context:outer_pyre_context ~callable target;
-      Assign.value =
-        Option.map ~f:(preprocess_expression ~pyre_in_context:outer_pyre_context ~callable) value;
-      annotation;
-      origin;
-    }
-  in
-  assignment, inner_pyre_context
+let preprocess_generator ~pyrefly_in_context ~callable generator =
+  let { Assign.target; value; annotation; origin } = Statement.generator_assignment generator in
+  {
+    Assign.target = preprocess_expression ~pyrefly_in_context ~callable target;
+    Assign.value = Option.map ~f:(preprocess_expression ~pyrefly_in_context ~callable) value;
+    annotation;
+    origin;
+  }
 
 
 (* The result of finding higher order function callees inside a callable. *)
@@ -638,7 +613,7 @@ module HigherOrderCallGraph = struct
 
     let empty = bottom
 
-    let initialize_from_roots ~pyre_api ~callables_to_definitions_map alist =
+    let initialize_from_roots ~pyrefly_api ~callables_to_definitions_map alist =
       alist
       |> List.filter_map ~f:(fun (root, { Target.ParameterValue.target; implicit_receiver }) ->
              (* ASTs use `TaintAccessPath.parameter_prefix` to distinguish local variables from
@@ -655,8 +630,8 @@ module HigherOrderCallGraph = struct
                    Some (TaintAccessPath.Root.Variable name)
                | TaintAccessPath.Root.CapturedVariable captured_variable ->
                    Some
-                     (PyrePysaApi.ReadOnly.state_root_of_captured_variable
-                        pyre_api
+                     (PyreflyApi.ReadOnly.state_root_of_captured_variable
+                        pyrefly_api
                         captured_variable)
                | TaintAccessPath.Root.Variable _ ->
                    failwith "unexpected variable root in parameterized target"
@@ -678,17 +653,17 @@ module HigherOrderCallGraph = struct
       |> of_list
 
 
-    let initialize_from_callable ~pyre_api ~callables_to_definitions_map = function
+    let initialize_from_callable ~pyrefly_api ~callables_to_definitions_map = function
       | Target.Regular _ -> bottom
       | Target.Parameterized { parameters; _ } ->
           parameters
           |> Target.ParameterMap.to_alist
-          |> initialize_from_roots ~pyre_api ~callables_to_definitions_map
+          |> initialize_from_roots ~pyrefly_api ~callables_to_definitions_map
   end
 
   module MakeTransferFunction (Context : sig
     (* Inputs. *)
-    val pyre_api : PyrePysaApi.ReadOnly.t
+    val pyrefly_api : PyreflyApi.ReadOnly.t
 
     val get_callee_model : Target.t -> t option
 
@@ -1129,7 +1104,7 @@ module HigherOrderCallGraph = struct
       }
 
 
-    let rec analyze_call ~pyre_in_context ~location ~call ~arguments ~state =
+    let rec analyze_call ~pyrefly_in_context ~location ~call ~arguments ~state =
       let track_apply_call_step step f =
         CallGraphProfiler.track_apply_call_step
           ~profiler:Context.profiler
@@ -1147,7 +1122,7 @@ module HigherOrderCallGraph = struct
           { Call.Argument.value = argument; _ }
         =
         let callees, new_state =
-          analyze_expression ~pyre_in_context ~state:state_so_far ~expression:argument
+          analyze_expression ~pyrefly_in_context ~state:state_so_far ~expression:argument
         in
         let call_targets_from_higher_order_parameters =
           match HigherOrderParameterMap.find_opt higher_order_parameters index with
@@ -1251,7 +1226,7 @@ module HigherOrderCallGraph = struct
       (* The analysis of the callee AST handles the redirection to artifically created decorator
          defines. *)
       let callee_return_values, state =
-        analyze_expression ~pyre_in_context ~state ~expression:call.Call.callee
+        analyze_expression ~pyrefly_in_context ~state ~expression:call.Call.callee
       in
       let ( (state, additional_higher_order_parameters, decorated_targets_from_arguments),
             argument_callees )
@@ -1268,89 +1243,86 @@ module HigherOrderCallGraph = struct
            as taking the callable class, we should NOT create a parameterized target for it. This is
            similar to the `filter_implicit_dunder_calls` logic in the pyrefly call graph building.
            We check both call_targets and init_targets since constructor calls use init_targets. *)
-        match Context.pyre_api with
-        | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
-            let any_parameter_annotation_has_class callable_class signatures =
-              let annotation_has_class annotation =
-                let { PyrePysaApi.ClassNamesFromType.classes; is_exhaustive = _ } =
-                  PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api annotation
-                in
-                let allow_modifier = function
-                  | PyrePysaApi.TypeModifier.Optional
-                  | ReadOnly
-                  | Awaitable
-                  | Coroutine ->
-                      true
-                  | Type
-                  | TypeVariableBound
-                  | TypeVariableConstraint ->
-                      false
-                in
-                List.exists
-                  classes
-                  ~f:(fun { PyrePysaApi.ClassWithModifiers.class_name; modifiers } ->
-                    (not (PyreflyApi.ReadOnly.is_object_class pyrefly_api class_name))
-                    && List.for_all modifiers ~f:allow_modifier
-                    && PyreflyApi.ReadOnly.is_subclass
-                         pyrefly_api
-                         ~parent:class_name
-                         ~child:callable_class)
+        let pyrefly_api = Context.pyrefly_api in
+        let any_parameter_annotation_has_class callable_class signatures =
+          let annotation_has_class annotation =
+            let { PyreflyApi.ClassNamesFromType.classes; is_exhaustive = _ } =
+              PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api annotation
+            in
+            let allow_modifier = function
+              | PyreflyApi.TypeModifier.Optional
+              | ReadOnly
+              | Awaitable
+              | Coroutine ->
+                  true
+              | Type
+              | TypeVariableBound
+              | TypeVariableConstraint ->
+                  false
+            in
+            List.exists classes ~f:(fun { PyreflyApi.ClassWithModifiers.class_name; modifiers } ->
+                (not (PyreflyApi.ReadOnly.is_object_class pyrefly_api class_name))
+                && List.for_all modifiers ~f:allow_modifier
+                && PyreflyApi.ReadOnly.is_subclass
+                     pyrefly_api
+                     ~parent:class_name
+                     ~child:callable_class)
+          in
+          let parameter_has_class parameter =
+            PyreflyApi.ModelQueries.FunctionParameter.annotation parameter
+            >>| annotation_has_class
+            |> Option.value ~default:false
+          in
+          List.exists
+            signatures
+            ~f:(fun { PyreflyApi.ModelQueries.FunctionSignature.parameters; _ } ->
+              match parameters with
+              | PyreflyApi.ModelQueries.FunctionParameters.List params ->
+                  List.exists params ~f:parameter_has_class
+              | Ellipsis
+              | ParamSpec ->
+                  false)
+        in
+        let filter_argument_callee ~signatures { CallTarget.implicit_dunder_call; target; _ } =
+          if not implicit_dunder_call then
+            true
+          else
+            let target =
+              target
+              |> Target.get_regular
+              |> Target.Regular.override_to_method
+              |> Target.from_regular
+            in
+            match target with
+            | Target.Regular
+                (Target.Regular.Method { class_name = callable_class; method_name = "__call__"; _ })
+              ->
+                not (any_parameter_annotation_has_class callable_class signatures)
+            | _ -> true
+        in
+        let filter_for_callee_targets callee_targets argument_callees =
+          match callee_targets with
+          | [{ CallTarget.target = callee; _ }] when not (Target.is_object callee) ->
+              let define_name =
+                callee
+                |> Target.get_regular
+                |> Target.Regular.override_to_method
+                |> Target.Regular.define_name_exn
               in
-              let parameter_has_class parameter =
-                PyrePysaApi.ModelQueries.FunctionParameter.annotation parameter
-                >>| annotation_has_class
-                |> Option.value ~default:false
+              let signatures =
+                PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name
               in
-              List.exists
-                signatures
-                ~f:(fun { PyrePysaApi.ModelQueries.FunctionSignature.parameters; _ } ->
-                  match parameters with
-                  | PyrePysaApi.ModelQueries.FunctionParameters.List params ->
-                      List.exists params ~f:parameter_has_class
-                  | Ellipsis
-                  | ParamSpec ->
-                      false)
-            in
-            let filter_argument_callee ~signatures { CallTarget.implicit_dunder_call; target; _ } =
-              if not implicit_dunder_call then
-                true
-              else
-                let target =
-                  target
-                  |> Target.get_regular
-                  |> Target.Regular.override_to_method
-                  |> Target.from_regular
-                in
-                match target with
-                | Target.Regular
-                    (Target.Regular.Method
-                      { class_name = callable_class; method_name = "__call__"; _ }) ->
-                    not (any_parameter_annotation_has_class callable_class signatures)
-                | _ -> true
-            in
-            let filter_for_callee_targets callee_targets argument_callees =
-              match callee_targets with
-              | [{ CallTarget.target = callee; _ }] when not (Target.is_object callee) ->
-                  let define_name =
-                    callee
-                    |> Target.get_regular
-                    |> Target.Regular.override_to_method
-                    |> Target.Regular.define_name_exn
-                  in
-                  let signatures =
-                    PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name
-                  in
-                  List.map argument_callees ~f:(fun call_target_set ->
-                      CallTarget.Set.transform
-                        CallTarget.Set.Element
-                        Filter
-                        ~f:(filter_argument_callee ~signatures)
-                        call_target_set)
-              | _ -> argument_callees
-            in
-            argument_callees
-            |> filter_for_callee_targets original_call_targets
-            |> filter_for_callee_targets original_init_targets
+              List.map argument_callees ~f:(fun call_target_set ->
+                  CallTarget.Set.transform
+                    CallTarget.Set.Element
+                    Filter
+                    ~f:(filter_argument_callee ~signatures)
+                    call_target_set)
+          | _ -> argument_callees
+        in
+        argument_callees
+        |> filter_for_callee_targets original_call_targets
+        |> filter_for_callee_targets original_init_targets
       in
       let ( parameterized_call_targets,
             decorated_call_targets,
@@ -1525,55 +1497,49 @@ module HigherOrderCallGraph = struct
           CallTarget.Set.join pass_through_arguments returned_callables_from_call, state)
 
 
-    and analyze_comprehension_generators ~pyre_in_context ~state generators =
-      let add_binding
-          (state, pyre_in_context)
-          ({ Comprehension.Generator.conditions; _ } as generator)
-        =
-        let { Assign.target; value; _ }, inner_pyre_context =
-          preprocess_generator ~pyre_in_context ~callable:Context.callable generator
+    and analyze_comprehension_generators ~pyrefly_in_context ~state generators =
+      let add_binding state ({ Comprehension.Generator.conditions; _ } as generator) =
+        let { Assign.target; value; _ } =
+          preprocess_generator ~pyrefly_in_context ~callable:Context.callable generator
         in
         let state =
           match value with
-          | Some value -> analyze_expression ~pyre_in_context ~state ~expression:value |> snd
+          | Some value -> analyze_expression ~pyrefly_in_context ~state ~expression:value |> snd
           | None -> state
         in
         (* TODO: assign value to target *)
         let _ = target in
         (* Analyzing the conditions might have side effects. *)
         let analyze_condition state condiiton =
-          analyze_expression ~pyre_in_context:inner_pyre_context ~state ~expression:condiiton |> snd
+          analyze_expression ~pyrefly_in_context ~state ~expression:condiiton |> snd
         in
-        let state = List.fold conditions ~init:state ~f:analyze_condition in
-        state, inner_pyre_context
+        List.fold conditions ~init:state ~f:analyze_condition
       in
-      List.fold ~f:add_binding generators ~init:(state, pyre_in_context)
+      List.fold ~f:add_binding generators ~init:state
 
 
     and analyze_dictionary_comprehension
-        ~pyre_in_context
+        ~pyrefly_in_context
         ~state
         { Comprehension.element = Dictionary.Entry.KeyValue.{ key; value }; generators; _ }
       =
-      let state, pyre_in_context =
-        analyze_comprehension_generators ~pyre_in_context ~state generators
-      in
-      let _, state = analyze_expression ~pyre_in_context ~state ~expression:value in
-      let _, state = analyze_expression ~pyre_in_context ~state ~expression:key in
+      let state = analyze_comprehension_generators ~pyrefly_in_context ~state generators in
+      let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:value in
+      let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:key in
       CallTarget.Set.bottom, state
 
 
-    and analyze_comprehension ~pyre_in_context ~state { Comprehension.element; generators; _ } =
-      let bound_state, pyre_in_context =
-        analyze_comprehension_generators ~pyre_in_context ~state generators
+    and analyze_comprehension ~pyrefly_in_context ~state { Comprehension.element; generators; _ } =
+      let bound_state = analyze_comprehension_generators ~pyrefly_in_context ~state generators in
+      let _, state =
+        analyze_expression ~pyrefly_in_context ~state:bound_state ~expression:element
       in
-      let _, state = analyze_expression ~pyre_in_context ~state:bound_state ~expression:element in
       CallTarget.Set.bottom, state
 
 
     (* Return possible callees and the new state. *)
     and analyze_expression
-        ~pyre_in_context
+        ~pyrefly_in_context
         ~state
         ~expression:({ Node.value; location } as expression)
       =
@@ -1588,31 +1554,31 @@ module HigherOrderCallGraph = struct
       let analyze_expression_inner () =
         match value with
         | Expression.Await { Await.operand = expression; origin = _ } ->
-            analyze_expression ~pyre_in_context ~state ~expression
+            analyze_expression ~pyrefly_in_context ~state ~expression
         | BooleanOperator { left; right; _ } ->
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:left in
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:right in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:left in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:right in
             CallTarget.Set.bottom, state
         | ComparisonOperator { left; operator = _; right; origin = _ } ->
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:left in
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:right in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:left in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:right in
             CallTarget.Set.bottom, state
         | Call ({ callee = _; arguments; origin = _ } as call) ->
-            analyze_call ~pyre_in_context ~location ~call ~arguments ~state
+            analyze_call ~pyrefly_in_context ~location ~call ~arguments ~state
         | Constant _ -> CallTarget.Set.bottom, state
         | Dictionary entries ->
             let analyze_dictionary_entry state = function
               | Dictionary.Entry.KeyValue { key; value } ->
-                  let _, state = analyze_expression ~pyre_in_context ~state ~expression:key in
-                  let _, state = analyze_expression ~pyre_in_context ~state ~expression:value in
+                  let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:key in
+                  let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:value in
                   state
-              | Splat s -> analyze_expression ~pyre_in_context ~state ~expression:s |> snd
+              | Splat s -> analyze_expression ~pyrefly_in_context ~state ~expression:s |> snd
             in
             let state = List.fold entries ~f:analyze_dictionary_entry ~init:state in
             CallTarget.Set.bottom, state
         | DictionaryComprehension comprehension ->
-            analyze_dictionary_comprehension ~pyre_in_context ~state comprehension
-        | Generator comprehension -> analyze_comprehension ~pyre_in_context ~state comprehension
+            analyze_dictionary_comprehension ~pyrefly_in_context ~state comprehension
+        | Generator comprehension -> analyze_comprehension ~pyrefly_in_context ~state comprehension
         | Lambda { parameters; body } ->
             let state =
               List.fold
@@ -1621,27 +1587,27 @@ module HigherOrderCallGraph = struct
                 ~f:(fun state { Node.value = { Parameter.value; _ }; _ } ->
                   match value with
                   | Some default_value ->
-                      analyze_expression ~pyre_in_context ~state ~expression:default_value |> snd
+                      analyze_expression ~pyrefly_in_context ~state ~expression:default_value |> snd
                   | None -> state)
             in
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:body in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:body in
             CallTarget.Set.bottom, state
         | List list ->
             let analyze_list_element state expression =
-              analyze_expression ~pyre_in_context ~state ~expression |> snd
+              analyze_expression ~pyrefly_in_context ~state ~expression |> snd
             in
             let state = List.fold list ~f:analyze_list_element ~init:state in
             CallTarget.Set.bottom, state
         | ListComprehension comprehension ->
-            analyze_comprehension ~pyre_in_context ~state comprehension
+            analyze_comprehension ~pyrefly_in_context ~state comprehension
         | Set set ->
             let analyze_set_element state expression =
-              analyze_expression ~pyre_in_context ~state ~expression |> snd
+              analyze_expression ~pyrefly_in_context ~state ~expression |> snd
             in
             let state = List.fold ~f:analyze_set_element set ~init:state in
             CallTarget.Set.bottom, state
         | SetComprehension comprehension ->
-            analyze_comprehension ~pyre_in_context ~state comprehension
+            analyze_comprehension ~pyrefly_in_context ~state comprehension
         | Name (Name.Identifier identifier) ->
             let global_callables =
               Context.input_define_call_graph
@@ -1698,7 +1664,7 @@ module HigherOrderCallGraph = struct
             in
             let callables_from_variable =
               State.get
-                (PyrePysaApi.InContext.root_of_identifier pyre_in_context ~location ~identifier)
+                (PyreflyApi.InContext.root_of_identifier pyrefly_in_context ~location ~identifier)
                 state
             in
             ( join_original_targets_with_inferred
@@ -1706,7 +1672,7 @@ module HigherOrderCallGraph = struct
                 ~inferred:callables_from_variable,
               state )
         | Name (Name.Attribute ({ Name.Attribute.base; _ } as attribute_access)) ->
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:base in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:base in
             let callables =
               Context.input_define_call_graph
               |> DefineCallGraph.resolve_attribute_access ~location ~attribute_access
@@ -1786,18 +1752,18 @@ module HigherOrderCallGraph = struct
             callables, state
         | Starred (Starred.Once expression)
         | Starred (Starred.Twice expression) ->
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression in
             CallTarget.Set.bottom, state
         | FormatString substrings ->
             let analyze_substring state = function
               | Substring.Literal _ -> state
               | Substring.Format { value; format_spec } ->
                   (* TODO: redirect decorators in the stringify target *)
-                  let _, state = analyze_expression ~pyre_in_context ~state ~expression:value in
+                  let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:value in
                   let state =
                     match format_spec with
                     | Some format_spec ->
-                        analyze_expression ~pyre_in_context ~state ~expression:format_spec |> snd
+                        analyze_expression ~pyrefly_in_context ~state ~expression:format_spec |> snd
                     | None -> state
                   in
                   state
@@ -1805,29 +1771,29 @@ module HigherOrderCallGraph = struct
             let state = List.fold substrings ~init:state ~f:analyze_substring in
             CallTarget.Set.bottom, state
         | Ternary { target; test; alternative } ->
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:test in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:test in
             let value_then, state_then =
-              analyze_expression ~pyre_in_context ~state ~expression:target
+              analyze_expression ~pyrefly_in_context ~state ~expression:target
             in
             let value_else, state_else =
-              analyze_expression ~pyre_in_context ~state ~expression:alternative
+              analyze_expression ~pyrefly_in_context ~state ~expression:alternative
             in
             CallTarget.Set.join value_then value_else, join state_then state_else
         | Tuple expressions ->
             let analyze_tuple_element state expression =
-              analyze_expression ~pyre_in_context ~state ~expression |> snd
+              analyze_expression ~pyrefly_in_context ~state ~expression |> snd
             in
             let state = List.fold ~f:analyze_tuple_element ~init:state expressions in
             CallTarget.Set.bottom, state
         | UnaryOperator { operand; _ } ->
-            let _, state = analyze_expression ~pyre_in_context ~state ~expression:operand in
+            let _, state = analyze_expression ~pyrefly_in_context ~state ~expression:operand in
             CallTarget.Set.bottom, state
         | WalrusOperator { target = _; value; origin = _ } ->
-            analyze_expression ~pyre_in_context ~state ~expression:value
+            analyze_expression ~pyrefly_in_context ~state ~expression:value
         | Yield None -> CallTarget.Set.bottom, state
         | Yield (Some expression)
         | YieldFrom expression ->
-            let callees, state = analyze_expression ~pyre_in_context ~state ~expression in
+            let callees, state = analyze_expression ~pyrefly_in_context ~state ~expression in
             callees, store_callees ~weak:true ~root:TaintAccessPath.Root.LocalResult ~callees state
         | Slice _ ->
             failwith "Slice nodes should always be rewritten by `CallGraph.redirect_expressions`"
@@ -1854,36 +1820,39 @@ module HigherOrderCallGraph = struct
       call_targets, state
 
 
-    let analyze_parameter_default_value ~pyre_in_context ~parameter_name ~state = function
+    let analyze_parameter_default_value ~pyrefly_in_context ~parameter_name ~state = function
       | None -> state
       | Some default_value ->
           let default_value =
             preprocess_parameter_default_value
-              ~pyre_in_context
+              ~pyrefly_in_context
               ~callable:Context.callable
               default_value
           in
           let callees, state =
-            analyze_expression ~pyre_in_context ~state ~expression:default_value
+            analyze_expression ~pyrefly_in_context ~state ~expression:default_value
           in
           let root = TaintAccessPath.Root.Variable parameter_name in
           store_callees ~weak:true ~root ~callees state
 
 
-    let analyze_statement ~pyre_in_context ~state ~statement =
+    let analyze_statement ~pyrefly_in_context ~state ~statement =
       log "Analyzing statement `%a` with state `%a`" Statement.pp statement State.pp state;
       let state =
         let statement =
-          preprocess_statement ~pyre_in_context ~callable:Context.callable statement
+          preprocess_statement ~pyrefly_in_context ~callable:Context.callable statement
         in
         match Node.value statement with
         | Statement.Assign { Assign.target; value = Some value; _ } -> (
-            let callees, state = analyze_expression ~pyre_in_context ~state ~expression:value in
+            let callees, state = analyze_expression ~pyrefly_in_context ~state ~expression:value in
             let _target_callees, state =
-              analyze_expression ~pyre_in_context ~state ~expression:target
+              analyze_expression ~pyrefly_in_context ~state ~expression:target
             in
             match
-              PyrePysaApi.InContext.access_path_of_expression pyre_in_context ~self_variable target
+              PyreflyApi.InContext.access_path_of_expression
+                pyrefly_in_context
+                ~self_variable
+                target
             with
             | None -> state
             | Some { root; path } ->
@@ -1898,16 +1867,20 @@ module HigherOrderCallGraph = struct
                   state)
         | Assign { Assign.target; value = None; _ } -> (
             let _target_callees, state =
-              analyze_expression ~pyre_in_context ~state ~expression:target
+              analyze_expression ~pyrefly_in_context ~state ~expression:target
             in
             match
-              PyrePysaApi.InContext.access_path_of_expression pyre_in_context ~self_variable target
+              PyreflyApi.InContext.access_path_of_expression
+                pyrefly_in_context
+                ~self_variable
+                target
             with
             | None -> state
             | Some { root; path } ->
                 let strong_update = TaintAccessPath.Path.is_empty path in
                 store_callees ~weak:(not strong_update) ~root ~callees:CallTarget.Set.bottom state)
-        | Assert { test; _ } -> analyze_expression ~pyre_in_context ~state ~expression:test |> snd
+        | Assert { test; _ } ->
+            analyze_expression ~pyrefly_in_context ~state ~expression:test |> snd
         | Define ({ Define.signature = { name; _ }; _ } as define) ->
             let define_location =
               Define.location_with_decorators
@@ -1959,8 +1932,8 @@ module HigherOrderCallGraph = struct
                     captures
                     |> List.filter_map ~f:(fun captured_variable ->
                            let variable =
-                             PyrePysaApi.InContext.propagate_captured_variable
-                               pyre_in_context
+                             PyreflyApi.InContext.propagate_captured_variable
+                               pyrefly_in_context
                                captured_variable
                            in
                            log "Inner function captures `%a`" TaintAccessPath.Root.pp variable;
@@ -2016,11 +1989,11 @@ module HigherOrderCallGraph = struct
               state
         | Delete expressions ->
             let analyze_delete state expression =
-              analyze_expression ~pyre_in_context ~state ~expression |> snd
+              analyze_expression ~pyrefly_in_context ~state ~expression |> snd
             in
             List.fold ~f:analyze_delete ~init:state expressions
         | Expression expression ->
-            analyze_expression ~pyre_in_context ~state ~expression |> Core.snd
+            analyze_expression ~pyrefly_in_context ~state ~expression |> Core.snd
         | Global _
         | Import _
         | Nonlocal _
@@ -2028,11 +2001,11 @@ module HigherOrderCallGraph = struct
         | Raise { expression = None; _ } ->
             state
         | Raise { expression = Some expression; _ } ->
-            analyze_expression ~pyre_in_context ~state ~expression |> snd
+            analyze_expression ~pyrefly_in_context ~state ~expression |> snd
         | Return { expression = Some expression; _ } ->
             (* No need to propagate `ReturnShimCallees`, since the taint analysis only need to
                analyze them once. TODO(T231956685): Resolve decorated targets. *)
-            let callees, state = analyze_expression ~pyre_in_context ~state ~expression in
+            let callees, state = analyze_expression ~pyrefly_in_context ~state ~expression in
             let () =
               Context.input_define_call_graph
               |> DefineCallGraph.resolve_return ~statement_location:statement.Node.location
@@ -2079,15 +2052,15 @@ module HigherOrderCallGraph = struct
         ~analysis:Forward
         ~statement
         ~f:(fun () ->
-          let pyre_in_context =
-            PyrePysaApi.InContext.create_at_statement_scope
-              Context.pyre_api
+          let pyrefly_in_context =
+            PyreflyApi.InContext.create_at_statement_scope
+              Context.pyrefly_api
               ~module_qualifier:Context.module_qualifier
               ~define_name:Context.define_name
               ~call_graph:Context.input_define_call_graph
               ~statement_key
           in
-          analyze_statement ~pyre_in_context ~state ~statement)
+          analyze_statement ~pyrefly_in_context ~state ~statement)
 
 
     let backward ~statement_key:_ _ ~statement:_ = failwith "unused"
@@ -2096,7 +2069,7 @@ end
 
 let higher_order_call_graph_of_define
     ~define_call_graph
-    ~pyre_api
+    ~pyrefly_api
     ~callables_to_definitions_map
     ~skip_analysis_targets
     ~called_when_parameter
@@ -2115,7 +2088,7 @@ let higher_order_call_graph_of_define
 
     let output_define_call_graph = ref (DefineCallGraph.copy define_call_graph)
 
-    let pyre_api = pyre_api
+    let pyrefly_api = pyrefly_api
 
     let get_callee_model = get_callee_model
 
@@ -2160,9 +2133,9 @@ let higher_order_call_graph_of_define
   let module Fixpoint = PyrePysaLogic.Fixpoint.Make (TransferFunction) in
   (* Handle parameters. *)
   let initial_state =
-    let pyre_in_context =
-      PyrePysaApi.InContext.create_at_function_scope
-        pyre_api
+    let pyrefly_in_context =
+      PyreflyApi.InContext.create_at_function_scope
+        pyrefly_api
         ~module_qualifier:qualifier
         ~define_name:(Target.define_name_exn callable)
         ~call_graph:Context.input_define_call_graph
@@ -2172,7 +2145,7 @@ let higher_order_call_graph_of_define
       ~init:initial_state
       ~f:(fun state { Node.value = { Parameter.name; value = default_value; _ }; _ } ->
         TransferFunction.analyze_parameter_default_value
-          ~pyre_in_context
+          ~pyrefly_in_context
           ~state
           ~parameter_name:name
           default_value)
@@ -2217,7 +2190,7 @@ let build_whole_program_call_graph
     ~scheduler
     ~static_analysis_configuration:
       ({ Configuration.StaticAnalysis.scheduler_policies; _ } as static_analysis_configuration)
-    ~pyre_api
+    ~pyrefly_api
     ~resolve_module_path
     ~callables_to_definitions_map
     ~callables_to_decorators_map
@@ -2230,7 +2203,6 @@ let build_whole_program_call_graph
     ~definitions
     ~create_dependency_for
   =
-  let (PyrePysaApi.ReadOnly.Pyrefly pyrefly_api) = pyre_api in
   let find_missing_flows =
     static_analysis_configuration.Configuration.StaticAnalysis.find_missing_flows
   in
@@ -2298,19 +2270,19 @@ let build_whole_program_call_graph
           qualifier = _;
         } ->
         let allow_modifier = function
-          | PyrePysaApi.TypeModifier.Optional
-          | PyrePysaApi.TypeModifier.Coroutine
-          | PyrePysaApi.TypeModifier.Awaitable
-          | PyrePysaApi.TypeModifier.ReadOnly
-          | PyrePysaApi.TypeModifier.TypeVariableBound
-          | PyrePysaApi.TypeModifier.TypeVariableConstraint ->
+          | PyreflyApi.TypeModifier.Optional
+          | PyreflyApi.TypeModifier.Coroutine
+          | PyreflyApi.TypeModifier.Awaitable
+          | PyreflyApi.TypeModifier.ReadOnly
+          | PyreflyApi.TypeModifier.TypeVariableBound
+          | PyreflyApi.TypeModifier.TypeVariableConstraint ->
               true
-          | PyrePysaApi.TypeModifier.Type -> false
+          | PyreflyApi.TypeModifier.Type -> false
         in
         let is_class_instance modifiers = List.for_all ~f:allow_modifier modifiers in
         let is_class_type modifiers =
           match List.rev modifiers with
-          | PyrePysaApi.TypeModifier.Type :: rest -> List.for_all ~f:allow_modifier rest
+          | PyreflyApi.TypeModifier.Type :: rest -> List.for_all ~f:allow_modifier rest
           | _ -> false
         in
         let add_attribute_accesses
@@ -2325,8 +2297,8 @@ let build_whole_program_call_graph
               ~define_name:(Target.define_name_exn callable)
               ~location:(Ast.Node.location base)
             >>| PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api
-            >>| (fun { PyrePysaApi.ClassNamesFromType.classes; _ } -> classes)
-            >>| List.map ~f:(fun { PyrePysaApi.ClassWithModifiers.modifiers; class_name } ->
+            >>| (fun { PyreflyApi.ClassNamesFromType.classes; _ } -> classes)
+            >>| List.map ~f:(fun { PyreflyApi.ClassWithModifiers.modifiers; class_name } ->
                     let parents =
                       class_name :: PyreflyApi.ReadOnly.class_mro pyrefly_api class_name
                     in

@@ -89,16 +89,19 @@ module Heap = struct
 
   let roots { roots; _ } = roots
 
-  let edges_from_qualifier ~pyre_api ~qualifier =
-    PyrePysaApi.ReadOnly.get_class_names_for_qualifier pyre_api ~exclude_test_modules:true qualifier
+  let edges_from_qualifier ~pyrefly_api ~qualifier =
+    PyreflyApi.ReadOnly.get_class_names_for_qualifier
+      pyrefly_api
+      ~exclude_test_modules:true
+      qualifier
     |> List.concat_map ~f:(fun class_name ->
            let class_name = Reference.show class_name in
-           let parents = PyrePysaApi.ReadOnly.class_immediate_parents pyre_api class_name in
+           let parents = PyreflyApi.ReadOnly.class_immediate_parents pyrefly_api class_name in
            List.map parents ~f:(fun parent -> parent, class_name))
 
 
-  let from_qualifier ~pyre_api ~qualifier =
-    edges_from_qualifier ~pyre_api ~qualifier
+  let from_qualifier ~pyrefly_api ~qualifier =
+    edges_from_qualifier ~pyrefly_api ~qualifier
     |> List.fold ~init:empty ~f:(fun accumulator (parent, child) -> add accumulator ~parent ~child)
 
 
@@ -137,13 +140,13 @@ module Heap = struct
     { roots; edges }
 
 
-  let from_qualifiers ~scheduler ~scheduler_policies ~pyre_api ~qualifiers =
+  let from_qualifiers ~scheduler ~scheduler_policies ~pyrefly_api ~qualifiers =
     (* We collect (parent, child) string pairs in parallel workers, then build the graph
        sequentially. This is much faster than building Heap.t graphs in workers and reducing with
        `join`, because serializing large ClassNameMap/ClassNameSet structures across process
        boundaries is very expensive. *)
     let collect_edges qualifiers =
-      List.concat_map qualifiers ~f:(fun qualifier -> edges_from_qualifier ~pyre_api ~qualifier)
+      List.concat_map qualifiers ~f:(fun qualifier -> edges_from_qualifier ~pyrefly_api ~qualifier)
     in
     let scheduler_policy =
       Scheduler.Policy.from_configuration_or_default

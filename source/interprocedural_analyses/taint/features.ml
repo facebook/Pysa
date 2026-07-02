@@ -14,7 +14,7 @@ open Core
 open Ast
 open Pyre
 module AccessPath = Analysis.TaintAccessPath
-module PyrePysaApi = Interprocedural.PyrePysaApi
+module PyreflyApi = Interprocedural.PyreflyApi
 
 module MakeInterner (T : sig
   type t
@@ -505,29 +505,27 @@ module ViaFeature = struct
     Breadcrumb.ViaValue { value = feature; tag } |> BreadcrumbInterned.intern
 
 
-  let via_type_of_breadcrumb ?tag ~pyre_in_context ~argument () =
+  let via_type_of_breadcrumb ?tag ~pyrefly_in_context ~argument () =
     let feature =
       argument
-      >>| PyrePysaApi.InContext.type_of_expression pyre_in_context
-      >>| PyrePysaApi.PysaType.weaken_literals
-      >>| PyrePysaApi.PysaType.show_fully_qualified
+      >>| PyreflyApi.InContext.type_of_expression pyrefly_in_context
+      >>| PyreflyApi.PysaType.weaken_literals
+      >>| PyreflyApi.PysaType.show_fully_qualified
       |> Option.value ~default:"unknown"
     in
     Breadcrumb.ViaType { value = feature; tag } |> BreadcrumbInterned.intern
 
 
-  let via_type_of_breadcrumb_for_object ?tag ~pyre_in_context ~object_target () =
+  let via_type_of_breadcrumb_for_object ?tag ~pyrefly_in_context ~object_target () =
     let object_target = Reference.create object_target in
     let feature =
-      match pyre_in_context with
-      | PyrePysaApi.InContext.Pyrefly pyrefly_in_context ->
-          let pyre_api = Interprocedural.PyreflyApi.InContext.pyre_api pyrefly_in_context in
-          Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
-            pyre_api
-            ~class_name:(Reference.prefix object_target |> Option.value_exn |> Reference.show)
-            ~attribute:(Reference.last object_target)
-          |> PyrePysaApi.PysaType.weaken_literals
-          |> PyrePysaApi.PysaType.show_fully_qualified
+      let pyrefly_api = Interprocedural.PyreflyApi.InContext.pyrefly_api pyrefly_in_context in
+      Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
+        pyrefly_api
+        ~class_name:(Reference.prefix object_target |> Option.value_exn |> Reference.show)
+        ~attribute:(Reference.last object_target)
+      |> PyreflyApi.PysaType.weaken_literals
+      |> PyreflyApi.PysaType.show_fully_qualified
     in
     Breadcrumb.ViaType { value = feature; tag } |> BreadcrumbInterned.intern
 
@@ -775,7 +773,7 @@ let shim_broadening_set = memoize_breadcrumb_set [Breadcrumb.Broadening; Breadcr
 let type_bool_scalar_set = memoize_breadcrumb_set [Breadcrumb.Type "scalar"; Breadcrumb.Type "bool"]
 
 let type_breadcrumbs scalar_properties =
-  let module ScalarTypeProperties = PyrePysaApi.ScalarTypeProperties in
+  let module ScalarTypeProperties = PyreflyApi.ScalarTypeProperties in
   let is_boolean = ScalarTypeProperties.is_boolean scalar_properties in
   let is_integer = ScalarTypeProperties.is_integer scalar_properties in
   let is_float = ScalarTypeProperties.is_float scalar_properties in
@@ -794,11 +792,11 @@ let type_breadcrumbs scalar_properties =
   |> add_if is_enumeration type_enumeration
 
 
-let type_breadcrumbs_from_annotation ~pyre_api type_ =
-  type_ |> PyrePysaApi.ReadOnly.Type.scalar_properties pyre_api |> type_breadcrumbs
+let type_breadcrumbs_from_annotation ~pyrefly_api type_ =
+  type_ |> PyreflyApi.ReadOnly.Type.scalar_properties pyrefly_api |> type_breadcrumbs
 
 
-let expand_via_features ~pyre_in_context ~callee ~arguments via_features =
+let expand_via_features ~pyrefly_in_context ~callee ~arguments via_features =
   let expand_via_feature via_feature breadcrumbs =
     let match_all_arguments_to_parameter parameter =
       AccessPath.match_actuals_to_formals arguments [parameter]
@@ -821,11 +819,15 @@ let expand_via_features ~pyre_in_context ~callee ~arguments via_features =
         let breadcrumb =
           match Target.get_regular callee with
           | Target.Regular.Object object_target ->
-              ViaFeature.via_type_of_breadcrumb_for_object ?tag ~pyre_in_context ~object_target ()
+              ViaFeature.via_type_of_breadcrumb_for_object
+                ?tag
+                ~pyrefly_in_context
+                ~object_target
+                ()
           | _ ->
               ViaFeature.via_type_of_breadcrumb
                 ?tag
-                ~pyre_in_context
+                ~pyrefly_in_context
                 ~argument:(match_argument_to_parameter parameter)
                 ()
         in

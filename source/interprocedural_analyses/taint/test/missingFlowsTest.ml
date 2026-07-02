@@ -33,7 +33,7 @@ let assert_fixpoint
          taint_configuration_shared_memory;
          whole_program_call_graph;
          get_define_call_graph;
-         pyre_api;
+         pyrefly_api;
          override_graph_heap;
          override_graph_shared_memory;
          initial_models;
@@ -86,7 +86,7 @@ let assert_fixpoint
       ~context:
         {
           TaintFixpoint.Context.taint_configuration = taint_configuration_shared_memory;
-          pyre_api;
+          pyrefly_api;
           class_interval_graph = class_interval_graph_shared_memory;
           get_define_call_graph;
           global_constants =
@@ -118,7 +118,7 @@ let assert_fixpoint
     |> IssueHandle.SerializableMap.data
   in
   let () =
-    List.iter ~f:(check_expectation ~pyre_api ~taint_configuration ~get_model ~get_errors) expect
+    List.iter ~f:(check_expectation ~pyrefly_api ~taint_configuration ~get_model ~get_errors) expect
   in
   let () = TaintFixpoint.State.cleanup ~keep_models:false fixpoint.TaintFixpoint.state in
   let () = TestEnvironment.cleanup test_environment in

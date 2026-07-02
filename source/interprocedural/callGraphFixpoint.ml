@@ -10,7 +10,7 @@ open Core
 module CallGraphAnalysis = struct
   module Context = struct
     type t = {
-      pyre_api: PyrePysaApi.ReadOnly.t;
+      pyrefly_api: PyreflyApi.ReadOnly.t;
       define_call_graphs: CallGraph.SharedMemory.ReadOnly.t;
       callables_to_definitions_map: CallablesSharedMemory.ReadOnly.t;
       skip_analysis_targets: Target.HashSet.t;
@@ -94,7 +94,7 @@ module CallGraphAnalysis = struct
   let analyze_define
       ~context:
         {
-          Context.pyre_api;
+          Context.pyrefly_api;
           define_call_graphs;
           callables_to_definitions_map;
           skip_analysis_targets;
@@ -122,7 +122,7 @@ module CallGraphAnalysis = struct
         callable
         |> Target.strip_parameters
         |> CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
-        |> PyrePysaApi.AstResult.value_exn
+        |> PyreflyApi.AstResult.value_exn
              ~message:(Format.asprintf "Found no definition for `%a`" Target.pp_pretty callable)
       in
       let define_call_graph =
@@ -151,7 +151,7 @@ module CallGraphAnalysis = struct
           (fun () ->
             CallGraphBuilder.higher_order_call_graph_of_define
               ~define_call_graph
-              ~pyre_api
+              ~pyrefly_api
               ~callables_to_definitions_map
               ~skip_analysis_targets
               ~called_when_parameter
@@ -161,7 +161,7 @@ module CallGraphAnalysis = struct
               ~define
               ~initial_state:
                 (CallGraphBuilder.HigherOrderCallGraph.State.initialize_from_callable
-                   ~pyre_api
+                   ~pyrefly_api
                    ~callables_to_definitions_map
                    callable)
               ~get_callee_model
@@ -426,7 +426,7 @@ let compute
          _;
        } as static_analysis_configuration)
     ~resolve_module_path
-    ~pyre_api
+    ~pyrefly_api
     ~callables_to_definitions_map
     ~callables_to_decorators_map
     ~call_graph:{ CallGraph.SharedMemory.define_call_graphs; _ }
@@ -513,7 +513,7 @@ let compute
       ~skip_analysis_targets
       ~context:
         {
-          CallGraphAnalysis.Context.pyre_api;
+          CallGraphAnalysis.Context.pyrefly_api;
           define_call_graphs = CallGraph.SharedMemory.read_only define_call_graphs;
           callables_to_definitions_map;
           skip_analysis_targets;
