@@ -838,7 +838,7 @@ module CallableDecorator = struct
     callees: Reference.t list Lazy.t;
   }
 
-  let create_for_callable ~pyre_api ~callables_to_definitions_map ~qualifier ~target statement =
+  let create_for_callable ~pyre_api ~callables_to_definitions_map:_ ~qualifier:_ ~target statement =
     let get_callees statement =
       let ({ Node.value = expression; _ } as decorator_expression) =
         Statement.Decorator.to_expression statement
@@ -852,36 +852,7 @@ module CallableDecorator = struct
         | _ -> decorator_expression
       in
       match pyre_api with
-      | PyrePysaApi.ReadOnly.Pyre1 pyre_api ->
-          let return_type =
-            (* Since this won't be used and resolving the return type could be expensive, let's pass
-               a random type. *)
-            lazy Type.Any
-          in
-          let { Interprocedural.CallGraph.CallCallees.call_targets; new_targets; init_targets; _ } =
-            Interprocedural.CallGraphBuilder.resolve_callees_from_type_external
-              ~pyre_in_context:
-                (PyrePysaApi.InContext.Pyre1
-                   (Analysis.PyrePysaEnvironment.InContext.create_at_function_scope
-                      pyre_api
-                      ~module_qualifier:qualifier
-                      ~define_name:(Target.define_name_exn target)))
-              ~callables_to_definitions_map
-              ~override_graph:None
-              ~return_type
-              callee
-          in
-          let call_targets =
-            call_targets |> List.rev_append new_targets |> List.rev_append init_targets
-          in
-          let call_target_to_fully_qualified_name call_target =
-            call_target
-            |> CallGraph.CallTarget.target
-            |> Target.get_regular
-            |> Target.Regular.override_to_method
-            |> Target.Regular.define_name_exn
-          in
-          List.map ~f:call_target_to_fully_qualified_name call_targets
+      | PyrePysaApi.ReadOnly.Pyre1 _ -> failwith "Pyre1 backend has been removed"
       | PyrePysaApi.ReadOnly.Pyrefly pyrefly_api ->
           Interprocedural.PyreflyApi.ReadOnly.get_callable_decorator_callees
             pyrefly_api

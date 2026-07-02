@@ -900,69 +900,42 @@ let call_graph_of_callable
     ~callables_to_decorators_map
     ~global_constants
     ~type_of_expression_shared_memory
-    ~check_invariants
-    ~module_name
+    ~check_invariants:_
+    ~module_name:_
     ~callable
   =
-  match pyre_api with
-  | PyrePysaApi.ReadOnly.Pyre1 _ ->
-      let source = source_from_qualifier ~pyre_api module_name in
-      let define =
-        let find_define define =
-          Reference.equal
-            (Analysis.FunctionDefinition.qualified_name_of_define ~module_name (Node.value define))
-            (Target.define_name_exn callable)
-        in
-        List.find_exn
-          (Preprocessing.defines ~include_nested:true ~include_toplevels:true source)
-          ~f:find_define
-      in
-      CallGraphBuilder.call_graph_of_define
+  let { CallGraph.SharedMemory.define_call_graphs; _ } =
+    try
+      CallGraphBuilder.build_whole_program_call_graph
+        ~scheduler:(Test.mock_scheduler ())
         ~static_analysis_configuration
         ~pyre_api
-        ~override_graph
-        ~attribute_targets:(Target.HashSet.of_list object_targets)
+        ~resolve_module_path:None
         ~callables_to_definitions_map
         ~callables_to_decorators_map
+        ~global_constants
         ~type_of_expression_shared_memory
+        ~override_graph
+        ~store_shared_memory:true
+        ~attribute_targets:(Target.Set.of_list object_targets)
+        ~skip_analysis_targets:(Target.HashSet.create ())
         ~skip_call_higher_order_functions:(Target.HashSet.create ())
-        ~check_invariants
-        ~qualifier:module_name
-        ~callable
-        ~define
-  | PyrePysaApi.ReadOnly.Pyrefly _ ->
-      let { CallGraph.SharedMemory.define_call_graphs; _ } =
-        try
-          CallGraphBuilder.build_whole_program_call_graph
-            ~scheduler:(Test.mock_scheduler ())
-            ~static_analysis_configuration
-            ~pyre_api
-            ~resolve_module_path:None
-            ~callables_to_definitions_map
-            ~callables_to_decorators_map
-            ~global_constants
-            ~type_of_expression_shared_memory
-            ~override_graph
-            ~store_shared_memory:true
-            ~attribute_targets:(Target.Set.of_list object_targets)
-            ~skip_analysis_targets:(Target.HashSet.create ())
-            ~skip_call_higher_order_functions:(Target.HashSet.create ())
-            ~check_invariants:true
-            ~definitions:[callable]
-            ~create_dependency_for:CallGraph.AllTargetsUseCase.Everything
-        with
-        | Interprocedural.PyreflyApi.PyreflyFileFormatError { path; error } ->
-            failwith
-              (Format.asprintf "%a: %a" PyrePath.pp path Interprocedural.PyreflyApi.Error.pp error)
-      in
-      let call_graph =
-        CallGraph.SharedMemory.ReadOnly.get
-          (CallGraph.SharedMemory.read_only define_call_graphs)
-          ~cache:false
-          ~callable
-        |> Option.value_exn
-      in
-      call_graph
+        ~check_invariants:true
+        ~definitions:[callable]
+        ~create_dependency_for:CallGraph.AllTargetsUseCase.Everything
+    with
+    | Interprocedural.PyreflyApi.PyreflyFileFormatError { path; error } ->
+        failwith
+          (Format.asprintf "%a: %a" PyrePath.pp path Interprocedural.PyreflyApi.Error.pp error)
+  in
+  let call_graph =
+    CallGraph.SharedMemory.ReadOnly.get
+      (CallGraph.SharedMemory.read_only define_call_graphs)
+      ~cache:false
+      ~callable
+    |> Option.value_exn
+  in
+  call_graph
 
 
 type mismatch_file = {

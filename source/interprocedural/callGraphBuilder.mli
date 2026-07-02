@@ -6,32 +6,6 @@
  *)
 
 open Ast
-open Expression
-
-(* Exposed for rare use cases, such as resolving the callees of decorators. *)
-val resolve_callees_from_type_external
-  :  pyre_in_context:PyrePysaApi.InContext.t ->
-  callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-  override_graph:OverrideGraph.SharedMemory.ReadOnly.t option ->
-  return_type:Type.t lazy_t ->
-  ?dunder_call:bool ->
-  Expression.t ->
-  CallGraph.CallCallees.t
-
-val call_graph_of_define
-  :  static_analysis_configuration:Configuration.StaticAnalysis.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
-  override_graph:OverrideGraph.SharedMemory.ReadOnly.t option ->
-  attribute_targets:Target.HashSet.t ->
-  skip_call_higher_order_functions:Target.HashSet.t ->
-  callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-  callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.ReadOnly.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
-  check_invariants:bool ->
-  qualifier:Reference.t ->
-  callable:Target.t ->
-  define:Ast.Statement.Define.t Node.t ->
-  CallGraph.DefineCallGraph.t
 
 (* This must be called *once* before analyzing a statement in a control flow graph. *)
 val preprocess_statement
@@ -55,30 +29,6 @@ val preprocess_parameter_default_value
   callable:Target.t ->
   Ast.Expression.t ->
   Ast.Expression.t
-
-val call_graph_of_callable
-  :  static_analysis_configuration:Configuration.StaticAnalysis.t ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
-  override_graph:OverrideGraph.SharedMemory.ReadOnly.t option ->
-  attribute_targets:Target.HashSet.t ->
-  skip_call_higher_order_functions:Target.HashSet.t ->
-  callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-  callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.ReadOnly.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
-  check_invariants:bool ->
-  callable:Target.t ->
-  CallGraph.DefineCallGraph.t
-
-val call_graph_of_decorated_callable
-  :  debug:bool ->
-  pyre_api:PyrePysaApi.ReadOnly.t ->
-  override_graph:OverrideGraph.SharedMemory.ReadOnly.t option ->
-  callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-  callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.ReadOnly.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
-  callable:Target.t ->
-  body:CallableToDecoratorsMap.DecoratedDefineBody.t ->
-  CallGraph.DefineCallGraph.t
 
 (* The result of finding higher order function callees inside a callable. *)
 module HigherOrderCallGraph : sig
