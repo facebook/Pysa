@@ -41,22 +41,21 @@ end
 
 (** Represents type information about the return type of a call. *)
 module ReturnType = struct
-  type t = Analysis.PyrePysaEnvironment.ScalarTypeProperties.t
-  [@@deriving compare, equal, sexp, hash, show]
+  type t = Analysis.PysaTypes.ScalarTypeProperties.t [@@deriving compare, equal, sexp, hash, show]
 
-  let unknown = Analysis.PyrePysaEnvironment.ScalarTypeProperties.unknown
+  let unknown = Analysis.PysaTypes.ScalarTypeProperties.unknown
 
-  let none = Analysis.PyrePysaEnvironment.ScalarTypeProperties.none
+  let none = Analysis.PysaTypes.ScalarTypeProperties.none
 
-  let bool = Analysis.PyrePysaEnvironment.ScalarTypeProperties.bool
+  let bool = Analysis.PysaTypes.ScalarTypeProperties.bool
 
-  let integer = Analysis.PyrePysaEnvironment.ScalarTypeProperties.integer
+  let integer = Analysis.PysaTypes.ScalarTypeProperties.integer
 
   let to_json value =
     let add_string_if name condition elements =
       if condition then `String name :: elements else elements
     in
-    let module ScalarTypeProperties = Analysis.PyrePysaEnvironment.ScalarTypeProperties in
+    let module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties in
     []
     |> add_string_if "boolean" (ScalarTypeProperties.is_boolean value)
     |> add_string_if "integer" (ScalarTypeProperties.is_integer value)

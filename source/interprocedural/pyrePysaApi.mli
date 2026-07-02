@@ -11,13 +11,13 @@ open Core
    information about the code to analyze. Right now, this wraps either the old Pyre 1 API provided
    by `Analysis.PyrePysaEnvironment` or the Pyrefly API provided by `Interprocedural.Pyrefly`. *)
 
-module ScalarTypeProperties = Analysis.PyrePysaEnvironment.ScalarTypeProperties
-module TypeModifier = Analysis.PyrePysaEnvironment.TypeModifier
-module ClassWithModifiers = Analysis.PyrePysaEnvironment.ClassWithModifiers
-module ClassNamesFromType = Analysis.PyrePysaEnvironment.ClassNamesFromType
-module PysaType = Analysis.PyrePysaEnvironment.PysaType
+module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
+module TypeModifier = Analysis.PysaTypes.TypeModifier
+module ClassWithModifiers = Analysis.PysaTypes.ClassWithModifiers
+module ClassNamesFromType = Analysis.PysaTypes.ClassNamesFromType
+module PysaType = Analysis.PysaTypes.PysaType
 module PyreClassSummary = Analysis.ClassSummary
-module AstResult = Analysis.PyrePysaEnvironment.AstResult
+module AstResult = Analysis.PysaTypes.AstResult
 module TaintAccessPath = Analysis.TaintAccessPath
 
 (* Abstraction for information about a class, provided from Pyre1 or Pyrefly and used by Pysa. See
@@ -73,7 +73,7 @@ module ReadOnly : sig
 
   val explicit_qualifiers : t -> Ast.Reference.t list
 
-  val all_sys_infos : t -> Analysis.PyrePysaEnvironment.SysInfo.t list
+  val all_sys_infos : t -> Analysis.PysaTypes.SysInfo.t list
 
   val absolute_source_path_of_qualifier
     :  lookup_source:(ArtifactPath.t -> SourcePath.t option) ->
@@ -108,7 +108,7 @@ module ReadOnly : sig
     :  t ->
     exclude_test_modules:bool ->
     Ast.Reference.t ->
-    Analysis.PyrePysaEnvironment.MethodReference.t list
+    Analysis.PysaTypes.MethodReference.t list
 
   val get_qualifier_top_level_define_name : t -> Ast.Reference.t -> Ast.Reference.t
 
@@ -163,10 +163,10 @@ module ReadOnly : sig
 
   val get_overriden_base_method
     :  t ->
-    Analysis.PyrePysaEnvironment.MethodReference.t ->
-    Analysis.PyrePysaEnvironment.MethodReference.t option
+    Analysis.PysaTypes.MethodReference.t ->
+    Analysis.PysaTypes.MethodReference.t option
 
-  val target_from_method_reference : t -> Analysis.PyrePysaEnvironment.MethodReference.t -> Target.t
+  val target_from_method_reference : t -> Analysis.PysaTypes.MethodReference.t -> Target.t
 
   val get_captured_variable_from_nonlocal_target
     :  t ->
@@ -372,13 +372,13 @@ module ModelQueries : sig
 
   val mangle_class_attribute : Ast.Reference.t -> Ast.Reference.t
 
-  module FunctionParameter = Analysis.PyrePysaEnvironment.ModelQueries.FunctionParameter
-  module FunctionParameters = Analysis.PyrePysaEnvironment.ModelQueries.FunctionParameters
-  module FunctionSignature = Analysis.PyrePysaEnvironment.ModelQueries.FunctionSignature
-  module Function = Analysis.PyrePysaEnvironment.ModelQueries.Function
-  module Global = Analysis.PyrePysaEnvironment.ModelQueries.Global
-  module ModuleResolutionResult = Analysis.PyrePysaEnvironment.ModelQueries.ModuleResolutionResult
-  module ResolutionResult = Analysis.PyrePysaEnvironment.ModelQueries.ResolutionResult
+  module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
+  module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
+  module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+  module Function = Analysis.PysaTypes.ModelQueries.Function
+  module Global = Analysis.PysaTypes.ModelQueries.Global
+  module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
+  module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
 
   val resolve_user_qualified_name
     :  ReadOnly.t ->

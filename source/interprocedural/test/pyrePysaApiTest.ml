@@ -26,48 +26,44 @@ let convert_to_pyrefly_global global =
     | Some Type.NoneType ->
         PysaType.from_pyrefly_type
           {
-            PyrePysaEnvironment.PyreflyType.string = "None";
+            PysaTypes.PyreflyType.string = "None";
             scalar_properties = ScalarTypeProperties.none;
             class_names = None;
           }
     | Some Type.Any ->
         PysaType.from_pyrefly_type
           {
-            PyrePysaEnvironment.PyreflyType.string = "Any";
+            PysaTypes.PyreflyType.string = "Any";
             scalar_properties = ScalarTypeProperties.none;
             class_names = None;
           }
     | Some (Type.Primitive "int") ->
         PysaType.from_pyrefly_type
           {
-            PyrePysaEnvironment.PyreflyType.string = "int";
+            PysaTypes.PyreflyType.string = "int";
             scalar_properties = ScalarTypeProperties.integer;
-            class_names =
-              Some (PyrePysaEnvironment.PyreflyType.ClassNamesFromType.from_class (116, 5));
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 5));
           }
     | Some (Type.Primitive "str") ->
         PysaType.from_pyrefly_type
           {
-            PyrePysaEnvironment.PyreflyType.string = "str";
+            PysaTypes.PyreflyType.string = "str";
             scalar_properties = ScalarTypeProperties.none;
-            class_names =
-              Some (PyrePysaEnvironment.PyreflyType.ClassNamesFromType.from_class (116, 10));
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 10));
           }
     | Some (Type.Primitive "test.Foo") ->
         PysaType.from_pyrefly_type
           {
-            PyrePysaEnvironment.PyreflyType.string = "test.Foo";
+            PysaTypes.PyreflyType.string = "test.Foo";
             scalar_properties = ScalarTypeProperties.none;
-            class_names =
-              Some (PyrePysaEnvironment.PyreflyType.ClassNamesFromType.from_class (1000, 0));
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 0));
           }
     | Some (Type.Primitive "test.Bar") ->
         PysaType.from_pyrefly_type
           {
-            PyrePysaEnvironment.PyreflyType.string = "test.Bar";
+            PysaTypes.PyreflyType.string = "test.Bar";
             scalar_properties = ScalarTypeProperties.none;
-            class_names =
-              Some (PyrePysaEnvironment.PyreflyType.ClassNamesFromType.from_class (1000, 1));
+            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 1));
           }
     | Some annotation ->
         failwith (Format.asprintf "unimplemented: pyrefly representation for %a" Type.pp annotation)
@@ -156,19 +152,19 @@ let test_resolve_user_qualified_name context =
     assert_equal ~printer expected_list actual
   in
   let create_parameter ?(annotation = Type.Any) ?(position = 0) name =
-    PyrePysaEnvironment.ModelQueries.FunctionParameter.Named
+    PysaTypes.ModelQueries.FunctionParameter.Named
       {
         name;
         position;
-        annotation = PyrePysaEnvironment.PysaType.from_pyre1_type annotation;
+        annotation = PysaTypes.PysaType.from_pyre1_type annotation;
         has_default = false;
       }
   in
   let create_signature ?(return_annotation = Type.NoneType) parameters =
     {
-      PyrePysaEnvironment.ModelQueries.FunctionSignature.parameters =
-        PyrePysaEnvironment.ModelQueries.FunctionParameters.List parameters;
-      return_annotation = PyrePysaEnvironment.PysaType.from_pyre1_type return_annotation;
+      PysaTypes.ModelQueries.FunctionSignature.parameters =
+        PysaTypes.ModelQueries.FunctionParameters.List parameters;
+      return_annotation = PysaTypes.PysaType.from_pyre1_type return_annotation;
     }
   in
   let create_callable

@@ -9,8 +9,8 @@
    --report-pysa. *)
 
 open Core
-module PysaType = Analysis.PyrePysaEnvironment.PysaType
-module AstResult = Analysis.PyrePysaEnvironment.AstResult
+module PysaType = Analysis.PysaTypes.PysaType
+module AstResult = Analysis.PysaTypes.AstResult
 
 module FormatError : sig
   type t =
@@ -79,7 +79,7 @@ module CallableMetadata : sig
   }
   [@@deriving show]
 
-  val get_method_kind : t -> Analysis.PyrePysaEnvironment.MethodKind.t option
+  val get_method_kind : t -> Analysis.PysaTypes.MethodKind.t option
 end
 
 module PysaClassSummary : sig
@@ -116,7 +116,7 @@ module ReadOnly : sig
   (* Return all qualifiers with source code *)
   val explicit_qualifiers : t -> Ast.Reference.t list
 
-  val all_sys_infos : t -> Analysis.PyrePysaEnvironment.SysInfo.t list
+  val all_sys_infos : t -> Analysis.PysaTypes.SysInfo.t list
 
   val artifact_path_of_qualifier : t -> Ast.Reference.t -> ArtifactPath.t option
 
@@ -172,8 +172,8 @@ module ReadOnly : sig
 
   val get_overriden_base_method
     :  t ->
-    Analysis.PyrePysaEnvironment.MethodReference.t ->
-    Analysis.PyrePysaEnvironment.MethodReference.t option
+    Analysis.PysaTypes.MethodReference.t ->
+    Analysis.PysaTypes.MethodReference.t option
 
   val get_callable_captures
     :  t ->
@@ -197,7 +197,7 @@ module ReadOnly : sig
     :  t ->
     exclude_test_modules:bool ->
     Ast.Reference.t ->
-    Analysis.PyrePysaEnvironment.MethodReference.t list
+    Analysis.PysaTypes.MethodReference.t list
 
   (* Is this a test module (i.e, unit test code that we shouldn't analyze) *)
   val is_test_qualifier : t -> Ast.Reference.t -> bool
@@ -214,17 +214,17 @@ module ReadOnly : sig
   val get_callable_signature_opt
     :  t ->
     Ast.Reference.t ->
-    Analysis.PyrePysaEnvironment.CallableSignature.t option
+    Analysis.PysaTypes.CallableSignature.t option
 
   val get_undecorated_signatures
     :  t ->
     Ast.Reference.t ->
-    Analysis.PyrePysaEnvironment.ModelQueries.FunctionSignature.t list
+    Analysis.PysaTypes.ModelQueries.FunctionSignature.t list
 
   val get_model_parser_function_info
     :  t ->
     Ast.Reference.t ->
-    Analysis.PyrePysaEnvironment.ModelQueries.Function.t
+    Analysis.PysaTypes.ModelQueries.Function.t
 
   val get_class_summary : t -> string -> PysaClassSummary.t
 
@@ -276,9 +276,9 @@ module ReadOnly : sig
     PysaType.t option
 
   module Type : sig
-    val scalar_properties : t -> PysaType.t -> Analysis.PyrePysaEnvironment.ScalarTypeProperties.t
+    val scalar_properties : t -> PysaType.t -> Analysis.PysaTypes.ScalarTypeProperties.t
 
-    val get_class_names : t -> PysaType.t -> Analysis.PyrePysaEnvironment.ClassNamesFromType.t
+    val get_class_names : t -> PysaType.t -> Analysis.PysaTypes.ClassNamesFromType.t
 
     val is_dictionary_or_mapping : t -> PysaType.t -> bool
   end
@@ -318,10 +318,10 @@ val strip_path_prefix : string -> string
 val strip_target_path_prefix : Target.t -> Target.t
 
 module ModelQueries : sig
-  module Function = Analysis.PyrePysaEnvironment.ModelQueries.Function
-  module Global = Analysis.PyrePysaEnvironment.ModelQueries.Global
-  module ModuleResolutionResult = Analysis.PyrePysaEnvironment.ModelQueries.ModuleResolutionResult
-  module ResolutionResult = Analysis.PyrePysaEnvironment.ModelQueries.ResolutionResult
+  module Function = Analysis.PysaTypes.ModelQueries.Function
+  module Global = Analysis.PysaTypes.ModelQueries.Global
+  module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
+  module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
 
   val resolve_user_qualified_name
     :  ReadOnly.t ->
@@ -472,7 +472,7 @@ module LocalFunctionId : sig
 end
 
 (* Exposed for testing purposes *)
-module PyreflyType = Analysis.PyrePysaEnvironment.PyreflyType
+module PyreflyType = Analysis.PysaTypes.PyreflyType
 
 (* Exposed for testing purposes *)
 module ClassFieldDeclarationKind : sig
@@ -638,7 +638,7 @@ module Testing : sig
       absolute_source_path: ArtifactPath.t option;
       relative_source_path: string option;
       pyrefly_info_filename: ModuleInfoFilename.t option;
-      sys_info: Analysis.PyrePysaEnvironment.SysInfo.t;
+      sys_info: Analysis.PysaTypes.SysInfo.t;
       is_test: bool;
       is_stub: bool;
       is_internal: bool;

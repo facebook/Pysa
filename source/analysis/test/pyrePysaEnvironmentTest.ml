@@ -47,14 +47,14 @@ let test_source_is_unit_test context =
 
 
 let test_scalar_type_properties =
-  let module ScalarTypeProperties = PyrePysaEnvironment.ScalarTypeProperties in
+  let module ScalarTypeProperties = PysaTypes.ScalarTypeProperties in
   let assert_scalar_properties annotation expected context =
     let project = Test.ScratchProject.setup ~context [] in
     let pyre_api = project |> Test.ScratchProject.pyre_pysa_read_only_api in
     let actual =
       PyrePysaEnvironment.ReadOnly.Type.scalar_properties
         pyre_api
-        (PyrePysaEnvironment.PysaType.from_pyre1_type annotation)
+        (PysaTypes.PysaType.from_pyre1_type annotation)
     in
     assert_equal ~printer:ScalarTypeProperties.show ~cmp:ScalarTypeProperties.equal expected actual
   in

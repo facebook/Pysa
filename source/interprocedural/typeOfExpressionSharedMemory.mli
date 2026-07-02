@@ -28,4 +28,4 @@ val compute_or_retrieve_pysa_type
   :  t ->
   pyre_in_context:PyrePysaApi.InContext.t ->
   Ast.Expression.t ->
-  Analysis.PyrePysaEnvironment.PysaType.t
+  Analysis.PysaTypes.PysaType.t

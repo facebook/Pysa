@@ -8,9 +8,9 @@
 (* Shared types and format-agnostic utilities for pyrefly report files. *)
 
 open Core
-module PyreflyType = Analysis.PyrePysaEnvironment.PyreflyType
-module PysaType = Analysis.PyrePysaEnvironment.PysaType
-module ScalarTypeProperties = Analysis.PyrePysaEnvironment.ScalarTypeProperties
+module PyreflyType = Analysis.PysaTypes.PyreflyType
+module PysaType = Analysis.PysaTypes.PysaType
+module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
 
 module FormatError : sig
   type t =

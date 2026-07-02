@@ -284,4 +284,4 @@ module HashsetSharedMemory : sig
   val read_only : t -> ReadOnly.t
 end
 
-module MethodKind = Analysis.PyrePysaEnvironment.MethodKind
+module MethodKind = Analysis.PysaTypes.MethodKind

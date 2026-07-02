@@ -44,6 +44,7 @@ module NamedTuple = NamedTuple
 module Parsing = Parsing
 module Postprocessing = Postprocessing
 module Preprocessing = Preprocessing
+module PysaTypes = PysaTypes
 module PyrePysaEnvironment = PyrePysaEnvironment
 module PyrePysaLogic = PyrePysaLogic
 module Resolution = Resolution

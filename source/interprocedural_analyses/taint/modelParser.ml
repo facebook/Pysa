@@ -135,7 +135,7 @@ module SystemCondition = struct
 
 
   let rec evaluate ~pyre_api sys_info condition =
-    let open Analysis.PyrePysaEnvironment.SysInfo in
+    let open Analysis.PysaTypes.SysInfo in
     match condition with
     | PythonVersionCondition { operator; version = test_version } -> (
         match compare_with sys_info.python_version operator test_version with

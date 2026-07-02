@@ -120,8 +120,7 @@ let assert_invalid_model
       ~all_sys_infos:
         [
           {
-            Analysis.PyrePysaEnvironment.SysInfo.python_version =
-              Configuration.PythonVersion.create ();
+            Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
             platform = Some "linux";
           };
         ]

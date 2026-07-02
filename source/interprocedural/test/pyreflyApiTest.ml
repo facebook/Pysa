@@ -70,7 +70,7 @@ let test_module_qualifiers _ =
         pyrefly_info_filename = None;
         sys_info =
           {
-            Analysis.PyrePysaEnvironment.SysInfo.python_version =
+            Analysis.PysaTypes.SysInfo.python_version =
               { Configuration.PythonVersion.major = 3; minor = 12; micro = 0 };
             platform = Some "linux";
           };

@@ -13,13 +13,13 @@ open Pyre
 open Data_structures
 open Ast
 module Pyre1Api = Analysis.PyrePysaEnvironment
-module PysaType = Pyre1Api.PysaType
-module AstResult = Pyre1Api.AstResult
-module FunctionParameter = Pyre1Api.ModelQueries.FunctionParameter
-module FunctionParameters = Pyre1Api.ModelQueries.FunctionParameters
-module FunctionSignature = Pyre1Api.ModelQueries.FunctionSignature
+module PysaType = Analysis.PysaTypes.PysaType
+module AstResult = Analysis.PysaTypes.AstResult
+module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
+module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
+module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
 module AccessPath = Analysis.TaintAccessPath
-module SysInfo = Analysis.PyrePysaEnvironment.SysInfo
+module SysInfo = Analysis.PysaTypes.SysInfo
 
 (* Types re-exported from PyreflyReport *)
 module FormatError = PyreflyReport.FormatError
@@ -257,7 +257,7 @@ module CallableMetadata = struct
   [@@deriving show]
 
   let get_method_kind { is_staticmethod; is_classmethod; parent_is_class; _ } =
-    let open Analysis.PyrePysaEnvironment in
+    let open Analysis.PysaTypes in
     if is_staticmethod then
       Some MethodKind.Static
     else if is_classmethod then
@@ -2055,7 +2055,7 @@ module ReadWrite = struct
             PysaType.from_pyrefly_type
               {
                 PyreflyType.string = "None";
-                scalar_properties = Pyre1Api.ScalarTypeProperties.none;
+                scalar_properties = Analysis.PysaTypes.ScalarTypeProperties.none;
                 class_names = None;
               };
         }
@@ -2889,8 +2889,8 @@ module ReadOnly = struct
       method_reference
     =
     match method_reference with
-    | Analysis.PyrePysaEnvironment.MethodReference.Pyre1 _ -> None
-    | Analysis.PyrePysaEnvironment.MethodReference.Pyrefly { define_name; is_property_setter } ->
+    | Analysis.PysaTypes.MethodReference.Pyre1 _ -> None
+    | Analysis.PysaTypes.MethodReference.Pyrefly { define_name; is_property_setter } ->
         CallableMetadataSharedMemory.get
           callable_metadata_shared_memory
           (FullyQualifiedName.from_reference_unchecked define_name)
@@ -2900,7 +2900,7 @@ module ReadOnly = struct
         overridden_base_method
         >>| CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory
         >>| fun define_name ->
-        Analysis.PyrePysaEnvironment.MethodReference.Pyrefly
+        Analysis.PysaTypes.MethodReference.Pyrefly
           { define_name = FullyQualifiedName.to_reference define_name; is_property_setter }
 
 
@@ -3032,7 +3032,7 @@ module ReadOnly = struct
         |> assert_shared_memory_key_exists (fun () ->
                Format.asprintf "missing callable metadata: `%a`" FullyQualifiedName.pp callable)
         |> fun { CallableMetadataSharedMemory.Value.metadata = { is_property_setter; _ }; _ } ->
-        Analysis.PyrePysaEnvironment.MethodReference.Pyrefly
+        Analysis.PysaTypes.MethodReference.Pyrefly
           { define_name = FullyQualifiedName.to_reference callable; is_property_setter }
       in
       ModuleCallablesSharedMemory.get
@@ -3078,7 +3078,7 @@ module ReadOnly = struct
     in
     let define_signature = AstResult.map ~f:Node.value define_signature_result in
     {
-      Pyre1Api.CallableSignature.qualifier = metadata.CallableMetadata.module_qualifier;
+      Analysis.PysaTypes.CallableSignature.qualifier = metadata.CallableMetadata.module_qualifier;
       location = AstResult.map ~f:Node.location define_signature_result;
       define_name;
       parameters =
@@ -3129,7 +3129,7 @@ module ReadOnly = struct
       | NameLocation.UnknonwnForClassField -> None
     in
     {
-      Pyre1Api.ModelQueries.Function.define_name;
+      Analysis.PysaTypes.ModelQueries.Function.define_name;
       imported_name = None;
       undecorated_signatures;
       is_property_getter = metadata.is_property_getter;
@@ -3801,18 +3801,18 @@ module ReadOnly = struct
       match PysaType.as_pyrefly_type pysa_type with
       | None ->
           failwith "ReadOnly.Type.type_properties: trying to use a pyre1 type with a pyrefly API."
-      | Some { Pyre1Api.PyreflyType.scalar_properties; _ } -> scalar_properties
+      | Some { Analysis.PysaTypes.PyreflyType.scalar_properties; _ } -> scalar_properties
 
 
     let get_class_names { class_id_to_qualified_name_shared_memory; _ } pysa_type =
       match PysaType.as_pyrefly_type pysa_type with
       | None ->
           failwith "ReadOnly.Type.get_class_names: trying to use a pyre1 type with a pyrefly API."
-      | Some { Pyre1Api.PyreflyType.class_names = None; _ } ->
-          Analysis.PyrePysaEnvironment.ClassNamesFromType.not_a_class
-      | Some { Pyre1Api.PyreflyType.class_names = Some { classes; is_exhaustive }; _ } ->
+      | Some { Analysis.PysaTypes.PyreflyType.class_names = None; _ } ->
+          Analysis.PysaTypes.ClassNamesFromType.not_a_class
+      | Some { Analysis.PysaTypes.PyreflyType.class_names = Some { classes; is_exhaustive }; _ } ->
           let get_class_with_modifiers
-              { Pyre1Api.PyreflyType.ClassWithModifiers.module_id; class_id; modifiers }
+              { Analysis.PysaTypes.PyreflyType.ClassWithModifiers.module_id; class_id; modifiers }
             =
             let class_name =
               ClassIdToQualifiedNameSharedMemory.get
@@ -3825,10 +3825,10 @@ module ReadOnly = struct
               |> FullyQualifiedName.to_reference
               |> Reference.show
             in
-            { Pyre1Api.ClassWithModifiers.class_name; modifiers }
+            { Analysis.PysaTypes.ClassWithModifiers.class_name; modifiers }
           in
           {
-            Analysis.PyrePysaEnvironment.ClassNamesFromType.classes =
+            Analysis.PysaTypes.ClassNamesFromType.classes =
               List.map ~f:get_class_with_modifiers classes;
             is_exhaustive;
           }
@@ -3839,18 +3839,26 @@ module ReadOnly = struct
       | None ->
           failwith
             "ReadOnly.Type.is_dictionary_or_mapping: trying to use a pyre1 type with a pyrefly API."
-      | Some { Pyre1Api.PyreflyType.class_names = None; _ } -> false
-      | Some { Pyre1Api.PyreflyType.class_names = Some { classes; _ }; _ } ->
+      | Some { Analysis.PysaTypes.PyreflyType.class_names = None; _ } -> false
+      | Some { Analysis.PysaTypes.PyreflyType.class_names = Some { classes; _ }; _ } ->
           List.exists
             classes
-            ~f:(fun { Pyre1Api.PyreflyType.ClassWithModifiers.module_id; class_id; modifiers } ->
+            ~f:(fun
+                 {
+                   Analysis.PysaTypes.PyreflyType.ClassWithModifiers.module_id;
+                   class_id;
+                   modifiers;
+                 }
+               ->
               let global_class_id =
                 {
                   GlobalClassId.module_id = ModuleId.from_int module_id;
                   local_class_id = LocalClassId.from_int class_id;
                 }
               in
-              List.for_all modifiers ~f:(Pyre1Api.TypeModifier.equal Pyre1Api.TypeModifier.Optional)
+              List.for_all
+                modifiers
+                ~f:(Analysis.PysaTypes.TypeModifier.equal Analysis.PysaTypes.TypeModifier.Optional)
               && (List.exists dict_classes ~f:(fun { TypeshedClass.global_class_id = id; _ } ->
                       GlobalClassId.equal global_class_id id)
                  || List.exists
@@ -4151,10 +4159,10 @@ let rec strip_target_path_prefix target =
 
 
 module ModelQueries = struct
-  module Function = Pyre1Api.ModelQueries.Function
-  module Global = Pyre1Api.ModelQueries.Global
-  module ModuleResolutionResult = Pyre1Api.ModelQueries.ModuleResolutionResult
-  module ResolutionResult = Pyre1Api.ModelQueries.ResolutionResult
+  module Function = Analysis.PysaTypes.ModelQueries.Function
+  module Global = Analysis.PysaTypes.ModelQueries.Global
+  module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
+  module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
 
   let resolve_user_qualified_name
       {

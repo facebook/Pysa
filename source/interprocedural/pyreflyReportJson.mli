@@ -97,7 +97,7 @@ end
 
 val parse_scalar_type_properties
   :  Yojson.Safe.t ->
-  (Analysis.PyrePysaEnvironment.ScalarTypeProperties.t, PyreflyReport.FormatError.t) result
+  (Analysis.PysaTypes.ScalarTypeProperties.t, PyreflyReport.FormatError.t) result
 
 module ProjectFile : sig
   module Module : sig

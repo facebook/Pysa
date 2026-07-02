@@ -8,7 +8,7 @@
 open Ast
 open Statement
 module AstResult = PyrePysaApi.AstResult
-module CallableSignature = Analysis.PyrePysaEnvironment.CallableSignature
+module CallableSignature = Analysis.PysaTypes.CallableSignature
 
 val callable_signature_from_define_for_pyre1
   :  pyre1_api:Analysis.PyrePysaEnvironment.ReadOnly.t ->

@@ -9,7 +9,7 @@ open Ast
 
 (** Represents type information about the return type of a call. *)
 module ReturnType : sig
-  type t = Analysis.PyrePysaEnvironment.ScalarTypeProperties.t [@@deriving equal, show]
+  type t = Analysis.PysaTypes.ScalarTypeProperties.t [@@deriving equal, show]
 
   val unknown : t
 

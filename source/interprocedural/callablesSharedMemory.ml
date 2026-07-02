@@ -15,7 +15,7 @@ let class_method_decorators = ["classmethod"; "abstractclassmethod"; "abc.abstra
 
 let static_method_decorators = ["staticmethod"; "abstractstaticmethod"; "abc.abstractstaticmethod"]
 
-module CallableSignature = Analysis.PyrePysaEnvironment.CallableSignature
+module CallableSignature = Analysis.PysaTypes.CallableSignature
 
 let callable_signature_from_define_for_pyre1 ~pyre1_api ~target ~qualifier define =
   let method_kind =

@@ -465,8 +465,7 @@ let get_initial_models ~pyre_api =
       ~all_sys_infos:
         [
           {
-            Analysis.PyrePysaEnvironment.SysInfo.python_version =
-              Configuration.PythonVersion.create ();
+            Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
             platform = Some "linux";
           };
         ]
@@ -692,8 +691,7 @@ let initialize
             ~all_sys_infos:
               [
                 {
-                  Analysis.PyrePysaEnvironment.SysInfo.python_version =
-                    Configuration.PythonVersion.create ();
+                  Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
                   platform = Some "linux";
                 };
               ]

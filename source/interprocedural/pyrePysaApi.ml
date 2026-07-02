@@ -11,13 +11,13 @@
 
 open Core
 module Pyre1Api = Analysis.PyrePysaEnvironment
-module TypeModifier = Analysis.PyrePysaEnvironment.TypeModifier
-module ClassWithModifiers = Analysis.PyrePysaEnvironment.ClassWithModifiers
-module ScalarTypeProperties = Pyre1Api.ScalarTypeProperties
-module ClassNamesFromType = Pyre1Api.ClassNamesFromType
-module PysaType = Pyre1Api.PysaType
-module PyreClassSummary = Pyre1Api.PyreClassSummary
-module AstResult = Pyre1Api.AstResult
+module TypeModifier = Analysis.PysaTypes.TypeModifier
+module ClassWithModifiers = Analysis.PysaTypes.ClassWithModifiers
+module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
+module ClassNamesFromType = Analysis.PysaTypes.ClassNamesFromType
+module PysaType = Analysis.PysaTypes.PysaType
+module PyreClassSummary = Analysis.PysaTypes.PyreClassSummary
+module AstResult = Analysis.PysaTypes.AstResult
 module TaintAccessPath = Analysis.TaintAccessPath
 
 module PysaClassSummary = struct
@@ -283,10 +283,9 @@ module ReadOnly = struct
   let target_from_method_reference api method_reference =
     let method_reference, is_property_setter =
       match method_reference with
-      | Analysis.PyrePysaEnvironment.MethodReference.Pyre1
-          { class_name; method_name; is_property_setter } ->
+      | Analysis.PysaTypes.MethodReference.Pyre1 { class_name; method_name; is_property_setter } ->
           Ast.Reference.create ~prefix:class_name method_name, is_property_setter
-      | Analysis.PyrePysaEnvironment.MethodReference.Pyrefly { define_name; is_property_setter } ->
+      | Analysis.PysaTypes.MethodReference.Pyrefly { define_name; is_property_setter } ->
           define_name, is_property_setter
     in
     let kind =
@@ -661,13 +660,13 @@ module ModelQueries = struct
 
   let mangle_class_attribute = Pyre1Api.ModelQueries.mangle_class_attribute
 
-  module FunctionParameter = Pyre1Api.ModelQueries.FunctionParameter
-  module FunctionParameters = Pyre1Api.ModelQueries.FunctionParameters
-  module FunctionSignature = Analysis.PyrePysaEnvironment.ModelQueries.FunctionSignature
-  module Function = Pyre1Api.ModelQueries.Function
-  module Global = Pyre1Api.ModelQueries.Global
-  module ModuleResolutionResult = Pyre1Api.ModelQueries.ModuleResolutionResult
-  module ResolutionResult = Pyre1Api.ModelQueries.ResolutionResult
+  module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
+  module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
+  module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+  module Function = Analysis.PysaTypes.ModelQueries.Function
+  module Global = Analysis.PysaTypes.ModelQueries.Global
+  module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
+  module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
 
   let resolve_user_qualified_name
       api

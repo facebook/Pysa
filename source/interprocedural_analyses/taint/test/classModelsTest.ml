@@ -33,8 +33,7 @@ let assert_class_models ~context ?user_models ~source ~expected () =
             ~all_sys_infos:
               [
                 {
-                  Analysis.PyrePysaEnvironment.SysInfo.python_version =
-                    Configuration.PythonVersion.create ();
+                  Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
                   platform = Some "linux";
                 };
               ]
