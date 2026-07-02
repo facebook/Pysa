@@ -13,7 +13,6 @@ module CallGraphAnalysis = struct
       pyre_api: PyrePysaApi.ReadOnly.t;
       define_call_graphs: CallGraph.SharedMemory.ReadOnly.t;
       callables_to_definitions_map: CallablesSharedMemory.ReadOnly.t;
-      type_of_expression_shared_memory: TypeOfExpressionSharedMemory.t;
       skip_analysis_targets: Target.HashSet.t;
       called_when_parameter: Target.HashSet.t;
       skip_inlining_higher_order_functions: Target.HashSet.t;
@@ -98,7 +97,6 @@ module CallGraphAnalysis = struct
           Context.pyre_api;
           define_call_graphs;
           callables_to_definitions_map;
-          type_of_expression_shared_memory;
           skip_analysis_targets;
           called_when_parameter;
           skip_inlining_higher_order_functions;
@@ -155,7 +153,6 @@ module CallGraphAnalysis = struct
               ~define_call_graph
               ~pyre_api
               ~callables_to_definitions_map
-              ~type_of_expression_shared_memory
               ~skip_analysis_targets
               ~called_when_parameter
               ~skip_inlining_higher_order_functions
@@ -432,7 +429,6 @@ let compute
     ~pyre_api
     ~callables_to_definitions_map
     ~callables_to_decorators_map
-    ~type_of_expression_shared_memory
     ~call_graph:{ CallGraph.SharedMemory.define_call_graphs; _ }
     ~dependency_graph:
       {
@@ -520,7 +516,6 @@ let compute
           CallGraphAnalysis.Context.pyre_api;
           define_call_graphs = CallGraph.SharedMemory.read_only define_call_graphs;
           callables_to_definitions_map;
-          type_of_expression_shared_memory;
           skip_analysis_targets;
           called_when_parameter;
           skip_inlining_higher_order_functions;

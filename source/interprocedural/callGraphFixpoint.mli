@@ -21,7 +21,6 @@ val compute
   pyre_api:PyrePysaApi.ReadOnly.t ->
   callables_to_definitions_map:CallablesSharedMemory.ReadWrite.t ->
   callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
   call_graph:CallGraph.SharedMemory.call_graphs ->
   dependency_graph:DependencyGraph.whole_program_dependency_graph ->
   override_graph_shared_memory:OverrideGraph.SharedMemory.t ->

@@ -12,7 +12,6 @@ open Domains
 
 val at_callsite
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
   get_callee_model:(Target.t -> Model.t option) ->
   call_target:Target.t ->
   arguments:Expression.Call.Argument.t list ->
@@ -119,7 +118,6 @@ val tito_intervals : BackwardTaint.t -> ClassIntervalSet.t
 
 val sink_trees_of_argument
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
   transform_non_leaves:(Features.ReturnAccessPath.t -> BackwardTaint.t -> BackwardTaint.t) ->
   model:Model.t ->
   call_site:CallSite.t ->
@@ -135,7 +133,6 @@ val sink_trees_of_argument
 
 val source_tree_of_argument
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
   model:Model.t ->
   call_site:CallSite.t ->
   location:Location.t ->
@@ -190,7 +187,6 @@ module StringFormatCall : sig
   val apply_call
     :  callee:Target.t ->
     pyre_in_context:PyrePysaApi.InContext.t ->
-    type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
     call_site:CallSite.t ->
     location:Location.t ->
     BackwardState.Tree.t ->
@@ -198,14 +194,12 @@ module StringFormatCall : sig
 
   val implicit_string_literal_sources
     :  pyre_in_context:PyrePysaApi.InContext.t ->
-    type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
     implicit_sources:TaintConfiguration.implicit_sources ->
     string_literal ->
     ForwardTaint.t
 
   val implicit_string_literal_sinks
     :  pyre_in_context:PyrePysaApi.InContext.t ->
-    type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
     implicit_sinks:TaintConfiguration.implicit_sinks ->
     string_literal ->
     BackwardTaint.t
@@ -234,7 +228,6 @@ val arguments_for_string_format
 (* At a call site, extract the returned sink from `sink_model` of `callee` *)
 val return_sink
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
   location:Location.t ->
   callee:Target.t ->
   sink_model:BackwardState.t ->

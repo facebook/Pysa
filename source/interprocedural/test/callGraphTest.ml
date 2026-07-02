@@ -44,13 +44,6 @@ let compute_define_call_graph
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
   let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
-  in
   let callables_to_decorators_map =
     CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
@@ -74,13 +67,12 @@ let compute_define_call_graph
         (CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
       ~global_constants:
         (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-      ~type_of_expression_shared_memory
       ~check_invariants:true
       ~module_name
       ~callable
   in
   OverrideGraph.SharedMemory.cleanup override_graph_shared_memory;
-  call_graph, callables_to_definitions_map, type_of_expression_shared_memory
+  call_graph, callables_to_definitions_map
 
 
 let assert_call_graph_of_define
@@ -110,7 +102,7 @@ let assert_call_graph_of_define
           (Reference.create define_name)
   in
   let expected = DefineCallGraphForTest.from_expected expected in
-  let actual, callables_to_definitions_map, _ =
+  let actual, callables_to_definitions_map =
     compute_define_call_graph
       ~callable
       ~module_name
@@ -180,7 +172,7 @@ let assert_higher_order_call_graph_of_define
               (Reference.create define_name))
   in
   let maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth in
-  let define_call_graph, callables_to_definitions_map, type_of_expression_shared_memory =
+  let define_call_graph, callables_to_definitions_map =
     compute_define_call_graph
       ~callable:(Target.strip_parameters callable)
       ~module_name
@@ -204,7 +196,6 @@ let assert_higher_order_call_graph_of_define
       ~pyre_api
       ~callables_to_definitions_map:
         (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ~type_of_expression_shared_memory
       ~skip_analysis_targets:(Target.HashSet.create ())
       ~called_when_parameter
       ~skip_inlining_higher_order_functions:(Target.HashSet.create ())

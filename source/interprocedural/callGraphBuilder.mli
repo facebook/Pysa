@@ -10,7 +10,6 @@ open Ast
 (* This must be called *once* before analyzing a statement in a control flow graph. *)
 val preprocess_statement
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
   callable:Target.t ->
   Ast.Statement.t ->
   Ast.Statement.t
@@ -18,14 +17,12 @@ val preprocess_statement
 (* This must be called *once* before analyzing a generator. *)
 val preprocess_generator
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
   callable:Target.t ->
   Ast.Expression.Comprehension.Generator.t ->
   Ast.Statement.Assign.t * PyrePysaApi.InContext.t
 
 val preprocess_parameter_default_value
   :  pyre_in_context:PyrePysaApi.InContext.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
   callable:Target.t ->
   Ast.Expression.t ->
   Ast.Expression.t
@@ -86,7 +83,6 @@ val higher_order_call_graph_of_define
   :  define_call_graph:CallGraph.DefineCallGraph.t ->
   pyre_api:PyrePysaApi.ReadOnly.t ->
   callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-  type_of_expression_shared_memory:TypeOfExpressionSharedMemory.t ->
   skip_analysis_targets:Target.HashSet.t ->
   called_when_parameter:Target.HashSet.t ->
   skip_inlining_higher_order_functions:Target.HashSet.t ->

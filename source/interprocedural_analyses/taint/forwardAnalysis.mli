@@ -15,7 +15,6 @@ val run
   pyre_api:Interprocedural.PyrePysaApi.ReadOnly.t ->
   class_interval_graph:Interprocedural.ClassIntervalSetGraph.SharedMemory.t ->
   global_constants:Interprocedural.GlobalConstants.SharedMemory.ReadOnly.t ->
-  type_of_expression_shared_memory:Interprocedural.TypeOfExpressionSharedMemory.t ->
   qualifier:Reference.t ->
   callable:Target.t ->
   define:Define.t Node.t ->

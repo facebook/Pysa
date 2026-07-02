@@ -353,6 +353,23 @@ module InContext = struct
      for captured variables at the beginning of the forward analysis. *)
   let state_root_of_captured_variable api captured_variable =
     ReadOnly.state_root_of_captured_variable (pyre_api api) captured_variable
+
+
+  let type_of_expression api expression =
+    match Ast.Expression.origin expression with
+    | Some _ ->
+        (* This is an artificial expression that pyrefly doesn't know about. *)
+        PysaType.from_pyrefly_type Analysis.PysaTypes.PyreflyType.top
+    | None -> (
+        match api with
+        | Pyrefly pyrefly_context ->
+            let define_name = PyreflyApi.InContext.define_name pyrefly_context in
+            PyreflyApi.ReadOnly.get_type_of_expression
+              (PyreflyApi.InContext.pyre_api pyrefly_context)
+              ~define_name
+              ~location:(Ast.Node.location expression)
+            |> Option.value ~default:(PysaType.from_pyrefly_type Analysis.PysaTypes.PyreflyType.top)
+        )
 end
 
 module ModelQueries = struct

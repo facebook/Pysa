@@ -29,7 +29,6 @@ module Context = struct
     (* Avoid copying a large-sized closure for each worker, to reduce the memory usage. *)
     get_define_call_graph: Target.t -> Interprocedural.CallGraph.DefineCallGraph.t option;
     global_constants: Interprocedural.GlobalConstants.SharedMemory.ReadOnly.t;
-    type_of_expression_shared_memory: Interprocedural.TypeOfExpressionSharedMemory.t;
     callables_to_definitions_map: Interprocedural.CallablesSharedMemory.ReadOnly.t;
   }
 end
@@ -115,7 +114,6 @@ module Analysis = struct
       ~pyre_api
       ~class_interval_graph
       ~global_constants
-      ~type_of_expression_shared_memory
       ~get_define_call_graph
       ~qualifier
       ~callable
@@ -156,7 +154,6 @@ module Analysis = struct
             ~pyre_api
             ~class_interval_graph
             ~global_constants
-            ~type_of_expression_shared_memory
             ~qualifier
             ~callable
             ~define
@@ -175,7 +172,6 @@ module Analysis = struct
             ~pyre_api
             ~class_interval_graph
             ~global_constants
-            ~type_of_expression_shared_memory
             ~qualifier
             ~callable
             ~define
@@ -219,7 +215,6 @@ module Analysis = struct
           class_interval_graph;
           get_define_call_graph;
           global_constants;
-          type_of_expression_shared_memory;
           callables_to_definitions_map;
         }
       ~callable
@@ -248,7 +243,6 @@ module Analysis = struct
         ~pyre_api
         ~class_interval_graph
         ~global_constants
-        ~type_of_expression_shared_memory
         ~get_define_call_graph
         ~qualifier
         ~callable

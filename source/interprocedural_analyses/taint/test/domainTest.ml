@@ -35,18 +35,9 @@ let test_partition_call_map context =
     Target.Regular.Method { class_name = "test.Foo"; method_name = "bar"; kind = Normal }
     |> Target.from_regular
   in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
-        |> Interprocedural.CallablesSharedMemory.ReadOnly.read_only)
-      ()
-  in
   let call_taint1 =
     ForwardTaint.apply_call
       ~pyre_in_context
-      ~type_of_expression_shared_memory
       ~call_site:CallSite.any
       ~location:Location.any
       ~callee
@@ -61,7 +52,6 @@ let test_partition_call_map context =
   let call_taint2 =
     ForwardTaint.apply_call
       ~pyre_in_context
-      ~type_of_expression_shared_memory
       ~call_site:CallSite.any
       ~location:Location.any
       ~callee

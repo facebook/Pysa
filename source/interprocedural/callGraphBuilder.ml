@@ -52,12 +52,7 @@ module ResolvedStringify = struct
 end
 
 (* Resolve a call to `str(x)` into `x.__str__()` or `x.__repr__()` *)
-let resolve_stringify_call
-    ~pyre_in_context
-    ~type_of_expression_shared_memory:_
-    ~outer_expression_identifier
-    _expression
-  =
+let resolve_stringify_call ~pyre_in_context ~outer_expression_identifier _expression =
   match pyre_in_context with
   | PyrePysaApi.InContext.Pyrefly pyrefly_api -> (
       (* When using pyrefly, use the callee of the artificial call resolved by pyrefly *)
@@ -170,7 +165,6 @@ let shim_special_calls ~callees ~arguments =
  * original call. This is preferred for things like `str`/`iter`/`next`. *)
 let preprocess_special_calls
     ~pyre_in_context
-    ~type_of_expression_shared_memory
     ~location:call_location
     {
       Call.callee = { Node.location = callee_location; _ } as callee;
@@ -200,7 +194,6 @@ let preprocess_special_calls
       let method_name =
         resolve_stringify_call
           ~pyre_in_context
-          ~type_of_expression_shared_memory
           ~outer_expression_identifier:(ExpressionIdentifier.ArtificialCall origin)
           value
         |> ResolvedStringify.to_method_name
@@ -294,21 +287,12 @@ let create_shim_callee_expression ~debug ~callable ~location ~call shim =
       None
 
 
-let preprocess_call ~pyre_in_context ~type_of_expression_shared_memory ~location original_call =
-  preprocess_special_calls
-    ~pyre_in_context
-    ~type_of_expression_shared_memory
-    ~location
-    original_call
+let preprocess_call ~pyre_in_context ~location original_call =
+  preprocess_special_calls ~pyre_in_context ~location original_call
   |> Option.value ~default:original_call
 
 
-let rec preprocess_expression
-    ~pyre_in_context
-    ~type_of_expression_shared_memory
-    ~callable
-    expression
-  =
+let rec preprocess_expression ~pyre_in_context ~callable expression =
   (* This uses `Expression.Mapper` to recursively rewrite the given expression.
    *
    * Each `map_XXX` function is responsible for calling `Mapper.map` on sub-expressions to
@@ -360,13 +344,7 @@ let rec preprocess_expression
       (* We need to preprocess conditions with the new pyre context. We need to call
          `preprocess_expression` instead of `Mapper.map` *)
       let conditions =
-        List.map
-          ~f:
-            (preprocess_expression
-               ~pyre_in_context:inner_pyre_context
-               ~type_of_expression_shared_memory
-               ~callable)
-          conditions
+        List.map ~f:(preprocess_expression ~pyre_in_context:inner_pyre_context ~callable) conditions
       in
       (* We explicitly do NOT preprocess the target and iterator since we need to call
          `generator_assignment` + `resolve_assignment` during the taint fixpoint, using the original
@@ -382,11 +360,7 @@ let rec preprocess_expression
   in
   let map_comprehension ~mapper:_ ~location ~make_node { Comprehension.element; generators } =
     let generators, pyre_in_context = map_comprehension_generators generators in
-    {
-      Comprehension.element =
-        preprocess_expression ~pyre_in_context ~type_of_expression_shared_memory ~callable element;
-      generators;
-    }
+    { Comprehension.element = preprocess_expression ~pyre_in_context ~callable element; generators }
     |> make_node
     |> Node.create ~location
   in
@@ -407,21 +381,15 @@ let rec preprocess_expression
       {
         Comprehension.element =
           {
-            Dictionary.Entry.KeyValue.key =
-              preprocess_expression ~pyre_in_context ~type_of_expression_shared_memory ~callable key;
-            value =
-              preprocess_expression
-                ~pyre_in_context
-                ~type_of_expression_shared_memory
-                ~callable
-                value;
+            Dictionary.Entry.KeyValue.key = preprocess_expression ~pyre_in_context ~callable key;
+            value = preprocess_expression ~pyre_in_context ~callable value;
           };
         generators;
       }
     |> Node.create ~location
   in
   let map_call ~mapper ~location call =
-    preprocess_call ~pyre_in_context ~type_of_expression_shared_memory ~location call
+    preprocess_call ~pyre_in_context ~location call
     |> Mapper.default_map_call_node ~mapper ~location
   in
   Mapper.map
@@ -536,13 +504,11 @@ let preprocess_assignments statement =
 let preprocess_parameter_default_value = preprocess_expression
 
 (* This must be called *once* before analyzing a statement in a control flow graph. *)
-let preprocess_statement ~pyre_in_context ~type_of_expression_shared_memory ~callable statement =
+let preprocess_statement ~pyre_in_context ~callable statement =
   (* First, preprocess assignments *)
   let { Node.location; value } = preprocess_assignments statement in
   (* Then, preprocess expressions nested witin the statement *)
-  let preprocess_expression =
-    preprocess_expression ~pyre_in_context ~type_of_expression_shared_memory ~callable
-  in
+  let preprocess_expression = preprocess_expression ~pyre_in_context ~callable in
   let value =
     match value with
     | Statement.Assign { target; value; annotation; origin } ->
@@ -595,12 +561,7 @@ let preprocess_statement ~pyre_in_context ~type_of_expression_shared_memory ~cal
 
 
 (* This must be called *once* before analyzing a generator. *)
-let preprocess_generator
-    ~pyre_in_context:outer_pyre_context
-    ~type_of_expression_shared_memory
-    ~callable
-    generator
-  =
+let preprocess_generator ~pyre_in_context:outer_pyre_context ~callable generator =
   let ({ Assign.target; value; annotation; origin } as assignment) =
     Statement.generator_assignment generator
   in
@@ -610,20 +571,9 @@ let preprocess_generator
   let inner_pyre_context = PyrePysaApi.InContext.resolve_assignment outer_pyre_context assignment in
   let assignment =
     {
-      Assign.target =
-        preprocess_expression
-          ~pyre_in_context:outer_pyre_context
-          ~type_of_expression_shared_memory
-          ~callable
-          target;
+      Assign.target = preprocess_expression ~pyre_in_context:outer_pyre_context ~callable target;
       Assign.value =
-        Option.map
-          ~f:
-            (preprocess_expression
-               ~pyre_in_context:outer_pyre_context
-               ~type_of_expression_shared_memory
-               ~callable)
-          value;
+        Option.map ~f:(preprocess_expression ~pyre_in_context:outer_pyre_context ~callable) value;
       annotation;
       origin;
     }
@@ -753,8 +703,6 @@ module HigherOrderCallGraph = struct
     val callable : Target.t
 
     val callables_to_definitions_map : CallablesSharedMemory.ReadOnly.t
-
-    val type_of_expression_shared_memory : TypeOfExpressionSharedMemory.t
 
     val skip_analysis_targets : Target.HashSet.t
 
@@ -1583,11 +1531,7 @@ module HigherOrderCallGraph = struct
           ({ Comprehension.Generator.conditions; _ } as generator)
         =
         let { Assign.target; value; _ }, inner_pyre_context =
-          preprocess_generator
-            ~pyre_in_context
-            ~type_of_expression_shared_memory:Context.type_of_expression_shared_memory
-            ~callable:Context.callable
-            generator
+          preprocess_generator ~pyre_in_context ~callable:Context.callable generator
         in
         let state =
           match value with
@@ -1916,7 +1860,6 @@ module HigherOrderCallGraph = struct
           let default_value =
             preprocess_parameter_default_value
               ~pyre_in_context
-              ~type_of_expression_shared_memory:Context.type_of_expression_shared_memory
               ~callable:Context.callable
               default_value
           in
@@ -1931,11 +1874,7 @@ module HigherOrderCallGraph = struct
       log "Analyzing statement `%a` with state `%a`" Statement.pp statement State.pp state;
       let state =
         let statement =
-          preprocess_statement
-            ~pyre_in_context
-            ~type_of_expression_shared_memory:Context.type_of_expression_shared_memory
-            ~callable:Context.callable
-            statement
+          preprocess_statement ~pyre_in_context ~callable:Context.callable statement
         in
         match Node.value statement with
         | Statement.Assign { Assign.target; value = Some value; _ } -> (
@@ -2159,7 +2098,6 @@ let higher_order_call_graph_of_define
     ~define_call_graph
     ~pyre_api
     ~callables_to_definitions_map
-    ~type_of_expression_shared_memory
     ~skip_analysis_targets
     ~called_when_parameter
     ~skip_inlining_higher_order_functions
@@ -2192,8 +2130,6 @@ let higher_order_call_graph_of_define
     let callable = callable
 
     let callables_to_definitions_map = callables_to_definitions_map
-
-    let type_of_expression_shared_memory = type_of_expression_shared_memory
 
     let skip_analysis_targets = skip_analysis_targets
 

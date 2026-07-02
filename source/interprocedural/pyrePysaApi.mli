@@ -231,6 +231,9 @@ module InContext : sig
     :  t ->
     TaintAccessPath.CapturedVariable.t ->
     TaintAccessPath.Root.t
+
+  (* Compute the type of the given expression. *)
+  val type_of_expression : t -> Ast.Expression.t -> Analysis.PysaTypes.PysaType.t
 end
 
 module ModelQueries : sig

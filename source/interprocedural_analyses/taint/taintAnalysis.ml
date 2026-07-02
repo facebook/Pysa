@@ -653,14 +653,6 @@ let run_taint_analysis
   in
   let pyre_api = PyrePysaApi.ReadOnly.of_read_write_api pyre_read_write_api in
 
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
-  in
-
   let attribute_targets = SharedModels.object_targets initial_models in
   let skip_analysis_targets = SharedModels.skip_analysis ~scheduler initial_models in
   let skip_analysis_targets_hashset =
@@ -805,7 +797,6 @@ let run_taint_analysis
         ~override_graph_shared_memory
         ~callables_to_definitions_map
         ~callables_to_decorators_map
-        ~type_of_expression_shared_memory
         ~skip_analysis_targets:skip_analysis_targets_hashset
         ~called_when_parameter:(SharedModels.called_when_parameter ~scheduler initial_models)
         ~skip_inlining_higher_order_functions:
@@ -896,7 +887,6 @@ let run_taint_analysis
           class_interval_graph = class_interval_graph_shared_memory;
           get_define_call_graph;
           global_constants = Interprocedural.GlobalConstants.SharedMemory.read_only global_constants;
-          type_of_expression_shared_memory;
           callables_to_definitions_map =
             Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map;
         }

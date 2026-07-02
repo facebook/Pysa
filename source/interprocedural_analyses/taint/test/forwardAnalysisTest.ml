@@ -71,13 +71,6 @@ let assert_taint ?models ?models_source ~context source expect =
   let callables_to_definitions_map =
     Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
   in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
-  in
   let analyze_and_store_in_order models (callable, define) =
     let () = Log.log ~section:`Taint "Analyzing %a" Target.pp callable in
     let call_graph_of_define =
@@ -94,7 +87,6 @@ let assert_taint ?models ?models_source ~context source expect =
           |> Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only)
         ~global_constants:
           (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-        ~type_of_expression_shared_memory
         ~check_invariants:true
         ~module_name:qualifier
         ~callable
@@ -111,7 +103,6 @@ let assert_taint ?models ?models_source ~context source expect =
         ~class_interval_graph:(ClassIntervalSetGraph.SharedMemory.create ())
         ~global_constants:
           (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-        ~type_of_expression_shared_memory
         ~qualifier
         ~callable
         ~define

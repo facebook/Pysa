@@ -37,7 +37,6 @@ let assert_fixpoint
          stubs;
          class_interval_graph_shared_memory;
          callables_to_definitions_map;
-         type_of_expression_shared_memory;
          _;
        } as test_environment)
     =
@@ -81,7 +80,6 @@ let assert_fixpoint
           class_interval_graph = class_interval_graph_shared_memory;
           get_define_call_graph;
           global_constants = Interprocedural.GlobalConstants.SharedMemory.read_only global_constants;
-          type_of_expression_shared_memory;
           callables_to_definitions_map =
             Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map;
         }

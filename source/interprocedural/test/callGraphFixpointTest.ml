@@ -60,13 +60,6 @@ let assert_higher_order_call_graph_fixpoint
   let scheduler = Test.mock_scheduler () in
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
   let callables_to_definitions_map = CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
-  in
   let callables_to_decorators_map =
     CallableToDecoratorsMap.SharedMemory.create
       ~scheduler
@@ -121,7 +114,6 @@ let assert_higher_order_call_graph_fixpoint
       ~skip_inlining_higher_order_functions:(Target.HashSet.create ())
       ~callables_to_definitions_map
       ~callables_to_decorators_map
-      ~type_of_expression_shared_memory
   in
   List.iter expected ~f:(fun { Expected.callable; call_graph; returned_callables } ->
       let actual_call_graph =

@@ -501,7 +501,6 @@ module TestEnvironment = struct
     global_constants: GlobalConstants.SharedMemory.t;
     callables_to_definitions_map: Interprocedural.CallablesSharedMemory.ReadWrite.t;
     callables_to_decorators_map: Interprocedural.CallableToDecoratorsMap.SharedMemory.t;
-    type_of_expression_shared_memory: Interprocedural.TypeOfExpressionSharedMemory.t;
   }
 
   let cleanup
@@ -525,7 +524,6 @@ module TestEnvironment = struct
         global_constants;
         callables_to_definitions_map;
         callables_to_decorators_map;
-        type_of_expression_shared_memory = _;
       }
     =
     CallGraph.SharedMemory.cleanup define_call_graphs;
@@ -631,13 +629,6 @@ let initialize
   let scheduler_policy = Scheduler.Policy.legacy_fixed_chunk_count () in
   let callables_to_definitions_map =
     Interprocedural.CallablesSharedMemory.ReadWrite.from_pyre_api ~pyre_api
-  in
-  let type_of_expression_shared_memory =
-    Interprocedural.TypeOfExpressionSharedMemory.create
-      ~pyre_api
-      ~callables_to_definitions_map:
-        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ()
   in
   let user_models, model_query_results =
     let models_source =
@@ -823,7 +814,6 @@ let initialize
       ~override_graph_shared_memory
       ~callables_to_definitions_map
       ~callables_to_decorators_map
-      ~type_of_expression_shared_memory
       ~skip_analysis_targets
       ~called_when_parameter:(SharedModels.called_when_parameter ~scheduler initial_models)
       ~skip_inlining_higher_order_functions:
@@ -861,7 +851,6 @@ let initialize
     global_constants;
     callables_to_definitions_map;
     callables_to_decorators_map;
-    type_of_expression_shared_memory;
   }
 
 
@@ -873,7 +862,6 @@ let call_graph_of_callable
     ~callables_to_definitions_map
     ~callables_to_decorators_map
     ~global_constants
-    ~type_of_expression_shared_memory:_
     ~check_invariants:_
     ~module_name:_
     ~callable
@@ -1146,13 +1134,6 @@ let end_to_end_integration_test path context =
             get_define_call_graph;
             global_constants =
               Interprocedural.GlobalConstants.SharedMemory.read_only global_constants;
-            type_of_expression_shared_memory =
-              Interprocedural.TypeOfExpressionSharedMemory.create
-                ~pyre_api
-                ~callables_to_definitions_map:
-                  (Interprocedural.CallablesSharedMemory.ReadOnly.read_only
-                     callables_to_definitions_map)
-                ();
             callables_to_definitions_map =
               Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map;
           }
