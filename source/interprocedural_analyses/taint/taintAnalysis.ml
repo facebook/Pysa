@@ -561,12 +561,8 @@ let run_taint_analysis
     ~static_analysis_configuration:
       ({
          Configuration.StaticAnalysis.configuration;
-         pyrefly_results;
-         use_cache;
-         build_cache_only;
          limit_entrypoints;
          compact_ocaml_heap = compact_ocaml_heap_flag;
-         saved_state;
          compute_coverage = compute_coverage_flag;
          scheduler_policies;
          _;
@@ -590,28 +586,14 @@ let run_taint_analysis
     parse_model_modes ~static_analysis_configuration
   in
 
-  let cache =
-    Cache.try_load
+  let pyre_read_write_api =
+    create_pyre_read_write_api_and_perform_type_analysis
       ~scheduler
       ~scheduler_policies
-      ~saved_state
-      ~configuration
-      ~pyrefly_results
+      ~static_analysis_configuration
+      ~lookup_source
       ~decorator_configuration
       ~skip_type_checking_callables
-      ~enabled:use_cache
-  in
-
-  (* We should NOT store anything in memory before calling `Cache.try_load` *)
-  let pyre_read_write_api, cache =
-    Cache.pyre_read_write_api cache (fun () ->
-        create_pyre_read_write_api_and_perform_type_analysis
-          ~scheduler
-          ~scheduler_policies
-          ~static_analysis_configuration
-          ~lookup_source
-          ~decorator_configuration
-          ~skip_type_checking_callables)
   in
   let pyre_api = PyrePysaApi.ReadOnly.of_read_write_api pyre_read_write_api in
 
@@ -626,75 +608,72 @@ let run_taint_analysis
 
   let qualifiers = PyrePysaApi.ReadOnly.explicit_qualifiers pyre_api in
 
-  let class_hierarchy_graph, cache =
-    Cache.class_hierarchy_graph cache (fun () ->
-        let step_logger =
-          StepLogger.start
-            ~start_message:"Computing class hierarchy graph"
-            ~end_message:"Computed class hierarchy graph"
-            ()
-        in
-        let class_hierarchy_graph =
-          Interprocedural.ClassHierarchyGraph.Heap.from_qualifiers
-            ~scheduler
-            ~scheduler_policies
-            ~pyre_api
-            ~qualifiers
-        in
-        let () = StepLogger.finish step_logger in
-        class_hierarchy_graph)
+  let class_hierarchy_graph =
+    let step_logger =
+      StepLogger.start
+        ~start_message:"Computing class hierarchy graph"
+        ~end_message:"Computed class hierarchy graph"
+        ()
+    in
+    let class_hierarchy_graph =
+      Interprocedural.ClassHierarchyGraph.Heap.from_qualifiers
+        ~scheduler
+        ~scheduler_policies
+        ~pyre_api
+        ~qualifiers
+    in
+    let () = StepLogger.finish step_logger in
+    class_hierarchy_graph
   in
 
-  let class_interval_graph, cache =
-    Cache.class_interval_graph cache (fun () ->
-        let step_logger =
-          StepLogger.start
-            ~start_message:"Computing class intervals"
-            ~end_message:"Computed class intervals"
-            ()
-        in
-        let class_interval_graph =
-          Interprocedural.ClassIntervalSetGraph.Heap.from_class_hierarchy class_hierarchy_graph
-        in
-        let () = StepLogger.finish step_logger in
-        class_interval_graph)
+  let class_interval_graph =
+    let step_logger =
+      StepLogger.start
+        ~start_message:"Computing class intervals"
+        ~end_message:"Computed class intervals"
+        ()
+    in
+    let class_interval_graph =
+      Interprocedural.ClassIntervalSetGraph.Heap.from_class_hierarchy class_hierarchy_graph
+    in
+    let () = StepLogger.finish step_logger in
+    class_interval_graph
   in
 
   let class_interval_graph_shared_memory =
     Interprocedural.ClassIntervalSetGraph.SharedMemory.from_heap class_interval_graph
   in
 
-  let initial_callables, cache =
-    Cache.initial_callables cache (fun () ->
-        let step_logger =
-          StepLogger.start
-            ~start_message:"Fetching initial callables to analyze"
-            ~end_message:"Fetched initial callables to analyze"
-            ()
-        in
-        let initial_callables =
-          Interprocedural.FetchCallables.from_qualifiers
-            ~scheduler
-            ~scheduler_policy:
-              (Scheduler.Policy.from_configuration_or_default
-                 scheduler_policies
-                 Configuration.ScheduleIdentifier.TaintFetchCallables
-                 ~default:
-                   (Scheduler.Policy.fixed_chunk_count
-                      ~minimum_chunks_per_worker:1
-                      ~minimum_chunk_size:1
-                      ~preferred_chunks_per_worker:1
-                      ()))
-            ~configuration
-            ~pyre_api
-            ~qualifiers
-        in
-        let () =
-          StepLogger.finish
-            ~integers:(Interprocedural.FetchCallables.get_stats initial_callables)
-            step_logger
-        in
-        initial_callables)
+  let initial_callables =
+    let step_logger =
+      StepLogger.start
+        ~start_message:"Fetching initial callables to analyze"
+        ~end_message:"Fetched initial callables to analyze"
+        ()
+    in
+    let initial_callables =
+      Interprocedural.FetchCallables.from_qualifiers
+        ~scheduler
+        ~scheduler_policy:
+          (Scheduler.Policy.from_configuration_or_default
+             scheduler_policies
+             Configuration.ScheduleIdentifier.TaintFetchCallables
+             ~default:
+               (Scheduler.Policy.fixed_chunk_count
+                  ~minimum_chunks_per_worker:1
+                  ~minimum_chunk_size:1
+                  ~preferred_chunks_per_worker:1
+                  ()))
+        ~configuration
+        ~pyre_api
+        ~qualifiers
+    in
+    let () =
+      StepLogger.finish
+        ~integers:(Interprocedural.FetchCallables.get_stats initial_callables)
+        step_logger
+    in
+    initial_callables
   in
 
   let definitions_and_stubs =
@@ -748,27 +727,20 @@ let run_taint_analysis
   let analyze_all_overrides_targets =
     SharedModels.analyze_all_overrides ~scheduler initial_models
   in
-  let ( {
-          Interprocedural.OverrideGraph.override_graph_heap;
-          override_graph_shared_memory;
-          skipped_overrides;
-        },
-        cache )
+  let {
+    Interprocedural.OverrideGraph.override_graph_heap;
+    override_graph_shared_memory;
+    skipped_overrides;
+  }
     =
-    Cache.override_graph
+    Interprocedural.OverrideGraph.build_whole_program_overrides
+      ~static_analysis_configuration
+      ~scheduler
+      ~pyre_api
       ~skip_overrides_targets
       ~maximum_overrides
       ~analyze_all_overrides_targets
-      cache
-      (fun ~skip_overrides_targets ~maximum_overrides ~analyze_all_overrides_targets () ->
-        Interprocedural.OverrideGraph.build_whole_program_overrides
-          ~static_analysis_configuration
-          ~scheduler
-          ~pyre_api
-          ~skip_overrides_targets
-          ~maximum_overrides
-          ~analyze_all_overrides_targets
-          ~qualifiers)
+      ~qualifiers
   in
   let override_graph_shared_memory_read_only =
     Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory
@@ -781,15 +753,14 @@ let run_taint_analysis
       ~end_message:"Finished constant propagation analysis"
       ()
   in
-  let global_constants, cache =
-    Cache.global_constants cache (fun () ->
-        Interprocedural.GlobalConstants.SharedMemory.from_qualifiers
-          ~scheduler
-          ~scheduler_policies
-          ~pyre_api
-          ~callables_to_definitions_map:
-            (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-          ~qualifiers)
+  let global_constants =
+    Interprocedural.GlobalConstants.SharedMemory.from_qualifiers
+      ~scheduler
+      ~scheduler_policies
+      ~pyre_api
+      ~callables_to_definitions_map:
+        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
+      ~qualifiers
   in
   let () = StepLogger.finish step_logger in
 
@@ -856,41 +827,32 @@ let run_taint_analysis
   let step_logger =
     StepLogger.start ~start_message:"Building call graph" ~end_message:"Call graph built" ()
   in
-  let ( ({
-           Interprocedural.CallGraph.SharedMemory.whole_program_call_graph =
-             original_whole_program_call_graph;
-           define_call_graphs = original_define_call_graphs;
-         } as original_call_graphs),
-        cache )
+  let ({
+         Interprocedural.CallGraph.SharedMemory.whole_program_call_graph =
+           original_whole_program_call_graph;
+         define_call_graphs = original_define_call_graphs;
+       } as original_call_graphs)
     =
-    Cache.call_graph
+    Interprocedural.CallGraphBuilder.build_whole_program_call_graph
+      ~scheduler
+      ~static_analysis_configuration
+      ~pyre_api
+      ~resolve_module_path:(Some resolve_module_path)
+      ~override_graph:(Some override_graph_shared_memory_read_only)
+      ~store_shared_memory:true
       ~attribute_targets
       ~skip_analysis_targets:skip_analysis_targets_hashset
+      ~skip_call_higher_order_functions:
+        (SharedModels.skip_call_higher_order_functions ~scheduler initial_models)
+      ~check_invariants:(TaintConfiguration.runtime_check_invariants ())
       ~definitions
-      cache
-      (fun ~attribute_targets ~skip_analysis_targets ~definitions () ->
-        Interprocedural.CallGraphBuilder.build_whole_program_call_graph
-          ~scheduler
-          ~static_analysis_configuration
-          ~pyre_api
-          ~resolve_module_path:(Some resolve_module_path)
-          ~override_graph:(Some override_graph_shared_memory_read_only)
-          ~store_shared_memory:true
-          ~attribute_targets
-          ~skip_analysis_targets
-          ~skip_call_higher_order_functions:
-            (SharedModels.skip_call_higher_order_functions ~scheduler initial_models)
-          ~check_invariants:(TaintConfiguration.runtime_check_invariants ())
-          ~definitions
-          ~callables_to_definitions_map:
-            (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-          ~callables_to_decorators_map:
-            (Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only
-               callables_to_decorators_map)
-          ~global_constants:
-            (Interprocedural.GlobalConstants.SharedMemory.read_only global_constants)
-          ~type_of_expression_shared_memory
-          ~create_dependency_for:Interprocedural.CallGraph.AllTargetsUseCase.CallGraphDependency)
+      ~callables_to_definitions_map:
+        (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
+      ~callables_to_decorators_map:
+        (Interprocedural.CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
+      ~global_constants:(Interprocedural.GlobalConstants.SharedMemory.read_only global_constants)
+      ~type_of_expression_shared_memory
+      ~create_dependency_for:Interprocedural.CallGraph.AllTargetsUseCase.CallGraphDependency
   in
   let () =
     StepLogger.finish
@@ -999,27 +961,6 @@ let run_taint_analysis
     dependency_graph, get_define_call_graph, fixpoint
   in
 
-  (* TODO(T215367584): Cache higher order call graphs. *)
-  let () =
-    Cache.save
-      ~maximum_overrides
-      ~attribute_targets
-      ~skip_type_checking_callables
-      ~skip_analysis_targets
-      ~skip_overrides_targets
-      ~analyze_all_overrides_targets
-      ~skipped_overrides
-      ~override_graph_shared_memory
-      ~initial_callables
-      ~initial_models
-      ~call_graph_shared_memory:original_define_call_graphs
-      ~whole_program_call_graph:original_whole_program_call_graph
-      ~global_constants
-      cache
-  in
-  (if use_cache && build_cache_only then
-     let () = Log.info "Cache has been built. Exiting now" in
-     raise Cache.BuildCacheOnly);
   let () =
     cleanup_shared_memory_after_call_graph_fixpoint
       ~callables_to_decorators_map
@@ -1164,7 +1105,6 @@ let run_taint_analysis
           ~model_verification_errors
           ~fixpoint_state:(TaintFixpoint.State.read_only fixpoint.TaintFixpoint.state)
           ~errors
-          ~cache
           ~file_coverage
           ~rule_coverage;
         []

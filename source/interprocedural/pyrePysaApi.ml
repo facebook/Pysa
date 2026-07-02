@@ -40,12 +40,6 @@ module ReadWrite = struct
     | Pyre1 of Pyre1Api.ReadWrite.t
     | Pyrefly of PyreflyApi.ReadWrite.t
 
-  let load_from_cache ~configuration ~pyrefly_results =
-    match pyrefly_results with
-    | Some _ -> failwith "unimplemented: ReadWrite.load_from_cache"
-    | None -> Pyre1 (Pyre1Api.ReadWrite.load_from_cache ~configuration)
-
-
   let create_with_cold_start
       ~scheduler
       ~scheduler_policies
@@ -79,23 +73,6 @@ module ReadWrite = struct
   let configuration = function
     | Pyre1 pyre_api -> Pyre1Api.ReadWrite.configuration pyre_api
     | Pyrefly _ -> failwith "unimplemented: ReadWrite.configuration"
-
-
-  (* Only used for caching *)
-  let module_paths = function
-    | Pyre1 pyre_api -> Pyre1Api.ReadWrite.module_paths pyre_api
-    | Pyrefly _ -> failwith "unimplemented: ReadWrite.module_paths"
-
-
-  (* Only used for caching *)
-  let module_paths_from_disk = function
-    | Pyre1 pyre_api -> Pyre1Api.ReadWrite.module_paths_from_disk pyre_api
-    | Pyrefly _ -> failwith "unimplemented"
-
-
-  let save = function
-    | Pyre1 pyre_api -> Pyre1Api.ReadWrite.save pyre_api
-    | Pyrefly _ -> failwith "unimplemented: ReadWrite.save"
 
 
   let purge_sources_from_shared_memory = function

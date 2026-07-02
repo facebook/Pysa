@@ -305,7 +305,6 @@ let save_results_to_directory
     ~model_verification_errors
     ~fixpoint_state
     ~errors
-    ~cache
     ~file_coverage
     ~rule_coverage
   =
@@ -399,7 +398,6 @@ let save_results_to_directory
           "version", `String (Version.version ());
           "stats", statistics;
           "codes", TaintConfiguration.code_metadata taint_configuration_heap;
-          "cache", Cache.metadata_to_json cache;
           "partial_flows", `List partial_flows;
         ]
     in

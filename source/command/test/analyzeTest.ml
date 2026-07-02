@@ -56,8 +56,6 @@ let test_json_parsing context =
       output_format = Configuration.TaintOutputFormat.Json;
       strict = false;
       taint_model_paths = [];
-      use_cache = false;
-      build_cache_only = false;
       no_verify = false;
       verify_dsl = false;
       verify_taint_config_only = false;
@@ -65,7 +63,6 @@ let test_json_parsing context =
       check_invariants = false;
       limit_entrypoints = false;
       compact_ocaml_heap = false;
-      saved_state = Configuration.StaticAnalysis.SavedState.empty;
       compute_coverage = false;
       scheduler_policies = Configuration.SchedulerPolicies.empty;
       higher_order_call_graph_max_iterations = None;
@@ -199,36 +196,8 @@ let test_json_parsing context =
         taint_model_paths = [PyrePath.create_absolute "/taint"; PyrePath.create_absolute "/model"];
       };
   assert_parsed
-    (`Assoc (("use_cache", `Bool true) :: BaseConfigurationTest.dummy_base_json))
-    ~expected:{ dummy_analyze_configuration with use_cache = true };
-  assert_parsed
-    (`Assoc (("build_cache_only", `Bool true) :: BaseConfigurationTest.dummy_base_json))
-    ~expected:{ dummy_analyze_configuration with build_cache_only = true };
-  assert_parsed
     (`Assoc (("check_invariants", `Bool true) :: BaseConfigurationTest.dummy_base_json))
     ~expected:{ dummy_analyze_configuration with check_invariants = true };
-  assert_parsed
-    (`Assoc
-      (( "saved_state",
-         `Assoc
-           [
-             "watchman_root", `String "/root";
-             "project_name", `String "my_project";
-             "preset", `String "some_preset";
-             "cache_critical_files", `List [`String "*.py"; `String "*.pysa"];
-           ] )
-      :: BaseConfigurationTest.dummy_base_json))
-    ~expected:
-      {
-        dummy_analyze_configuration with
-        saved_state =
-          {
-            watchman_root = Some "/root";
-            project_name = Some "my_project";
-            preset = Some "some_preset";
-            cache_critical_files = ["*.py"; "*.pysa"];
-          };
-      };
   assert_parsed
     (`Assoc (("compute_coverage", `Bool true) :: BaseConfigurationTest.dummy_base_json))
     ~expected:{ dummy_analyze_configuration with compute_coverage = true };

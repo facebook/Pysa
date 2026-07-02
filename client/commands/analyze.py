@@ -75,14 +75,9 @@ class Arguments:
     output_format: Optional[str] = None
     strict: bool = False
     taint_model_paths: Sequence[str] = dataclasses.field(default_factory=list)
-    use_cache: bool = False
     check_invariants: bool = False
     limit_entrypoints: bool = False
     compact_ocaml_heap: bool = False
-    build_cache_only: bool = False
-    saved_state_arguments: command_arguments.PysaSavedStateArguments = (
-        dataclasses.field(default_factory=command_arguments.PysaSavedStateArguments)
-    )
     compute_coverage: bool = False
     scheduler_policies: Optional[configuration_module.SchedulerPolicies] = None
     higher_order_call_graph_max_iterations: Optional[int] = None
@@ -221,12 +216,9 @@ class Arguments:
             "pyrefly_results": self.pyrefly_results,
             "strict": self.strict,
             "taint_model_paths": self.taint_model_paths,
-            "use_cache": self.use_cache,
-            "build_cache_only": self.build_cache_only,
             "check_invariants": self.check_invariants,
             "limit_entrypoints": self.limit_entrypoints,
             "compact_ocaml_heap": self.compact_ocaml_heap,
-            "saved_state": self.saved_state_arguments.serialize(),
             "compute_coverage": self.compute_coverage,
             **(
                 {"scheduler_policies": scheduler_policies.to_json()}
@@ -363,12 +355,9 @@ def create_analyze_arguments(
         pyrefly_results=pyrefly_results,
         strict=configuration.is_strict(),
         taint_model_paths=taint_models_path,
-        use_cache=analyze_arguments.use_cache,
-        build_cache_only=analyze_arguments.build_cache_only,
         check_invariants=analyze_arguments.check_invariants,
         limit_entrypoints=analyze_arguments.limit_entrypoints,
         compact_ocaml_heap=analyze_arguments.compact_ocaml_heap,
-        saved_state_arguments=analyze_arguments.saved_state_arguments,
         compute_coverage=analyze_arguments.compute_coverage,
         scheduler_policies=(
             configuration_module.SchedulerPolicies.from_path(scheduler_policies_path)

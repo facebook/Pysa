@@ -42,7 +42,6 @@ val save_results_to_directory
   model_verification_errors:ModelVerificationError.t list ->
   fixpoint_state:TaintFixpoint.State.ReadOnly.t ->
   errors:Yojson.Safe.t list ->
-  cache:Cache.t ->
   file_coverage:FileCoverage.t ->
   rule_coverage:RuleCoverage.t ->
   unit

@@ -37,7 +37,6 @@ module Sources = Sources
 module TaintFixpoint = TaintFixpoint
 module Registry = Registry
 module SharedModels = SharedModels
-module Cache = Cache
 module CallModel = CallModel
 module FileCoverage = FileCoverage
 module KindCoverage = KindCoverage

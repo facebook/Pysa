@@ -27,7 +27,7 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set
+from typing import List, Optional, Set
 
 from . import dataclasses_merge
 from .identifiers import PyreFlavor
@@ -272,24 +272,6 @@ class CoverageArguments:
     print_summary: bool = False
 
 
-@dataclass(frozen=True)
-class PysaSavedStateArguments:
-    watchman_root: Optional[Path] = None
-    project_name: Optional[str] = None
-    preset: Optional[str] = None
-    cache_critical_files: List[str] = field(default_factory=list)
-
-    def serialize(self) -> Dict[str, Any]:
-        return {
-            "watchman_root": (
-                str(self.watchman_root) if self.watchman_root is not None else None
-            ),
-            "project_name": self.project_name,
-            "preset": self.preset,
-            "cache_critical_files": self.cache_critical_files,
-        }
-
-
 @dataclasses_merge.dataclass_merge
 @dataclass(frozen=True)
 class AnalyzeArguments:
@@ -338,14 +320,9 @@ class AnalyzeArguments:
     debug_pyrefly_report: bool = False
     sequential: bool = False
     taint_models_path: List[str] = field(default_factory=list)
-    use_cache: bool = False
-    build_cache_only: bool = False
     check_invariants: bool = False
     limit_entrypoints: bool = False
     compact_ocaml_heap: bool = False
-    saved_state_arguments: PysaSavedStateArguments = field(
-        default_factory=PysaSavedStateArguments
-    )
     compute_coverage: bool = False
     scheduler_policies_path: Optional[Path] = None
     kill_buck_after_build: bool = False

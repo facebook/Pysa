@@ -786,20 +786,6 @@ module MissingFlowKind = struct
 end
 
 module StaticAnalysis = struct
-  module SavedState = struct
-    type t = {
-      watchman_root: string option;
-      project_name: string option;
-      (* The Pysa preset that was used to build the saved state. *)
-      preset: string option;
-      cache_critical_files: string list;
-    }
-    [@@deriving sexp, compare, hash, yojson]
-
-    let empty =
-      { watchman_root = None; project_name = None; preset = None; cache_critical_files = [] }
-  end
-
   type t = {
     repository_root: PyrePath.t option;
     save_results_to: PyrePath.t option;
@@ -818,8 +804,6 @@ module StaticAnalysis = struct
     transform_filter: string list option;
     find_missing_flows: MissingFlowKind.t option;
     dump_model_query_results: PyrePath.t option;
-    use_cache: bool;
-    build_cache_only: bool;
     disable_model_shaping: bool;
     infer_self_tito: bool;
     infer_argument_tito: bool;
@@ -838,7 +822,6 @@ module StaticAnalysis = struct
     check_invariants: bool;
     limit_entrypoints: bool;
     compact_ocaml_heap: bool;
-    saved_state: SavedState.t;
     compute_coverage: bool;
     scheduler_policies: SchedulerPolicies.t;
     higher_order_call_graph_max_iterations: int;
@@ -876,8 +859,6 @@ module StaticAnalysis = struct
       ?transform_filter
       ?find_missing_flows
       ?dump_model_query_results
-      ?(use_cache = false)
-      ?(build_cache_only = false)
       ?(disable_model_shaping = false)
       ?(infer_self_tito = true)
       ?(infer_argument_tito = false)
@@ -896,7 +877,6 @@ module StaticAnalysis = struct
       ?(check_invariants = false)
       ?(limit_entrypoints = false)
       ?(compact_ocaml_heap = false)
-      ?(saved_state = SavedState.empty)
       ?(compute_coverage = false)
       ?(scheduler_policies = SchedulerPolicies.empty)
       ?(higher_order_call_graph_max_iterations = default_higher_order_call_graph_max_iterations)
@@ -921,8 +901,6 @@ module StaticAnalysis = struct
       transform_filter;
       find_missing_flows;
       dump_model_query_results;
-      use_cache;
-      build_cache_only;
       disable_model_shaping;
       infer_self_tito;
       infer_argument_tito;
@@ -941,7 +919,6 @@ module StaticAnalysis = struct
       check_invariants;
       limit_entrypoints;
       compact_ocaml_heap;
-      saved_state;
       compute_coverage;
       scheduler_policies;
       higher_order_call_graph_max_iterations;

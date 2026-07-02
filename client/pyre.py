@@ -534,18 +534,6 @@ def pyre(
     help="Dump model query results in the given file.",
 )
 @click.option(
-    "--use-cache",
-    is_flag=True,
-    default=False,
-    help="Store information in .pyre/pysa.cache for faster runs.",
-)
-@click.option(
-    "--build-cache-only",
-    is_flag=True,
-    default=False,
-    help="Build the cache and exit without computing results..",
-)
-@click.option(
     "--disable-model-shaping",
     is_flag=True,
     default=False,
@@ -702,8 +690,6 @@ def analyze(
     transform: Iterable[str],
     find_missing_flows: Optional[str],
     dump_model_query_results: Optional[str],
-    use_cache: bool,
-    build_cache_only: bool,
     disable_model_shaping: bool,
     infer_self_tito: bool,
     infer_argument_tito: bool,
@@ -797,12 +783,9 @@ def analyze(
             pyrefly_results=pyrefly_results,
             sequential=command_argument.sequential,
             taint_models_path=list(taint_models_path),
-            use_cache=use_cache,
-            build_cache_only=build_cache_only,
             check_invariants=check_invariants,
             limit_entrypoints=limit_entrypoints,
             compact_ocaml_heap=compact_ocaml_heap,
-            saved_state_arguments=command_arguments.PysaSavedStateArguments(),
             compute_coverage=compute_coverage,
             scheduler_policies_path=(
                 Path(scheduler_policies) if scheduler_policies is not None else None

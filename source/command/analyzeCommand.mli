@@ -54,12 +54,9 @@ module AnalyzeConfiguration : sig
     pyrefly_results: PyrePath.t option;
     strict: bool;
     taint_model_paths: PyrePath.t list;
-    use_cache: bool;
-    build_cache_only: bool;
     check_invariants: bool;
     limit_entrypoints: bool;
     compact_ocaml_heap: bool;
-    saved_state: Configuration.StaticAnalysis.SavedState.t;
     compute_coverage: bool;
     scheduler_policies: Configuration.SchedulerPolicies.t;
     higher_order_call_graph_max_iterations: int option;

@@ -63,12 +63,9 @@ module AnalyzeConfiguration = struct
     pyrefly_results: PyrePath.t option;
     strict: bool;
     taint_model_paths: PyrePath.t list;
-    use_cache: bool;
-    build_cache_only: bool;
     check_invariants: bool;
     limit_entrypoints: bool;
     compact_ocaml_heap: bool;
-    saved_state: Configuration.StaticAnalysis.SavedState.t;
     compute_coverage: bool;
     scheduler_policies: Configuration.SchedulerPolicies.t;
     higher_order_call_graph_max_iterations: int option;
@@ -157,8 +154,6 @@ module AnalyzeConfiguration = struct
           let strict = bool_member "strict" ~default:false json in
           let pyrefly_results = optional_path_member "pyrefly_results" json in
           let taint_model_paths = json |> path_list_member "taint_model_paths" ~default:[] in
-          let use_cache = bool_member "use_cache" ~default:false json in
-          let build_cache_only = bool_member "build_cache_only" ~default:false json in
           let check_invariants = bool_member "check_invariants" ~default:false json in
           let limit_entrypoints = bool_member "limit_entrypoints" ~default:false json in
           let compact_ocaml_heap = bool_member "compact_ocaml_heap" ~default:false json in
@@ -170,23 +165,6 @@ module AnalyzeConfiguration = struct
             | `Null -> Configuration.SchedulerPolicies.empty
             | json -> Configuration.SchedulerPolicies.of_yojson json |> Result.ok_or_failwith
           in
-          (match Yojson.Safe.Util.member "saved_state" json with
-          | `Null -> Result.Ok Configuration.StaticAnalysis.SavedState.empty
-          | saved_state ->
-              let watchman_root = optional_string_member "watchman_root" saved_state in
-              let project_name = optional_string_member "project_name" saved_state in
-              let preset = optional_string_member "preset" saved_state in
-              let cache_critical_files =
-                list_member ~f:to_string "cache_critical_files" saved_state
-              in
-              Result.Ok
-                {
-                  Configuration.StaticAnalysis.SavedState.watchman_root;
-                  project_name;
-                  preset;
-                  cache_critical_files;
-                })
-          >>= fun saved_state ->
           Result.Ok
             {
               base;
@@ -223,12 +201,9 @@ module AnalyzeConfiguration = struct
               output_format;
               strict;
               taint_model_paths;
-              use_cache;
-              build_cache_only;
               check_invariants;
               limit_entrypoints;
               compact_ocaml_heap;
-              saved_state;
               compute_coverage;
               scheduler_policies;
               higher_order_call_graph_max_iterations;
@@ -369,8 +344,6 @@ let static_analysis_configuration_of
       pyrefly_results;
       strict;
       taint_model_paths;
-      use_cache;
-      build_cache_only;
       disable_model_shaping;
       infer_self_tito;
       infer_argument_tito;
@@ -378,7 +351,6 @@ let static_analysis_configuration_of
       check_invariants;
       limit_entrypoints;
       compact_ocaml_heap;
-      saved_state;
       compute_coverage;
       scheduler_policies;
       higher_order_call_graph_max_iterations;
@@ -410,8 +382,6 @@ let static_analysis_configuration_of
     transform_filter;
     find_missing_flows;
     dump_model_query_results;
-    use_cache;
-    build_cache_only;
     disable_model_shaping;
     infer_self_tito;
     infer_argument_tito;
@@ -430,7 +400,6 @@ let static_analysis_configuration_of
     check_invariants;
     limit_entrypoints;
     compact_ocaml_heap;
-    saved_state;
     compute_coverage;
     scheduler_policies;
     higher_order_call_graph_max_iterations =
@@ -494,7 +463,6 @@ let run_analyze
         ~should_log_exception:(function
           | Taint.TaintConfiguration.TaintConfigurationError _ -> false
           | Taint.ModelVerificationError.ModelVerificationErrors _ -> false
-          | Taint.Cache.BuildCacheOnly -> false
           | Interprocedural.PyreflyApi.PyreflyFileFormatError _ -> false
           | Interprocedural.PyreflyApi.NoSourceFilesToAnalyze -> false
           | _ -> true)
@@ -522,7 +490,6 @@ let on_exception = function
         (`Assoc ["errors", `List (List.map errors ~f:Taint.ModelVerificationError.to_json)])
       |> Log.print "%s";
       ExitStatus.ModelVerificationError
-  | Taint.Cache.BuildCacheOnly -> ExitStatus.CheckStatus CheckCommand.ExitStatus.Ok
   | Interprocedural.PyreflyApi.PyreflyFileFormatError { path; error } ->
       Log.error "%a: %a" PyrePath.pp path Interprocedural.PyreflyApi.Error.pp error;
       ExitStatus.PyreflyFileFormatError

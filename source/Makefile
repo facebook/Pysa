@@ -16,10 +16,6 @@ test: dev
 stubs_integration_test: dev
 	make -C ../stubs/integration_test
 
-.PHONY: pysa_cache_test
-pysa_cache_test: dev
-	PYRE_BINARY="$(CURDIR)/_build/default/main.exe" PYREFLY_BINARY="$${PYREFLY_BINARY:-$(CURDIR)/pyrefly.exe}" ../stubs/integration_test/run_cache_test.py
-
 .PHONY: fbtest
 fbtest: dev
 	if [ -d "$(CURDIR)/facebook" ]; then make -C ../facebook; fi

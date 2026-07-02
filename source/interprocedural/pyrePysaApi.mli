@@ -33,11 +33,6 @@ end
 module ReadWrite : sig
   type t
 
-  val load_from_cache
-    :  configuration:Configuration.Analysis.t ->
-    pyrefly_results:PyrePath.t option ->
-    t
-
   val create_with_cold_start
     :  scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
@@ -53,15 +48,6 @@ module ReadWrite : sig
     t
 
   val configuration : t -> Configuration.Analysis.t
-
-  (* Only used for caching *)
-  val module_paths : t -> Ast.ModulePath.t list
-
-  (* Only used for caching *)
-  val module_paths_from_disk : t -> Ast.ModulePath.t list
-
-  (* Only used for caching *)
-  val save : t -> unit
 
   val purge_sources_from_shared_memory : t -> unit
 
