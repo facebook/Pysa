@@ -21,7 +21,6 @@ module FunctionParameter = PyreflyTypes.ModelQueries.FunctionParameter
 module FunctionParameters = PyreflyTypes.ModelQueries.FunctionParameters
 module FunctionSignature = PyreflyTypes.ModelQueries.FunctionSignature
 module MethodReference = Target.MethodReference
-module AccessPath = Analysis.TaintAccessPath
 
 module SysInfo = struct
   type t = {

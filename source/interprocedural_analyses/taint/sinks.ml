@@ -11,7 +11,6 @@
  *)
 
 open Core
-module AccessPath = Analysis.TaintAccessPath
 
 let name = "sink"
 

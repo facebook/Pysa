@@ -11,7 +11,6 @@ open Interprocedural
 open Pyre
 module PyrePysaLogic = Analysis.PyrePysaLogic
 module PyreflyApi = Interprocedural.PyreflyApi
-module AccessPath = Analysis.TaintAccessPath
 
 (* ModelParseResult: defines the result of parsing pysa model files (`.pysa`). *)
 
@@ -987,7 +986,7 @@ module Modelable = struct
         (* The semantic (undecorated) signature(s) of the function. *)
         undecorated_signatures: PyreflyApi.ModelQueries.FunctionSignature.t list Lazy.t;
         decorators: CallableDecorator.t list Lazy.t;
-        captures: Analysis.TaintAccessPath.CapturedVariable.t list Lazy.t;
+        captures: AccessPath.CapturedVariable.t list Lazy.t;
       }
     | Attribute of {
         target_name: Reference.t;

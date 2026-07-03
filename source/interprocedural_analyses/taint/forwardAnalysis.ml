@@ -41,7 +41,6 @@ open Pyre
 open Domains
 module CallGraph = Interprocedural.CallGraph
 module CallGraphBuilder = Interprocedural.CallGraphBuilder
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
 

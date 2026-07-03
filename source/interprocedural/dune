@@ -1,4 +1,20 @@
 (library
+ (name access_path)
+ (public_name pyrelib.access_path)
+ (modules accessPath)
+ (wrapped false)
+ (preprocess
+  (pps
+   ppx_deriving.eq
+   ppx_deriving.show
+   ppx_hash
+   ppx_compare
+   ppx_sexp_conv
+   ppx_sexp_message
+   ppx_deriving_yojson))
+ (libraries core pyrelib.ast pyrelib.domains))
+
+(library
  (name shims)
  (public_name pyrelib.shims)
  (modules shims)
@@ -26,13 +42,13 @@
    ppx_sexp_conv
    ppx_sexp_message
    ppx_deriving_yojson))
- (libraries core pyrelib.analysis pyrelib.ast))
+ (libraries core pyrelib.access_path pyrelib.ast))
 
 (library
  (name interprocedural)
  (public_name pyrelib.interprocedural)
  (modules
-  (:standard \ shims target))
+  (:standard \ shims target accessPath))
  (preprocess
   (pps
    ppx_deriving.eq
@@ -51,6 +67,7 @@
   ppxlib
   ppx_deriving_yojson
   ppx_deriving
+  pyrelib.access_path
   pyrelib.analysis
   pyrelib.ast
   pyrelib.recognized

@@ -67,4 +67,3 @@ module UnannotatedGlobalEnvironment = UnannotatedGlobalEnvironment
 module UninitializedLocalCheck = UninitializedLocalCheck
 module WeakenMutableLiterals = WeakenMutableLiterals
 module WeakTopologicalOrder = WeakTopologicalOrder
-module TaintAccessPath = TaintAccessPath

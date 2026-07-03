@@ -1,5 +1,6 @@
 (tests
  (names
+  accessPathTest
   targetTest
   callGraphTest
   callGraphFixpointTest
@@ -33,6 +34,7 @@
   ppx_deriving
   pyrelib.test
   pyrelib.ast
+  pyrelib.access_path
   pyrelib.interprocedural
   pyrelib.taintTestHelper
   pyrelib.taint))

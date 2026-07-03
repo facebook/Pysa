@@ -11,7 +11,7 @@ open Ast
 val verify_signature
   :  path:PyrePath.t option ->
   location:Location.t ->
-  normalized_model_parameters:Analysis.TaintAccessPath.NormalizedParameter.t list ->
+  normalized_model_parameters:AccessPath.NormalizedParameter.t list ->
   friendly_name:Reference.t ->
   imported_name:Reference.t option ->
   define_location:ModelVerificationError.SourceLocation.t option Lazy.t ->

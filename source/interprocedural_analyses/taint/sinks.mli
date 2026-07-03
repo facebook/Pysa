@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-module AccessPath = Analysis.TaintAccessPath
-
 module PartialSink : sig
   type t = string [@@deriving compare, hash, sexp, equal, show]
 

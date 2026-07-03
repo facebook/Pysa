@@ -18,7 +18,6 @@ open Statement
 open Expression
 open Pyre
 open CallGraph
-module TaintAccessPath = Analysis.TaintAccessPath
 module PyrePysaLogic = Analysis.PyrePysaLogic
 module AstResult = PyreflyApi.AstResult
 
@@ -111,8 +110,8 @@ let apply_identified_shim_call ~identified_callee ~arguments =
           name = Some { Node.value = args; _ };
         };
       ] )
-    when target |> Analysis.TaintAccessPath.Root.chop_parameter_prefix |> String.equal "target"
-         && args |> Analysis.TaintAccessPath.Root.chop_parameter_prefix |> String.equal "args" ->
+    when target |> AccessPath.Root.chop_parameter_prefix |> String.equal "target"
+         && args |> AccessPath.Root.chop_parameter_prefix |> String.equal "args" ->
       Some
         {
           identifier = "multiprocessing.Process";
@@ -603,7 +602,7 @@ module HigherOrderCallGraph = struct
     include
       Abstract.MapDomain.Make
         (struct
-          include TaintAccessPath.Root
+          include AccessPath.Root
 
           let name = "variables"
 
@@ -616,24 +615,23 @@ module HigherOrderCallGraph = struct
     let initialize_from_roots ~pyrefly_api ~callables_to_definitions_map alist =
       alist
       |> List.filter_map ~f:(fun (root, { Target.ParameterValue.target; implicit_receiver }) ->
-             (* ASTs use `TaintAccessPath.parameter_prefix` to distinguish local variables from
+             (* ASTs use `AccessPath.parameter_prefix` to distinguish local variables from
                 parameters, but using parameters from the define does not result in creating
-                parameterized targets whose parameter names contain
-                `TaintAccessPath.parameter_prefix`. To be consistent, we use the former. In
-                addition, we treat formal arguments and local variables as the same variant under
-                `TaintAccessPath.Root`, so that we can look up the value bound to an `Identifier`
-                easily. *)
+                parameterized targets whose parameter names contain `AccessPath.parameter_prefix`.
+                To be consistent, we use the former. In addition, we treat formal arguments and
+                local variables as the same variant under `AccessPath.Root`, so that we can look up
+                the value bound to an `Identifier` easily. *)
              let root =
                match root with
-               | TaintAccessPath.Root.PositionalParameter { name; _ }
-               | TaintAccessPath.Root.NamedParameter { name } ->
-                   Some (TaintAccessPath.Root.Variable name)
-               | TaintAccessPath.Root.CapturedVariable captured_variable ->
+               | AccessPath.Root.PositionalParameter { name; _ }
+               | AccessPath.Root.NamedParameter { name } ->
+                   Some (AccessPath.Root.Variable name)
+               | AccessPath.Root.CapturedVariable captured_variable ->
                    Some
                      (PyreflyApi.ReadOnly.state_root_of_captured_variable
                         pyrefly_api
                         captured_variable)
-               | TaintAccessPath.Root.Variable _ ->
+               | AccessPath.Root.Variable _ ->
                    failwith "unexpected variable root in parameterized target"
                | _ -> None
              in
@@ -739,10 +737,10 @@ module HigherOrderCallGraph = struct
     let self_variable =
       if Ast.Statement.Define.is_method (Node.value Context.define) then
         let { Ast.Statement.Define.signature = { parameters; _ }; _ } = Node.value Context.define in
-        match TaintAccessPath.normalize_parameters parameters with
-        | { root = TaintAccessPath.Root.PositionalParameter { position = 0; _ }; qualified_name; _ }
-          :: _ ->
-            Some (TaintAccessPath.Root.Variable qualified_name)
+        match AccessPath.normalize_parameters parameters with
+        | { root = AccessPath.Root.PositionalParameter { position = 0; _ }; qualified_name; _ } :: _
+          ->
+            Some (AccessPath.Root.Variable qualified_name)
         | _ -> None
       else
         None
@@ -759,7 +757,7 @@ module HigherOrderCallGraph = struct
             | Target.Regular.Method { method_name = "__init__"; _ } -> State.get self_variable state
             | _ -> CallTarget.Set.bottom)
       |> Option.value ~default:CallTarget.Set.bottom
-      |> CallTarget.Set.join (State.get TaintAccessPath.Root.LocalResult state)
+      |> CallTarget.Set.join (State.get AccessPath.Root.LocalResult state)
 
 
     (* Join a set of call targets from the original call graph with targets inferred from the
@@ -946,21 +944,21 @@ module HigherOrderCallGraph = struct
               else
                 parameters
                 |> AstResult.to_option
-                >>| TaintAccessPath.normalize_parameters
-                >>| List.map ~f:(fun { TaintAccessPath.NormalizedParameter.root; _ } -> root)
+                >>| AccessPath.normalize_parameters
+                >>| List.map ~f:(fun { AccessPath.NormalizedParameter.root; _ } -> root)
           | None ->
               log "Cannot find define for callable `%a`" Target.pp_pretty_with_kind target;
               None
       in
       let create_parameter_target_excluding_args_kwargs (parameter_target, (_, argument_matches)) =
         match argument_matches, parameter_target with
-        | { TaintAccessPath.root = TaintAccessPath.Root.StarParameter _; _ } :: _, _
-        | { TaintAccessPath.root = TaintAccessPath.Root.StarStarParameter _; _ } :: _, _ ->
+        | { AccessPath.root = AccessPath.Root.StarParameter _; _ } :: _, _
+        | { AccessPath.root = AccessPath.Root.StarStarParameter _; _ } :: _, _ ->
             (* TODO(T215864108): Since we do not distinguish paths under the same `Root`, we may run
                into conflicts in `of_alist_exn` below, which is avoided by excluding those cases,
                such as kwargs and args. *)
             None
-        | { TaintAccessPath.root; _ } :: _, Some { CallTarget.target; implicit_receiver; _ } ->
+        | { AccessPath.root; _ } :: _, Some { CallTarget.target; implicit_receiver; _ } ->
             Some (root, { Target.ParameterValue.target; implicit_receiver })
         | _ -> (* TODO: Consider the remaining `argument_matches`. *) None
       in
@@ -1031,11 +1029,11 @@ module HigherOrderCallGraph = struct
                 "Formal arguments of callee regular `%a`: `%a`"
                 Target.Regular.pp
                 callee_regular
-                TaintAccessPath.Root.List.pp
+                AccessPath.Root.List.pp
                 (Option.value ~default:[] formal_arguments);
               let parameters =
                 formal_arguments
-                >>| TaintAccessPath.match_actuals_to_formals arguments
+                >>| AccessPath.match_actuals_to_formals arguments
                 >>| List.zip_exn parameter_targets
                 >>| List.filter_map ~f:create_parameter_target_excluding_args_kwargs
                 >>| Target.ParameterMap.of_alist_exn
@@ -1794,7 +1792,7 @@ module HigherOrderCallGraph = struct
         | Yield (Some expression)
         | YieldFrom expression ->
             let callees, state = analyze_expression ~pyrefly_in_context ~state ~expression in
-            callees, store_callees ~weak:true ~root:TaintAccessPath.Root.LocalResult ~callees state
+            callees, store_callees ~weak:true ~root:AccessPath.Root.LocalResult ~callees state
         | Slice _ ->
             failwith "Slice nodes should always be rewritten by `CallGraph.redirect_expressions`"
         | Subscript _ ->
@@ -1832,7 +1830,7 @@ module HigherOrderCallGraph = struct
           let callees, state =
             analyze_expression ~pyrefly_in_context ~state ~expression:default_value
           in
-          let root = TaintAccessPath.Root.Variable parameter_name in
+          let root = AccessPath.Root.Variable parameter_name in
           store_callees ~weak:true ~root ~callees state
 
 
@@ -1856,7 +1854,7 @@ module HigherOrderCallGraph = struct
             with
             | None -> state
             | Some { root; path } ->
-                if TaintAccessPath.Path.is_empty path then
+                if AccessPath.Path.is_empty path then
                   store_callees ~weak:false ~root ~callees state
                 else
                   (* Attribute assignments like `self.x = foo` should not propagate callees to the
@@ -1877,7 +1875,7 @@ module HigherOrderCallGraph = struct
             with
             | None -> state
             | Some { root; path } ->
-                let strong_update = TaintAccessPath.Path.is_empty path in
+                let strong_update = AccessPath.Path.is_empty path in
                 store_callees ~weak:(not strong_update) ~root ~callees:CallTarget.Set.bottom state)
         | Assert { test; _ } ->
             analyze_expression ~pyrefly_in_context ~state ~expression:test |> snd
@@ -1936,7 +1934,7 @@ module HigherOrderCallGraph = struct
                                pyrefly_in_context
                                captured_variable
                            in
-                           log "Inner function captures `%a`" TaintAccessPath.Root.pp variable;
+                           log "Inner function captures `%a`" AccessPath.Root.pp variable;
                            let parameter_targets =
                              state
                              |> State.get variable
@@ -1950,7 +1948,7 @@ module HigherOrderCallGraph = struct
                            if List.is_empty parameter_targets then
                              None
                            else
-                             let root = TaintAccessPath.Root.CapturedVariable captured_variable in
+                             let root = AccessPath.Root.CapturedVariable captured_variable in
                              Some (root, parameter_targets))
                     |> List.unzip
                   in
@@ -1984,7 +1982,7 @@ module HigherOrderCallGraph = struct
             in
             store_callees
               ~weak:false
-              ~root:(TaintAccessPath.Root.Variable (Reference.show name))
+              ~root:(AccessPath.Root.Variable (Reference.show name))
               ~callees:(CallTarget.Set.of_list callees)
               state
         | Delete expressions ->
@@ -2021,7 +2019,7 @@ module HigherOrderCallGraph = struct
                         !Context.output_define_call_graph)
               |> Option.value ~default:()
             in
-            store_callees ~weak:true ~root:TaintAccessPath.Root.LocalResult ~callees state
+            store_callees ~weak:true ~root:AccessPath.Root.LocalResult ~callees state
         | Return { expression = None; _ }
         | Try _ ->
             (* Try statements are lowered down in `Cfg.create`, but they are preserved in the final

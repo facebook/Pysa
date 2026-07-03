@@ -9,7 +9,6 @@ open Core
 open OUnit2
 open Interprocedural
 open Ast
-module AccessPath = Analysis.TaintAccessPath
 module ModulePath = PyreflyApi.ModulePath
 module ModuleId = PyreflyApi.ModuleId
 module ModuleQualifier = PyreflyApi.ModuleQualifier

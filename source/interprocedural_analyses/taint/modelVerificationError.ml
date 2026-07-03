@@ -10,7 +10,6 @@
 
 open Core
 open Ast
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 
 module IncompatibleModelError = struct

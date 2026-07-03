@@ -10,7 +10,6 @@
 open Core
 open Ast
 open Expression
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 
 type parameter_requirements = {

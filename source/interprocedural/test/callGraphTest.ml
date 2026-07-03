@@ -8,7 +8,6 @@
 open Core
 open OUnit2
 open Ast
-open Analysis
 open Test
 open Interprocedural
 open CallGraph
@@ -5694,7 +5693,7 @@ let test_call_graph_of_define =
                    (IdentifierCallees.create
                       ~captured_variables:
                         [
-                          TaintAccessPath.CapturedVariable.FromFunction
+                          AccessPath.CapturedVariable.FromFunction
                             { name = "x"; defining_function = Reference.create "test.outer" };
                         ]
                       ()) );
@@ -5717,7 +5716,7 @@ let test_call_graph_of_define =
                    (IdentifierCallees.create
                       ~captured_variables:
                         [
-                          TaintAccessPath.CapturedVariable.FromFunction
+                          AccessPath.CapturedVariable.FromFunction
                             { name = "x"; defining_function = Reference.create "test.outer" };
                         ]
                       ()) );
@@ -7402,7 +7401,7 @@ let test_higher_order_call_graph_of_define =
            ~initial_state:
              (CallGraphBuilder.HigherOrderCallGraph.State.of_list
                 [
-                  ( TaintAccessPath.Root.Variable "g",
+                  ( AccessPath.Root.Variable "g",
                     Target.Regular.Function { name = "test.bar"; kind = Normal }
                     |> Target.from_regular
                     |> CallTarget.create

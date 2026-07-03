@@ -16,7 +16,6 @@
 open Core
 open Ast
 open Statement
-module TaintAccessPath = Analysis.TaintAccessPath
 
 type kind =
   | Normal
@@ -257,7 +256,7 @@ module Regular = struct
     | _ -> failwith "unexpected"
 end
 
-module ParameterMap = Data_structures.SerializableMap.Make (TaintAccessPath.Root)
+module ParameterMap = Data_structures.SerializableMap.Make (AccessPath.Root)
 
 module T = struct
   type t =
@@ -307,7 +306,7 @@ module MakePrettyPrint (RegularTargetPrettyPrint : RegularTargetPrettyPrintType)
               Format.fprintf
                 formatter
                 "%a=%a"
-                TaintAccessPath.Root.pp
+                AccessPath.Root.pp
                 access_path
                 pp_parameter_value
                 parameter_value
@@ -316,7 +315,7 @@ module MakePrettyPrint (RegularTargetPrettyPrint : RegularTargetPrettyPrintType)
                 Format.fprintf
                   formatter
                   "%a=%a, "
-                  TaintAccessPath.Root.pp
+                  AccessPath.Root.pp
                   access_path
                   pp_parameter_value
                   parameter_value

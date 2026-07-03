@@ -189,20 +189,14 @@ module ReadOnly : sig
   val get_callable_parameter_annotations
     :  t ->
     define_name:Ast.Reference.t ->
-    Analysis.TaintAccessPath.NormalizedParameter.t list ->
-    (Analysis.TaintAccessPath.NormalizedParameter.t * PyreflyType.t list) list
+    AccessPath.NormalizedParameter.t list ->
+    (AccessPath.NormalizedParameter.t * PyreflyType.t list) list
 
   val get_overriden_base_method : t -> Target.MethodReference.t -> Target.MethodReference.t option
 
-  val get_callable_captures
-    :  t ->
-    Ast.Reference.t ->
-    Analysis.TaintAccessPath.CapturedVariable.t list
+  val get_callable_captures : t -> Ast.Reference.t -> AccessPath.CapturedVariable.t list
 
-  val get_callable_captures_opt
-    :  t ->
-    Ast.Reference.t ->
-    Analysis.TaintAccessPath.CapturedVariable.t list option
+  val get_callable_captures_opt : t -> Ast.Reference.t -> AccessPath.CapturedVariable.t list option
 
   val get_callable_decorator_callees
     :  t ->
@@ -332,10 +326,7 @@ module ReadOnly : sig
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
-  val state_root_of_captured_variable
-    :  t ->
-    Analysis.TaintAccessPath.CapturedVariable.t ->
-    Analysis.TaintAccessPath.Root.t
+  val state_root_of_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
 
   val ensures_qualified : t -> Ast.Source.t -> Ast.Source.t
 end
@@ -434,27 +425,21 @@ module InContext : sig
     :  t ->
     location:Ast.Location.t ->
     identifier:Ast.Identifier.t ->
-    Analysis.TaintAccessPath.Root.t
+    AccessPath.Root.t
 
   (* Propagate a captured variable from a callee to a caller. Return the new root representing that
      variable in the caller. *)
-  val propagate_captured_variable
-    :  t ->
-    Analysis.TaintAccessPath.CapturedVariable.t ->
-    Analysis.TaintAccessPath.Root.t
+  val propagate_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
 
   val access_path_of_expression
     :  t ->
-    self_variable:Analysis.TaintAccessPath.Root.t option ->
+    self_variable:AccessPath.Root.t option ->
     Ast.Expression.t ->
-    Analysis.TaintAccessPath.t option
+    AccessPath.t option
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
-  val state_root_of_captured_variable
-    :  t ->
-    Analysis.TaintAccessPath.CapturedVariable.t ->
-    Analysis.TaintAccessPath.Root.t
+  val state_root_of_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
 
   (* Compute the type of the given expression. *)
   val type_of_expression : t -> Ast.Expression.t -> PyreflyType.t

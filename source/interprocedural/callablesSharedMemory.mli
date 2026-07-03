@@ -53,7 +53,7 @@ module ReadOnly : sig
 
   val is_stub_like : t -> Target.t -> bool option
 
-  val get_captures : t -> Target.t -> Analysis.TaintAccessPath.CapturedVariable.t list option
+  val get_captures : t -> Target.t -> AccessPath.CapturedVariable.t list option
 
   val callable_from_reference : t -> Reference.t -> Target.t option
 

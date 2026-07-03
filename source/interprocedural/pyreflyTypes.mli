@@ -154,7 +154,7 @@ module CallableSignature : sig
     parameters: Ast.Expression.Parameter.t list AstResult.t;
     return_annotation: Ast.Expression.t option AstResult.t;
     decorators: Ast.Expression.t list AstResult.t;
-    captures: Analysis.TaintAccessPath.CapturedVariable.t list;
+    captures: AccessPath.CapturedVariable.t list;
     method_kind: MethodKind.t option;
     is_stub_like: bool;
   }
@@ -193,7 +193,7 @@ module ModelQueries : sig
 
     val annotation : t -> PyreflyType.t option
 
-    val root : t -> Analysis.TaintAccessPath.Root.t
+    val root : t -> AccessPath.Root.t
 
     val name : t -> string option
 

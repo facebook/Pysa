@@ -30,4 +30,4 @@ val get_modes : t -> Model.ModeSet.t
 
 val is_sanitized : t -> bool
 
-val global_root : Analysis.TaintAccessPath.Root.t
+val global_root : AccessPath.Root.t

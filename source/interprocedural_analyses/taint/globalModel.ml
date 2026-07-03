@@ -16,7 +16,6 @@ open Expression
 open Pyre
 open Domains
 module CallGraph = Interprocedural.CallGraph
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 
 type t = {

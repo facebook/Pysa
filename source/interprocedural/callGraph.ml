@@ -15,7 +15,6 @@ open Ast
 open Statement
 open Expression
 open Pyre
-module AccessPath = Analysis.TaintAccessPath
 
 module JsonHelper = struct
   let add_optional name value to_json bindings =

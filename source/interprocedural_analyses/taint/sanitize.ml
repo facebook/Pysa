@@ -9,7 +9,6 @@
  * domain. *)
 
 open Core
-module AccessPath = Analysis.TaintAccessPath
 
 type sanitize = {
   sources: SanitizeTransform.SourceSet.t;

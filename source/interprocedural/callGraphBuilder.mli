@@ -61,12 +61,12 @@ module HigherOrderCallGraph : sig
 
     val empty : t
 
-    val of_list : (Analysis.TaintAccessPath.Root.t * CallGraph.CallTarget.Set.t) list -> t
+    val of_list : (AccessPath.Root.t * CallGraph.CallTarget.Set.t) list -> t
 
     val initialize_from_roots
       :  pyrefly_api:PyreflyApi.ReadOnly.t ->
       callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-      (Analysis.TaintAccessPath.Root.t * Target.ParameterValue.t) list ->
+      (AccessPath.Root.t * Target.ParameterValue.t) list ->
       t
 
     val initialize_from_callable

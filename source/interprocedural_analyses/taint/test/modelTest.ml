@@ -12,7 +12,6 @@ open Test
 open TestHelper
 open Taint
 module PyreflyApi = Interprocedural.PyreflyApi
-module AccessPath = Analysis.TaintAccessPath
 
 let set_up_environment
     ?source

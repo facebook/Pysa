@@ -7,7 +7,6 @@
 
 (* ModelParseResult: defines the result of parsing pysa model files (`.pysa`). *)
 
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 
 module CollapseDepth : sig
@@ -503,7 +502,7 @@ module Modelable : sig
 
   val parameters_of_signatures : t -> PyreflyApi.ModelQueries.FunctionParameter.t list
 
-  val captures : t -> Analysis.TaintAccessPath.CapturedVariable.t list
+  val captures : t -> AccessPath.CapturedVariable.t list
 
   val decorator_expressions_after_inlining : t -> Ast.Expression.t list
 

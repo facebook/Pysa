@@ -8,7 +8,6 @@
 open Core
 open OUnit2
 open Taint
-module AccessPath = Analysis.TaintAccessPath
 
 let test_from_source _ =
   let assert_sources ~expected ~actual =

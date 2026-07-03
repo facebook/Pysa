@@ -14,7 +14,6 @@ open Ast
 open Pyre
 open Taint
 open Interprocedural
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
 

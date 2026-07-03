@@ -13,7 +13,6 @@
 open Core
 open Ast
 open Pyre
-module AccessPath = Analysis.TaintAccessPath
 module PyreflyApi = Interprocedural.PyreflyApi
 
 module MakeInterner (T : sig

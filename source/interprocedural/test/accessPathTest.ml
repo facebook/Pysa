@@ -8,7 +8,6 @@
 open OUnit2
 open Core
 open Test
-module AccessPath = Analysis.TaintAccessPath
 
 let test_of_expression _ =
   let ( !+ ) expression = Test.parse_single_expression expression in

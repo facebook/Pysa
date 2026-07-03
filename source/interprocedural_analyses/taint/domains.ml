@@ -38,7 +38,6 @@
 open Core
 open Ast
 open Interprocedural
-module AccessPath = Analysis.TaintAccessPath
 
 let location_to_json
     {

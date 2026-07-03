@@ -14,7 +14,7 @@ module Sink : sig
         callee: Target.t;
         callee_suffix: string option;
         index: int;
-        parameter: Analysis.TaintAccessPath.Root.t;
+        parameter: AccessPath.Root.t;
       }
     | Global of {
         callee: Target.t;
@@ -32,7 +32,7 @@ module Sink : sig
 
   val make_call
     :  call_target:CallGraph.CallTarget.t ->
-    root:Analysis.TaintAccessPath.Root.t ->
+    root:AccessPath.Root.t ->
     callee_as_name:Ast.Expression.Name.t option ->
     t
 

@@ -7,7 +7,6 @@
 
 open Core
 open Interprocedural
-module AccessPath = Analysis.TaintAccessPath
 
 module Sink = struct
   type t =

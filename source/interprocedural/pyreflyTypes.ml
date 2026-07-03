@@ -250,7 +250,7 @@ module CallableSignature = struct
     parameters: Ast.Expression.Parameter.t list AstResult.t;
     return_annotation: Ast.Expression.t option AstResult.t;
     decorators: Ast.Expression.t list AstResult.t;
-    captures: Analysis.TaintAccessPath.CapturedVariable.t list;
+    captures: AccessPath.CapturedVariable.t list;
     method_kind: MethodKind.t option;
     is_stub_like: bool;
   }
@@ -294,15 +294,13 @@ module ModelQueries = struct
             | Some name -> name
             | None -> Format.sprintf "__arg%d" position
           in
-          Analysis.TaintAccessPath.Root.PositionalParameter
-            { position; name; positional_only = true }
+          AccessPath.Root.PositionalParameter { position; name; positional_only = true }
       | Named { name; position; _ } ->
-          Analysis.TaintAccessPath.Root.PositionalParameter
-            { position; name; positional_only = false }
-      | KeywordOnly { name; _ } -> Analysis.TaintAccessPath.Root.NamedParameter { name }
-      | Variable { position; _ } -> Analysis.TaintAccessPath.Root.StarParameter { position }
+          AccessPath.Root.PositionalParameter { position; name; positional_only = false }
+      | KeywordOnly { name; _ } -> AccessPath.Root.NamedParameter { name }
+      | Variable { position; _ } -> AccessPath.Root.StarParameter { position }
       | Keywords { excluded; _ } ->
-          Analysis.TaintAccessPath.Root.StarStarParameter
+          AccessPath.Root.StarStarParameter
             { excluded = Ast.Identifier.SerializableSet.of_list excluded }
 
 

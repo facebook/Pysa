@@ -19,6 +19,7 @@
   lwt.unix
   ppx_deriving_yojson
   ppx_deriving
+  pyrelib.access_path
   pyrelib.ast
   pyrelib.analysis
   pyrelib.domains
