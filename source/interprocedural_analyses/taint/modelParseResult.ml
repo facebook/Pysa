@@ -906,15 +906,15 @@ module TypeAnnotation : sig
   end
 
   val create
-    :  inferred_type:PyreflyApi.PysaType.t option ->
+    :  inferred_type:PyreflyApi.PyreflyType.t option ->
     explicit_annotation:ExplicitAnnotation.t ->
     t
 
-  val from_inferred_type : PyreflyApi.PysaType.t option -> t
+  val from_inferred_type : PyreflyApi.PyreflyType.t option -> t
 
   val is_annotated : t -> bool
 
-  val inferred_type : t -> PyreflyApi.PysaType.t option
+  val inferred_type : t -> PyreflyApi.PyreflyType.t option
 
   val explicit_annotation : t -> ExplicitAnnotation.t
 
@@ -933,7 +933,7 @@ end = struct
 
   type t = {
     explicit_annotation: ExplicitAnnotation.t Lazy.t;
-    inferred_type: PyreflyApi.PysaType.t option Lazy.t;
+    inferred_type: PyreflyApi.PyreflyType.t option Lazy.t;
   }
 
   let create ~inferred_type ~explicit_annotation =
@@ -973,7 +973,7 @@ end = struct
   (* Show the parsed annotation from pyre *)
   let show_fully_qualified_annotation { inferred_type; _ } =
     match Lazy.force inferred_type with
-    | Some inferred_type -> PyreflyApi.PysaType.show_fully_qualified inferred_type
+    | Some inferred_type -> PyreflyApi.PyreflyType.show_fully_qualified inferred_type
     | None -> "typing.Any"
 end
 
@@ -1173,7 +1173,7 @@ module Modelable = struct
         Lazy.force define_signature
         |> (fun { CallablesSharedMemory.CallableSignature.method_kind; _ } -> method_kind)
         >>| (function
-              | Target.MethodKind.Instance -> true
+              | PyreflyTypes.MethodKind.Instance -> true
               | _ -> false)
         |> Option.value ~default:false
     | Attribute _

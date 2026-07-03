@@ -8,7 +8,7 @@
 open Ast
 open Statement
 module AstResult = PyreflyApi.AstResult
-module CallableSignature = Analysis.PysaTypes.CallableSignature
+module CallableSignature = PyreflyTypes.CallableSignature
 
 (* Exposed for testing purposes only. *)
 val get_signature_and_definition_for_test

@@ -459,15 +459,15 @@ module TypeAnnotation : sig
   end
 
   val create
-    :  inferred_type:PyreflyApi.PysaType.t option ->
+    :  inferred_type:PyreflyApi.PyreflyType.t option ->
     explicit_annotation:ExplicitAnnotation.t ->
     t
 
-  val from_inferred_type : PyreflyApi.PysaType.t option -> t
+  val from_inferred_type : PyreflyApi.PyreflyType.t option -> t
 
   val is_annotated : t -> bool
 
-  val inferred_type : t -> PyreflyApi.PysaType.t option
+  val inferred_type : t -> PyreflyApi.PyreflyType.t option
 
   val explicit_annotation : t -> ExplicitAnnotation.t
 
@@ -499,7 +499,7 @@ module Modelable : sig
 
   val undecorated_signatures : t -> PyreflyApi.ModelQueries.FunctionSignature.t list
 
-  val return_annotations : t -> PyreflyApi.PysaType.t list
+  val return_annotations : t -> PyreflyApi.PyreflyType.t list
 
   val parameters_of_signatures : t -> PyreflyApi.ModelQueries.FunctionParameter.t list
 

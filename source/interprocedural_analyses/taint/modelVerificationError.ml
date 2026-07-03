@@ -329,7 +329,7 @@ let pp_function_signature
           let () =
             match PyreflyApi.ModelQueries.FunctionParameter.annotation parameter with
             | Some annotation ->
-                Format.fprintf formatter ": %a" PyreflyApi.PysaType.pp_concise annotation
+                Format.fprintf formatter ": %a" PyreflyApi.PyreflyType.pp_concise annotation
             | None -> ()
           in
           let () =
@@ -346,7 +346,7 @@ let pp_function_signature
     | PyreflyApi.ModelQueries.FunctionParameters.ParamSpec ->
         Format.fprintf formatter "(ParamSpec[T])"
   in
-  Format.fprintf formatter " -> %a: ..." PyreflyApi.PysaType.pp_concise return_annotation
+  Format.fprintf formatter " -> %a: ..." PyreflyApi.PyreflyType.pp_concise return_annotation
 
 
 let pp_function_signatures formatter signatures =

@@ -10,8 +10,8 @@
 open Core
 open Pyre
 open Ast
-module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
-module PyreflyTypeRep = Analysis.PysaTypes.PyreflyType
+module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
+module PyreflyTypeRep = PyreflyTypes.PyreflyType
 module CapnpGenerated = PyreflyReportCapnpGenerated.Make (Capnp.BytesMessage)
 module CapnpReader = CapnpGenerated.Reader
 
@@ -115,14 +115,13 @@ let read_scalar_type_properties reader =
 
 
 let read_type_modifier = function
-  | CapnpReader.TypeModifier.Optional -> Some Analysis.PysaTypes.TypeModifier.Optional
-  | CapnpReader.TypeModifier.Coroutine -> Some Analysis.PysaTypes.TypeModifier.Coroutine
-  | CapnpReader.TypeModifier.Awaitable -> Some Analysis.PysaTypes.TypeModifier.Awaitable
-  | CapnpReader.TypeModifier.TypeVariableBound ->
-      Some Analysis.PysaTypes.TypeModifier.TypeVariableBound
+  | CapnpReader.TypeModifier.Optional -> Some PyreflyTypes.TypeModifier.Optional
+  | CapnpReader.TypeModifier.Coroutine -> Some PyreflyTypes.TypeModifier.Coroutine
+  | CapnpReader.TypeModifier.Awaitable -> Some PyreflyTypes.TypeModifier.Awaitable
+  | CapnpReader.TypeModifier.TypeVariableBound -> Some PyreflyTypes.TypeModifier.TypeVariableBound
   | CapnpReader.TypeModifier.TypeVariableConstraint ->
-      Some Analysis.PysaTypes.TypeModifier.TypeVariableConstraint
-  | CapnpReader.TypeModifier.Type -> Some Analysis.PysaTypes.TypeModifier.Type
+      Some PyreflyTypes.TypeModifier.TypeVariableConstraint
+  | CapnpReader.TypeModifier.Type -> Some PyreflyTypes.TypeModifier.Type
   | CapnpReader.TypeModifier.Undefined _ -> None
 
 

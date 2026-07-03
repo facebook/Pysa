@@ -9,9 +9,8 @@
 
 open Core
 open Ast
-module PyreflyType = Analysis.PysaTypes.PyreflyType
-module PysaType = Analysis.PysaTypes.PysaType
-module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
+module PyreflyType = PyreflyTypes.PyreflyType
+module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
 
 module FormatError = struct
   type t =

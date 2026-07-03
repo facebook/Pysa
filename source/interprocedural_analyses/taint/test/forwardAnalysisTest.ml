@@ -48,7 +48,7 @@ let assert_taint ?models ?models_source ~context source expect =
         ~all_sys_infos:
           [
             {
-              Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
+              PyreflyApi.SysInfo.python_version = Configuration.PythonVersion.create ();
               platform = Some "linux";
             };
           ]

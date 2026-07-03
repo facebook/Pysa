@@ -407,12 +407,8 @@
   pyrelib.version))
 
 (tests
- (names
-  decoratorsTest
-  internalTaintIntegrationTest)
- (modules
-  decoratorsTest
-  internalTaintIntegrationTest)
+ (names decoratorsTest internalTaintIntegrationTest)
+ (modules decoratorsTest internalTaintIntegrationTest)
  (preprocess
   (pps
    ppx_deriving.eq

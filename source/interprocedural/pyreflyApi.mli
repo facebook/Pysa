@@ -9,12 +9,22 @@
    code to analyze, using the results from a pyrefly run with --report-pysa. *)
 
 open Core
-module PysaType = Analysis.PysaTypes.PysaType
-module AstResult = Analysis.PysaTypes.AstResult
-module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
-module TypeModifier = Analysis.PysaTypes.TypeModifier
-module ClassWithModifiers = Analysis.PysaTypes.ClassWithModifiers
-module ClassNamesFromType = Analysis.PysaTypes.ClassNamesFromType
+module PyreflyType = PyreflyTypes.PyreflyType
+module AstResult = PyreflyTypes.AstResult
+module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
+module TypeModifier = PyreflyTypes.TypeModifier
+module ClassWithModifiers = PyreflyTypes.ClassWithModifiers
+module ClassNamesFromType = PyreflyTypes.ClassNamesFromType
+
+module SysInfo : sig
+  type t = {
+    python_version: Configuration.PythonVersion.t;
+    platform: string option;
+  }
+  [@@deriving compare, equal, show, sexp, hash]
+
+  module Set : Stdlib.Set.S with type elt = t
+end
 
 module FormatError : sig
   type t =
@@ -83,7 +93,7 @@ module CallableMetadata : sig
   }
   [@@deriving show]
 
-  val get_method_kind : t -> Analysis.PysaTypes.MethodKind.t option
+  val get_method_kind : t -> PyreflyTypes.MethodKind.t option
 end
 
 module PysaClassSummary : sig
@@ -128,7 +138,7 @@ module ReadOnly : sig
   (* Return all qualifiers with source code *)
   val explicit_qualifiers : t -> Ast.Reference.t list
 
-  val all_sys_infos : t -> Analysis.PysaTypes.SysInfo.t list
+  val all_sys_infos : t -> SysInfo.t list
 
   val artifact_path_of_qualifier : t -> Ast.Reference.t -> ArtifactPath.t option
 
@@ -174,18 +184,15 @@ module ReadOnly : sig
     :  t ->
     define_name:Ast.Reference.t ->
     define:Ast.Statement.Define.t ->
-    PysaType.t list
+    PyreflyType.t list
 
   val get_callable_parameter_annotations
     :  t ->
     define_name:Ast.Reference.t ->
     Analysis.TaintAccessPath.NormalizedParameter.t list ->
-    (Analysis.TaintAccessPath.NormalizedParameter.t * PysaType.t list) list
+    (Analysis.TaintAccessPath.NormalizedParameter.t * PyreflyType.t list) list
 
-  val get_overriden_base_method
-    :  t ->
-    Analysis.PysaTypes.MethodReference.t ->
-    Analysis.PysaTypes.MethodReference.t option
+  val get_overriden_base_method : t -> Target.MethodReference.t -> Target.MethodReference.t option
 
   val get_callable_captures
     :  t ->
@@ -209,7 +216,7 @@ module ReadOnly : sig
     :  t ->
     exclude_test_modules:bool ->
     Ast.Reference.t ->
-    Analysis.PysaTypes.MethodReference.t list
+    Target.MethodReference.t list
 
   (* Is this a test module (i.e, unit test code that we shouldn't analyze) *)
   val is_test_qualifier : t -> Ast.Reference.t -> bool
@@ -223,20 +230,14 @@ module ReadOnly : sig
   (* Return the AST for the given function *)
   val get_define_opt : t -> Ast.Reference.t -> Ast.Statement.Define.t Ast.Node.t AstResult.t
 
-  val get_callable_signature_opt
-    :  t ->
-    Ast.Reference.t ->
-    Analysis.PysaTypes.CallableSignature.t option
+  val get_callable_signature_opt : t -> Ast.Reference.t -> PyreflyTypes.CallableSignature.t option
 
   val get_undecorated_signatures
     :  t ->
     Ast.Reference.t ->
-    Analysis.PysaTypes.ModelQueries.FunctionSignature.t list
+    PyreflyTypes.ModelQueries.FunctionSignature.t list
 
-  val get_model_parser_function_info
-    :  t ->
-    Ast.Reference.t ->
-    Analysis.PysaTypes.ModelQueries.Function.t
+  val get_model_parser_function_info : t -> Ast.Reference.t -> PyreflyTypes.ModelQueries.Function.t
 
   val get_class_summary : t -> string -> PysaClassSummary.t
 
@@ -249,7 +250,11 @@ module ReadOnly : sig
     string ->
     string list option
 
-  val get_class_attribute_inferred_type : t -> class_name:string -> attribute:string -> PysaType.t
+  val get_class_attribute_inferred_type
+    :  t ->
+    class_name:string ->
+    attribute:string ->
+    PyreflyType.t
 
   val get_class_attribute_explicit_annotation
     :  t ->
@@ -257,7 +262,11 @@ module ReadOnly : sig
     attribute:string ->
     string option
 
-  val get_global_inferred_type : t -> qualifier:Ast.Reference.t -> name:string -> PysaType.t option
+  val get_global_inferred_type
+    :  t ->
+    qualifier:Ast.Reference.t ->
+    name:string ->
+    PyreflyType.t option
 
   val target_from_define_name : t -> override:bool -> Ast.Reference.t -> Target.t
 
@@ -285,14 +294,14 @@ module ReadOnly : sig
     :  t ->
     define_name:Ast.Reference.t ->
     location:Ast.Location.t ->
-    PysaType.t option
+    PyreflyType.t option
 
   module Type : sig
-    val scalar_properties : t -> PysaType.t -> Analysis.PysaTypes.ScalarTypeProperties.t
+    val scalar_properties : t -> PyreflyType.t -> PyreflyTypes.ScalarTypeProperties.t
 
-    val get_class_names : t -> PysaType.t -> Analysis.PysaTypes.ClassNamesFromType.t
+    val get_class_names : t -> PyreflyType.t -> PyreflyTypes.ClassNamesFromType.t
 
-    val is_dictionary_or_mapping : t -> PysaType.t -> bool
+    val is_dictionary_or_mapping : t -> PyreflyType.t -> bool
   end
 
   module ClassSummary : sig
@@ -319,7 +328,7 @@ module ReadOnly : sig
     Ast.Reference.t ->
     string option
 
-  val target_from_method_reference : Analysis.PysaTypes.MethodReference.t -> Target.t
+  val target_from_method_reference : Target.MethodReference.t -> Target.t
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
@@ -347,13 +356,13 @@ val strip_path_prefix : string -> string
 val strip_target_path_prefix : Target.t -> Target.t
 
 module ModelQueries : sig
-  module Function = Analysis.PysaTypes.ModelQueries.Function
-  module Global = Analysis.PysaTypes.ModelQueries.Global
-  module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
-  module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
-  module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
-  module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
-  module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+  module Function = PyreflyTypes.ModelQueries.Function
+  module Global = PyreflyTypes.ModelQueries.Global
+  module ModuleResolutionResult = PyreflyTypes.ModelQueries.ModuleResolutionResult
+  module ResolutionResult = PyreflyTypes.ModelQueries.ResolutionResult
+  module FunctionParameter = PyreflyTypes.ModelQueries.FunctionParameter
+  module FunctionParameters = PyreflyTypes.ModelQueries.FunctionParameters
+  module FunctionSignature = PyreflyTypes.ModelQueries.FunctionSignature
 
   val property_decorators : String.Set.t
 
@@ -448,7 +457,7 @@ module InContext : sig
     Analysis.TaintAccessPath.Root.t
 
   (* Compute the type of the given expression. *)
-  val type_of_expression : t -> Ast.Expression.t -> Analysis.PysaTypes.PysaType.t
+  val type_of_expression : t -> Ast.Expression.t -> PyreflyType.t
 end
 
 (* Exposed for testing purposes *)
@@ -525,9 +534,6 @@ module LocalFunctionId : sig
 
   module Map : Map.S with type Key.t = t
 end
-
-(* Exposed for testing purposes *)
-module PyreflyType = Analysis.PysaTypes.PyreflyType
 
 (* Exposed for testing purposes *)
 module ClassFieldDeclarationKind : sig
@@ -693,7 +699,7 @@ module Testing : sig
       absolute_source_path: ArtifactPath.t option;
       relative_source_path: string option;
       pyrefly_info_filename: ModuleInfoFilename.t option;
-      sys_info: Analysis.PysaTypes.SysInfo.t;
+      sys_info: SysInfo.t;
       is_test: bool;
       is_stub: bool;
       is_internal: bool;

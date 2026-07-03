@@ -70,7 +70,7 @@ let test_module_qualifiers _ =
         pyrefly_info_filename = None;
         sys_info =
           {
-            Analysis.PysaTypes.SysInfo.python_version =
+            PyreflyApi.SysInfo.python_version =
               { Configuration.PythonVersion.major = 3; minor = 12; micro = 0 };
             platform = Some "linux";
           };
@@ -832,7 +832,7 @@ let test_strip_path_prefix _ =
 module PyrePysaApi = struct
   open Pyre
   open Analysis
-  module PysaType = PyreflyApi.PysaType
+  module PyreflyType = PyreflyApi.PyreflyType
   module ScalarTypeProperties = PyreflyApi.ScalarTypeProperties
   module Function = PyreflyApi.ModelQueries.Function
   module Global = PyreflyApi.ModelQueries.Global
@@ -840,56 +840,49 @@ module PyrePysaApi = struct
   (* Build the Pyrefly type representation for the small set of types used in this file. *)
   let pyrefly_type = function
     | Type.NoneType ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "None";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = None;
-          }
+        {
+          PyreflyType.string = "None";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = None;
+        }
     | Type.Any ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "Any";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = None;
-          }
+        {
+          PyreflyType.string = "Any";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = None;
+        }
     | Type.Primitive "int" ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "int";
-            scalar_properties = ScalarTypeProperties.integer;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 5));
-          }
+        {
+          PyreflyType.string = "int";
+          scalar_properties = ScalarTypeProperties.integer;
+          class_names = Some (PyreflyType.ClassNamesFromType.from_class (116, 5));
+        }
     | Type.Primitive "str" ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "str";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (116, 10));
-          }
+        {
+          PyreflyType.string = "str";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = Some (PyreflyType.ClassNamesFromType.from_class (116, 10));
+        }
     | Type.Primitive "test.Foo" ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "test.Foo";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 0));
-          }
+        {
+          PyreflyType.string = "test.Foo";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = Some (PyreflyType.ClassNamesFromType.from_class (1000, 0));
+        }
     | Type.Primitive "test.Bar" ->
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = "test.Bar";
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = Some (PysaTypes.PyreflyType.ClassNamesFromType.from_class (1000, 1));
-          }
+        {
+          PyreflyType.string = "test.Bar";
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = Some (PyreflyType.ClassNamesFromType.from_class (1000, 1));
+        }
     | annotation ->
         (* Fallback used only for expectations that are discarded under Pyrefly (e.g. cases with
            `~pyrefly_expect:None`). *)
-        PysaType.from_pyrefly_type
-          {
-            PysaTypes.PyreflyType.string = Format.asprintf "%a" Type.pp annotation;
-            scalar_properties = ScalarTypeProperties.none;
-            class_names = None;
-          }
+        {
+          PyreflyType.string = Format.asprintf "%a" Type.pp annotation;
+          scalar_properties = ScalarTypeProperties.none;
+          class_names = None;
+        }
 
 
   (* Pyrefly does not have the concept of imported names. *)
@@ -934,13 +927,13 @@ module PyrePysaApi = struct
       assert_equal ~printer expected_list actual
     in
     let create_parameter ?(annotation = Type.Any) ?(position = 0) name =
-      PysaTypes.ModelQueries.FunctionParameter.Named
+      PyreflyApi.ModelQueries.FunctionParameter.Named
         { name; position; annotation = pyrefly_type annotation; has_default = false }
     in
     let create_signature ?(return_annotation = Type.NoneType) parameters =
       {
-        PysaTypes.ModelQueries.FunctionSignature.parameters =
-          PysaTypes.ModelQueries.FunctionParameters.List parameters;
+        PyreflyApi.ModelQueries.FunctionSignature.parameters =
+          PyreflyApi.ModelQueries.FunctionParameters.List parameters;
         return_annotation = pyrefly_type return_annotation;
       }
     in

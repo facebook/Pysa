@@ -444,7 +444,7 @@ module SharedMemory = struct
            let signature =
              {
                CallablesSharedMemory.CallableSignature.qualifier =
-                 Analysis.PysaTypes.artificial_decorator_define_module;
+                 PyreflyTypes.artificial_decorator_define_module;
                define_name = Target.define_name_exn callable;
                location = AstResult.Some Location.any;
                parameters = AstResult.Some [];

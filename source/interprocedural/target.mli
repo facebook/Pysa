@@ -269,4 +269,12 @@ module HashsetSharedMemory : sig
   val read_only : t -> ReadOnly.t
 end
 
-module MethodKind = Analysis.PysaTypes.MethodKind
+module MethodReference : sig
+  type t = {
+    define_name: Reference.t;
+    is_property_setter: bool;
+  }
+  [@@deriving show]
+
+  val class_name : t -> Reference.t
+end

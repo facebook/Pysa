@@ -2545,7 +2545,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           Location.WithModule.pp
           location
           (Transform.sanitize_expression expression |> Expression.show)
-          PyreflyApi.PysaType.pp_concise
+          PyreflyApi.PyreflyType.pp_concise
           revealed_type;
         ForwardState.Tree.bottom, state
     | _ ->

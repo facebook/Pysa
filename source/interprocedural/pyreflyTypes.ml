@@ -5,42 +5,13 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* PysaTypes contains type definitions used by the Pyrefly Pysa backend. *)
+(* PyreflyTypes contains type definitions used by the Pyrefly Pysa backend. *)
 
 open Core
 
 (* Fake module containing all implicit "decorated" targets, which are functions that inline
    decorators. *)
 let artificial_decorator_define_module = Ast.Reference.create "artificial_decorator_defines"
-
-module SysInfo = struct
-  type t = {
-    python_version: Configuration.PythonVersion.t;
-    platform: string option;
-  }
-  [@@deriving compare, equal, sexp, hash]
-
-  let pp
-      formatter
-      { python_version = { Configuration.PythonVersion.major; minor; micro }; platform }
-    =
-    Format.fprintf
-      formatter
-      "{ python_version = %d.%d.%d; platform = %s }"
-      major
-      minor
-      micro
-      (Option.value platform ~default:"<none>")
-
-
-  let show = Format.asprintf "%a" pp
-
-  module Set = Stdlib.Set.Make (struct
-    type nonrec t = t
-
-    let compare = compare
-  end)
-end
 
 (* Scalar properties of a type (it is a bool/int/float/etc.) *)
 module ScalarTypeProperties = struct
@@ -202,40 +173,29 @@ module PyreflyType = struct
 
   let top =
     { string = "unknown"; scalar_properties = ScalarTypeProperties.none; class_names = None }
-end
-
-(* Minimal abstraction for a type, provided from Pyrefly and used by Pysa. See `ReadOnly.Type` for
-   more functions. *)
-module PysaType = struct
-  (* TODO(T225700656): We currently expose the representation for Pyrefly here instead of exposing
-     it in Interprocedural.Pyrefly, because the current module defines other types that depend on
-     `PysaType`, such as `FunctionDefinition.t`. The alternative would require to copy/paste all
-     these type definitions, which is not ideal. *)
-  type t = Pyrefly of PyreflyType.t [@@deriving equal, compare, show]
-
-  let from_pyrefly_type type_ = Pyrefly type_
-
-  let as_pyrefly_type = function
-    | Pyrefly type_ -> Some type_
 
 
   (* Pretty print the type, usually meant for the user *)
-  let pp_concise formatter = function
-    | Pyrefly { PyreflyType.string; _ } ->
-        (* Technically, this is the fully qualified representation, but we use it as the concise
-           representation for now. *)
-        Format.fprintf formatter "%s" string
+  let pp_concise formatter { string; _ } =
+    (* Technically, this is the fully qualified representation, but we use it as the concise
+       representation for now. *)
+    Format.fprintf formatter "%s" string
 
 
-  let show_fully_qualified = function
-    | Pyrefly { PyreflyType.string; _ } -> string
+  let show_fully_qualified { string; _ } = string
 
-
-  let weaken_literals = function
-    | Pyrefly type_ -> Pyrefly type_ (* pyrefly already weakens literals before exporting types *)
+  let weaken_literals type_ = type_ (* pyrefly already weakens literals before exporting types *)
 end
 
-module PyreClassSummary = ClassSummary
+(** Whether a method is an instance method, or a class method, or a static method. *)
+module MethodKind = struct
+  type t =
+    | Static
+    | Class
+    | Instance
+end
+
+module PyreClassSummary = Analysis.ClassSummary
 
 module AstResult = struct
   type 'a t =
@@ -282,14 +242,6 @@ module AstResult = struct
     | Pyre1NotFound -> Pyre1NotFound
 end
 
-(** Whether a method is an instance method, or a class method, or a static method. *)
-module MethodKind = struct
-  type t =
-    | Static
-    | Class
-    | Instance
-end
-
 module CallableSignature = struct
   type t = {
     qualifier: Ast.Reference.t;
@@ -298,23 +250,10 @@ module CallableSignature = struct
     parameters: Ast.Expression.Parameter.t list AstResult.t;
     return_annotation: Ast.Expression.t option AstResult.t;
     decorators: Ast.Expression.t list AstResult.t;
-    captures: TaintAccessPath.CapturedVariable.t list;
+    captures: Analysis.TaintAccessPath.CapturedVariable.t list;
     method_kind: MethodKind.t option;
     is_stub_like: bool;
   }
-end
-
-module MethodReference = struct
-  type t =
-    | Pyrefly of {
-        define_name: Ast.Reference.t;
-        is_property_setter: bool;
-      }
-  [@@deriving show]
-
-  let class_name = function
-    | Pyrefly { define_name; _ } ->
-        define_name |> Ast.Reference.prefix |> Option.value_exn ~message:"Expect a method name"
 end
 
 module ModelQueries = struct
@@ -323,18 +262,18 @@ module ModelQueries = struct
       | PositionalOnly of {
           name: string option;
           position: int;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           has_default: bool;
         }
       | Named of {
           name: string;
           position: int;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           has_default: bool;
         }
       | KeywordOnly of {
           name: string;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           has_default: bool;
         }
       | Variable of {
@@ -343,7 +282,7 @@ module ModelQueries = struct
         }
       | Keywords of {
           name: string option;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           excluded: string list;
         }
     [@@deriving equal, compare, show]
@@ -355,13 +294,15 @@ module ModelQueries = struct
             | Some name -> name
             | None -> Format.sprintf "__arg%d" position
           in
-          TaintAccessPath.Root.PositionalParameter { position; name; positional_only = true }
+          Analysis.TaintAccessPath.Root.PositionalParameter
+            { position; name; positional_only = true }
       | Named { name; position; _ } ->
-          TaintAccessPath.Root.PositionalParameter { position; name; positional_only = false }
-      | KeywordOnly { name; _ } -> TaintAccessPath.Root.NamedParameter { name }
-      | Variable { position; _ } -> TaintAccessPath.Root.StarParameter { position }
+          Analysis.TaintAccessPath.Root.PositionalParameter
+            { position; name; positional_only = false }
+      | KeywordOnly { name; _ } -> Analysis.TaintAccessPath.Root.NamedParameter { name }
+      | Variable { position; _ } -> Analysis.TaintAccessPath.Root.StarParameter { position }
       | Keywords { excluded; _ } ->
-          TaintAccessPath.Root.StarStarParameter
+          Analysis.TaintAccessPath.Root.StarStarParameter
             { excluded = Ast.Identifier.SerializableSet.of_list excluded }
 
 
@@ -400,7 +341,7 @@ module ModelQueries = struct
   module FunctionSignature = struct
     type t = {
       parameters: FunctionParameters.t;
-      return_annotation: PysaType.t;
+      return_annotation: PyreflyType.t;
     }
     [@@deriving equal, compare, show]
   end

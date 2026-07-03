@@ -137,7 +137,7 @@ let set_up_environment
       ~all_sys_infos:
         [
           {
-            Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
+            PyreflyApi.SysInfo.python_version = Configuration.PythonVersion.create ();
             platform = Some "linux";
           };
         ]
@@ -267,7 +267,7 @@ let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~e
       ~all_sys_infos:
         [
           {
-            Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
+            PyreflyApi.SysInfo.python_version = Configuration.PythonVersion.create ();
             platform = Some "linux";
           };
         ]

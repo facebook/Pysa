@@ -462,7 +462,7 @@ let get_initial_models ~pyrefly_api =
       ~all_sys_infos:
         [
           {
-            Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
+            PyreflyApi.SysInfo.python_version = Configuration.PythonVersion.create ();
             platform = Some "linux";
           };
         ]
@@ -655,7 +655,7 @@ let initialize
             ~all_sys_infos:
               [
                 {
-                  Analysis.PysaTypes.SysInfo.python_version = Configuration.PythonVersion.create ();
+                  PyreflyApi.SysInfo.python_version = Configuration.PythonVersion.create ();
                   platform = Some "linux";
                 };
               ]

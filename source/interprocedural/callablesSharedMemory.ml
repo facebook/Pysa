@@ -15,7 +15,7 @@ let class_method_decorators = ["classmethod"; "abstractclassmethod"; "abc.abstra
 
 let static_method_decorators = ["staticmethod"; "abstractstaticmethod"; "abc.abstractstaticmethod"]
 
-module CallableSignature = Analysis.PysaTypes.CallableSignature
+module CallableSignature = PyreflyTypes.CallableSignature
 
 let get_signature_and_definition ~pyrefly_api callable =
   let define_name = Target.define_name_exn callable in

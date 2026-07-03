@@ -12,17 +12,45 @@ open Core
 open Pyre
 open Data_structures
 open Ast
-module PysaType = Analysis.PysaTypes.PysaType
-module AstResult = Analysis.PysaTypes.AstResult
-module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
-module TypeModifier = Analysis.PysaTypes.TypeModifier
-module ClassWithModifiers = Analysis.PysaTypes.ClassWithModifiers
-module ClassNamesFromType = Analysis.PysaTypes.ClassNamesFromType
-module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
-module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
-module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+module AstResult = PyreflyTypes.AstResult
+module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
+module TypeModifier = PyreflyTypes.TypeModifier
+module ClassWithModifiers = PyreflyTypes.ClassWithModifiers
+module ClassNamesFromType = PyreflyTypes.ClassNamesFromType
+module FunctionParameter = PyreflyTypes.ModelQueries.FunctionParameter
+module FunctionParameters = PyreflyTypes.ModelQueries.FunctionParameters
+module FunctionSignature = PyreflyTypes.ModelQueries.FunctionSignature
+module MethodReference = Target.MethodReference
 module AccessPath = Analysis.TaintAccessPath
-module SysInfo = Analysis.PysaTypes.SysInfo
+
+module SysInfo = struct
+  type t = {
+    python_version: Configuration.PythonVersion.t;
+    platform: string option;
+  }
+  [@@deriving compare, equal, sexp, hash]
+
+  let pp
+      formatter
+      { python_version = { Configuration.PythonVersion.major; minor; micro }; platform }
+    =
+    Format.fprintf
+      formatter
+      "{ python_version = %d.%d.%d; platform = %s }"
+      major
+      minor
+      micro
+      (Option.value platform ~default:"<none>")
+
+
+  let show = Format.asprintf "%a" pp
+
+  module Set = Stdlib.Set.Make (struct
+    type nonrec t = t
+
+    let compare = compare
+  end)
+end
 
 (* Types re-exported from PyreflyReport *)
 module FormatError = PyreflyReport.FormatError
@@ -115,7 +143,7 @@ module TypeOfExpressionsSharedMemory = struct
     Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
       (GlobalCallableIdSharedMemoryKey)
       (struct
-        type t = PysaType.t Location.SerializableMap.t
+        type t = PyreflyType.t Location.SerializableMap.t
 
         let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -260,7 +288,7 @@ module CallableMetadata = struct
   [@@deriving show]
 
   let get_method_kind { is_staticmethod; is_classmethod; parent_is_class; _ } =
-    let open Analysis.PysaTypes in
+    let open PyreflyTypes in
     if is_staticmethod then
       Some MethodKind.Static
     else if is_classmethod then
@@ -388,7 +416,7 @@ module ModuleClassesSharedMemory =
 
 module GlobalVariable = struct
   type t = {
-    type_: PysaType.t option;
+    type_: PyreflyType.t option;
     location: Location.t;
   }
   [@@deriving equal, compare, show]
@@ -470,7 +498,7 @@ end
 
 module ClassField = struct
   type t = {
-    type_: PysaType.t;
+    type_: PyreflyType.t;
     explicit_annotation: string option;
     location: Location.t option;
     declaration_kind: ClassFieldDeclarationKind.t option;
@@ -1957,13 +1985,7 @@ module ReadWrite = struct
                      in
                      name
                      >>| fun name ->
-                     ( name,
-                       {
-                         ClassField.type_ = PysaType.from_pyrefly_type type_;
-                         explicit_annotation;
-                         location;
-                         declaration_kind;
-                       } ))
+                     name, { ClassField.type_; explicit_annotation; location; declaration_kind })
               |> SerializableStringMap.of_alist_exn
             in
             ClassFieldsSharedMemory.write_around class_fields_shared_memory qualified_name fields;
@@ -1979,7 +2001,7 @@ module ReadWrite = struct
       let global_variables =
         global_variables
         |> List.map ~f:(fun { ModuleDefinitionsFile.PyreflyGlobalVariable.name; type_; location } ->
-               name, { GlobalVariable.type_ = type_ >>| PysaType.from_pyrefly_type; location })
+               name, { GlobalVariable.type_; location })
         |> SerializableStringMap.of_alist_exn
       in
       ModuleGlobalsSharedMemory.write_around
@@ -1994,42 +2016,22 @@ module ReadWrite = struct
               | Some name -> name :: excluded
               | None -> excluded),
               FunctionParameter.PositionalOnly
-                {
-                  name;
-                  position;
-                  annotation = PysaType.from_pyrefly_type annotation;
-                  has_default = not required;
-                }
+                { name; position; annotation; has_default = not required }
               :: sofar )
         | Pos { name; annotation; required } ->
             ( position + 1,
               name :: excluded,
-              FunctionParameter.Named
-                {
-                  name;
-                  position;
-                  annotation = PysaType.from_pyrefly_type annotation;
-                  has_default = not required;
-                }
+              FunctionParameter.Named { name; position; annotation; has_default = not required }
               :: sofar )
         | VarArg { name; annotation = _ } ->
             position + 1, excluded, FunctionParameter.Variable { name; position } :: sofar
         | KwOnly { name; annotation; required } ->
             ( position + 1,
               name :: excluded,
-              FunctionParameter.KeywordOnly
-                {
-                  name;
-                  annotation = PysaType.from_pyrefly_type annotation;
-                  has_default = not required;
-                }
+              FunctionParameter.KeywordOnly { name; annotation; has_default = not required }
               :: sofar )
         | Kwargs { name; annotation } ->
-            ( position + 1,
-              [],
-              FunctionParameter.Keywords
-                { name; annotation = PysaType.from_pyrefly_type annotation; excluded }
-              :: sofar )
+            position + 1, [], FunctionParameter.Keywords { name; annotation; excluded } :: sofar
       in
       let convert_function_signature
           { ModuleDefinitionsFile.FunctionSignature.parameters; return_annotation }
@@ -2046,21 +2048,17 @@ module ReadWrite = struct
           | ModuleDefinitionsFile.FunctionParameters.Ellipsis -> FunctionParameters.Ellipsis
           | ModuleDefinitionsFile.FunctionParameters.ParamSpec -> FunctionParameters.ParamSpec
         in
-        {
-          FunctionSignature.parameters;
-          return_annotation = PysaType.from_pyrefly_type return_annotation;
-        }
+        { FunctionSignature.parameters; return_annotation }
       in
       let toplevel_undecorated_signature =
         {
           FunctionSignature.parameters = FunctionParameters.List [];
           return_annotation =
-            PysaType.from_pyrefly_type
-              {
-                PyreflyType.string = "None";
-                scalar_properties = Analysis.PysaTypes.ScalarTypeProperties.none;
-                class_names = None;
-              };
+            {
+              PyreflyType.string = "None";
+              scalar_properties = ScalarTypeProperties.none;
+              class_names = None;
+            };
         }
       in
       let get_function_name local_function_id =
@@ -2329,8 +2327,7 @@ module ReadWrite = struct
               locations
               ~f:(fun { ModuleTypeOfExpressions.TypeAtLocation.location; type_ = type_id } ->
                 let pyrefly_type = types.(ModuleTypeOfExpressions.LocalTypeId.to_index type_id) in
-                let pysa_type = PysaType.from_pyrefly_type pyrefly_type in
-                location, pysa_type)
+                location, pyrefly_type)
             |> Location.SerializableMap.of_alist_exn
           in
           TypeOfExpressionsSharedMemory.write_around
@@ -2579,7 +2576,7 @@ module ReadOnly = struct
   let all_sys_infos { all_sys_infos; _ } = all_sys_infos
 
   let artifact_path_of_qualifier { module_infos_shared_memory; _ } qualifier =
-    if Reference.equal qualifier Analysis.PysaTypes.artificial_decorator_define_module then
+    if Reference.equal qualifier PyreflyTypes.artificial_decorator_define_module then
       None
     else
       ModuleInfosSharedMemory.get
@@ -2900,21 +2897,21 @@ module ReadOnly = struct
 
   let get_overriden_base_method
       { callable_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ }
-      method_reference
+      { MethodReference.define_name; is_property_setter }
     =
-    match method_reference with
-    | Analysis.PysaTypes.MethodReference.Pyrefly { define_name; is_property_setter } ->
-        CallableMetadataSharedMemory.get
-          callable_metadata_shared_memory
-          (FullyQualifiedName.from_reference_unchecked define_name)
-        |> assert_shared_memory_key_exists (fun () ->
-               Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
-        |> fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
-        overridden_base_method
-        >>| CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory
-        >>| fun define_name ->
-        Analysis.PysaTypes.MethodReference.Pyrefly
-          { define_name = FullyQualifiedName.to_reference define_name; is_property_setter }
+    CallableMetadataSharedMemory.get
+      callable_metadata_shared_memory
+      (FullyQualifiedName.from_reference_unchecked define_name)
+    |> assert_shared_memory_key_exists (fun () ->
+           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+    |> fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
+    overridden_base_method
+    >>| CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory
+    >>| fun define_name ->
+    {
+      MethodReference.define_name = FullyQualifiedName.to_reference define_name;
+      is_property_setter;
+    }
 
 
   let get_callable_captures_opt
@@ -3045,8 +3042,10 @@ module ReadOnly = struct
         |> assert_shared_memory_key_exists (fun () ->
                Format.asprintf "missing callable metadata: `%a`" FullyQualifiedName.pp callable)
         |> fun { CallableMetadataSharedMemory.Value.metadata = { is_property_setter; _ }; _ } ->
-        Analysis.PysaTypes.MethodReference.Pyrefly
-          { define_name = FullyQualifiedName.to_reference callable; is_property_setter }
+        {
+          MethodReference.define_name = FullyQualifiedName.to_reference callable;
+          is_property_setter;
+        }
       in
       ModuleCallablesSharedMemory.get
         module_callables_shared_memory
@@ -3091,7 +3090,7 @@ module ReadOnly = struct
     in
     let define_signature = AstResult.map ~f:Node.value define_signature_result in
     {
-      Analysis.PysaTypes.CallableSignature.qualifier = metadata.CallableMetadata.module_qualifier;
+      PyreflyTypes.CallableSignature.qualifier = metadata.CallableMetadata.module_qualifier;
       location = AstResult.map ~f:Node.location define_signature_result;
       define_name;
       parameters =
@@ -3142,7 +3141,7 @@ module ReadOnly = struct
       | NameLocation.UnknonwnForClassField -> None
     in
     {
-      Analysis.PysaTypes.ModelQueries.Function.define_name;
+      PyreflyTypes.ModelQueries.Function.define_name;
       imported_name = None;
       undecorated_signatures;
       is_property_getter = metadata.is_property_getter;
@@ -3810,22 +3809,14 @@ module ReadOnly = struct
 
 
   module Type = struct
-    let scalar_properties _ pysa_type =
-      match PysaType.as_pyrefly_type pysa_type with
-      | None ->
-          failwith "ReadOnly.Type.type_properties: trying to use a pyre1 type with a pyrefly API."
-      | Some { Analysis.PysaTypes.PyreflyType.scalar_properties; _ } -> scalar_properties
-
+    let scalar_properties _ { PyreflyType.scalar_properties; _ } = scalar_properties
 
     let get_class_names { class_id_to_qualified_name_shared_memory; _ } pysa_type =
-      match PysaType.as_pyrefly_type pysa_type with
-      | None ->
-          failwith "ReadOnly.Type.get_class_names: trying to use a pyre1 type with a pyrefly API."
-      | Some { Analysis.PysaTypes.PyreflyType.class_names = None; _ } ->
-          Analysis.PysaTypes.ClassNamesFromType.not_a_class
-      | Some { Analysis.PysaTypes.PyreflyType.class_names = Some { classes; is_exhaustive }; _ } ->
+      match pysa_type with
+      | { PyreflyType.class_names = None; _ } -> ClassNamesFromType.not_a_class
+      | { PyreflyType.class_names = Some { classes; is_exhaustive }; _ } ->
           let get_class_with_modifiers
-              { Analysis.PysaTypes.PyreflyType.ClassWithModifiers.module_id; class_id; modifiers }
+              { PyreflyType.ClassWithModifiers.module_id; class_id; modifiers }
             =
             let class_name =
               ClassIdToQualifiedNameSharedMemory.get
@@ -3838,40 +3829,28 @@ module ReadOnly = struct
               |> FullyQualifiedName.to_reference
               |> Reference.show
             in
-            { Analysis.PysaTypes.ClassWithModifiers.class_name; modifiers }
+            { ClassWithModifiers.class_name; modifiers }
           in
           {
-            Analysis.PysaTypes.ClassNamesFromType.classes =
-              List.map ~f:get_class_with_modifiers classes;
+            ClassNamesFromType.classes = List.map ~f:get_class_with_modifiers classes;
             is_exhaustive;
           }
 
 
     let is_dictionary_or_mapping { dict_classes; typing_mapping_classes; _ } pysa_type =
-      match PysaType.as_pyrefly_type pysa_type with
-      | None ->
-          failwith
-            "ReadOnly.Type.is_dictionary_or_mapping: trying to use a pyre1 type with a pyrefly API."
-      | Some { Analysis.PysaTypes.PyreflyType.class_names = None; _ } -> false
-      | Some { Analysis.PysaTypes.PyreflyType.class_names = Some { classes; _ }; _ } ->
+      match pysa_type with
+      | { PyreflyType.class_names = None; _ } -> false
+      | { PyreflyType.class_names = Some { classes; _ }; _ } ->
           List.exists
             classes
-            ~f:(fun
-                 {
-                   Analysis.PysaTypes.PyreflyType.ClassWithModifiers.module_id;
-                   class_id;
-                   modifiers;
-                 }
-               ->
+            ~f:(fun { PyreflyType.ClassWithModifiers.module_id; class_id; modifiers } ->
               let global_class_id =
                 {
                   GlobalClassId.module_id = ModuleId.from_int module_id;
                   local_class_id = LocalClassId.from_int class_id;
                 }
               in
-              List.for_all
-                modifiers
-                ~f:(Analysis.PysaTypes.TypeModifier.equal Analysis.PysaTypes.TypeModifier.Optional)
+              List.for_all modifiers ~f:(TypeModifier.equal TypeModifier.Optional)
               && (List.exists dict_classes ~f:(fun { TypeshedClass.global_class_id = id; _ } ->
                       GlobalClassId.equal global_class_id id)
                  || List.exists
@@ -3993,9 +3972,7 @@ module ReadOnly = struct
     | None -> path
 
 
-  let target_from_method_reference
-      (Analysis.PysaTypes.MethodReference.Pyrefly { define_name; is_property_setter })
-    =
+  let target_from_method_reference { MethodReference.define_name; is_property_setter } =
     let kind = if is_property_setter then Target.PropertySetter else Target.Normal in
     Target.create_method_from_reference ~kind define_name
 
@@ -4199,23 +4176,23 @@ let rec strip_target_path_prefix target =
 
 
 module ModelQueries = struct
-  module Function = Analysis.PysaTypes.ModelQueries.Function
-  module Global = Analysis.PysaTypes.ModelQueries.Global
-  module ModuleResolutionResult = Analysis.PysaTypes.ModelQueries.ModuleResolutionResult
-  module ResolutionResult = Analysis.PysaTypes.ModelQueries.ResolutionResult
-  module FunctionParameter = Analysis.PysaTypes.ModelQueries.FunctionParameter
-  module FunctionParameters = Analysis.PysaTypes.ModelQueries.FunctionParameters
-  module FunctionSignature = Analysis.PysaTypes.ModelQueries.FunctionSignature
+  module Function = PyreflyTypes.ModelQueries.Function
+  module Global = PyreflyTypes.ModelQueries.Global
+  module ModuleResolutionResult = PyreflyTypes.ModelQueries.ModuleResolutionResult
+  module ResolutionResult = PyreflyTypes.ModelQueries.ResolutionResult
+  module FunctionParameter = PyreflyTypes.ModelQueries.FunctionParameter
+  module FunctionParameters = PyreflyTypes.ModelQueries.FunctionParameters
+  module FunctionSignature = PyreflyTypes.ModelQueries.FunctionSignature
 
-  let property_decorators = Analysis.PysaTypes.ModelQueries.property_decorators
+  let property_decorators = PyreflyTypes.ModelQueries.property_decorators
 
-  let mangle_top_level_name = Analysis.PysaTypes.ModelQueries.mangle_top_level_name
+  let mangle_top_level_name = PyreflyTypes.ModelQueries.mangle_top_level_name
 
-  let demangle_class_attribute = Analysis.PysaTypes.ModelQueries.demangle_class_attribute
+  let demangle_class_attribute = PyreflyTypes.ModelQueries.demangle_class_attribute
 
-  let has_class_attribute_form = Analysis.PysaTypes.ModelQueries.has_class_attribute_form
+  let has_class_attribute_form = PyreflyTypes.ModelQueries.has_class_attribute_form
 
-  let mangle_class_attribute = Analysis.PysaTypes.ModelQueries.mangle_class_attribute
+  let mangle_class_attribute = PyreflyTypes.ModelQueries.mangle_class_attribute
 
   let resolve_user_qualified_name
       {
@@ -4236,8 +4213,8 @@ module ModelQueries = struct
     =
     let name =
       name
-      |> Analysis.PysaTypes.ModelQueries.mangle_top_level_name
-      |> Analysis.PysaTypes.ModelQueries.demangle_class_attribute
+      |> PyreflyTypes.ModelQueries.mangle_top_level_name
+      |> PyreflyTypes.ModelQueries.demangle_class_attribute
       |> add_builtins_prefix
     in
     (* Find the module qualifier(s) for a given name by trying progressively shorter prefixes. For
@@ -4616,14 +4593,14 @@ module InContext = struct
     match Ast.Expression.origin expression with
     | Some _ ->
         (* This is an artificial expression that pyrefly doesn't know about. *)
-        PysaType.from_pyrefly_type Analysis.PysaTypes.PyreflyType.top
+        PyreflyType.top
     | None ->
         let define_name = define_name pyrefly_context in
         ReadOnly.get_type_of_expression
           (pyrefly_api pyrefly_context)
           ~define_name
           ~location:(Ast.Node.location expression)
-        |> Option.value ~default:(PysaType.from_pyrefly_type Analysis.PysaTypes.PyreflyType.top)
+        |> Option.value ~default:PyreflyType.top
 end
 
 (* Exposed for testing purposes *)

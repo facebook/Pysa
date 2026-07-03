@@ -10,8 +10,8 @@
 open Core
 open Pyre
 open Ast
-module ScalarTypeProperties = Analysis.PysaTypes.ScalarTypeProperties
-module PyreflyTypeRep = Analysis.PysaTypes.PyreflyType
+module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
+module PyreflyTypeRep = PyreflyTypes.PyreflyType
 
 module JsonUtil = struct
   let read_json_file_exn path =
@@ -384,7 +384,7 @@ module ClassWithModifiers = struct
     >>| List.map ~f:JsonUtil.as_string
     >>= Result.all
     >>| List.map ~f:(fun modifier ->
-            match Analysis.PysaTypes.TypeModifier.from_string modifier with
+            match PyreflyTypes.TypeModifier.from_string modifier with
             | Some modifier -> Ok modifier
             | None ->
                 Error

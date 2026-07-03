@@ -60,7 +60,7 @@ module Heap = struct
               "Found untracked type `%s` when looking for a parent of `%a`. The method will be \
                considered has having no parent, which could lead to false negatives."
               untracked_type
-              Analysis.PysaTypes.MethodReference.pp
+              Target.MethodReference.pp
               method_reference;
             None
       in
@@ -69,7 +69,7 @@ module Heap = struct
       Some
         {
           base_callable = PyreflyApi.ReadOnly.target_from_method_reference base_callable;
-          overriding_class = Analysis.PysaTypes.MethodReference.class_name method_reference;
+          overriding_class = Target.MethodReference.class_name method_reference;
         }
   end
 

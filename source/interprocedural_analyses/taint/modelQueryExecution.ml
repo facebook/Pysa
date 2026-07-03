@@ -825,8 +825,11 @@ let find_base_methods
     let base_method = Target.create_method ~kind (Reference.create parent_class) method_name in
     match CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map base_method with
     | Some
-        { CallablesSharedMemory.CallableSignature.method_kind = Some Target.MethodKind.Instance; _ }
-      ->
+        {
+          CallablesSharedMemory.CallableSignature.method_kind =
+            Some PyreflyTypes.MethodKind.Instance;
+          _;
+        } ->
         Some base_method
     | _ -> None
   in

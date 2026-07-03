@@ -632,8 +632,16 @@ module SharedMemoryKey = struct
   let from_string sexp_string = Sexp.of_string sexp_string |> t_of_sexp
 end
 
-(** Whether a method is an instance method, or a class method, or a static method. *)
-module MethodKind = Analysis.PysaTypes.MethodKind
+module MethodReference = struct
+  type t = {
+    define_name: Reference.t;
+    is_property_setter: bool;
+  }
+  [@@deriving show]
+
+  let class_name { define_name; _ } =
+    define_name |> Reference.prefix |> Option.value_exn ~message:"Expect a method name"
+end
 
 (* Represent a hashset of targets inside the shared memory *)
 module HashsetSharedMemory = struct

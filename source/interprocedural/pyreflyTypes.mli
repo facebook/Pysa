@@ -5,21 +5,11 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* PysaTypes contains type definitions used by the Pyrefly Pysa backend. *)
+(* PyreflyTypes contains type definitions used by the Pyrefly Pysa backend. *)
 
 (* Fake module containing all implicit "decorated" targets, which are functions that inline
    decorators. *)
 val artificial_decorator_define_module : Ast.Reference.t
-
-module SysInfo : sig
-  type t = {
-    python_version: Configuration.PythonVersion.t;
-    platform: string option;
-  }
-  [@@deriving compare, equal, show, sexp, hash]
-
-  module Set : Stdlib.Set.S with type elt = t
-end
 
 (* Scalar properties of a type (it is a bool/int/float/etc.) *)
 module ScalarTypeProperties : sig
@@ -119,16 +109,6 @@ module PyreflyType : sig
   [@@deriving equal, compare, show]
 
   val top : t
-end
-
-(* Minimal abstraction for a type, provided from Pyrefly and used by Pysa. See `ReadOnly.Type` for
-   more functions. *)
-module PysaType : sig
-  type t = Pyrefly of PyreflyType.t [@@deriving equal, compare, show]
-
-  val from_pyrefly_type : PyreflyType.t -> t
-
-  val as_pyrefly_type : t -> PyreflyType.t option
 
   (* Pretty print the type, usually meant for the user *)
   val pp_concise : Format.formatter -> t -> unit
@@ -138,7 +118,15 @@ module PysaType : sig
   val weaken_literals : t -> t
 end
 
-module PyreClassSummary = ClassSummary
+(** Whether a method is an instance method, or a class method, or a static method. *)
+module MethodKind : sig
+  type t =
+    | Static
+    | Class
+    | Instance
+end
+
+module PyreClassSummary = Analysis.ClassSummary
 
 module AstResult : sig
   type 'a t =
@@ -158,14 +146,6 @@ module AstResult : sig
   val map_node : f:('a -> 'b) -> 'a Ast.Node.t t -> 'b Ast.Node.t t
 end
 
-(** Whether a method is an instance method, or a class method, or a static method. *)
-module MethodKind : sig
-  type t =
-    | Static
-    | Class
-    | Instance
-end
-
 module CallableSignature : sig
   type t = {
     qualifier: Ast.Reference.t;
@@ -174,21 +154,10 @@ module CallableSignature : sig
     parameters: Ast.Expression.Parameter.t list AstResult.t;
     return_annotation: Ast.Expression.t option AstResult.t;
     decorators: Ast.Expression.t list AstResult.t;
-    captures: TaintAccessPath.CapturedVariable.t list;
+    captures: Analysis.TaintAccessPath.CapturedVariable.t list;
     method_kind: MethodKind.t option;
     is_stub_like: bool;
   }
-end
-
-module MethodReference : sig
-  type t =
-    | Pyrefly of {
-        define_name: Ast.Reference.t;
-        is_property_setter: bool;
-      }
-  [@@deriving show]
-
-  val class_name : t -> Ast.Reference.t
 end
 
 module ModelQueries : sig
@@ -197,18 +166,18 @@ module ModelQueries : sig
       | PositionalOnly of {
           name: string option;
           position: int;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           has_default: bool;
         }
       | Named of {
           name: string;
           position: int;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           has_default: bool;
         }
       | KeywordOnly of {
           name: string;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           has_default: bool;
         }
       | Variable of {
@@ -217,14 +186,14 @@ module ModelQueries : sig
         }
       | Keywords of {
           name: string option;
-          annotation: PysaType.t;
+          annotation: PyreflyType.t;
           excluded: string list;
         }
     [@@deriving equal, compare, show]
 
-    val annotation : t -> PysaType.t option
+    val annotation : t -> PyreflyType.t option
 
-    val root : t -> TaintAccessPath.Root.t
+    val root : t -> Analysis.TaintAccessPath.Root.t
 
     val name : t -> string option
 
@@ -242,7 +211,7 @@ module ModelQueries : sig
   module FunctionSignature : sig
     type t = {
       parameters: FunctionParameters.t;
-      return_annotation: PysaType.t;
+      return_annotation: PyreflyType.t;
     }
     [@@deriving equal, compare, show]
   end

@@ -509,8 +509,8 @@ module ViaFeature = struct
     let feature =
       argument
       >>| PyreflyApi.InContext.type_of_expression pyrefly_in_context
-      >>| PyreflyApi.PysaType.weaken_literals
-      >>| PyreflyApi.PysaType.show_fully_qualified
+      >>| PyreflyApi.PyreflyType.weaken_literals
+      >>| PyreflyApi.PyreflyType.show_fully_qualified
       |> Option.value ~default:"unknown"
     in
     Breadcrumb.ViaType { value = feature; tag } |> BreadcrumbInterned.intern
@@ -524,8 +524,8 @@ module ViaFeature = struct
         pyrefly_api
         ~class_name:(Reference.prefix object_target |> Option.value_exn |> Reference.show)
         ~attribute:(Reference.last object_target)
-      |> PyreflyApi.PysaType.weaken_literals
-      |> PyreflyApi.PysaType.show_fully_qualified
+      |> PyreflyApi.PyreflyType.weaken_literals
+      |> PyreflyApi.PyreflyType.show_fully_qualified
     in
     Breadcrumb.ViaType { value = feature; tag } |> BreadcrumbInterned.intern
 
