@@ -156,6 +156,25 @@ end = struct
   let of_string = Int.of_string
 end
 
+(* Unique identifier for a class field within a class, assigned by pyrefly. *)
+module LocalClassFieldId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+end = struct
+  type t = int [@@deriving compare, equal, sexp, hash, show]
+
+  let from_int = Fn.id
+
+  let to_int = Fn.id
+
+  let of_string = Int.of_string
+end
+
 (* Unique identifier for a class, assigned by pyrefly. *)
 module GlobalClassId = struct
   (* TODO(T225700656): Potentially encode this in a single integer to save space. *)
@@ -187,7 +206,7 @@ module LocalFunctionId : sig
     (* Function-like class field that is not a `def` statement. *)
     | ClassField of {
         class_id: LocalClassId.t;
-        name: string;
+        field_id: LocalClassFieldId.t;
       }
     (* Decorated target, which represents an artificial function containing all decorators of a
        function, inlined as an expression. For e.g, `@foo` on `def bar()` -> `return foo(bar)` *)
@@ -209,7 +228,7 @@ end = struct
       | ClassTopLevel of LocalClassId.t
       | ClassField of {
           class_id: LocalClassId.t;
-          name: string;
+          field_id: LocalClassFieldId.t;
         }
       | FunctionDecoratedTarget of FuncDefIndex.t
     [@@deriving compare, equal, show, sexp]
@@ -224,8 +243,13 @@ end = struct
     | Some ("CTL", class_id) -> Ok (ClassTopLevel (LocalClassId.of_string class_id))
     | Some ("CF", class_field) -> (
         match String.lsplit2 class_field ~on:':' with
-        | Some (class_id, name) ->
-            Ok (ClassField { class_id = LocalClassId.of_string class_id; name })
+        | Some (class_id, field_id) ->
+            Ok
+              (ClassField
+                 {
+                   class_id = LocalClassId.of_string class_id;
+                   field_id = LocalClassFieldId.of_string field_id;
+                 })
         | None -> Error (FormatError.UnparsableString string))
     | Some ("FDT", func_def_index) ->
         Ok (FunctionDecoratedTarget (FuncDefIndex.of_string func_def_index))

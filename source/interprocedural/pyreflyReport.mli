@@ -88,6 +88,16 @@ module FuncDefIndex : sig
   val of_string : string -> t
 end
 
+module LocalClassFieldId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+end
+
 module GlobalClassId : sig
   type t = {
     module_id: ModuleId.t;
@@ -109,7 +119,7 @@ module LocalFunctionId : sig
     | ClassTopLevel of LocalClassId.t
     | ClassField of {
         class_id: LocalClassId.t;
-        name: string;
+        field_id: LocalClassFieldId.t;
       }
     | FunctionDecoratedTarget of FuncDefIndex.t
   [@@deriving compare, equal, show, sexp]
