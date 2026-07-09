@@ -90,6 +90,14 @@ div[class^="announcementBarContent"] {
   padding: 8px 30px;
 }
 
+/* The landing page already shows a prominent archived notice, so suppress the
+   global announcement bar there to avoid a redundant warning. `plugin-pages` is
+   the html class Docusaurus applies on pages-plugin routes; index.js is the only
+   such route, so this targets the landing page exclusively. */
+html.plugin-pages div[class^="announcementBar_"] {
+  display: none;
+}
+
 div[class^="announcementBarContent"] a {
   text-decoration: underline;
   display: inline-block;

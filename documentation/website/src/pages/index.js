@@ -92,6 +92,20 @@ function TopBanner() {
   );
 }
 
+function ArchivedNotice() {
+  return (
+    <div className={styles.archivedNoticeContainer}>
+      <div className={styles.archivedNotice}>
+        <strong>Pyre is now archived and no longer actively developed.</strong>{' '}
+        All development work has moved to{' '}
+        <Link to={`https://pyrefly.org/`}>Pyrefly</Link>, the next iteration of
+        Pyre. These docs remain available as a reference for users of the last
+        released version of Pyre (0.9.25).
+      </div>
+    </div>
+  );
+}
+
 function Feature({imageUrl, title, description}) {
   const imgUrl = useBaseUrl(imageUrl);
   return (
@@ -115,6 +129,7 @@ function Home() {
       title={`${siteConfig.title}`}
       description="A performant type-checker for Python 3.">
       <TopBanner />
+      <ArchivedNotice />
       <header className={classnames('hero hero--primary', styles.heroBanner)}>
         <div className="container">
           <img src="img/pyre.svg" alt="Pyre logo." width="100" />

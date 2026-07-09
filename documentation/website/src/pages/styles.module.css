@@ -85,3 +85,24 @@
   text-decoration: underline;
   text-decoration-color: rgb(152 0 255);
 }
+
+.archivedNoticeContainer {
+  background-color: rgb(15, 15, 15);
+  padding: 0 1rem 1.5rem;
+}
+
+.archivedNotice {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  border: 1px solid rgb(253 29 29 / 60%);
+  border-radius: 8px;
+  color: rgb(235, 235, 235);
+  font-size: 1.1rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.archivedNotice a {
+  color: rgb(252 176 69 / 100%);
+}

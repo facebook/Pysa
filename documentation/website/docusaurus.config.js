@@ -78,6 +78,14 @@ module.exports = {
   ],
 
   themeConfig: {
+    announcementBar: {
+      id: 'pyre_archived',
+      content:
+        '⚠️ Pyre is archived and no longer actively developed. All development has moved to <a target="_blank" rel="noopener noreferrer" href="https://pyrefly.org/">Pyrefly</a>. These docs cover the last released version of Pyre (0.9.25).',
+      backgroundColor: 'rgb(15, 15, 15)',
+      textColor: '#ffffff',
+      isCloseable: true,
+    },
     colorMode: {
       defaultMode: 'light',
       disableSwitch: true,
