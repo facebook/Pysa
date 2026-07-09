@@ -3952,7 +3952,7 @@
   "data": {
     "callable": "builtins.dict.__getitem__",
     "filename": "builtins.pyi",
-    "callable_line": 3738,
+    "callable_line": 3744,
     "tito": [
       {
         "port": "formal(self, position=0, positional_only)[*]",
@@ -3980,7 +3980,7 @@
   "data": {
     "callable": "builtins.dict.get",
     "filename": "builtins.pyi",
-    "callable_line": 3703,
+    "callable_line": 3709,
     "tito": [
       {
         "port": "formal(__default, position=2, positional_only)",

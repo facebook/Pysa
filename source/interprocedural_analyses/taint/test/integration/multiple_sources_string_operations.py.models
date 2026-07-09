@@ -1428,7 +1428,7 @@
   "data": {
     "callable": "builtins.str.__format__",
     "filename": "builtins.pyi",
-    "callable_line": 1891,
+    "callable_line": 1897,
     "tito": [
       {
         "port": "formal(self, position=0, positional_only)",
