@@ -47,9 +47,8 @@ const features = [
       <>
         Follows the typing standards introduced in{' '}
         <Link to="https://www.python.org/dev/peps/pep-0484/">PEPs 484</Link>,{' '}
-        <Link to="https://www.python.org/dev/peps/pep-0526/">526</Link>,{' '}
-        <Link to="https://www.python.org/dev/peps/pep-0612/">612</Link>, and is
-        being actively developed and constantly improved.
+        <Link to="https://www.python.org/dev/peps/pep-0526/">526</Link>, and{' '}
+        <Link to="https://www.python.org/dev/peps/pep-0612/">612</Link>.
       </>
     ),
   },
