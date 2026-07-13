@@ -2204,6 +2204,10 @@ let build_whole_program_call_graph
   let find_missing_flows =
     static_analysis_configuration.Configuration.StaticAnalysis.find_missing_flows
   in
+  let is_instance_target =
+    PyreflyApi.ReadOnly.resolve_function_target pyrefly_api (Reference.create "builtins.isinstance")
+    |> Option.value_exn ~message:"unexpected: could not find builtins.isinstance"
+  in
   let transform_redirected_call_graph decorated_target call_graph =
     (* For call graph of decorated targets, add a call graph edge for the decorated function itself,
        in the return expression `decorator1(decorator2(original_function))` *)
@@ -2450,11 +2454,13 @@ let build_whole_program_call_graph
           in
           match shim_callee, shim_target_callee, nested_callees with
           | _, Shims.ShimArgumentMapping.Target.StaticMethod { class_name; method_name }, _ ->
-              (* We just want to call this method, regardless of whether it exists. *)
-              Some
-                (set_shim_target
-                   ~call_targets:[CallTarget.create (Target.create_method class_name method_name)]
-                   call_graph)
+              (* Only add a shim target if the method actually exists on the class. *)
+              PyreflyApi.ReadOnly.resolve_method_target
+                pyrefly_api
+                ~class_name
+                ~method_name
+                ~is_property_setter:false
+              >>| fun target -> set_shim_target ~call_targets:[CallTarget.create target] call_graph
           | ( Expression.Name (Name.Attribute { Name.Attribute.attribute; _ }),
               Shims.ShimArgumentMapping.Target.AppendAttribute
                 {
@@ -2478,8 +2484,13 @@ let build_whole_program_call_graph
                        | Target.Regular (Method { class_name; _ }) ->
                            (* Given call `x.y.original_attribute(...)`, we want to resolve callees
                               on the made-up call `x.new_attribute(...)`. Here we fetch callees on
-                              `x.y` and then replace `y` with `new_attribute`. *)
-                           Some (Target.create_method (Reference.create class_name) attribute)
+                              `x.y` and then replace `y` with `new_attribute`, dropping the target
+                              if no such method exists on the class. *)
+                           PyreflyApi.ReadOnly.resolve_method_target
+                             pyrefly_api
+                             ~class_name:(Reference.create class_name)
+                             ~method_name:attribute
+                             ~is_property_setter:false
                        | _ -> None)
                 |> List.map ~f:(CallTarget.create ~implicit_receiver:true)
               in
@@ -2524,13 +2535,7 @@ let build_whole_program_call_graph
                        (Origin.create ~location Origin.TryHandlerIsInstance))
                   ~callees:
                     (ExpressionCallees.Call
-                       (CallCallees.create
-                          ~call_targets:
-                            [
-                              CallTarget.create
-                                (Target.create_function (Reference.create "builtins.isinstance"));
-                            ]
-                          ()))
+                       (CallCallees.create ~call_targets:[CallTarget.create is_instance_target] ()))
                   call_graph
             | _ -> call_graph
           in

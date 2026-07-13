@@ -176,6 +176,19 @@ module ReadOnly : sig
 
   val get_callable_metadata_opt : t -> Ast.Reference.t -> CallableMetadata.t option
 
+  (* Resolve a `(class, bare method name)` pair to the real method target defined on that class, or
+     `None` if the class has no method with that bare name. `method_name` must be the bare name
+     (without suffixes like `@setter` or `$2`). *)
+  val resolve_method_target
+    :  t ->
+    class_name:Ast.Reference.t ->
+    method_name:string ->
+    is_property_setter:bool ->
+    Target.t option
+
+  (* Resolve a function name to its real function target, or `None` if no such function exists. *)
+  val resolve_function_target : t -> Ast.Reference.t -> Target.t option
+
   val is_stub_like_callable : t -> Ast.Reference.t -> bool
 
   val is_stub_like_callable_opt : t -> Ast.Reference.t -> bool option

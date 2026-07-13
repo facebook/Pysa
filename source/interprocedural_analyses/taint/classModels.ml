@@ -185,18 +185,27 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
     let attributes =
       PyreflyApi.ReadOnly.ClassSummary.dataclass_ordered_attributes pyrefly_api class_summary
     in
-    [
-      ( Target.create_method (Reference.create class_name) "__init__",
-        {
-          Model.empty_model with
-          backward =
+    match
+      PyreflyApi.ReadOnly.resolve_method_target
+        pyrefly_api
+        ~class_name:(Reference.create class_name)
+        ~method_name:"__init__"
+        ~is_property_setter:false
+    with
+    | None -> []
+    | Some target ->
+        [
+          ( target,
             {
-              Model.Backward.taint_in_taint_out =
-                taint_in_taint_out_for_positional_parameters ~class_name attributes;
-              sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
-            };
-        } );
-    ]
+              Model.empty_model with
+              backward =
+                {
+                  Model.Backward.taint_in_taint_out =
+                    taint_in_taint_out_for_positional_parameters ~class_name attributes;
+                  sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
+                };
+            } );
+        ]
   in
   (* We always generate a special `_fields` attribute for NamedTuples which is a tuple containing
      field names. *)
@@ -205,29 +214,44 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       PyreflyApi.ReadOnly.named_tuple_attributes pyrefly_api class_name |> Option.value ~default:[]
     in
     let prepend_init_model models =
-      let init_model =
-        ( Target.create_method (Reference.create class_name) "__init__",
-          {
-            Model.empty_model with
-            backward =
+      match
+        PyreflyApi.ReadOnly.resolve_method_target
+          pyrefly_api
+          ~class_name:(Reference.create class_name)
+          ~method_name:"__init__"
+          ~is_property_setter:false
+      with
+      | None -> models
+      | Some target ->
+          let init_model =
+            ( target,
               {
-                Model.Backward.taint_in_taint_out =
-                  taint_in_taint_out_for_positional_parameters ~class_name attributes;
-                sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
-              };
-          } )
-      in
-      init_model :: models
+                Model.empty_model with
+                backward =
+                  {
+                    Model.Backward.taint_in_taint_out =
+                      taint_in_taint_out_for_positional_parameters ~class_name attributes;
+                    sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
+                  };
+              } )
+          in
+          init_model :: models
     in
     (* If a user-specified __new__ exist, don't override it. *)
-    (* TODO(T225700656): This is not doing the right check when using pyrefly, since
-       `get_class_attributes` doesn't return functions. *)
     (if PyreflyApi.ReadOnly.ClassSummary.has_custom_new pyrefly_api class_summary then
        []
     else
       (* Should not omit this model. Otherwise the mode is "obscure", thus leading to a tito model,
          which joins the taint on every element of the tuple. *)
-      [Target.create_method (Reference.create class_name) "__new__", Model.empty_model])
+      match
+        PyreflyApi.ReadOnly.resolve_method_target
+          pyrefly_api
+          ~class_name:(Reference.create class_name)
+          ~method_name:"__new__"
+          ~is_property_setter:false
+      with
+      | Some target -> [target, Model.empty_model]
+      | None -> [])
     |> prepend_init_model
   in
   let compute_typed_dict_models class_name class_summary =
@@ -280,10 +304,20 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
         ~init:BackwardState.empty
         ~f:(add_sink_from_attribute_model ~class_name ~positional:false)
     in
-    [
-      ( Target.create_method (Reference.create class_name) "__init__",
-        { Model.empty_model with backward = { Model.Backward.taint_in_taint_out; sink_taint } } );
-    ]
+    match
+      PyreflyApi.ReadOnly.resolve_method_target
+        pyrefly_api
+        ~class_name:(Reference.create class_name)
+        ~method_name:"__init__"
+        ~is_property_setter:false
+    with
+    | None -> []
+    | Some target ->
+        [
+          ( target,
+            { Model.empty_model with backward = { Model.Backward.taint_in_taint_out; sink_taint } }
+          );
+        ]
   in
   let compute_models class_name class_summary =
     if PyreflyApi.ReadOnly.ClassSummary.is_dataclass pyrefly_api class_summary then
