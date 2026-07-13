@@ -15,7 +15,6 @@
 
 open Core
 open Ast
-open Statement
 
 type kind =
   | Normal
@@ -432,14 +431,6 @@ let create_override_from_reference ?kind reference =
        (Reference.prefix reference |> Option.value ~default:Reference.empty)
        (Reference.last reference))
   |> from_regular
-
-
-let from_define ~define_name ~define =
-  let open Define in
-  let kind = if Define.is_property_setter define then PropertySetter else Normal in
-  match define.signature.legacy_parent with
-  | Some _ -> create_method_from_reference ~kind define_name
-  | None -> create_function ~kind define_name
 
 
 let create_object reference = Object (Reference.show reference) |> from_regular

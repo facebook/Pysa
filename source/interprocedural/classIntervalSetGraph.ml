@@ -149,14 +149,16 @@ module SharedMemory = struct
     | _ -> ClassIntervalSet.top
 
 
-  let of_definition handle define_name definition =
+  let of_definition handle pyrefly_api define_name =
     let open Ast in
-    (* TODO(T225700656): Use callable metadata instead of Define.is_static_method *)
-    match Target.from_define ~define_name ~define:definition |> Target.class_name with
-    | Some class_name when not (Statement.Define.is_static_method definition) ->
+    match PyreflyApi.ReadOnly.class_name_of_callable pyrefly_api define_name with
+    | Some class_name
+      when not
+             (PyreflyApi.ReadOnly.get_callable_metadata pyrefly_api define_name)
+               .PyreflyApi.CallableMetadata.is_staticmethod ->
         (* Note that we also return the interval of the class for class methods, since the same
            logic applies between instance and class methods. *)
-        of_class handle class_name
+        of_class handle (Reference.show class_name)
     | _ -> ClassIntervalSet.top
 
 

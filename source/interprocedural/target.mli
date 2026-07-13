@@ -6,7 +6,6 @@
  *)
 
 open Ast
-open Statement
 
 type kind =
   | Normal
@@ -138,8 +137,6 @@ val create_override : ?kind:kind -> Reference.t -> string -> t
 val create_override_from_reference : ?kind:kind -> Reference.t -> t
 
 val create_object : Reference.t -> t
-
-val from_define : define_name:Ast.Reference.t -> define:Define.t -> t
 
 val from_regular : Regular.t -> t
 

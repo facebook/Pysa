@@ -133,10 +133,6 @@ let test_errors _ =
 
 let test_canonical_location _ =
   let assert_canonical_location ~set ~expected =
-    let define =
-      Statement.Define.create_toplevel ~unbound_names:[] ~module_name:Reference.empty ~statements:[]
-      |> Node.create_with_default_location
-    in
     let define_name = Ast.Reference.create "$toplevel" in
     let locations =
       List.fold
@@ -150,7 +146,7 @@ let test_canonical_location _ =
         handle =
           {
             code = 1000;
-            callable = Target.from_define ~define_name ~define:(Node.value define);
+            callable = Target.create_function define_name;
             sink = IssueHandle.Sink.Return;
           };
         locations;

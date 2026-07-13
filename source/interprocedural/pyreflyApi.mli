@@ -176,6 +176,10 @@ module ReadOnly : sig
 
   val get_callable_metadata_opt : t -> Ast.Reference.t -> CallableMetadata.t option
 
+  (* Return the fully qualified name of the class that defines this callable, or `None` if the
+     callable is not defined within a class. *)
+  val class_name_of_callable : t -> Ast.Reference.t -> Ast.Reference.t option
+
   (* Resolve a `(class, bare method name)` pair to the real method target defined on that class, or
      `None` if the class has no method with that bare name. `method_name` must be the bare name
      (without suffixes like `@setter` or `$2`). *)

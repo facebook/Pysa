@@ -338,7 +338,7 @@ module CallableMetadataSharedMemory = struct
       captured_variables: CapturedVariable.t list;
     }
 
-    let _unused_fields { name = _; defining_class = _; module_id = _; _ } = ()
+    let _unused_fields { name = _; module_id = _; _ } = ()
   end
 
   include
@@ -2974,6 +2974,22 @@ module ReadOnly = struct
   let get_callable_metadata_opt api define_name =
     get_callable_metadata_value_opt api define_name
     >>| fun { CallableMetadataSharedMemory.Value.metadata; _ } -> metadata
+
+
+  let class_name_of_callable ({ class_id_to_qualified_name_shared_memory; _ } as api) define_name =
+    let metadata =
+      get_callable_metadata_value_opt api define_name
+      |> assert_shared_memory_key_exists (fun () ->
+             Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+    in
+    match metadata with
+    | { CallableMetadataSharedMemory.Value.defining_class = Some class_id; _ } ->
+        ClassIdToQualifiedNameSharedMemory.get_class_name
+          class_id_to_qualified_name_shared_memory
+          class_id
+        |> FullyQualifiedName.to_reference
+        |> Option.some
+    | _ -> None
 
 
   (* Resolve a `(class, bare method name)` pair to the (last) method definition on that class,

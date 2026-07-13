@@ -3673,8 +3673,8 @@ let run
     let caller_class_interval =
       Interprocedural.ClassIntervalSetGraph.SharedMemory.of_definition
         class_interval_graph
+        pyrefly_api
         define_name
-        (Node.value definition)
 
 
     let string_combine_partial_sink_tree = string_combine_partial_sink_tree
