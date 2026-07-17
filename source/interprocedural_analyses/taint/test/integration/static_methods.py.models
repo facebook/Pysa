@@ -498,6 +498,150 @@
 {
   "kind": "model",
   "data": {
+    "callable": "functools._CacheInfo.__init__",
+    "filename": "*",
+    "tito": [
+      {
+        "port": "formal(currsize, position=4)",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[currsize]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(maxsize, position=3)",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[maxsize]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(misses, position=2)",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[misses]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(hits, position=1)",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[hits]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "kind": "model",
+  "data": {
+    "callable": "functools._CacheParameters.__init__",
+    "filename": "*",
+    "tito": [
+      {
+        "port": "formal(**kwargs, excluded=[maxsize,typed])",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[*]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(typed)",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[typed]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(maxsize)",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[maxsize]": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(__iterable, position=1, positional_only)[*]",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { "[*]": 0 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      },
+      {
+        "port": "formal(__iterable, position=1, positional_only).**keys",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "return_paths": { ".**keys": 999999 },
+                "kind": "ParameterUpdate[formal(self, position=0)]"
+              }
+            ],
+            "tito": {}
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "kind": "model",
+  "data": {
     "callable": "static_methods.StaticClass.sink",
     "filename": "static_methods.py",
     "callable_line": 11,
