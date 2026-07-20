@@ -13,9 +13,12 @@ open Interprocedural
 let test_from_source context =
   let assert_global_constants ~all_sources ~test_source_qualifier ~expected =
     let project =
-      Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false all_sources
+      InterproceduralTest.ScratchPyrePysaProject.setup
+        ~context
+        ~requires_type_of_expressions:false
+        all_sources
     in
-    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
     let callables_to_definitions_map =
       CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
     in
@@ -90,9 +93,12 @@ let test_from_source context =
 let test_from_qualifiers context =
   let from_sources sources =
     let project =
-      Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
+      InterproceduralTest.ScratchPyrePysaProject.setup
+        ~context
+        ~requires_type_of_expressions:false
+        sources
     in
-    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
     let callables_to_definitions_map =
       CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
     in

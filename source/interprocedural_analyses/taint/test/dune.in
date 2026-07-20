@@ -13,6 +13,7 @@
   pyrelib.ast
   pyrelib.analysis
   pyrelib.interprocedural
+  pyrelib.interproceduralTest
   pyrelib.taint))
 
 (tests
@@ -65,7 +66,10 @@
   %{workspace_root}/pyrefly.exe)
  (preprocess
   (pps ppx_sexp_message ppx_compare ppx_deriving.show))
- (libraries pyrelib.taintTestHelper pyrelib.taintAnalysis)
+ (libraries
+  pyrelib.taintTestHelper
+  pyrelib.interproceduralTest
+  pyrelib.taintAnalysis)
  (action
   (setenv
    PYSA_CHECK_INVARIANTS

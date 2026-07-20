@@ -14,12 +14,12 @@ open Taint
 let test_find_globals =
   let assert_found_globals ~source ~expected context =
     let project =
-      Test.ScratchPyrePysaProject.setup
+      InterproceduralTest.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:true
         ["test.py", source]
     in
-    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
     (* Pyrefly pulls in the full typeshed, so restrict the discovered globals to the `test` module.
        We only verify the discovered set of globals: unlike the Pyre1 backend, the Pyrefly backend's
        `Modelable.create_global` returns `ExplicitAnnotation.Unsupported`, so the

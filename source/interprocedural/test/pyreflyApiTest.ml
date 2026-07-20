@@ -893,8 +893,11 @@ module PyrePysaApi = struct
   let test_resolve_user_qualified_name context =
     let assert_resolve ~context ?pyrefly_expect sources name ~expect =
       let pyrefly_api =
-        Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
-        |> Test.ScratchPyrePysaProject.read_only_api
+        InterproceduralTest.ScratchPyrePysaProject.setup
+          ~context
+          ~requires_type_of_expressions:false
+          sources
+        |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
       in
       let module ResolutionResult = PyreflyApi.ModelQueries.ResolutionResult in
       let module ModuleResolutionResult = PyreflyApi.ModelQueries.ModuleResolutionResult in

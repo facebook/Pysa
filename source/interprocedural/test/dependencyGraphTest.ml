@@ -16,16 +16,16 @@ open Test
 let setup ?(other_sources = []) ~context ~handle source =
   let project =
     let external_sources = List.map other_sources ~f:(fun { handle; source } -> handle, source) in
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:true
       ~external_sources
       [handle, source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   ( pyrefly_api,
-    Test.ScratchPyrePysaProject.errors project,
-    Test.ScratchPyrePysaProject.configuration_of project )
+    InterproceduralTest.ScratchPyrePysaProject.errors project,
+    InterproceduralTest.ScratchPyrePysaProject.configuration_of project )
 
 
 let create_call_graph ?(other_sources = []) ~context source_text =

@@ -22,9 +22,12 @@ let assert_taint ?models ?models_source ~context source expect =
     | None -> [handle, source]
   in
   let project =
-    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:true sources
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:true
+      sources
   in
-  let configuration = Test.ScratchPyrePysaProject.configuration_of project in
+  let configuration = InterproceduralTest.ScratchPyrePysaProject.configuration_of project in
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
@@ -32,7 +35,7 @@ let assert_taint ?models ?models_source ~context source expect =
       configuration
       ()
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let models =
     models >>| Test.trim_extra_indentation |> Option.value ~default:TestHelper.initial_models_source
   in

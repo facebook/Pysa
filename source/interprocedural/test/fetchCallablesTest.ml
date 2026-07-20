@@ -13,12 +13,12 @@ let test_callables context =
   let assert_callables ?(additional_sources = []) ?(source_filename = "test.py") source ~expected =
     let pyrefly_api =
       let project =
-        Test.ScratchPyrePysaProject.setup
+        InterproceduralTest.ScratchPyrePysaProject.setup
           ~context
           ~requires_type_of_expressions:false
           ((source_filename, source) :: additional_sources)
       in
-      Test.ScratchPyrePysaProject.read_only_api project
+      InterproceduralTest.ScratchPyrePysaProject.read_only_api project
     in
     FetchCallables.from_qualifier ~pyrefly_api ~qualifier:(Ast.Reference.create "test")
     |> FetchCallables.get ~definitions:true ~stubs:true

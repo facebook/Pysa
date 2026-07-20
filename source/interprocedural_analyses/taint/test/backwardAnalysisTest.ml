@@ -17,9 +17,12 @@ let assert_taint ~context source expected =
   let handle = "qualifier.py" in
   let qualifier = Ast.Reference.create "qualifier" in
   let project =
-    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:true [handle, source]
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:true
+      [handle, source]
   in
-  let configuration = Test.ScratchPyrePysaProject.configuration_of project in
+  let configuration = InterproceduralTest.ScratchPyrePysaProject.configuration_of project in
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
@@ -27,7 +30,7 @@ let assert_taint ~context source expected =
       configuration
       ()
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let initial_models = TestHelper.get_initial_models ~pyrefly_api in
   let initial_callables = FetchCallables.from_qualifier ~pyrefly_api ~qualifier in
   let callables_to_definitions_map =

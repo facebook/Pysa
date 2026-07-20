@@ -1,3 +1,24 @@
+(library
+ (name interproceduralTest)
+ (public_name pyrelib.interproceduralTest)
+ (modules interproceduralTest)
+ (preprocess
+  (pps
+   ppx_deriving.eq
+   ppx_deriving.show
+   ppx_compare
+   ppx_sexp_conv
+   ppx_sexp_message
+   ppx_hash))
+ (libraries
+  core
+  ounit2
+  unix
+  pyrelib.test
+  pyrelib.ast
+  pyrelib.analysis
+  pyrelib.interprocedural))
+
 (tests
  (names
   accessPathTest
@@ -14,6 +35,7 @@
   changedPathsTest
   globalConstantsTest
   pyreflyApiTest)
+ (modules :standard \ interproceduralTest)
  (deps
   (env_var PYREFLY_BINARY)
   %{workspace_root}/pyrefly.exe)
@@ -36,5 +58,6 @@
   pyrelib.ast
   pyrelib.access_path
   pyrelib.interprocedural
+  pyrelib.interproceduralTest
   pyrelib.taintTestHelper
   pyrelib.taint))

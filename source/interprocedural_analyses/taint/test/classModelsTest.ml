@@ -12,12 +12,12 @@ open TestHelper
 
 let assert_class_models ~context ?user_models ~source ~expected () =
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let user_models =
     match user_models with
     | Some user_models ->

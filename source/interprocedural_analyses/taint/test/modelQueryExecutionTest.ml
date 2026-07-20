@@ -31,12 +31,12 @@ let sink name =
 
 let assert_generated_annotations context ~source ~query ~callable ~expected () =
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let callables_to_definitions_map =
     Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
@@ -73,12 +73,12 @@ let assert_generated_annotations context ~source ~query ~callable ~expected () =
 
 let assert_generated_annotations_for_attributes context ~source ~query ~name ~expected () =
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let callables_to_definitions_map =
     Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
@@ -116,12 +116,12 @@ let assert_generated_annotations_for_attributes context ~source ~query ~name ~ex
 
 let assert_generated_annotations_for_globals context ~source ~query ~name ~expected () =
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       ["test.py", source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let callables_to_definitions_map =
     Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
   in
@@ -5374,12 +5374,12 @@ let test_partition_cache_queries _ =
 let test_generated_cache context =
   let assert_generated_cache ~source ~queries ~regular_callables ~expected =
     let project =
-      Test.ScratchPyrePysaProject.setup
+      InterproceduralTest.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:false
         ["test.py", source]
     in
-    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+    let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
     let callables_to_definitions_map =
       Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api
     in

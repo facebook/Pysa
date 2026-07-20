@@ -14,13 +14,13 @@ open Test
 let setup ?(other_sources = []) ~context ~handle source =
   let project =
     let external_sources = List.map other_sources ~f:(fun { handle; source } -> handle, source) in
-    ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~external_sources
       ~context
       ~requires_type_of_expressions:false
       [handle, source]
   in
-  ScratchPyrePysaProject.read_only_api project
+  InterproceduralTest.ScratchPyrePysaProject.read_only_api project
 
 
 let test_method_overrides context =

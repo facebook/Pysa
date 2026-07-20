@@ -13,11 +13,11 @@ open Interprocedural
 let test_from_source context =
   let assert_class_hierarchy ~source ~expected () =
     let pyrefly_api =
-      Test.ScratchPyrePysaProject.setup
+      InterproceduralTest.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:false
         ["test.py", source]
-      |> Test.ScratchPyrePysaProject.read_only_api
+      |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
     in
     let class_hierarchy =
       ClassHierarchyGraph.Heap.from_qualifier ~pyrefly_api ~qualifier:(Reference.create "test")

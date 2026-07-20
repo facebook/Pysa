@@ -44,12 +44,12 @@ let set_up_environment
   in
   let source_file_name = "test.py" in
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       [source_file_name, source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let taint_configuration =
     let named name = { AnnotationParser.KindDefinition.name; kind = Named; location = None } in
     let sources =
@@ -231,8 +231,11 @@ let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~e
   in
   let sources = ("test.py", source) :: sources in
   let pyrefly_api =
-    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions:false sources
-    |> Test.ScratchPyrePysaProject.read_only_api
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:false
+      sources
+    |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
   in
   let taint_configuration =
     TaintConfiguration.Heap.

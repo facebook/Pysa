@@ -61,15 +61,15 @@ let assert_invalid_model
   in
   let sources = (source_path, source) :: sources in
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       ~search_paths
       sources
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
   let { Configuration.Analysis.local_root = repository_root; _ } =
-    Test.ScratchPyrePysaProject.configuration_of project
+    InterproceduralTest.ScratchPyrePysaProject.configuration_of project
   in
   let taint_configuration =
     TaintConfiguration.Heap.

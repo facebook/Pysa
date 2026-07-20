@@ -561,15 +561,15 @@ let initialize_pyre_and_fail_on_errors ~context ~handle ~source_content ~models_
       get_decorator_preprocessing_configuration ~handle models_source
     in
     let project =
-      Test.ScratchPyrePysaProject.setup
+      InterproceduralTest.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:true
         ~decorator_preprocessing_configuration
         [handle, source_content]
     in
-    let configuration = Test.ScratchPyrePysaProject.configuration_of project in
-    let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
-    let errors = Test.ScratchPyrePysaProject.errors project in
+    let configuration = InterproceduralTest.ScratchPyrePysaProject.configuration_of project in
+    let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
+    let errors = InterproceduralTest.ScratchPyrePysaProject.errors project in
     configuration, pyrefly_api, errors
   in
   (if not (List.is_empty errors) then
@@ -1202,7 +1202,10 @@ let end_to_end_test_paths_found relative_path _ =
 let setup_single_py_file ?(requires_type_of_expressions = true) ~file_name ~context ~source () =
   let test_module_name = Reference.create (String.chop_suffix_exn file_name ~suffix:".py") in
   let project =
-    Test.ScratchPyrePysaProject.setup ~context ~requires_type_of_expressions [file_name, source]
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions
+      [file_name, source]
   in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
-  test_module_name, pyrefly_api, Test.ScratchPyrePysaProject.configuration_of project
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
+  test_module_name, pyrefly_api, InterproceduralTest.ScratchPyrePysaProject.configuration_of project

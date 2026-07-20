@@ -19,7 +19,7 @@ let set_up_environment ?source ~context ~model_source ~validate () =
   in
   let source_file_name = "test.py" in
   let project =
-    Test.ScratchPyrePysaProject.setup
+    InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:false
       [source_file_name, source]
@@ -32,7 +32,7 @@ let set_up_environment ?source ~context ~model_source ~validate () =
     TaintConfiguration.Heap.{ empty with sources; sinks; transforms }
   in
   let source = Test.trim_extra_indentation model_source in
-  let pyrefly_api = Test.ScratchPyrePysaProject.read_only_api project in
+  let pyrefly_api = InterproceduralTest.ScratchPyrePysaProject.read_only_api project in
 
   let callables_to_definitions_map =
     Interprocedural.CallablesSharedMemory.ReadWrite.from_pyrefly_api ~pyrefly_api

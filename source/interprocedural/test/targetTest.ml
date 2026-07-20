@@ -15,11 +15,11 @@ open Interprocedural
 let test_get_module_and_definition context =
   let assert_get_module_and_definition ~source ~target ~expected () =
     let pyrefly_api =
-      Test.ScratchPyrePysaProject.setup
+      InterproceduralTest.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:false
         ["test.py", source]
-      |> Test.ScratchPyrePysaProject.read_only_api
+      |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
     in
     let actual =
       target
