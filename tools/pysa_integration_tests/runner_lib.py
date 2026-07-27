@@ -238,7 +238,7 @@ def run_pysa(
     elif run_from == RunFrom.PYTHON_PACKAGE:
         command = [
             "python",
-            "-mpyre-check.client.pyre",
+            "-mPysa.client.pyre",
         ]
     elif run_from == RunFrom.INTERNAL_BUCK:
         command = [
