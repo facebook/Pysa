@@ -114,7 +114,7 @@ if __name__ == "__main__":
         "--run-from",
         choices=[run_from.value for run_from in test_runner_lib.RunFrom],
         default=test_runner_lib.RunFrom.PYRE_IN_PATH.value,
-        help="How to run pysa: `pyre-in-path` (default; uses the `pyre` client on PATH), `python-package` (open source setup, runs `python -mpyre-check.client.pyre`), `internal-buck` (runs `buck run fbcode//tools/pyre/facebook/client:pysa`), or `oss-buck` (runs `buck run fbcode//tools/pyre/client:pyre`).",
+        help="How to run pysa: `pyre-in-path` (default; uses the `pyre` client on PATH), `python-package` (open source setup, runs `python -mPysa.client.pyre`), `internal-buck` (runs `buck run fbcode//tools/pyre/facebook/client:pysa`), or `oss-buck` (runs `buck run fbcode//tools/pyre/client:pyre`).",
     )
     parser.add_argument(
         "--run-from-source",
