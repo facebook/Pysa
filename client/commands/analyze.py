@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
@@ -686,6 +687,29 @@ def _run_pysa(
         )
 
 
+@contextlib.contextmanager
+def _named_temporary_file() -> Iterator[IO[str]]:
+    """
+    A write-mode NamedTemporaryFile whose backing file survives an explicit
+    `.close()` and is deleted only when the context manager exits.
+    """
+    if sys.version_info >= (3, 12):
+        with tempfile.NamedTemporaryFile(
+            mode="w", delete=True, delete_on_close=False
+        ) as temporary_file:
+            yield temporary_file
+    else:
+        temporary_file = tempfile.NamedTemporaryFile(mode="w", delete=False)
+        try:
+            yield temporary_file
+        finally:
+            temporary_file.close()
+            try:
+                os.unlink(temporary_file.name)
+            except FileNotFoundError:
+                pass
+
+
 def run(
     configuration: frontend_configuration.Base,
     analyze_arguments: command_arguments.AnalyzeArguments,
@@ -707,9 +731,7 @@ def run(
         )
 
     with (
-        tempfile.NamedTemporaryFile(
-            mode="w", delete=True, delete_on_close=False
-        ) as temporary_file,
+        _named_temporary_file() as temporary_file,
         tempfile.TemporaryDirectory(
             prefix="pysa-pyrefly-",
             delete=not analyze_arguments.debug_pyrefly_report,

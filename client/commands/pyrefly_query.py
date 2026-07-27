@@ -22,6 +22,7 @@ from .analyze import (
     _download_pyrefly_binary,
     _flush_log_file,
     _get_server_start_command,
+    _named_temporary_file,
     _run_pyrefly,
     create_analyze_arguments,
 )
@@ -106,9 +107,7 @@ def run(
 
     with (
         tempfile.TemporaryDirectory() as temporary_pyrefly_results,
-        tempfile.NamedTemporaryFile(
-            mode="w", delete=True, delete_on_close=False
-        ) as temporary_file,
+        _named_temporary_file() as temporary_file,
     ):
         pyrefly_binary_path = _download_pyrefly_binary(
             configuration,
