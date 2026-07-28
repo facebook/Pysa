@@ -14,6 +14,7 @@ import dataclasses
 import json
 import logging
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -710,6 +711,25 @@ def _named_temporary_file() -> Iterator[IO[str]]:
                 pass
 
 
+@contextlib.contextmanager
+def _temporary_directory(*, prefix: str, delete: bool) -> Iterator[str]:
+    """
+    A temporary directory that is removed on context exit only when `delete` is
+    True. The `delete` parameter of `TemporaryDirectory` is only available on
+    Python 3.12+; older versions emulate it with `mkdtemp` plus manual cleanup.
+    """
+    if sys.version_info >= (3, 12):
+        with tempfile.TemporaryDirectory(prefix=prefix, delete=delete) as directory:
+            yield directory
+    else:
+        directory = tempfile.mkdtemp(prefix=prefix)
+        try:
+            yield directory
+        finally:
+            if delete:
+                shutil.rmtree(directory, ignore_errors=True)
+
+
 def run(
     configuration: frontend_configuration.Base,
     analyze_arguments: command_arguments.AnalyzeArguments,
@@ -732,7 +752,7 @@ def run(
 
     with (
         _named_temporary_file() as temporary_file,
-        tempfile.TemporaryDirectory(
+        _temporary_directory(
             prefix="pysa-pyrefly-",
             delete=not analyze_arguments.debug_pyrefly_report,
         ) as pyrefly_results,
