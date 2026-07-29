@@ -97,7 +97,7 @@ pub fn strip_call_graph(call_graph: &mut CallGraph, options: &CallGraphOptions) 
             });
         }
 
-        for (_location, callees) in calls.iter_mut() {
+        for callees in calls.values_mut() {
             strip_expression_callees(callees, options);
         }
     }
