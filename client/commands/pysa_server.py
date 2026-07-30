@@ -339,7 +339,7 @@ def run(
             )
         )
 
-    return asyncio.get_event_loop().run_until_complete(
+    return asyncio.run(
         run_persistent(
             str(start_command.get_pyre_binary_location()),
             project_identifier,

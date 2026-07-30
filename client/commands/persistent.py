@@ -296,7 +296,7 @@ def run(
     command_timer = timer.Timer()
     error_message: Optional[str] = None
     try:
-        return asyncio.get_event_loop().run_until_complete(
+        return asyncio.run(
             run_persistent(
                 read_server_options,
                 remote_logging,
