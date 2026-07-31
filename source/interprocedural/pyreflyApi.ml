@@ -744,8 +744,7 @@ module ReadWrite = struct
           ]
       | _ ->
           (* From a list of modules with the same module name, make unique qualifiers for each
-             module, using the path as a prefix *)
-          let number_modules = List.length modules in
+             module, using the path and/or sys info as a prefix *)
           let pyre_path_elements path = path |> PyrePath.absolute |> String.split ~on:'/' in
           let module_path_elements = function
             | ModulePath.Filesystem path -> path |> ArtifactPath.raw |> pyre_path_elements
@@ -756,31 +755,94 @@ module ReadWrite = struct
                 "typeshed-third-party:/" :: pyre_path_elements path
             | ModulePath.BundledThirdParty path -> "third-party:/" :: pyre_path_elements path
           in
-          let rec find_shortest_unique_prefix ~prefix_length modules_with_path =
-            let map =
-              modules_with_path
-              |> List.fold ~init:SerializableStringMap.empty ~f:(fun sofar (path, module_info) ->
-                     SerializableStringMap.update
-                       (List.take path prefix_length |> List.rev |> String.concat ~sep:"/")
-                       (function
-                         | None -> Some module_info
-                         | Some existing -> Some existing)
-                       sofar)
-            in
-            if Int.equal number_modules (SerializableStringMap.cardinal map) then
-              SerializableStringMap.to_alist map
-            else if prefix_length >= 1000 then
-              failwith "Could not make a unique qualifier for a module after 1000 iterations"
-            else
-              find_shortest_unique_prefix ~prefix_length:(prefix_length + 1) modules_with_path
+          let count_distinct ~compare list = list |> List.dedup_and_sort ~compare |> List.length in
+          let should_add_python_version =
+            modules
+            |> List.map ~f:(fun { ProjectFile.Module.python_version; _ } -> python_version)
+            |> count_distinct ~compare:Configuration.PythonVersion.compare
+            |> Int.( < ) 1
           in
-          modules
-          |> List.map ~f:(fun ({ ProjectFile.Module.absolute_source_path; _ } as module_info) ->
-                 List.rev (module_path_elements absolute_source_path), module_info)
-          |> find_shortest_unique_prefix ~prefix_length:1
-          |> List.map ~f:(fun (path, module_info) ->
-                 ( ModuleQualifier.create ~path:(Some path) module_name,
-                   Module.from_project ~pyrefly_directory module_info ))
+          let should_add_platform =
+            modules
+            |> List.map ~f:(fun { ProjectFile.Module.platform; _ } -> platform)
+            |> count_distinct ~compare:String.compare
+            |> Int.( < ) 1
+          in
+          let should_add_path_prefix =
+            modules
+            |> List.map ~f:(fun { ProjectFile.Module.absolute_source_path; _ } ->
+                   absolute_source_path)
+            |> List.map ~f:module_path_elements
+            |> count_distinct ~compare:(List.compare String.compare)
+            |> Int.( < ) 1
+          in
+          let modules =
+            if should_add_path_prefix then
+              (* Find the shortest path suffix that is unique across the DISTINCT source paths, then
+                 give every module its path prefix at that length. Modules sharing a source path are
+                 kept (they differ only by sys_info and are separated by the bracketed sys_info
+                 element added below). *)
+              let prefix_of ~prefix_length path =
+                List.take path prefix_length |> List.rev |> String.concat ~sep:"/"
+              in
+              let modules_with_path =
+                List.map
+                  ~f:(fun ({ ProjectFile.Module.absolute_source_path; _ } as module_info) ->
+                    List.rev (module_path_elements absolute_source_path), module_info)
+                  modules
+              in
+              let distinct_paths =
+                modules_with_path
+                |> List.map ~f:fst
+                |> count_distinct ~compare:(List.compare String.compare)
+              in
+              let rec find_shortest_unique_prefix ~prefix_length =
+                let distinct_prefixes =
+                  modules_with_path
+                  |> List.map ~f:(fun (path, _) -> prefix_of ~prefix_length path)
+                  |> count_distinct ~compare:String.compare
+                in
+                if Int.equal distinct_paths distinct_prefixes then
+                  List.map modules_with_path ~f:(fun (path, module_info) ->
+                      prefix_of ~prefix_length path, module_info)
+                else if prefix_length >= 1000 then
+                  failwith "Could not make a unique qualifier for a module after 1000 iterations"
+                else
+                  find_shortest_unique_prefix ~prefix_length:(prefix_length + 1)
+              in
+              find_shortest_unique_prefix ~prefix_length:1
+            else
+              List.map ~f:(fun module_info -> "", module_info) modules
+          in
+          let modules =
+            if should_add_python_version || should_add_platform then
+              let sys_info_element
+                  {
+                    ProjectFile.Module.python_version =
+                      { Configuration.PythonVersion.major; minor; micro };
+                    platform;
+                    _;
+                  }
+                =
+                let prefixes =
+                  if should_add_python_version then
+                    [Format.asprintf "py%d.%d.%d" major minor micro]
+                  else
+                    []
+                in
+                let prefixes = if should_add_platform then prefixes @ [platform] else prefixes in
+                Format.sprintf "[%s]" (String.concat ~sep:"-" prefixes)
+              in
+              List.map modules ~f:(fun (path, module_info) ->
+                  sys_info_element module_info ^ path, module_info)
+            else
+              modules
+          in
+          List.map
+            ~f:(fun (path, module_info) ->
+              ( ModuleQualifier.create ~path:(Some path) module_name,
+                Module.from_project ~pyrefly_directory module_info ))
+            modules
     in
     let add_to_module_name_mapping sofar ({ ProjectFile.Module.module_name; _ } as module_info) =
       Map.update sofar module_name ~f:(function
