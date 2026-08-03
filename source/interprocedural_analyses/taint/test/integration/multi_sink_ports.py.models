@@ -67,8 +67,8 @@
                 ],
                 "leaves": [
                   { "name": "multi_sink_ports.sinkA", "port": "leaf:x" },
-                  { "name": "multi_sink_ports.sinkC", "port": "leaf:x" },
                   { "name": "multi_sink_ports.sinkB", "port": "leaf:x" },
+                  { "name": "multi_sink_ports.sinkC", "port": "leaf:x" },
                   { "name": "multi_sink_ports.sinkD", "port": "leaf:x" }
                 ],
                 "length": 1,
@@ -197,8 +197,8 @@
                 ],
                 "leaves": [
                   { "name": "multi_sink_ports.sinkA", "port": "leaf:x" },
-                  { "name": "multi_sink_ports.sinkC", "port": "leaf:x" },
                   { "name": "multi_sink_ports.sinkB", "port": "leaf:x" },
+                  { "name": "multi_sink_ports.sinkC", "port": "leaf:x" },
                   { "name": "multi_sink_ports.sinkD", "port": "leaf:x" }
                 ],
                 "length": 2,

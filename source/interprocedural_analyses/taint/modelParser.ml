@@ -977,7 +977,7 @@ let rec parse_annotations
           let leaf_name =
             Features.LeafName.
               {
-                leaf = canonical_name;
+                leaf = CrossRepository canonical_name;
                 port = Features.LeafPort.Producer { id = producer_id; port = canonical_port };
               }
           in

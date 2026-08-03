@@ -1001,7 +1001,8 @@ end = struct
               Frame.get Frame.Slots.LeafName frame
               |> LeafNameSet.elements
               |> List.map ~f:LeafNameInterned.unintern
-              |> List.map ~f:LeafName.to_json
+              |> List.dedup_and_sort ~compare:(LeafName.deterministic_compare ~display_api)
+              |> List.map ~f:(LeafName.to_json ~display_api)
             in
             cons_if_non_empty "leaves" leaves json
           else
@@ -1384,9 +1385,6 @@ end = struct
       ~call_info_intervals
       taint
     =
-    let display_api =
-      PyreflyApi.ReadOnly.display_api (PyreflyApi.InContext.pyrefly_api pyrefly_in_context)
-    in
     let apply (call_info, local_taint) =
       let local_taint =
         local_taint
@@ -1554,7 +1552,7 @@ end = struct
                 else
                   let open Features in
                   let port = LeafPort.from_access_path ~root:port ~path in
-                  LeafName.{ leaf = Target.external_name ~display_api callee; port }
+                  LeafName.{ leaf = Callable callee; port }
                   |> LeafNameInterned.intern
                   |> Features.LeafNameSet.singleton
               in
@@ -1645,12 +1643,7 @@ end = struct
           let leaf_name =
             let open Features in
             let port = LeafPort.from_access_path ~root:port ~path in
-            LeafName.
-              {
-                leaf = Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable;
-                port;
-              }
-            |> LeafNameInterned.intern
+            LeafName.{ leaf = Callable callable; port } |> LeafNameInterned.intern
           in
           let local_taint =
             LocalTaintDomain.transform Features.LeafNameSet.Element Add ~f:leaf_name local_taint

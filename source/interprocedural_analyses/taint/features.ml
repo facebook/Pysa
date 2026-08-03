@@ -253,20 +253,44 @@ end
 module LeafName = struct
   let name = "leaf names"
 
+  type leaf =
+    | Callable of Target.t
+    | CrossRepository of string
+  [@@deriving equal, compare, hash]
+
   type t = {
-    leaf: string;
+    leaf: leaf;
     port: LeafPort.t;
   }
   [@@deriving equal]
 
+  let pp_leaf formatter = function
+    | Callable target -> Target.pp formatter target
+    | CrossRepository name -> Format.pp_print_string formatter name
+
+
   let pp formatter { leaf; port } =
-    Format.fprintf formatter "LeafName(%s, port=%a)" leaf LeafPort.pp port
+    Format.fprintf formatter "LeafName(%a, port=%a)" pp_leaf leaf LeafPort.pp port
 
 
   let show = Format.asprintf "%a" pp
 
-  let to_json { leaf; port } =
-    `Assoc ["name", `String leaf; "port", `String (LeafPort.show_external port)]
+  let external_name ~display_api = function
+    | Callable target -> Target.external_name ~display_api target
+    | CrossRepository name -> name
+
+
+  let deterministic_compare ~display_api left right =
+    let render { leaf; port } = external_name ~display_api leaf, LeafPort.show_external port in
+    [%compare: string * string] (render left) (render right)
+
+
+  let to_json ~display_api { leaf; port } =
+    `Assoc
+      [
+        "name", `String (external_name ~display_api leaf);
+        "port", `String (LeafPort.show_external port);
+      ]
 end
 
 module LeafNameInterned = MakeInterner (LeafName)

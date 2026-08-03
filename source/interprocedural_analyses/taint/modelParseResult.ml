@@ -325,7 +325,10 @@ module TaintAnnotation = struct
   let add_cross_repository_anchor ~canonical_name ~canonical_port annotation =
     let leaf_name =
       Features.LeafName.
-        { leaf = canonical_name; port = Features.LeafPort.Anchor { port = canonical_port } }
+        {
+          leaf = CrossRepository canonical_name;
+          port = Features.LeafPort.Anchor { port = canonical_port };
+        }
     in
     match annotation with
     | Source { source; features } ->
