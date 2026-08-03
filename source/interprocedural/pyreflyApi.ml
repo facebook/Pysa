@@ -454,6 +454,19 @@ module ModuleIdToQualifierSharedMemory = struct
     module_id |> get handle |> assert_shared_memory_key_exists (fun () -> "unknown module id")
 end
 
+(* Forward name->id index: module qualifier to module id. Populated alongside the reverse map
+   `ModuleIdToQualifierSharedMemory`. *)
+module QualifierToModuleIdSharedMemory =
+  Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
+    (ModuleQualifierSharedMemoryKey)
+    (struct
+      type t = ModuleId.t
+
+      let prefix = Hack_parallel.Std.Prefix.make ()
+
+      let description = "pyrefly module qualifier to module id"
+    end)
+
 module ClassIdToQualifiedNameSharedMemory = struct
   include
     Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
@@ -469,6 +482,19 @@ module ClassIdToQualifiedNameSharedMemory = struct
   let get_class_name handle class_id =
     class_id |> get handle |> assert_shared_memory_key_exists (fun () -> "unknown class id")
 end
+
+(* Forward name->id index: fully qualified name to class id. Populated alongside the reverse map
+   `ClassIdToQualifiedNameSharedMemory`. *)
+module FullyQualifiedNameToClassIdSharedMemory =
+  Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
+    (FullyQualifiedNameSharedMemoryKey)
+    (struct
+      type t = PyreflyTypes.ClassId.t
+
+      let prefix = Hack_parallel.Std.Prefix.make ()
+
+      let description = "pyrefly fully qualified name to class id"
+    end)
 
 module CallableIdToQualifiedNameSharedMemory = struct
   include
@@ -487,6 +513,19 @@ module CallableIdToQualifiedNameSharedMemory = struct
   let get handle id =
     get_opt handle id |> assert_shared_memory_key_exists (fun () -> "unknown callable id")
 end
+
+(* Forward name->id index: fully qualified name to callable id. Populated alongside the reverse map
+   `CallableIdToQualifiedNameSharedMemory`. *)
+module FullyQualifiedNameToCallableIdSharedMemory =
+  Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
+    (FullyQualifiedNameSharedMemoryKey)
+    (struct
+      type t = PyreflyTypes.CallableId.t
+
+      let prefix = Hack_parallel.Std.Prefix.make ()
+
+      let description = "pyrefly fully qualified name to callable id"
+    end)
 
 module ClassField = struct
   type t = {
@@ -714,8 +753,11 @@ module ReadWrite = struct
     module_globals_shared_memory: ModuleGlobalsSharedMemory.t;
     module_name_to_qualifiers_shared_memory: ModuleNameToQualifiersSharedMemory.t;
     module_id_to_qualifier_shared_memory: ModuleIdToQualifierSharedMemory.t;
+    qualifier_to_module_id_shared_memory: QualifierToModuleIdSharedMemory.t;
     class_id_to_qualified_name_shared_memory: ClassIdToQualifiedNameSharedMemory.t;
     callable_id_to_qualified_name_shared_memory: CallableIdToQualifiedNameSharedMemory.t;
+    fully_qualified_name_to_class_id_shared_memory: FullyQualifiedNameToClassIdSharedMemory.t;
+    fully_qualified_name_to_callable_id_shared_memory: FullyQualifiedNameToCallableIdSharedMemory.t;
     callable_ast_shared_memory: CallableAstSharedMemory.t;
     callable_define_signature_shared_memory: CallableDefineSignatureSharedMemory.t;
     callable_parse_result_shared_memory: CallableParseResultSharedMemory.t;
@@ -949,6 +991,7 @@ module ReadWrite = struct
     let () = Log.info "Writing modules to shared memory..." in
     let module_infos_shared_memory = ModuleInfosSharedMemory.create () in
     let module_id_to_qualifier_shared_memory = ModuleIdToQualifierSharedMemory.create () in
+    let qualifier_to_module_id_shared_memory = QualifierToModuleIdSharedMemory.create () in
     let () =
       Map.to_alist qualifier_to_module_map
       |> List.iter
@@ -984,10 +1027,16 @@ module ReadWrite = struct
              ModuleIdToQualifierSharedMemory.write_around
                module_id_to_qualifier_shared_memory
                module_id
-               qualifier)
+               qualifier;
+             QualifierToModuleIdSharedMemory.write_around
+               qualifier_to_module_id_shared_memory
+               qualifier
+               module_id)
     in
     Log.info "Wrote modules to shared memory: %.3fs" (Timer.stop_in_sec timer);
-    module_infos_shared_memory, module_id_to_qualifier_shared_memory
+    ( module_infos_shared_memory,
+      module_id_to_qualifier_shared_memory,
+      qualifier_to_module_id_shared_memory )
 
 
   (* Build a reverse map from bare module name to list of qualifiers. This is used for resolving
@@ -1916,6 +1965,12 @@ module ReadWrite = struct
     let callable_id_to_qualified_name_shared_memory =
       CallableIdToQualifiedNameSharedMemory.create ()
     in
+    let fully_qualified_name_to_class_id_shared_memory =
+      FullyQualifiedNameToClassIdSharedMemory.create ()
+    in
+    let fully_qualified_name_to_callable_id_shared_memory =
+      FullyQualifiedNameToCallableIdSharedMemory.create ()
+    in
     let callable_undecorated_signatures_shared_memory =
       CallableUndecoratedSignaturesSharedMemory.create ()
     in
@@ -2009,6 +2064,10 @@ module ReadWrite = struct
               callable_id_to_qualified_name_shared_memory
               { GlobalCallableId.module_id; local_function_id }
               qualified_name;
+            FullyQualifiedNameToCallableIdSharedMemory.write_around
+              fully_qualified_name_to_callable_id_shared_memory
+              qualified_name
+              (PyreflyTypes.CallableId.encode ~module_id local_function_id);
             qualified_name :: callables, classes
         | Class
             {
@@ -2080,6 +2139,10 @@ module ReadWrite = struct
               class_id_to_qualified_name_shared_memory
               { GlobalClassId.module_id; local_class_id }
               qualified_name;
+            FullyQualifiedNameToClassIdSharedMemory.write_around
+              fully_qualified_name_to_class_id_shared_memory
+              qualified_name
+              (PyreflyTypes.ClassId.encode ~module_id local_class_id);
             callables, qualified_name :: classes
       in
       let callables, classes = List.fold definitions ~init:([], []) ~f:store_definition in
@@ -2280,6 +2343,8 @@ module ReadWrite = struct
       module_globals_shared_memory,
       class_id_to_qualified_name_shared_memory,
       callable_id_to_qualified_name_shared_memory,
+      fully_qualified_name_to_class_id_shared_memory,
+      fully_qualified_name_to_callable_id_shared_memory,
       callable_undecorated_signatures_shared_memory )
 
 
@@ -2311,7 +2376,10 @@ module ReadWrite = struct
       parse_modules ~pyrefly_directory
     in
 
-    let module_infos_shared_memory, module_id_to_qualifier_shared_memory =
+    let ( module_infos_shared_memory,
+          module_id_to_qualifier_shared_memory,
+          qualifier_to_module_id_shared_memory )
+      =
       write_module_infos_to_shared_memory ~qualifier_to_module_map
     in
 
@@ -2330,6 +2398,8 @@ module ReadWrite = struct
           module_globals_shared_memory,
           class_id_to_qualified_name_shared_memory,
           callable_id_to_qualified_name_shared_memory,
+          fully_qualified_name_to_class_id_shared_memory,
+          fully_qualified_name_to_callable_id_shared_memory,
           callable_undecorated_signatures_shared_memory )
       =
       collect_classes_and_definitions
@@ -2391,8 +2461,11 @@ module ReadWrite = struct
       module_globals_shared_memory;
       module_name_to_qualifiers_shared_memory;
       module_id_to_qualifier_shared_memory;
+      qualifier_to_module_id_shared_memory;
       class_id_to_qualified_name_shared_memory;
       callable_id_to_qualified_name_shared_memory;
+      fully_qualified_name_to_class_id_shared_memory;
+      fully_qualified_name_to_callable_id_shared_memory;
       callable_ast_shared_memory;
       callable_define_signature_shared_memory;
       callable_parse_result_shared_memory;
@@ -2509,8 +2582,11 @@ module ReadWrite = struct
         module_globals_shared_memory;
         module_name_to_qualifiers_shared_memory;
         module_id_to_qualifier_shared_memory;
+        qualifier_to_module_id_shared_memory;
         class_id_to_qualified_name_shared_memory;
         callable_id_to_qualified_name_shared_memory;
+        fully_qualified_name_to_class_id_shared_memory;
+        fully_qualified_name_to_callable_id_shared_memory;
         callable_ast_shared_memory;
         callable_define_signature_shared_memory;
         callable_parse_result_shared_memory;
@@ -2542,6 +2618,9 @@ module ReadWrite = struct
       CallableIdToQualifiedNameSharedMemory.remove
         callable_id_to_qualified_name_shared_memory
         { GlobalCallableId.module_id; local_function_id };
+      FullyQualifiedNameToCallableIdSharedMemory.remove
+        fully_qualified_name_to_callable_id_shared_memory
+        callable_name;
       ()
     in
     let cleanup_class ~module_id class_name =
@@ -2555,6 +2634,9 @@ module ReadWrite = struct
       ClassIdToQualifiedNameSharedMemory.remove
         class_id_to_qualified_name_shared_memory
         { GlobalClassId.module_id; local_class_id };
+      FullyQualifiedNameToClassIdSharedMemory.remove
+        fully_qualified_name_to_class_id_shared_memory
+        class_name;
       ()
     in
     let cleanup_module module_qualifier =
@@ -2564,6 +2646,7 @@ module ReadWrite = struct
       in
       ModuleInfosSharedMemory.remove module_infos_shared_memory module_qualifier;
       ModuleIdToQualifierSharedMemory.remove module_id_to_qualifier_shared_memory module_id;
+      QualifierToModuleIdSharedMemory.remove qualifier_to_module_id_shared_memory module_qualifier;
       let () =
         if Option.is_some pyrefly_info_filename then begin
           let callables_with_metadata =
@@ -2668,8 +2751,11 @@ module ReadOnly = struct
     callable_undecorated_signatures_shared_memory: CallableUndecoratedSignaturesSharedMemory.t;
     type_of_expressions_shared_memory: TypeOfExpressionsSharedMemory.t option;
     module_id_to_qualifier_shared_memory: ModuleIdToQualifierSharedMemory.t;
+    qualifier_to_module_id_shared_memory: QualifierToModuleIdSharedMemory.t;
     class_id_to_qualified_name_shared_memory: ClassIdToQualifiedNameSharedMemory.t;
     callable_id_to_qualified_name_shared_memory: CallableIdToQualifiedNameSharedMemory.t;
+    fully_qualified_name_to_class_id_shared_memory: FullyQualifiedNameToClassIdSharedMemory.t;
+    fully_qualified_name_to_callable_id_shared_memory: FullyQualifiedNameToCallableIdSharedMemory.t;
     all_sys_infos: SysInfo.t list;
     object_classes: TypeshedClass.t list;
     dict_classes: TypeshedClass.t list;
@@ -2696,8 +2782,11 @@ module ReadOnly = struct
         callable_undecorated_signatures_shared_memory;
         type_of_expressions_shared_memory;
         module_id_to_qualifier_shared_memory;
+        qualifier_to_module_id_shared_memory;
         class_id_to_qualified_name_shared_memory;
         callable_id_to_qualified_name_shared_memory;
+        fully_qualified_name_to_class_id_shared_memory;
+        fully_qualified_name_to_callable_id_shared_memory;
         all_sys_infos;
         object_classes;
         dict_classes;
@@ -2724,8 +2813,11 @@ module ReadOnly = struct
       callable_undecorated_signatures_shared_memory;
       type_of_expressions_shared_memory;
       module_id_to_qualifier_shared_memory;
+      qualifier_to_module_id_shared_memory;
       class_id_to_qualified_name_shared_memory;
       callable_id_to_qualified_name_shared_memory;
+      fully_qualified_name_to_class_id_shared_memory;
+      fully_qualified_name_to_callable_id_shared_memory;
       all_sys_infos;
       object_classes;
       dict_classes;
@@ -3068,6 +3160,33 @@ module ReadOnly = struct
       callable_metadata_shared_memory
       (FullyQualifiedName.from_reference_unchecked define_name)
 
+
+  (* Consult the forward name->id indices. Currently unused; they will become the primary lookup
+     path once the content maps are re-keyed on packed ids. *)
+  let resolve_module_id { qualifier_to_module_id_shared_memory; _ } module_qualifier =
+    QualifierToModuleIdSharedMemory.get qualifier_to_module_id_shared_memory module_qualifier
+
+
+  let resolve_callable_id
+      { fully_qualified_name_to_callable_id_shared_memory; _ }
+      fully_qualified_name
+    =
+    FullyQualifiedNameToCallableIdSharedMemory.get
+      fully_qualified_name_to_callable_id_shared_memory
+      fully_qualified_name
+
+
+  let resolve_class_id { fully_qualified_name_to_class_id_shared_memory; _ } fully_qualified_name =
+    FullyQualifiedNameToClassIdSharedMemory.get
+      fully_qualified_name_to_class_id_shared_memory
+      fully_qualified_name
+
+
+  let _ = resolve_module_id
+
+  let _ = resolve_callable_id
+
+  let _ = resolve_class_id
 
   let get_callable_metadata api define_name =
     get_callable_metadata_value_opt api define_name
