@@ -376,8 +376,6 @@ end
 
 val add_builtins_prefix : Ast.Reference.t -> Ast.Reference.t
 
-val strip_builtins_prefix : Ast.Reference.t -> Ast.Reference.t
-
 val target_symbolic_name : Ast.Reference.t -> Ast.Reference.t
 
 (* Remove the source path prefix that pyrefly may add to a module name to disambiguate modules

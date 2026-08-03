@@ -4643,12 +4643,6 @@ let add_builtins_prefix name =
     name
 
 
-let strip_builtins_prefix name =
-  match Reference.as_list name with
-  | "builtins" :: tail -> Reference.create_from_list tail
-  | _ -> name
-
-
 (* Pyrefly may prefix the module name with the source path to disambiguate modules that share the
    same name (e.g. `a/b/c.py:a.b.c.foo`). Remove that path prefix. This is a no-op when there is no
    path prefix (e.g. for unambiguous module names). When the path itself contains a colon (e.g.
