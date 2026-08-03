@@ -1105,7 +1105,7 @@ module ReadWriteCache = struct
   let show_set set =
     set
     |> Target.Set.elements
-    |> List.map ~f:(Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug)
+    |> List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_external target)
     |> String.concat ~sep:", "
     |> Format.sprintf "{%s}"
 

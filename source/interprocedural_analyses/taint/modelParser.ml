@@ -5159,7 +5159,7 @@ let create_callable_model_from_annotations
     annotations
   =
   let target = Modelable.target modelable in
-  let define_name = Target.define_name_exn target in
+  let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target in
   let callable_undecorated_signatures =
     Some (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name)
   in

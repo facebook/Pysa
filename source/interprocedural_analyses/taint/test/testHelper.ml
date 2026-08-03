@@ -723,7 +723,8 @@ let initialize
     qualifier
     |> OverrideGraph.Heap.from_qualifier
          ~pyrefly_api
-         ~skip_overrides_targets:(SharedModels.skip_overrides ~scheduler initial_models)
+         ~skip_overrides_targets:
+           (SharedModels.skip_overrides ~scheduler ~pyrefly_api initial_models)
     |> OverrideGraph.Heap.cap_overrides
          ~analyze_all_overrides_targets:
            (SharedModels.analyze_all_overrides ~scheduler initial_models)

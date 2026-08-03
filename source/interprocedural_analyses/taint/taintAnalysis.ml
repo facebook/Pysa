@@ -597,7 +597,7 @@ let run_taint_analysis
     StepLogger.start ~start_message:"Computing overrides" ~end_message:"Overrides computed" ()
   in
   let maximum_overrides = TaintConfiguration.maximum_overrides_to_analyze taint_configuration in
-  let skip_overrides_targets = SharedModels.skip_overrides ~scheduler initial_models in
+  let skip_overrides_targets = SharedModels.skip_overrides ~scheduler ~pyrefly_api initial_models in
   let analyze_all_overrides_targets =
     SharedModels.analyze_all_overrides ~scheduler initial_models
   in

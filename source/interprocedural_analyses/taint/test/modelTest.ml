@@ -185,7 +185,7 @@ let assert_model
           ~cmp:Ast.Reference.SerializableSet.equal
           ~printer:Ast.Reference.SerializableSet.show
           expected_set
-          (Registry.skip_overrides models)
+          (Registry.skip_overrides ~pyrefly_api models)
     | None -> ()
   end;
   let get_model = Registry.get models in

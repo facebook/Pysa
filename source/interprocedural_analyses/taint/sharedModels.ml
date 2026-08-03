@@ -40,10 +40,10 @@ let targets_with_mode ~scheduler ~mode models =
     ()
 
 
-let skip_overrides ~scheduler models =
+let skip_overrides ~scheduler ~pyrefly_api models =
   targets_with_mode ~scheduler ~mode:Model.Mode.SkipOverrides models
   |> List.filter ~f:Target.is_function_or_method
-  |> List.map ~f:Target.define_name_exn
+  |> List.map ~f:(Interprocedural.PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api)
   |> Ast.Reference.SerializableSet.of_list
 
 

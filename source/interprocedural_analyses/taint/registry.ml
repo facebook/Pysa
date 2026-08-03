@@ -20,8 +20,8 @@ let targets_with_mode models ~mode =
   fold ~init:[] ~f:collect models
 
 
-let skip_overrides models =
+let skip_overrides ~pyrefly_api models =
   targets_with_mode models ~mode:Model.Mode.SkipOverrides
   |> List.filter ~f:Target.is_function_or_method
-  |> List.map ~f:Target.define_name_exn
+  |> List.map ~f:(Interprocedural.PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api)
   |> Ast.Reference.SerializableSet.of_list

@@ -856,12 +856,12 @@ module CallableDecorator = struct
             (* Regular decorator, such as `@foo` *) decorator_expression
         | _ -> decorator_expression
       in
-      Interprocedural.PyreflyApi.ReadOnly.get_callable_decorator_callees
+      PyreflyApi.ReadOnly.get_callable_decorator_callees
         pyrefly_api
-        (Target.define_name_exn target)
+        (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target)
         (Node.location callee)
       |> Option.value ~default:[]
-      |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
+      |> List.map ~f:PyreflyApi.target_symbolic_name
     in
     let callees = lazy (get_callees statement) in
     { statement; callees }
@@ -878,12 +878,9 @@ module CallableDecorator = struct
         | Expression.Expression.Name _ -> decorator_expression
         | _ -> decorator_expression
       in
-      Interprocedural.PyreflyApi.ReadOnly.get_class_decorator_callees
-        pyrefly_api
-        class_name
-        (Node.location callee)
+      PyreflyApi.ReadOnly.get_class_decorator_callees pyrefly_api class_name (Node.location callee)
       |> Option.value ~default:[]
-      |> List.map ~f:Interprocedural.PyreflyApi.target_symbolic_name
+      |> List.map ~f:PyreflyApi.target_symbolic_name
     in
     let callees = lazy (get_callees statement) in
     { statement; callees }
@@ -981,6 +978,10 @@ module Modelable = struct
   type t =
     | Callable of {
         target: Target.t;
+        target_name: Reference.t Lazy.t;
+        class_name: string option Lazy.t;
+        function_name: string option Lazy.t;
+        method_name: string option Lazy.t;
         (* The syntactic definition of the function, including the AST for each parameters. *)
         define_signature: CallablesSharedMemory.CallableSignature.t Lazy.t;
         (* The semantic (undecorated) signature(s) of the function. *)
@@ -998,6 +999,10 @@ module Modelable = struct
       }
 
   let create_callable ~pyrefly_api ~callables_to_definitions_map target =
+    let target_name = lazy (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target) in
+    let class_name = lazy (PyreflyApi.ReadOnly.Target.class_name pyrefly_api target) in
+    let function_name = lazy (PyreflyApi.ReadOnly.Target.function_name pyrefly_api target) in
+    let method_name = lazy (PyreflyApi.ReadOnly.Target.method_name pyrefly_api target) in
     let define_signature =
       lazy
         (match CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map target with
@@ -1011,9 +1016,9 @@ module Modelable = struct
     in
     let undecorated_signatures =
       lazy
-        (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures
+        (PyreflyApi.ReadOnly.get_undecorated_signatures
            pyrefly_api
-           (Target.define_name_exn target))
+           (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target))
     in
     let decorators =
       lazy
@@ -1037,9 +1042,23 @@ module Modelable = struct
         |> Option.value ~default:[])
     in
     let captures =
-      lazy (PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.define_name_exn target))
+      lazy
+        (PyreflyApi.ReadOnly.get_callable_captures
+           pyrefly_api
+           (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target))
     in
-    Callable { target; define_signature; undecorated_signatures; decorators; captures }
+    Callable
+      {
+        target;
+        target_name;
+        class_name;
+        function_name;
+        method_name;
+        define_signature;
+        undecorated_signatures;
+        decorators;
+        captures;
+      }
 
 
   let create_attribute ~pyrefly_api target =
@@ -1052,14 +1071,11 @@ module Modelable = struct
          in
          let attribute = Reference.last target_name in
          let inferred_type =
-           Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
-             pyrefly_api
-             ~class_name
-             ~attribute
+           PyreflyApi.ReadOnly.get_class_attribute_inferred_type pyrefly_api ~class_name ~attribute
            |> Option.some
          in
          let explicit_annotation =
-           Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_explicit_annotation
+           PyreflyApi.ReadOnly.get_class_attribute_explicit_annotation
              pyrefly_api
              ~class_name
              ~attribute
@@ -1079,7 +1095,7 @@ module Modelable = struct
         (let qualifier = Option.value_exn (Reference.prefix target_name) in
          let name = Reference.last target_name in
          let inferred_type =
-           Interprocedural.PyreflyApi.ReadOnly.get_global_inferred_type pyrefly_api ~qualifier ~name
+           PyreflyApi.ReadOnly.get_global_inferred_type pyrefly_api ~qualifier ~name
          in
          TypeAnnotation.create
            ~inferred_type
@@ -1096,7 +1112,7 @@ module Modelable = struct
 
 
   let target_name = function
-    | Callable { target; _ } -> Target.define_name_exn target
+    | Callable { target_name; _ } -> Lazy.force target_name
     | Attribute { target_name; _ }
     | Global { target_name; _ } ->
         target_name
@@ -1181,7 +1197,7 @@ module Modelable = struct
 
 
   let class_name = function
-    | Callable { target; _ } -> Target.class_name target
+    | Callable { class_name; _ } -> Lazy.force class_name
     | Attribute { target_name; _ } ->
         (* TODO(T225700656): Add API to get class name from attribute name *)
         Reference.prefix target_name >>| Reference.show
@@ -1203,8 +1219,8 @@ module Modelable = struct
     let expand_function_name () =
       let error = Error "`function_name` can only be used on functions" in
       match modelable with
-      | Callable { target; _ } -> (
-          match Target.function_name target with
+      | Callable { function_name; _ } -> (
+          match Lazy.force function_name with
           | Some name -> Reference.create name |> Reference.last |> Result.return
           | None -> error)
       | _ -> error
@@ -1212,8 +1228,8 @@ module Modelable = struct
     let expand_method_name () =
       let error = Error "`method_name` can only be used on methods" in
       match modelable with
-      | Callable { target; _ } -> (
-          match Target.method_name target with
+      | Callable { method_name; _ } -> (
+          match Lazy.force method_name with
           | Some method_name -> Ok method_name
           | _ -> error)
       | _ -> error
@@ -1221,8 +1237,8 @@ module Modelable = struct
     let expand_class_name () =
       let error = Error "`class_name` can only be used on methods" in
       match modelable with
-      | Callable { target; _ } -> (
-          match Target.class_name target with
+      | Callable { class_name; _ } -> (
+          match Lazy.force class_name with
           | Some class_name -> Reference.create class_name |> Reference.last |> Result.return
           | None -> error)
       | _ -> error
