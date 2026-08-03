@@ -13,6 +13,398 @@ open Core
    decorators. *)
 let artificial_decorator_define_module = Ast.Reference.create "artificial_decorator_defines"
 
+module FormatError = struct
+  type t =
+    | UnexpectedJsonType of {
+        json: Yojson.Safe.t;
+        message: string;
+      }
+    | UnsupportedVersion of { version: int }
+    | UnparsableString of string
+  [@@deriving show]
+end
+
+(* Unique identifier for a module, assigned by pyrefly. This maps to a source file. *)
+module ModuleId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  (* Number of bits used to store a module id in the packed `ClassId`/`CallableId` encodings. *)
+  val bit_width : int
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val increment : t -> t
+end = struct
+  type t = int [@@deriving compare, equal, sexp, hash, show]
+
+  let bit_width = 24
+
+  let from_int = Fn.id
+
+  let to_int = Fn.id
+
+  let increment id = id + 1
+end
+
+(* Unique identifier for a class within a module, assigned by pyrefly. *)
+module LocalClassId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  (* Number of bits used to store a local class id in the packed `ClassId`/`CallableId`
+     encodings. *)
+  val bit_width : int
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+
+  module Map : Map.S with type Key.t = t
+end = struct
+  module T = struct
+    type t = int [@@deriving compare, equal, sexp, hash, show]
+  end
+
+  include T
+
+  let bit_width = 17
+
+  let from_int = Fn.id
+
+  let to_int = Fn.id
+
+  let of_string = Int.of_string
+
+  module Map = Map.Make (T)
+end
+
+(* Index of a function definition within a module, assigned by pyrefly. *)
+module FuncDefIndex : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+end = struct
+  type t = int [@@deriving compare, equal, sexp, hash, show]
+
+  let from_int = Fn.id
+
+  let to_int = Fn.id
+
+  let of_string = Int.of_string
+end
+
+(* Unique identifier for a class field within a class, assigned by pyrefly. *)
+module LocalClassFieldId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+end = struct
+  type t = int [@@deriving compare, equal, sexp, hash, show]
+
+  let from_int = Fn.id
+
+  let to_int = Fn.id
+
+  let of_string = Int.of_string
+end
+
+(* Unique identifier for a function within a module, which needs to be consistent between here and
+   the outputs of Pyrefly because the outputs often use this as the key to associate information
+   with (e.g., call graphs). *)
+module LocalFunctionId : sig
+  type t =
+    (* Function declared with a `def` statement. *)
+    | Function of FuncDefIndex.t
+    (* Implicit function containing all top level statement. *)
+    | ModuleTopLevel
+    (* Implicit function containing the class body. *)
+    | ClassTopLevel of LocalClassId.t
+    (* Function-like class field that is not a `def` statement. *)
+    | ClassField of {
+        class_id: LocalClassId.t;
+        field_id: LocalClassFieldId.t;
+      }
+    (* Decorated target, which represents an artificial function containing all decorators of a
+       function, inlined as an expression. For e.g, `@foo` on `def bar()` -> `return foo(bar)` *)
+    | FunctionDecoratedTarget of FuncDefIndex.t
+  [@@deriving compare, equal, show, sexp]
+
+  val from_string : string -> (t, FormatError.t) result
+
+  val create_function : FuncDefIndex.t -> t
+
+  val is_class_field : t -> bool
+
+  module Map : Map.S with type Key.t = t
+end = struct
+  module T = struct
+    type t =
+      | Function of FuncDefIndex.t
+      | ModuleTopLevel
+      | ClassTopLevel of LocalClassId.t
+      | ClassField of {
+          class_id: LocalClassId.t;
+          field_id: LocalClassFieldId.t;
+        }
+      | FunctionDecoratedTarget of FuncDefIndex.t
+    [@@deriving compare, equal, show, sexp]
+  end
+
+  include T
+
+  let from_string string =
+    match String.lsplit2 string ~on:':' with
+    | None when String.equal string "MTL" -> Ok ModuleTopLevel
+    | Some ("F", func_def_index) -> Ok (Function (FuncDefIndex.of_string func_def_index))
+    | Some ("CTL", class_id) -> Ok (ClassTopLevel (LocalClassId.of_string class_id))
+    | Some ("CF", class_field) -> (
+        match String.lsplit2 class_field ~on:':' with
+        | Some (class_id, field_id) ->
+            Ok
+              (ClassField
+                 {
+                   class_id = LocalClassId.of_string class_id;
+                   field_id = LocalClassFieldId.of_string field_id;
+                 })
+        | None -> Error (FormatError.UnparsableString string))
+    | Some ("FDT", func_def_index) ->
+        Ok (FunctionDecoratedTarget (FuncDefIndex.of_string func_def_index))
+    | _ -> Error (FormatError.UnparsableString string)
+
+
+  let create_function func_def_index = Function func_def_index
+
+  let is_class_field = function
+    | ClassField _ -> true
+    | _ -> false
+
+
+  module Map = Map.Make (T)
+end
+
+(* The packed encodings below assume OCaml's native `int` has at least 63 bits (true on all 64-bit
+   platforms), so that a 62-bit payload with a zero sign bit fits without overflow. *)
+let () = assert (Int.num_bits >= 63)
+
+(* Identifier that uniquely identifies a class across the whole project, packing the module id and
+   the local class id into a single integer. `encode` and `decode` are total mutual inverses. *)
+module ClassId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val encode : module_id:ModuleId.t -> LocalClassId.t -> t
+
+  val decode : t -> ModuleId.t * LocalClassId.t
+
+  val module_id : t -> ModuleId.t
+
+  val local_class_id : t -> LocalClassId.t
+end = struct
+  type t = int [@@deriving sexp, hash]
+
+  let module_id_shift = 35
+
+  let mask bits = (1 lsl bits) - 1
+
+  let encode ~module_id local_class_id =
+    let module_id = ModuleId.to_int module_id in
+    let local_class_id = LocalClassId.to_int local_class_id in
+    assert (module_id >= 0 && module_id <= mask ModuleId.bit_width);
+    assert (local_class_id >= 0 && local_class_id <= mask LocalClassId.bit_width);
+    (module_id lsl module_id_shift) lor local_class_id
+
+
+  let module_id_as_int value = (value lsr module_id_shift) land mask ModuleId.bit_width
+
+  let module_id value = ModuleId.from_int (module_id_as_int value)
+
+  let local_class_id value = LocalClassId.from_int (value land mask LocalClassId.bit_width)
+
+  let decode value = module_id value, local_class_id value
+
+  let compare left right =
+    match Int.compare (module_id_as_int left) (module_id_as_int right) with
+    | 0 -> Int.compare left right
+    | result -> result
+
+
+  let equal = Int.equal
+
+  let pp formatter value =
+    let module_id, local_class_id = decode value in
+    Format.fprintf
+      formatter
+      "ClassId(module_id=%d, local_class_id=%d)"
+      (ModuleId.to_int module_id)
+      (LocalClassId.to_int local_class_id)
+
+
+  let show = Format.asprintf "%a" pp
+end
+
+(* Identifier that uniquely identifies a callable across the whole project, packing the module id
+   and the local function id into a single integer. `encode` and `decode` are total mutual
+   inverses. *)
+module CallableId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val encode : module_id:ModuleId.t -> LocalFunctionId.t -> t
+
+  val decode : t -> ModuleId.t * LocalFunctionId.t
+
+  val module_id : t -> ModuleId.t
+
+  val local_function_id : t -> LocalFunctionId.t
+
+  val is_decorated : t -> bool
+
+  val to_decorated : t -> t
+
+  val to_undecorated : t -> t
+end = struct
+  type t = int [@@deriving sexp, hash]
+
+  let tag_shift = 59
+
+  let tag_bits = 3
+
+  let module_id_shift = 35
+
+  let payload_bit_width = 35
+
+  (* A `ClassField` payload packs the class id in the high bits and the field id in the low bits,
+     sharing the `payload_bit_width`-wide payload. The field-id width is whatever remains after the
+     class id. *)
+  let class_field_id_bit_width = payload_bit_width - LocalClassId.bit_width
+
+  let function_tag = 0
+
+  let function_decorated_target_tag = 1
+
+  let module_top_level_tag = 2
+
+  let class_top_level_tag = 3
+
+  let class_field_tag = 4
+
+  let mask bits = (1 lsl bits) - 1
+
+  let encode ~module_id local_function_id =
+    let module_id = ModuleId.to_int module_id in
+    assert (module_id >= 0 && module_id <= mask ModuleId.bit_width);
+    let tag, payload =
+      match local_function_id with
+      | LocalFunctionId.Function func_def_index ->
+          let func_def_index = FuncDefIndex.to_int func_def_index in
+          assert (func_def_index >= 0 && func_def_index <= mask payload_bit_width);
+          function_tag, func_def_index
+      | LocalFunctionId.FunctionDecoratedTarget func_def_index ->
+          let func_def_index = FuncDefIndex.to_int func_def_index in
+          assert (func_def_index >= 0 && func_def_index <= mask payload_bit_width);
+          function_decorated_target_tag, func_def_index
+      | LocalFunctionId.ModuleTopLevel -> module_top_level_tag, 0
+      | LocalFunctionId.ClassTopLevel local_class_id ->
+          let local_class_id = LocalClassId.to_int local_class_id in
+          assert (local_class_id >= 0 && local_class_id <= mask LocalClassId.bit_width);
+          class_top_level_tag, local_class_id
+      | LocalFunctionId.ClassField { class_id; field_id } ->
+          let class_id = LocalClassId.to_int class_id in
+          let field_id = LocalClassFieldId.to_int field_id in
+          assert (class_id >= 0 && class_id <= mask LocalClassId.bit_width);
+          assert (field_id >= 0 && field_id <= mask class_field_id_bit_width);
+          class_field_tag, (class_id lsl class_field_id_bit_width) lor field_id
+    in
+    (tag lsl tag_shift) lor (module_id lsl module_id_shift) lor payload
+
+
+  let module_id_as_int value = (value lsr module_id_shift) land mask ModuleId.bit_width
+
+  let module_id value = ModuleId.from_int (module_id_as_int value)
+
+  let local_function_id value =
+    let tag = (value lsr tag_shift) land mask tag_bits in
+    let payload = value land mask payload_bit_width in
+    if Int.equal tag function_tag then
+      LocalFunctionId.Function (FuncDefIndex.from_int payload)
+    else if Int.equal tag function_decorated_target_tag then
+      LocalFunctionId.FunctionDecoratedTarget (FuncDefIndex.from_int payload)
+    else if Int.equal tag module_top_level_tag then
+      LocalFunctionId.ModuleTopLevel
+    else if Int.equal tag class_top_level_tag then
+      LocalFunctionId.ClassTopLevel (LocalClassId.from_int payload)
+    else if Int.equal tag class_field_tag then
+      LocalFunctionId.ClassField
+        {
+          class_id =
+            LocalClassId.from_int
+              ((payload lsr class_field_id_bit_width) land mask LocalClassId.bit_width);
+          field_id = LocalClassFieldId.from_int (payload land mask class_field_id_bit_width);
+        }
+    else
+      Format.asprintf "unexpected CallableId tag: %d" tag |> failwith
+
+
+  let decode value = module_id value, local_function_id value
+
+  let is_decorated value =
+    Int.equal ((value lsr tag_shift) land mask tag_bits) function_decorated_target_tag
+
+
+  let to_decorated value =
+    match local_function_id value with
+    | LocalFunctionId.Function func_def_index ->
+        encode ~module_id:(module_id value) (LocalFunctionId.FunctionDecoratedTarget func_def_index)
+    | local_function_id ->
+        Format.asprintf
+          "CallableId.to_decorated: expected a Function, got %a"
+          LocalFunctionId.pp
+          local_function_id
+        |> failwith
+
+
+  let to_undecorated value =
+    match local_function_id value with
+    | LocalFunctionId.FunctionDecoratedTarget func_def_index ->
+        encode ~module_id:(module_id value) (LocalFunctionId.Function func_def_index)
+    | local_function_id ->
+        Format.asprintf
+          "CallableId.to_undecorated: expected a FunctionDecoratedTarget, got %a"
+          LocalFunctionId.pp
+          local_function_id
+        |> failwith
+
+
+  let compare left right =
+    match Int.compare (module_id_as_int left) (module_id_as_int right) with
+    | 0 -> Int.compare left right
+    | result -> result
+
+
+  let equal = Int.equal
+
+  let pp formatter value =
+    let module_id, local_function_id = decode value in
+    Format.fprintf
+      formatter
+      "CallableId(module_id=%d, %a)"
+      (ModuleId.to_int module_id)
+      LocalFunctionId.pp
+      local_function_id
+
+
+  let show = Format.asprintf "%a" pp
+end
+
 (* Scalar properties of a type (it is a bool/int/float/etc.) *)
 module ScalarTypeProperties = struct
   type t = int [@@deriving compare, equal, sexp, hash]

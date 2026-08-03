@@ -10,17 +10,7 @@
 open Core
 module PyreflyType = PyreflyTypes.PyreflyType
 module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
-
-module FormatError : sig
-  type t =
-    | UnexpectedJsonType of {
-        json: Yojson.Safe.t;
-        message: string;
-      }
-    | UnsupportedVersion of { version: int }
-    | UnparsableString of string
-  [@@deriving show]
-end
+module FormatError = PyreflyTypes.FormatError
 
 module Error : sig
   type t =
@@ -54,56 +44,16 @@ module ModulePath : sig
   val artifact_file_path : pyrefly_directory:PyrePath.t -> t -> ArtifactPath.t option
 end
 
-module ModuleId : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val max : t -> t -> t
-
-  val increment : t -> t
-end
-
-module LocalClassId : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-
-  module Map : Map.S with type Key.t = t
-end
-
-module FuncDefIndex : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-end
-
-module LocalClassFieldId : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-end
-
 module GlobalClassId : sig
   type t = {
-    module_id: ModuleId.t;
-    local_class_id: LocalClassId.t;
+    module_id: PyreflyTypes.ModuleId.t;
+    local_class_id: PyreflyTypes.LocalClassId.t;
   }
   [@@deriving compare, equal, show]
+
+  val to_class_id : t -> PyreflyTypes.ClassId.t
+
+  val of_class_id : PyreflyTypes.ClassId.t -> t
 end
 
 module GlobalClassIdSharedMemoryKey : sig
@@ -112,33 +62,16 @@ module GlobalClassIdSharedMemoryKey : sig
   val to_string : t -> string
 end
 
-module LocalFunctionId : sig
-  type t =
-    | Function of FuncDefIndex.t
-    | ModuleTopLevel
-    | ClassTopLevel of LocalClassId.t
-    | ClassField of {
-        class_id: LocalClassId.t;
-        field_id: LocalClassFieldId.t;
-      }
-    | FunctionDecoratedTarget of FuncDefIndex.t
-  [@@deriving compare, equal, show, sexp]
-
-  val from_string : string -> (t, FormatError.t) result
-
-  val create_function : FuncDefIndex.t -> t
-
-  val is_class_field : t -> bool
-
-  module Map : Map.S with type Key.t = t
-end
-
 module GlobalCallableId : sig
   type t = {
-    module_id: ModuleId.t;
-    local_function_id: LocalFunctionId.t;
+    module_id: PyreflyTypes.ModuleId.t;
+    local_function_id: PyreflyTypes.LocalFunctionId.t;
   }
   [@@deriving compare, equal, show]
+
+  val to_callable_id : t -> PyreflyTypes.CallableId.t
+
+  val of_callable_id : PyreflyTypes.CallableId.t -> t
 end
 
 module PyreflyTarget : sig
@@ -150,7 +83,7 @@ module PyreflyTarget : sig
 end
 
 module ModuleIdSharedMemoryKey : sig
-  type t = ModuleId.t [@@deriving compare]
+  type t = PyreflyTypes.ModuleId.t [@@deriving compare]
 
   val to_string : t -> string
 end
@@ -212,7 +145,7 @@ end
 module ProjectFile : sig
   module Module : sig
     type t = {
-      module_id: ModuleId.t;
+      module_id: PyreflyTypes.ModuleId.t;
       module_name: Ast.Reference.t;
       absolute_source_path: ModulePath.t;
       relative_source_path: string option;
@@ -230,10 +163,10 @@ module ProjectFile : sig
 
   type t = {
     modules: Module.t list;
-    builtin_module_ids: ModuleId.t list;
+    builtin_module_ids: PyreflyTypes.ModuleId.t list;
     object_class_refs: GlobalClassId.t list;
     dict_class_refs: GlobalClassId.t list;
-    typing_module_ids: ModuleId.t list;
+    typing_module_ids: PyreflyTypes.ModuleId.t list;
     typing_mapping_class_refs: GlobalClassId.t list;
   }
 end
@@ -262,8 +195,8 @@ module ModuleDefinitionsFile : sig
   module ParentScope : sig
     type t =
       | TopLevel
-      | Class of LocalClassId.t
-      | Function of FuncDefIndex.t
+      | Class of PyreflyTypes.LocalClassId.t
+      | Function of PyreflyTypes.FuncDefIndex.t
     [@@deriving equal, show]
   end
 
@@ -315,7 +248,7 @@ module ModuleDefinitionsFile : sig
     type t = {
       name: string;
       name_location: Ast.Location.t option;
-      local_function_id: LocalFunctionId.t;
+      local_function_id: PyreflyTypes.LocalFunctionId.t;
       parent: ParentScope.t;
       undecorated_signatures: FunctionSignature.t list;
       captured_variables: CapturedVariable.t list;
@@ -336,7 +269,7 @@ module ModuleDefinitionsFile : sig
 
     val create_module_toplevel : unit -> t
 
-    val create_class_toplevel : local_class_id:LocalClassId.t -> t
+    val create_class_toplevel : local_class_id:PyreflyTypes.LocalClassId.t -> t
   end
 
   module ClassMro : sig
@@ -360,7 +293,7 @@ module ModuleDefinitionsFile : sig
   module ClassDefinition : sig
     type t = {
       name: string;
-      local_class_id: LocalClassId.t;
+      local_class_id: PyreflyTypes.LocalClassId.t;
       name_location: Ast.Location.t;
       parent: ParentScope.t;
       bases: GlobalClassId.t list;
@@ -384,9 +317,9 @@ module ModuleDefinitionsFile : sig
   end
 
   type t = {
-    module_id: ModuleId.t;
-    function_definitions: FunctionDefinition.t LocalFunctionId.Map.t;
-    class_definitions: ClassDefinition.t LocalClassId.Map.t;
+    module_id: PyreflyTypes.ModuleId.t;
+    function_definitions: FunctionDefinition.t PyreflyTypes.LocalFunctionId.Map.t;
+    class_definitions: ClassDefinition.t PyreflyTypes.LocalClassId.Map.t;
     global_variables: PyreflyGlobalVariable.t list;
   }
 end
@@ -409,14 +342,14 @@ module ModuleTypeOfExpressions : sig
 
   module FunctionTypeOfExpressions : sig
     type t = {
-      function_id: LocalFunctionId.t;
+      function_id: PyreflyTypes.LocalFunctionId.t;
       types: PyreflyType.t array;
       locations: TypeAtLocation.t list;
     }
   end
 
   type t = {
-    module_id: ModuleId.t;
+    module_id: PyreflyTypes.ModuleId.t;
     functions: FunctionTypeOfExpressions.t list;
   }
 end
@@ -461,7 +394,7 @@ module ModuleCallGraphs : sig
 
   module PyreflyGlobalVariable : sig
     type t = {
-      module_id: ModuleId.t;
+      module_id: PyreflyTypes.ModuleId.t;
       name: string;
     }
   end
@@ -539,8 +472,8 @@ module ModuleCallGraphs : sig
   end
 
   type t = {
-    module_id: ModuleId.t;
-    call_graphs: PyreflyCallGraph.t LocalFunctionId.Map.t;
+    module_id: PyreflyTypes.ModuleId.t;
+    call_graphs: PyreflyCallGraph.t PyreflyTypes.LocalFunctionId.Map.t;
   }
 end
 

@@ -22,6 +22,7 @@
 (tests
  (names
   accessPathTest
+  pyreflyTypesTest
   targetTest
   callGraphTest
   callGraphFixpointTest

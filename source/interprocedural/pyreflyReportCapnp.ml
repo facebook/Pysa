@@ -69,10 +69,10 @@ let read_source_path reader =
 
 let read_class_ref reader =
   let module_id =
-    PyreflyReport.ModuleId.from_int (CapnpReader.ClassRef.module_id_get_int_exn reader)
+    PyreflyTypes.ModuleId.from_int (CapnpReader.ClassRef.module_id_get_int_exn reader)
   in
   let local_class_id =
-    PyreflyReport.LocalClassId.from_int (CapnpReader.ClassRef.class_id_get_int_exn reader)
+    PyreflyTypes.LocalClassId.from_int (CapnpReader.ClassRef.class_id_get_int_exn reader)
   in
   { PyreflyReport.GlobalClassId.module_id; local_class_id }
 
@@ -83,11 +83,11 @@ let read_optional_class_ref reader has_fn get_fn =
 
 let read_function_ref reader =
   let module_id =
-    PyreflyReport.ModuleId.from_int (CapnpReader.FunctionRef.module_id_get_int_exn reader)
+    PyreflyTypes.ModuleId.from_int (CapnpReader.FunctionRef.module_id_get_int_exn reader)
   in
   let local_function_id =
     match
-      PyreflyReport.LocalFunctionId.from_string (CapnpReader.FunctionRef.function_id_get reader)
+      PyreflyTypes.LocalFunctionId.from_string (CapnpReader.FunctionRef.function_id_get reader)
     with
     | Ok id -> id
     | Error error ->
@@ -132,8 +132,8 @@ let read_class_with_modifiers reader =
     |> List.filter_map ~f:read_type_modifier
   in
   {
-    PyreflyTypeRep.ClassWithModifiers.module_id = PyreflyReport.ModuleId.to_int class_ref.module_id;
-    class_id = PyreflyReport.LocalClassId.to_int class_ref.local_class_id;
+    PyreflyTypeRep.ClassWithModifiers.module_id = PyreflyTypes.ModuleId.to_int class_ref.module_id;
+    class_id = PyreflyTypes.LocalClassId.to_int class_ref.local_class_id;
     modifiers;
   }
 
@@ -169,10 +169,10 @@ let read_scope_parent reader =
   | CapnpReader.ScopeParent.TopLevel -> PyreflyReport.ModuleDefinitionsFile.ParentScope.TopLevel
   | CapnpReader.ScopeParent.Function func_def_index ->
       PyreflyReport.ModuleDefinitionsFile.ParentScope.Function
-        (PyreflyReport.FuncDefIndex.from_int (Stdint.Uint32.to_int func_def_index))
+        (PyreflyTypes.FuncDefIndex.from_int (Stdint.Uint32.to_int func_def_index))
   | CapnpReader.ScopeParent.Class class_id ->
       PyreflyReport.ModuleDefinitionsFile.ParentScope.Class
-        (PyreflyReport.LocalClassId.from_int (Stdint.Uint32.to_int class_id))
+        (PyreflyTypes.LocalClassId.from_int (Stdint.Uint32.to_int class_id))
   | CapnpReader.ScopeParent.Undefined _ -> failwith "Unknown ScopeParent variant in capnp"
 
 
@@ -420,7 +420,7 @@ let read_class_mro reader =
 let read_class_definition reader =
   let name_location = read_location (CapnpReader.ClassDefinition.name_location_get reader) in
   let class_id = CapnpReader.ClassDefinition.class_id_get_int_exn reader in
-  let local_class_id = PyreflyReport.LocalClassId.from_int class_id in
+  let local_class_id = PyreflyTypes.LocalClassId.from_int class_id in
   let name = CapnpReader.ClassDefinition.name_get reader in
   let parent = read_scope_parent (CapnpReader.ClassDefinition.parent_get reader) in
   let bases = CapnpReader.ClassDefinition.bases_get_list reader |> List.map ~f:read_class_ref in
@@ -453,7 +453,7 @@ let read_class_definition reader =
 let read_function_definition reader =
   let function_id_string = CapnpReader.FunctionDefinition.function_id_get reader in
   let local_function_id =
-    match PyreflyReport.LocalFunctionId.from_string function_id_string with
+    match PyreflyTypes.LocalFunctionId.from_string function_id_string with
     | Ok id -> id
     | Error error ->
         Format.asprintf "Invalid function id: %a" PyreflyReport.FormatError.pp error |> failwith
@@ -579,7 +579,7 @@ let read_call_callees reader =
 
 let read_call_graph_global_variable reader =
   let module_id =
-    PyreflyReport.ModuleId.from_int (CapnpReader.GlobalVariableRef.module_id_get_int_exn reader)
+    PyreflyTypes.ModuleId.from_int (CapnpReader.GlobalVariableRef.module_id_get_int_exn reader)
   in
   let name = CapnpReader.GlobalVariableRef.name_get reader in
   { PyreflyReport.ModuleCallGraphs.PyreflyGlobalVariable.module_id; name }
@@ -714,7 +714,7 @@ let read_call_graph_entry reader =
 let read_function_call_graph reader =
   let function_id_string = CapnpReader.FunctionCallGraph.function_id_get reader in
   let function_id =
-    match PyreflyReport.LocalFunctionId.from_string function_id_string with
+    match PyreflyTypes.LocalFunctionId.from_string function_id_string with
     | Ok id -> id
     | Error error ->
         Format.asprintf "Invalid function id: %a" PyreflyReport.FormatError.pp error |> failwith
@@ -730,7 +730,7 @@ let read_function_call_graph reader =
 module ProjectFile = struct
   let read_module reader =
     let module_id =
-      PyreflyReport.ModuleId.from_int (CapnpReader.PysaProjectModule.module_id_get_int_exn reader)
+      PyreflyTypes.ModuleId.from_int (CapnpReader.PysaProjectModule.module_id_get_int_exn reader)
     in
     let module_name = Reference.create (CapnpReader.PysaProjectModule.module_name_get reader) in
     let absolute_source_path =
@@ -784,7 +784,7 @@ module ProjectFile = struct
     let modules = CapnpReader.ProjectFile.modules_get_list reader |> List.map ~f:read_module in
     let builtin_module_ids =
       CapnpReader.ProjectFile.builtin_module_ids_get_list reader
-      |> List.map ~f:(fun id -> PyreflyReport.ModuleId.from_int (Stdint.Uint32.to_int id))
+      |> List.map ~f:(fun id -> PyreflyTypes.ModuleId.from_int (Stdint.Uint32.to_int id))
     in
     let object_class_refs =
       CapnpReader.ProjectFile.object_class_refs_get_list reader |> List.map ~f:read_class_ref
@@ -794,7 +794,7 @@ module ProjectFile = struct
     in
     let typing_module_ids =
       CapnpReader.ProjectFile.typing_module_ids_get_list reader
-      |> List.map ~f:(fun id -> PyreflyReport.ModuleId.from_int (Stdint.Uint32.to_int id))
+      |> List.map ~f:(fun id -> PyreflyTypes.ModuleId.from_int (Stdint.Uint32.to_int id))
     in
     let typing_mapping_class_refs =
       CapnpReader.ProjectFile.typing_mapping_class_refs_get_list reader
@@ -821,17 +821,17 @@ module ModuleDefinitionsFile = struct
     let message = read_message_from_file_exn path in
     let reader = CapnpReader.ModuleDefinitions.of_message message in
     let module_id =
-      PyreflyReport.ModuleId.from_int (CapnpReader.ModuleDefinitions.module_id_get_int_exn reader)
+      PyreflyTypes.ModuleId.from_int (CapnpReader.ModuleDefinitions.module_id_get_int_exn reader)
     in
     let function_definitions =
       CapnpReader.ModuleDefinitions.function_definitions_get_list reader
       |> List.map ~f:read_function_definition
-      |> PyreflyReport.LocalFunctionId.Map.of_alist_exn
+      |> PyreflyTypes.LocalFunctionId.Map.of_alist_exn
     in
     let class_definitions =
       CapnpReader.ModuleDefinitions.class_definitions_get_list reader
       |> List.map ~f:read_class_definition
-      |> PyreflyReport.LocalClassId.Map.of_alist_exn
+      |> PyreflyTypes.LocalClassId.Map.of_alist_exn
     in
     let global_variables =
       CapnpReader.ModuleDefinitions.global_variables_get_list reader
@@ -849,7 +849,7 @@ module ModuleTypeOfExpressions = struct
   let read_function_type_of_expressions reader =
     let function_id_string = CapnpReader.FunctionTypeOfExpressions.function_id_get reader in
     let function_id =
-      match PyreflyReport.LocalFunctionId.from_string function_id_string with
+      match PyreflyTypes.LocalFunctionId.from_string function_id_string with
       | Ok id -> id
       | Error error ->
           Format.asprintf "Invalid function id: %a" PyreflyReport.FormatError.pp error |> failwith
@@ -888,7 +888,7 @@ module ModuleTypeOfExpressions = struct
     let message = read_message_from_file_exn path in
     let reader = CapnpReader.ModuleTypeOfExpressions.of_message message in
     let module_id =
-      PyreflyReport.ModuleId.from_int
+      PyreflyTypes.ModuleId.from_int
         (CapnpReader.ModuleTypeOfExpressions.module_id_get_int_exn reader)
     in
     let functions =
@@ -909,12 +909,12 @@ module ModuleCallGraphs = struct
     let message = read_message_from_file_exn path in
     let reader = CapnpReader.ModuleCallGraphs.of_message message in
     let module_id =
-      PyreflyReport.ModuleId.from_int (CapnpReader.ModuleCallGraphs.module_id_get_int_exn reader)
+      PyreflyTypes.ModuleId.from_int (CapnpReader.ModuleCallGraphs.module_id_get_int_exn reader)
     in
     let call_graphs =
       CapnpReader.ModuleCallGraphs.call_graphs_get_list reader
       |> List.map ~f:read_function_call_graph
-      |> PyreflyReport.LocalFunctionId.Map.of_alist_exn
+      |> PyreflyTypes.LocalFunctionId.Map.of_alist_exn
     in
     { PyreflyReport.ModuleCallGraphs.module_id; call_graphs }
 end

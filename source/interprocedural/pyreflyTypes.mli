@@ -11,6 +11,132 @@
    decorators. *)
 val artificial_decorator_define_module : Ast.Reference.t
 
+module FormatError : sig
+  type t =
+    | UnexpectedJsonType of {
+        json: Yojson.Safe.t;
+        message: string;
+      }
+    | UnsupportedVersion of { version: int }
+    | UnparsableString of string
+  [@@deriving show]
+end
+
+(* Unique identifier for a module, assigned by pyrefly. This maps to a source file. *)
+module ModuleId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  (* Number of bits used to store a module id in the packed `ClassId`/`CallableId` encodings. *)
+  val bit_width : int
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val increment : t -> t
+end
+
+(* Unique identifier for a class within a module, assigned by pyrefly. *)
+module LocalClassId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  (* Number of bits used to store a local class id in the packed `ClassId`/`CallableId`
+     encodings. *)
+  val bit_width : int
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+
+  module Map : Core.Map.S with type Key.t = t
+end
+
+(* Index of a function definition within a module, assigned by pyrefly. *)
+module FuncDefIndex : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+end
+
+(* Unique identifier for a class field within a class, assigned by pyrefly. *)
+module LocalClassFieldId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val from_int : int -> t
+
+  val to_int : t -> int
+
+  val of_string : string -> t
+end
+
+(* Unique identifier for a function within a module, which needs to be consistent between here and
+   the outputs of Pyrefly because the outputs often use this as the key to associate information
+   with (e.g., call graphs). *)
+module LocalFunctionId : sig
+  type t =
+    | Function of FuncDefIndex.t
+    | ModuleTopLevel
+    | ClassTopLevel of LocalClassId.t
+    | ClassField of {
+        class_id: LocalClassId.t;
+        field_id: LocalClassFieldId.t;
+      }
+    | FunctionDecoratedTarget of FuncDefIndex.t
+  [@@deriving compare, equal, show, sexp]
+
+  val from_string : string -> (t, FormatError.t) result
+
+  val create_function : FuncDefIndex.t -> t
+
+  val is_class_field : t -> bool
+
+  module Map : Core.Map.S with type Key.t = t
+end
+
+(* Identifier that uniquely identifies a class across the whole project, packing the module id and
+   the local class id into a single integer. `encode` and `decode` are total mutual inverses. *)
+module ClassId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val encode : module_id:ModuleId.t -> LocalClassId.t -> t
+
+  val decode : t -> ModuleId.t * LocalClassId.t
+
+  val module_id : t -> ModuleId.t
+
+  val local_class_id : t -> LocalClassId.t
+end
+
+(* Identifier that uniquely identifies a callable across the whole project, packing the module id
+   and the local function id into a single integer. `encode` and `decode` are total mutual
+   inverses. *)
+module CallableId : sig
+  type t [@@deriving compare, equal, sexp, hash, show]
+
+  val encode : module_id:ModuleId.t -> LocalFunctionId.t -> t
+
+  val decode : t -> ModuleId.t * LocalFunctionId.t
+
+  val module_id : t -> ModuleId.t
+
+  val local_function_id : t -> LocalFunctionId.t
+
+  (* Whether the callable is the decorated variant of a function (`FunctionDecoratedTarget`). *)
+  val is_decorated : t -> bool
+
+  (* Return the decorated variant of a `Function` callable *)
+  val to_decorated : t -> t
+
+  (* Return the undecorated variant of a `FunctionDecoratedTarget` callable *)
+  val to_undecorated : t -> t
+end
+
 (* Scalar properties of a type (it is a bool/int/float/etc.) *)
 module ScalarTypeProperties : sig
   type t [@@deriving compare, equal, sexp, hash, show]

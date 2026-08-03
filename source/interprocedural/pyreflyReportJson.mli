@@ -154,7 +154,7 @@ module ModuleDefinitionsFile : sig
 
   module FunctionDefinition : sig
     val from_json
-      :  local_function_id:PyreflyReport.LocalFunctionId.t ->
+      :  local_function_id:PyreflyTypes.LocalFunctionId.t ->
       Yojson.Safe.t ->
       (PyreflyReport.ModuleDefinitionsFile.FunctionDefinition.t, PyreflyReport.FormatError.t) result
   end

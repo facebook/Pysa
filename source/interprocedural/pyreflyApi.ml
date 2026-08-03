@@ -60,12 +60,12 @@ exception PyreflyFileFormatError = PyreflyReport.PyreflyFileFormatError
 exception NoSourceFilesToAnalyze
 
 module ModulePath = PyreflyReport.ModulePath
-module ModuleId = PyreflyReport.ModuleId
-module LocalClassId = PyreflyReport.LocalClassId
-module FuncDefIndex = PyreflyReport.FuncDefIndex
+module ModuleId = PyreflyTypes.ModuleId
+module LocalClassId = PyreflyTypes.LocalClassId
+module FuncDefIndex = PyreflyTypes.FuncDefIndex
 module GlobalClassId = PyreflyReport.GlobalClassId
 module GlobalClassIdSharedMemoryKey = PyreflyReport.GlobalClassIdSharedMemoryKey
-module LocalFunctionId = PyreflyReport.LocalFunctionId
+module LocalFunctionId = PyreflyTypes.LocalFunctionId
 module GlobalCallableId = PyreflyReport.GlobalCallableId
 module PyreflyTarget = PyreflyReport.PyreflyTarget
 module ModuleIdSharedMemoryKey = PyreflyReport.ModuleIdSharedMemoryKey
@@ -858,8 +858,8 @@ module ReadWrite = struct
         qualifier_to_module_map
         |> Map.data
         |> List.concat
-        |> List.fold ~init:(ModuleId.from_int 0) ~f:(fun sofar (_, { Module.module_id; _ }) ->
-               ModuleId.max sofar module_id)
+        |> List.map ~f:(fun (_, { Module.module_id; _ }) -> module_id)
+        |> List.max_elt ~compare:ModuleId.compare
       in
       let default_sys_info =
         let _, modules = Map.min_elt_exn qualifier_to_module_map in
@@ -870,7 +870,11 @@ module ReadWrite = struct
         if Reference.length module_name >= 2 then
           let module_head = Option.value_exn (Reference.head module_name) in
           if not (Map.mem qualifier_to_module_map module_head) then
-            let last_module_id = ModuleId.increment last_module_id in
+            let next_module_id =
+              match last_module_id with
+              | None -> ModuleId.from_int 0
+              | Some module_id -> ModuleId.increment module_id
+            in
             let qualifier_to_module_map =
               Map.add_exn
                 qualifier_to_module_map
@@ -879,7 +883,7 @@ module ReadWrite = struct
                   [
                     ( ModuleQualifier.create ~path:None module_head,
                       {
-                        Module.module_id = last_module_id;
+                        Module.module_id = next_module_id;
                         module_name = module_head;
                         absolute_source_path = None;
                         relative_source_path = None;
@@ -892,7 +896,7 @@ module ReadWrite = struct
                       } );
                   ]
             in
-            qualifier_to_module_map, last_module_id
+            qualifier_to_module_map, Some next_module_id
           else
             sofar
         else

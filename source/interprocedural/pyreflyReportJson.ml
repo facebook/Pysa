@@ -196,8 +196,8 @@ module GlobalClassId = struct
     JsonUtil.get_int_member json "class_id"
     >>| fun class_id ->
     {
-      PyreflyReport.GlobalClassId.module_id = PyreflyReport.ModuleId.from_int module_id;
-      local_class_id = PyreflyReport.LocalClassId.from_int class_id;
+      PyreflyReport.GlobalClassId.module_id = PyreflyTypes.ModuleId.from_int module_id;
+      local_class_id = PyreflyTypes.LocalClassId.from_int class_id;
     }
 
 
@@ -214,10 +214,10 @@ module GlobalCallableId = struct
     JsonUtil.get_int_member json "module_id"
     >>= fun module_id ->
     JsonUtil.get_string_member json "function_id"
-    >>= PyreflyReport.LocalFunctionId.from_string
+    >>= PyreflyTypes.LocalFunctionId.from_string
     >>| fun local_function_id ->
     {
-      PyreflyReport.GlobalCallableId.module_id = PyreflyReport.ModuleId.from_int module_id;
+      PyreflyReport.GlobalCallableId.module_id = PyreflyTypes.ModuleId.from_int module_id;
       local_function_id;
     }
 
@@ -298,7 +298,7 @@ module ProjectFile = struct
       JsonUtil.get_optional_bool_member ~default:false json "failed_to_load"
       >>| fun failed_to_load ->
       {
-        PyreflyReport.ProjectFile.Module.module_id = PyreflyReport.ModuleId.from_int module_id;
+        PyreflyReport.ProjectFile.Module.module_id = PyreflyTypes.ModuleId.from_int module_id;
         module_name = Reference.create module_name;
         absolute_source_path;
         relative_source_path;
@@ -328,7 +328,7 @@ module ProjectFile = struct
     JsonUtil.get_list_member json "builtin_module_ids"
     >>= fun builtin_module_ids_json ->
     List.map builtin_module_ids_json ~f:(fun j ->
-        JsonUtil.as_int j >>| PyreflyReport.ModuleId.from_int)
+        JsonUtil.as_int j >>| PyreflyTypes.ModuleId.from_int)
     |> Result.all
     >>= fun builtin_module_ids ->
     JsonUtil.get_list_member json "object_class_refs"
@@ -344,7 +344,7 @@ module ProjectFile = struct
     JsonUtil.get_list_member json "typing_module_ids"
     >>= fun typing_module_ids_json ->
     List.map typing_module_ids_json ~f:(fun j ->
-        JsonUtil.as_int j >>| PyreflyReport.ModuleId.from_int)
+        JsonUtil.as_int j >>| PyreflyTypes.ModuleId.from_int)
     |> Result.all
     >>= fun typing_module_ids ->
     JsonUtil.get_list_member json "typing_mapping_class_refs"
@@ -393,8 +393,8 @@ module ClassWithModifiers = struct
     >>= Result.all
     >>| fun modifiers ->
     {
-      PyreflyTypeRep.ClassWithModifiers.module_id = PyreflyReport.ModuleId.to_int module_id;
-      class_id = PyreflyReport.LocalClassId.to_int local_class_id;
+      PyreflyTypeRep.ClassWithModifiers.module_id = PyreflyTypes.ModuleId.to_int module_id;
+      class_id = PyreflyTypes.LocalClassId.to_int local_class_id;
       modifiers;
     }
 end
@@ -445,11 +445,11 @@ module ModuleDefinitionsFile = struct
       | `Assoc [("Class", `Assoc [("class_id", `Int class_id)])] ->
           Ok
             (PyreflyReport.ModuleDefinitionsFile.ParentScope.Class
-               (PyreflyReport.LocalClassId.from_int class_id))
+               (PyreflyTypes.LocalClassId.from_int class_id))
       | `Assoc [("Function", `Assoc [("func_def_index", `Int func_def_index)])] ->
           Ok
             (PyreflyReport.ModuleDefinitionsFile.ParentScope.Function
-               (PyreflyReport.FuncDefIndex.from_int func_def_index))
+               (PyreflyTypes.FuncDefIndex.from_int func_def_index))
       | json ->
           Error
             (PyreflyReport.FormatError.UnexpectedJsonType
@@ -701,7 +701,7 @@ module ModuleDefinitionsFile = struct
       >>| fun decorator_callees ->
       {
         PyreflyReport.ModuleDefinitionsFile.ClassDefinition.name;
-        local_class_id = PyreflyReport.LocalClassId.from_int class_id;
+        local_class_id = PyreflyTypes.LocalClassId.from_int class_id;
         name_location;
         parent;
         bases;
@@ -735,21 +735,21 @@ module ModuleDefinitionsFile = struct
     let parse_function_definitions function_definitions =
       function_definitions
       |> List.map ~f:(fun (local_function_id, function_definition) ->
-             PyreflyReport.LocalFunctionId.from_string local_function_id
+             PyreflyTypes.LocalFunctionId.from_string local_function_id
              >>= fun local_function_id ->
              FunctionDefinition.from_json ~local_function_id function_definition
              >>| fun function_definition -> local_function_id, function_definition)
       |> Result.all
-      >>| PyreflyReport.LocalFunctionId.Map.of_alist_exn
+      >>| PyreflyTypes.LocalFunctionId.Map.of_alist_exn
     in
     let parse_class_definitions class_definitions =
       class_definitions
       |> List.map ~f:(fun (class_id_str, class_definition) ->
-             let class_id = PyreflyReport.LocalClassId.of_string class_id_str in
+             let class_id = PyreflyTypes.LocalClassId.of_string class_id_str in
              ClassDefinition.from_json class_definition
              >>| fun class_definition -> class_id, class_definition)
       |> Result.all
-      >>| PyreflyReport.LocalClassId.Map.of_alist_exn
+      >>| PyreflyTypes.LocalClassId.Map.of_alist_exn
     in
     let parse_global_variables global_variables =
       global_variables
@@ -772,7 +772,7 @@ module ModuleDefinitionsFile = struct
     >>= parse_global_variables
     >>| fun global_variables ->
     {
-      PyreflyReport.ModuleDefinitionsFile.module_id = PyreflyReport.ModuleId.from_int module_id;
+      PyreflyReport.ModuleDefinitionsFile.module_id = PyreflyTypes.ModuleId.from_int module_id;
       function_definitions;
       class_definitions;
       global_variables;
@@ -799,7 +799,7 @@ module ModuleTypeOfExpressions = struct
   let from_json json =
     let open Core.Result.Monad_infix in
     let parse_function_type_of_expressions (function_id_string, function_json) =
-      PyreflyReport.LocalFunctionId.from_string function_id_string
+      PyreflyTypes.LocalFunctionId.from_string function_id_string
       >>= fun function_id ->
       JsonUtil.check_object function_json
       >>= fun _ ->
@@ -843,7 +843,7 @@ module ModuleTypeOfExpressions = struct
     |> Result.all
     >>| fun functions_list ->
     {
-      PyreflyReport.ModuleTypeOfExpressions.module_id = PyreflyReport.ModuleId.from_int module_id;
+      PyreflyReport.ModuleTypeOfExpressions.module_id = PyreflyTypes.ModuleId.from_int module_id;
       functions = functions_list;
     }
 
@@ -966,7 +966,7 @@ module ModuleCallGraphs = struct
       >>| fun name ->
       {
         PyreflyReport.ModuleCallGraphs.PyreflyGlobalVariable.module_id =
-          PyreflyReport.ModuleId.from_int module_id;
+          PyreflyTypes.ModuleId.from_int module_id;
         name;
       }
   end
@@ -1183,11 +1183,11 @@ module ModuleCallGraphs = struct
     let parse_call_graphs call_graphs =
       call_graphs
       |> List.map ~f:(fun (function_id, call_graph) ->
-             PyreflyReport.LocalFunctionId.from_string function_id
+             PyreflyTypes.LocalFunctionId.from_string function_id
              >>= fun function_id ->
              PyreflyCallGraph.from_json call_graph >>| fun call_graph -> function_id, call_graph)
       |> Result.all
-      >>| PyreflyReport.LocalFunctionId.Map.of_alist_exn
+      >>| PyreflyTypes.LocalFunctionId.Map.of_alist_exn
     in
     JsonUtil.check_object json
     >>= fun _ ->
@@ -1199,7 +1199,7 @@ module ModuleCallGraphs = struct
     >>= parse_call_graphs
     >>| fun call_graphs ->
     {
-      PyreflyReport.ModuleCallGraphs.module_id = PyreflyReport.ModuleId.from_int module_id;
+      PyreflyReport.ModuleCallGraphs.module_id = PyreflyTypes.ModuleId.from_int module_id;
       call_graphs;
     }
 

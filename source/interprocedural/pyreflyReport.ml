@@ -11,17 +11,11 @@ open Core
 open Ast
 module PyreflyType = PyreflyTypes.PyreflyType
 module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
-
-module FormatError = struct
-  type t =
-    | UnexpectedJsonType of {
-        json: Yojson.Safe.t;
-        message: string;
-      }
-    | UnsupportedVersion of { version: int }
-    | UnparsableString of string
-  [@@deriving show]
-end
+module FormatError = PyreflyTypes.FormatError
+module ModuleId = PyreflyTypes.ModuleId
+module LocalClassId = PyreflyTypes.LocalClassId
+module FuncDefIndex = PyreflyTypes.FuncDefIndex
+module LocalFunctionId = PyreflyTypes.LocalFunctionId
 
 module Error = struct
   type t =
@@ -87,102 +81,21 @@ module ModulePath = struct
           |> ArtifactPath.create)
 end
 
-(* Unique identifier for a module, assigned by pyrefly. This maps to a source file. *)
-module ModuleId : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val max : t -> t -> t
-
-  val increment : t -> t
-end = struct
-  type t = int [@@deriving compare, equal, sexp, hash, show]
-
-  let from_int = Fn.id
-
-  let to_int = Fn.id
-
-  let max = Int.max
-
-  let increment id = id + 1
-end
-
-(* Unique identifier for a class within a module, assigned by pyrefly. *)
-module LocalClassId : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-
-  module Map : Map.S with type Key.t = t
-end = struct
-  module T = struct
-    type t = int [@@deriving compare, equal, sexp, hash, show]
-  end
-
-  include T
-
-  let from_int = Fn.id
-
-  let to_int = Fn.id
-
-  let of_string = Int.of_string
-
-  module Map = Map.Make (T)
-end
-
-(* Index of a function definition within a module, assigned by pyrefly. *)
-module FuncDefIndex : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-end = struct
-  type t = int [@@deriving compare, equal, sexp, hash, show]
-
-  let from_int = Fn.id
-
-  let to_int = Fn.id
-
-  let of_string = Int.of_string
-end
-
-(* Unique identifier for a class field within a class, assigned by pyrefly. *)
-module LocalClassFieldId : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-end = struct
-  type t = int [@@deriving compare, equal, sexp, hash, show]
-
-  let from_int = Fn.id
-
-  let to_int = Fn.id
-
-  let of_string = Int.of_string
-end
-
 (* Unique identifier for a class, assigned by pyrefly. *)
 module GlobalClassId = struct
-  (* TODO(T225700656): Potentially encode this in a single integer to save space. *)
   type t = {
     module_id: ModuleId.t;
     local_class_id: LocalClassId.t;
   }
   [@@deriving compare, equal, show]
+
+  let to_class_id { module_id; local_class_id } =
+    PyreflyTypes.ClassId.encode ~module_id local_class_id
+
+
+  let of_class_id class_id =
+    let module_id, local_class_id = PyreflyTypes.ClassId.decode class_id in
+    { module_id; local_class_id }
 end
 
 module GlobalClassIdSharedMemoryKey = struct
@@ -192,80 +105,6 @@ module GlobalClassIdSharedMemoryKey = struct
     Format.sprintf "%d|%d" (ModuleId.to_int module_id) (LocalClassId.to_int local_class_id)
 end
 
-(* Unique identifier for a function within a module, which needs to be consistent between here and
-   the outputs of Pyrefly because the outputs often use this as the key to associate information
-   with (e.g., call graphs). *)
-module LocalFunctionId : sig
-  type t =
-    (* Function declared with a `def` statement. *)
-    | Function of FuncDefIndex.t
-    (* Implicit function containing all top level statement. *)
-    | ModuleTopLevel
-    (* Implicit function containing the class body. *)
-    | ClassTopLevel of LocalClassId.t
-    (* Function-like class field that is not a `def` statement. *)
-    | ClassField of {
-        class_id: LocalClassId.t;
-        field_id: LocalClassFieldId.t;
-      }
-    (* Decorated target, which represents an artificial function containing all decorators of a
-       function, inlined as an expression. For e.g, `@foo` on `def bar()` -> `return foo(bar)` *)
-    | FunctionDecoratedTarget of FuncDefIndex.t
-  [@@deriving compare, equal, show, sexp]
-
-  val from_string : string -> (t, FormatError.t) result
-
-  val create_function : FuncDefIndex.t -> t
-
-  val is_class_field : t -> bool
-
-  module Map : Map.S with type Key.t = t
-end = struct
-  module T = struct
-    type t =
-      | Function of FuncDefIndex.t
-      | ModuleTopLevel
-      | ClassTopLevel of LocalClassId.t
-      | ClassField of {
-          class_id: LocalClassId.t;
-          field_id: LocalClassFieldId.t;
-        }
-      | FunctionDecoratedTarget of FuncDefIndex.t
-    [@@deriving compare, equal, show, sexp]
-  end
-
-  include T
-
-  let from_string string =
-    match String.lsplit2 string ~on:':' with
-    | None when String.equal string "MTL" -> Ok ModuleTopLevel
-    | Some ("F", func_def_index) -> Ok (Function (FuncDefIndex.of_string func_def_index))
-    | Some ("CTL", class_id) -> Ok (ClassTopLevel (LocalClassId.of_string class_id))
-    | Some ("CF", class_field) -> (
-        match String.lsplit2 class_field ~on:':' with
-        | Some (class_id, field_id) ->
-            Ok
-              (ClassField
-                 {
-                   class_id = LocalClassId.of_string class_id;
-                   field_id = LocalClassFieldId.of_string field_id;
-                 })
-        | None -> Error (FormatError.UnparsableString string))
-    | Some ("FDT", func_def_index) ->
-        Ok (FunctionDecoratedTarget (FuncDefIndex.of_string func_def_index))
-    | _ -> Error (FormatError.UnparsableString string)
-
-
-  let create_function func_def_index = Function func_def_index
-
-  let is_class_field = function
-    | ClassField _ -> true
-    | _ -> false
-
-
-  module Map = Map.Make (T)
-end
-
 (* Unique identifier for a callable (function or method) *)
 module GlobalCallableId = struct
   type t = {
@@ -273,6 +112,15 @@ module GlobalCallableId = struct
     local_function_id: LocalFunctionId.t;
   }
   [@@deriving compare, equal, show]
+
+  let to_callable_id { module_id; local_function_id } =
+    PyreflyTypes.CallableId.encode ~module_id local_function_id
+
+
+  let of_callable_id callable_id =
+    let module_id, local_function_id = PyreflyTypes.CallableId.decode callable_id in
+    { module_id; local_function_id }
+
 
   let _ = pp, LocalFunctionId.show
 end
