@@ -998,7 +998,7 @@ let end_to_end_integration_test path context =
       in
       create_expected_and_actual_files ~suffix:".cg" actual
     in
-    let create_higher_order_call_graph_files call_graph_fixpoint_state =
+    let create_higher_order_call_graph_files ~display_api call_graph_fixpoint_state =
       let content =
         call_graph_fixpoint_state.CallGraphFixpoint.fixpoint
         |> CallGraphFixpoint.analyzed_callables
@@ -1016,7 +1016,9 @@ let end_to_end_integration_test path context =
                    let json =
                      `Assoc
                        (("callable", `String (Target.show_pretty callable))
-                       :: CallGraphBuilder.HigherOrderCallGraph.to_json_alist call_graph)
+                       :: CallGraphBuilder.HigherOrderCallGraph.to_json_alist
+                            ~display_api
+                            call_graph)
                    in
                    Some (Yojson.Safe.pretty_to_string json)
                | _ -> None)
@@ -1150,7 +1152,9 @@ let end_to_end_integration_test path context =
     let divergent_files =
       [
         create_call_graph_files whole_program_call_graph;
-        create_higher_order_call_graph_files call_graph_fixpoint_state;
+        create_higher_order_call_graph_files
+          ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
+          call_graph_fixpoint_state;
         create_overrides_files override_graph_heap;
       ]
     in

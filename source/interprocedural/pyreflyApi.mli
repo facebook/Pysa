@@ -172,27 +172,6 @@ module ReadOnly : sig
 
   val is_object_class : t -> string -> bool
 
-  val get_callable_metadata : t -> Ast.Reference.t -> CallableMetadata.t
-
-  val get_callable_metadata_opt : t -> Ast.Reference.t -> CallableMetadata.t option
-
-  (* Return the fully qualified name of the class that defines this callable, or `None` if the
-     callable is not defined within a class. *)
-  val class_name_of_callable : t -> Ast.Reference.t -> Ast.Reference.t option
-
-  (* Resolve a `(class, bare method name)` pair to the real method target defined on that class, or
-     `None` if the class has no method with that bare name. `method_name` must be the bare name
-     (without suffixes like `@setter` or `$2`). *)
-  val resolve_method_target
-    :  t ->
-    class_name:Ast.Reference.t ->
-    method_name:string ->
-    is_property_setter:bool ->
-    Target.t option
-
-  (* Resolve a function name to its real function target, or `None` if no such function exists. *)
-  val resolve_function_target : t -> Ast.Reference.t -> Target.t option
-
   val is_stub_like_callable : t -> Ast.Reference.t -> bool
 
   val is_stub_like_callable_opt : t -> Ast.Reference.t -> bool option
@@ -208,8 +187,6 @@ module ReadOnly : sig
     define_name:Ast.Reference.t ->
     AccessPath.NormalizedParameter.t list ->
     (AccessPath.NormalizedParameter.t * PyreflyType.t list) list
-
-  val get_overriden_base_method : t -> Target.MethodReference.t -> Target.MethodReference.t option
 
   val get_callable_captures : t -> Ast.Reference.t -> AccessPath.CapturedVariable.t list
 
@@ -279,8 +256,6 @@ module ReadOnly : sig
     name:string ->
     PyreflyType.t option
 
-  val target_from_define_name : t -> override:bool -> Ast.Reference.t -> Target.t
-
   val parse_call_graphs
     :  t ->
     scheduler:Scheduler.t ->
@@ -338,8 +313,6 @@ module ReadOnly : sig
     t ->
     Ast.Reference.t ->
     string option
-
-  val target_from_method_reference : Target.MethodReference.t -> Target.t
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)

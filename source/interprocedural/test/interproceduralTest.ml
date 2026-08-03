@@ -330,7 +330,9 @@ end = struct
 end
 
 let resolve_function_target_exn ~pyrefly_api reference =
-  match Interprocedural.PyreflyApi.ReadOnly.resolve_function_target pyrefly_api reference with
+  match
+    Interprocedural.PyreflyApi.ReadOnly.Target.resolve_function_target pyrefly_api reference
+  with
   | Some target -> target
   | None ->
       Format.asprintf
@@ -343,7 +345,7 @@ let resolve_function_target_exn ~pyrefly_api reference =
 let resolve_method_target_exn ?(is_property_setter = false) ~pyrefly_api ~class_name ~method_name ()
   =
   match
-    Interprocedural.PyreflyApi.ReadOnly.resolve_method_target
+    Interprocedural.PyreflyApi.ReadOnly.Target.resolve_method_target
       pyrefly_api
       ~class_name
       ~method_name
@@ -383,7 +385,10 @@ let resolve_override_target_from_reference_exn ~pyrefly_api reference =
 
 
 let resolve_define_name_target_exn ~pyrefly_api reference =
-  Interprocedural.PyreflyApi.ReadOnly.target_from_define_name pyrefly_api ~override:false reference
+  Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+    pyrefly_api
+    ~override:false
+    reference
 
 
 let resolve_function_regular_exn ~pyrefly_api reference =

@@ -448,8 +448,10 @@ let compute
     ~called_when_parameter
     ~skip_inlining_higher_order_functions
   =
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   let callables_to_definitions_map =
     CallableToDecoratorsMap.SharedMemory.register_decorator_defines
+      ~pyrefly_api
       callables_to_decorators_map
       callables_to_definitions_map
   in
@@ -537,6 +539,7 @@ let compute
   let readonly_state = Fixpoint.State.read_only state in
   let () =
     CallGraphBuilder.HigherOrderCallGraph.save_to_directory
+      ~display_api
       ~scheduler
       ~static_analysis_configuration
       ~resolve_qualifier:(CallablesSharedMemory.ReadOnly.get_qualifier callables_to_definitions_map)

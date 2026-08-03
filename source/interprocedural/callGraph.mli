@@ -76,7 +76,7 @@ module CallTarget : sig
     Target.Regular.t ->
     t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -155,7 +155,7 @@ module HigherOrderParameter : sig
   }
   [@@deriving equal, show]
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -182,7 +182,7 @@ module HigherOrderParameterMap : sig
 
   val first_index : t -> HigherOrderParameter.t option
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -197,7 +197,7 @@ module ShimTarget : sig
   }
   [@@deriving equal, show]
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -280,7 +280,7 @@ module CallCallees : sig
 
   val is_object_init : CallTarget.t list -> bool
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -314,7 +314,7 @@ module AttributeAccessCallees : sig
 
   val empty : t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -337,7 +337,7 @@ module IdentifierCallees : sig
     unit ->
     t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -350,7 +350,7 @@ module FormatStringArtificialCallees : sig
 
   val from_f_string_targets : CallTarget.t list -> t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -363,7 +363,7 @@ module FormatStringStringifyCallees : sig
 
   val from_stringify_targets : CallTarget.t list -> t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -383,7 +383,7 @@ module DefineCallees : sig
     unit ->
     t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target : f:(Target.t -> Target.t) -> t -> t
 
@@ -433,7 +433,7 @@ module ExpressionCallees : sig
 
   val from_return : ReturnShimCallees.t -> t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val map_target
     :  f:(Target.t -> Target.t) ->
@@ -669,10 +669,11 @@ module DefineCallGraph : sig
 
   val regenerate_call_indices : indexer:Indexer.t -> t -> t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 
   val save_to_directory
-    :  scheduler:Scheduler.t ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    scheduler:Scheduler.t ->
     static_analysis_configuration:Configuration.StaticAnalysis.t ->
     resolve_qualifier:(Target.t -> Ast.Reference.t option) ->
     resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) option ->
@@ -755,10 +756,11 @@ module MakeSaveCallGraph (CallGraph : sig
 
   val is_empty : t -> bool
 
-  val to_json_alist : t -> (string * Yojson.Safe.t) list
+  val to_json_alist : display_api:PyreflyTypes.DisplayApi.t -> t -> (string * Yojson.Safe.t) list
 end) : sig
   val save_to_directory
-    :  scheduler:Scheduler.t ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    scheduler:Scheduler.t ->
     static_analysis_configuration:Configuration.StaticAnalysis.t ->
     resolve_qualifier:(Target.t -> Ast.Reference.t option) ->
     resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) option ->

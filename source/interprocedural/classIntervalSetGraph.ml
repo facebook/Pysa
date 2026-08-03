@@ -151,10 +151,10 @@ module SharedMemory = struct
 
   let of_definition handle pyrefly_api define_name =
     let open Ast in
-    match PyreflyApi.ReadOnly.class_name_of_callable pyrefly_api define_name with
+    match PyreflyApi.ReadOnly.Target.class_name_of_callable pyrefly_api define_name with
     | Some class_name
       when not
-             (PyreflyApi.ReadOnly.get_callable_metadata pyrefly_api define_name)
+             (PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api define_name)
                .PyreflyApi.CallableMetadata.is_staticmethod ->
         (* Note that we also return the interval of the class for class methods, since the same
            logic applies between instance and class methods. *)

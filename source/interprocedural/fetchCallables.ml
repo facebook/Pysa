@@ -46,10 +46,10 @@ let from_qualifier ~pyrefly_api ~qualifier =
   let is_internal = PyreflyApi.ReadOnly.is_internal_qualifier pyrefly_api qualifier in
   let add_target result define_name =
     let target =
-      PyreflyApi.ReadOnly.target_from_define_name pyrefly_api ~override:false define_name
+      PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false define_name
     in
     let { PyreflyApi.CallableMetadata.is_toplevel; is_class_toplevel; _ } =
-      PyreflyApi.ReadOnly.get_callable_metadata pyrefly_api define_name
+      PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api define_name
     in
     let is_stub_like = PyreflyApi.ReadOnly.is_stub_like_callable pyrefly_api define_name in
     (* Note: when changing this, also change `PyreflyApi.ReadOnly.parse_call_graphs` *)

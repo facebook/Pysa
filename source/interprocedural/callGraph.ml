@@ -235,6 +235,7 @@ module CallTarget = struct
 
 
   let to_json
+      ~display_api
       {
         target;
         implicit_receiver;
@@ -246,10 +247,7 @@ module CallTarget = struct
         is_static_method;
       }
     =
-    [
-      "index", `Int index;
-      "target", `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug target);
-    ]
+    ["index", `Int index; "target", `String (Target.external_name ~display_api target)]
     |> JsonHelper.add_flag_if "implicit_receiver" (`Bool true) implicit_receiver
     |> JsonHelper.add_flag_if "implicit_dunder_call" (`Bool true) implicit_dunder_call
     |> JsonHelper.add_optional "return_type" return_type ReturnType.to_json
@@ -440,8 +438,11 @@ module HigherOrderParameter = struct
     { index; call_targets = CallTarget.dedup_and_sort call_targets; unresolved }
 
 
-  let to_json { index; call_targets; unresolved } =
-    ["parameter_index", `Int index; "calls", `List (List.map ~f:CallTarget.to_json call_targets)]
+  let to_json ~display_api { index; call_targets; unresolved } =
+    [
+      "parameter_index", `Int index;
+      "calls", `List (List.map ~f:(CallTarget.to_json ~display_api) call_targets);
+    ]
     |> JsonHelper.add_flag_if
          "unresolved"
          (Unresolved.to_json unresolved)
@@ -513,8 +514,11 @@ module HigherOrderParameterMap = struct
     Map.min_binding_opt map >>| fun (_, higher_order_parameter) -> higher_order_parameter
 
 
-  let to_json map =
-    map |> Map.data |> List.map ~f:HigherOrderParameter.to_json |> fun elements -> `List elements
+  let to_json ~display_api map =
+    map
+    |> Map.data
+    |> List.map ~f:(HigherOrderParameter.to_json ~display_api)
+    |> fun elements -> `List elements
 
 
   let map_call_target ~f = Map.map (HigherOrderParameter.map_call_target ~f)
@@ -589,10 +593,10 @@ module ShimTarget = struct
     && Shims.ShimArgumentMapping.equal left_argument_mapping right_argument_mapping
 
 
-  let to_json { call_targets; decorated_targets; argument_mapping } =
+  let to_json ~display_api { call_targets; decorated_targets; argument_mapping } =
     []
-    |> JsonHelper.add_list "calls" call_targets CallTarget.to_json
-    |> JsonHelper.add_list "decorated_targets" decorated_targets CallTarget.to_json
+    |> JsonHelper.add_list "calls" call_targets (CallTarget.to_json ~display_api)
+    |> JsonHelper.add_list "decorated_targets" decorated_targets (CallTarget.to_json ~display_api)
     |> List.cons ("argument_mapping", Shims.ShimArgumentMapping.to_json argument_mapping)
     |> fun bindings -> `Assoc (List.rev bindings)
 
@@ -960,6 +964,7 @@ module CallCallees = struct
 
 
   let to_json
+      ~display_api
       {
         call_targets;
         new_targets;
@@ -973,21 +978,22 @@ module CallCallees = struct
     =
     let bindings =
       []
-      |> JsonHelper.add_list "calls" call_targets CallTarget.to_json
-      |> JsonHelper.add_list "new_calls" new_targets CallTarget.to_json
-      |> JsonHelper.add_list "init_calls" init_targets CallTarget.to_json
-      |> JsonHelper.add_list "decorated_targets" decorated_targets CallTarget.to_json
+      |> JsonHelper.add_list "calls" call_targets (CallTarget.to_json ~display_api)
+      |> JsonHelper.add_list "new_calls" new_targets (CallTarget.to_json ~display_api)
+      |> JsonHelper.add_list "init_calls" init_targets (CallTarget.to_json ~display_api)
+      |> JsonHelper.add_list "decorated_targets" decorated_targets (CallTarget.to_json ~display_api)
     in
     let bindings =
       if not (HigherOrderParameterMap.is_empty higher_order_parameters) then
-        ("higher_order_parameters", HigherOrderParameterMap.to_json higher_order_parameters)
+        ( "higher_order_parameters",
+          HigherOrderParameterMap.to_json ~display_api higher_order_parameters )
         :: bindings
       else
         bindings
     in
     let bindings =
       match shim_target with
-      | Some shim_target -> ("shim", ShimTarget.to_json shim_target) :: bindings
+      | Some shim_target -> ("shim", ShimTarget.to_json ~display_api shim_target) :: bindings
       | None -> bindings
     in
     let bindings =
@@ -1174,14 +1180,14 @@ module AttributeAccessCallees = struct
     && CallCallees.equal_ignoring_types if_called_left if_called_right
 
 
-  let to_json { property_targets; global_targets; is_attribute; if_called } =
+  let to_json ~display_api { property_targets; global_targets; is_attribute; if_called } =
     []
-    |> JsonHelper.add_list "properties" property_targets CallTarget.to_json
-    |> JsonHelper.add_list "globals" global_targets CallTarget.to_json
+    |> JsonHelper.add_list "properties" property_targets (CallTarget.to_json ~display_api)
+    |> JsonHelper.add_list "globals" global_targets (CallTarget.to_json ~display_api)
     |> JsonHelper.add_flag_if "is_attribute" (`Bool true) is_attribute
     |> JsonHelper.add_flag_if
          "if_called"
-         (CallCallees.to_json if_called)
+         (CallCallees.to_json ~display_api if_called)
          (not (CallCallees.is_empty if_called))
     |> fun bindings -> `Assoc (List.rev bindings)
 
@@ -1271,18 +1277,18 @@ module IdentifierCallees = struct
         |> List.rev_append (List.map ~f:CallTarget.target global_targets)
 
 
-  let to_json { global_targets; captured_variables; if_called } =
+  let to_json ~display_api { global_targets; captured_variables; if_called } =
     let captured_variable_to_json = function
       | AccessPath.CapturedVariable.FromFunction { name; defining_function } ->
           `Assoc
             ["name", `String name; "defining_function", `String (Reference.show defining_function)]
     in
     []
-    |> JsonHelper.add_list "globals" global_targets CallTarget.to_json
+    |> JsonHelper.add_list "globals" global_targets (CallTarget.to_json ~display_api)
     |> JsonHelper.add_list "captured_variables" captured_variables captured_variable_to_json
     |> JsonHelper.add_flag_if
          "if_called"
-         (CallCallees.to_json if_called)
+         (CallCallees.to_json ~display_api if_called)
          (not (CallCallees.is_empty if_called))
     |> fun bindings -> `Assoc (List.rev bindings)
 
@@ -1326,7 +1332,9 @@ module FormatStringArtificialCallees = struct
 
   let from_f_string_targets targets = { targets }
 
-  let to_json { targets } = `List (List.map ~f:CallTarget.to_json targets)
+  let to_json ~display_api { targets } =
+    `List (List.map ~f:(CallTarget.to_json ~display_api) targets)
+
 
   let map_call_target ~f { targets } = { targets = List.map ~f targets }
 
@@ -1360,7 +1368,9 @@ module FormatStringStringifyCallees = struct
 
   let from_stringify_targets targets = { targets }
 
-  let to_json { targets } = `List (List.map ~f:CallTarget.to_json targets)
+  let to_json ~display_api { targets } =
+    `List (List.map ~f:(CallTarget.to_json ~display_api) targets)
+
 
   let map_call_target ~f { targets } = { targets = List.map ~f targets }
 
@@ -1417,11 +1427,11 @@ module DefineCallees = struct
     |> List.map ~f:CallTarget.target
 
 
-  let to_json { define_targets; decorated_targets } =
+  let to_json ~display_api { define_targets; decorated_targets } =
     let bindings =
       []
-      |> JsonHelper.add_list "define_targets" define_targets CallTarget.to_json
-      |> JsonHelper.add_list "decorated_targets" decorated_targets CallTarget.to_json
+      |> JsonHelper.add_list "define_targets" define_targets (CallTarget.to_json ~display_api)
+      |> JsonHelper.add_list "decorated_targets" decorated_targets (CallTarget.to_json ~display_api)
     in
     `Assoc bindings
 
@@ -1457,10 +1467,10 @@ module ReturnShimCallees = struct
 
   let all_targets ~use_case:_ { call_targets; _ } = List.map ~f:CallTarget.target call_targets
 
-  let to_json { call_targets; arguments } =
+  let to_json ~display_api { call_targets; arguments } =
     let bindings =
       []
-      |> JsonHelper.add_list "call_targets" call_targets CallTarget.to_json
+      |> JsonHelper.add_list "call_targets" call_targets (CallTarget.to_json ~display_api)
       |> JsonHelper.add_list "arguments_mapping" arguments (fun argument_mapping ->
              `String (show_argument_mapping argument_mapping))
     in
@@ -1578,16 +1588,19 @@ module ExpressionCallees = struct
     | _ -> false
 
 
-  let to_json = function
-    | Call callees -> `Assoc ["call", CallCallees.to_json callees]
-    | AttributeAccess callees -> `Assoc ["attribute_access", AttributeAccessCallees.to_json callees]
-    | Identifier callees -> `Assoc ["identifier", IdentifierCallees.to_json callees]
+  let to_json ~display_api = function
+    | Call callees -> `Assoc ["call", CallCallees.to_json ~display_api callees]
+    | AttributeAccess callees ->
+        `Assoc ["attribute_access", AttributeAccessCallees.to_json ~display_api callees]
+    | Identifier callees -> `Assoc ["identifier", IdentifierCallees.to_json ~display_api callees]
     | FormatStringArtificial callees ->
-        `Assoc ["format_string_artificial", FormatStringArtificialCallees.to_json callees]
+        `Assoc
+          ["format_string_artificial", FormatStringArtificialCallees.to_json ~display_api callees]
     | FormatStringStringify callees ->
-        `Assoc ["format_string_stringify", FormatStringStringifyCallees.to_json callees]
-    | Define callees -> `Assoc ["define", DefineCallees.to_json callees]
-    | Return callees -> `Assoc ["return", ReturnShimCallees.to_json callees]
+        `Assoc
+          ["format_string_stringify", FormatStringStringifyCallees.to_json ~display_api callees]
+    | Define callees -> `Assoc ["define", DefineCallees.to_json ~display_api callees]
+    | Return callees -> `Assoc ["return", ReturnShimCallees.to_json ~display_api callees]
 
 
   let map_call_target ~f ~map_call_if ~map_return_if = function
@@ -1680,18 +1693,13 @@ module MakeSaveCallGraph (CallGraph : sig
 
   val is_empty : t -> bool
 
-  val to_json_alist : t -> (string * Yojson.Safe.t) list
+  val to_json_alist : display_api:PyreflyTypes.DisplayApi.t -> t -> (string * Yojson.Safe.t) list
 end) =
 struct
-  let filename_and_path ~resolve_qualifier ~resolve_module_path callable
+  let filename_and_path ~display_api ~resolve_qualifier ~resolve_module_path callable
       : (string * Yojson.Safe.t) list
     =
-    let bindings =
-      [
-        ( "callable",
-          `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable) );
-      ]
-    in
+    let bindings = ["callable", `String (Target.external_name ~display_api callable)] in
     let resolve_module_path = Option.value ~default:(fun _ -> None) resolve_module_path in
     callable
     |> resolve_qualifier
@@ -1705,6 +1713,7 @@ struct
 
 
   let save_to_directory
+      ~display_api
       ~scheduler
       ~static_analysis_configuration:
         {
@@ -1729,8 +1738,8 @@ struct
               NewlineDelimitedJson.Line.kind = json_kind;
               data =
                 `Assoc
-                  (filename_and_path ~resolve_qualifier ~resolve_module_path callable
-                  @ CallGraph.to_json_alist call_graph);
+                  (filename_and_path ~display_api ~resolve_qualifier ~resolve_module_path callable
+                  @ CallGraph.to_json_alist ~display_api call_graph);
             };
           ]
       | _ -> []
@@ -1776,11 +1785,11 @@ end
 module DefineCallGraph = struct
   type t = ExpressionCallees.t ExpressionIdentifier.Map.t [@@deriving equal]
 
-  let to_json call_graph =
+  let to_json ~display_api call_graph =
     let bindings =
       ExpressionIdentifier.Map.fold
         (fun key data sofar ->
-          (ExpressionIdentifier.json_key key, ExpressionCallees.to_json data) :: sofar)
+          (ExpressionIdentifier.json_key key, ExpressionCallees.to_json ~display_api data) :: sofar)
         call_graph
         []
     in
@@ -1810,7 +1819,7 @@ module DefineCallGraph = struct
 
     let is_empty = is_empty
 
-    let to_json_alist call_graph = ["calls", to_json call_graph]
+    let to_json_alist ~display_api call_graph = ["calls", to_json ~display_api call_graph]
   end)
 
   let copy = Fn.id

@@ -42,7 +42,8 @@ module HigherOrderCallGraph : sig
   val merge : t -> t -> t
 
   val save_to_directory
-    :  scheduler:Scheduler.t ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    scheduler:Scheduler.t ->
     static_analysis_configuration:Configuration.StaticAnalysis.t ->
     resolve_qualifier:(Target.t -> Reference.t option) ->
     resolve_module_path:(Reference.t -> RepositoryPath.t option) option ->
@@ -54,7 +55,7 @@ module HigherOrderCallGraph : sig
 
   val is_empty : t -> bool
 
-  val to_json_alist : t -> (string * Yojson.Safe.t) list
+  val to_json_alist : display_api:PyreflyTypes.DisplayApi.t -> t -> (string * Yojson.Safe.t) list
 
   module State : sig
     type t

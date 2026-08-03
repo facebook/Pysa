@@ -166,12 +166,6 @@ val get_corresponding_method_exn : must_be_regular:bool -> t -> t
 
 (* Accessors. *)
 
-val class_name : t -> string option
-
-val method_name : t -> string option
-
-val function_name : t -> string option
-
 val object_name : t -> Reference.t
 
 val is_function_or_method : t -> bool
@@ -203,10 +197,6 @@ val contain_recursive_target : t -> bool
 val depth : t -> int
 
 val for_issue_handle : t -> t
-
-(** Return the define name of a Function or Method target. Note that multiple targets can match to
-    the same define name (e.g, property getters and setters). Hence, use this at your own risk. *)
-val define_name_exn : t -> Reference.t
 
 val set_kind : kind -> t -> t
 

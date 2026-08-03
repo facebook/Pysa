@@ -111,7 +111,7 @@ let should_keep_decorator_pyrefly ~pyrefly_api ~callable decorator =
     in
     PyreflyApi.ReadOnly.get_callable_decorator_callees
       pyrefly_api
-      (Target.define_name_exn callable)
+      (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
       (Node.location callee)
   in
   let drop_suffix ~suffix reference =
@@ -352,7 +352,7 @@ module SharedMemory = struct
      * ```
      * would resolve into expression `decorator(decorator_factory(1, 2)(foo))`.
      *)
-  let decorated_callable_body decorators callable =
+  let decorated_callable_body ~pyrefly_api decorators callable =
     let create_decorator_call previous_argument decorator =
       Node.create
         ~location:decorator.Node.location
@@ -379,11 +379,11 @@ module SharedMemory = struct
     |> Option.some_if (Target.is_normal callable)
     >>= ReadOnly.get decorators
     >>| fun { decorators; define_location; module_qualifier } ->
-    let define_name = Target.define_name_exn callable in
+    let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
     let original_function_name_location = define_location in
     let original_function_name = Ast.Expression.Name.Identifier (Reference.last define_name) in
     let decorated_callable = Target.set_kind Target.Decorated callable in
-    let define_name = Reference.create ~prefix:(Target.define_name_exn callable) "@decorated" in
+    let define_name = Reference.create ~prefix:define_name "@decorated" in
     let return_expression =
       List.fold
         decorators
@@ -402,8 +402,8 @@ module SharedMemory = struct
     }
 
 
-  let decorated_callable_define decorators callable =
-    decorated_callable_body decorators callable
+  let decorated_callable_define ~pyrefly_api decorators callable =
+    decorated_callable_body ~pyrefly_api decorators callable
     >>| fun { DecoratedDefineBody.return_expression; define_name; _ } ->
     {
       Define.signature =
@@ -429,14 +429,14 @@ module SharedMemory = struct
     }
 
 
-  let register_decorator_defines decorators callables_to_definitions_map =
+  let register_decorator_defines ~pyrefly_api decorators callables_to_definitions_map =
     let read_only_decorators = read_only decorators in
     decorators
     |> targets_with_decorators
     |> List.map ~f:(fun callable ->
            let define =
              Option.value_exn
-               (decorated_callable_define read_only_decorators callable)
+               (decorated_callable_define ~pyrefly_api read_only_decorators callable)
                ~message:(Format.asprintf "Could not get decorated define for %a" Target.pp callable)
              |> Node.create_with_default_location
            in
@@ -445,7 +445,7 @@ module SharedMemory = struct
              {
                CallablesSharedMemory.CallableSignature.qualifier =
                  PyreflyTypes.artificial_decorator_define_module;
-               define_name = Target.define_name_exn callable;
+               define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable;
                location = AstResult.Some Location.any;
                parameters = AstResult.Some [];
                return_annotation = AstResult.Some None;

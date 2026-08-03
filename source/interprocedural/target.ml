@@ -450,12 +450,6 @@ let get_corresponding_method_exn ~must_be_regular target =
   |> from_regular
 
 
-let class_name target = target |> get_regular |> Regular.class_name
-
-let method_name target = target |> get_regular |> Regular.method_name
-
-let function_name target = target |> get_regular |> Regular.function_name
-
 let object_name target = target |> get_regular |> Regular.object_name
 
 let is_function_or_method target = target |> get_regular |> Regular.is_function_or_method
@@ -523,8 +517,6 @@ let rec for_issue_handle = function
               parameters;
         }
 
-
-let define_name_exn target = target |> get_regular |> Regular.define_name_exn
 
 let set_kind kind = function
   | Regular regular -> Regular (Regular.set_kind kind regular)

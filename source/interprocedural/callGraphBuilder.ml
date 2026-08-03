@@ -581,11 +581,14 @@ module HigherOrderCallGraph = struct
     CallTarget.Set.is_bottom returned_callables && DefineCallGraph.is_empty call_graph
 
 
-  let to_json_alist { returned_callables; call_graph } =
+  let to_json_alist ~display_api { returned_callables; call_graph } =
     let returned_callables =
-      returned_callables |> CallTarget.Set.elements |> List.map ~f:CallTarget.to_json
+      returned_callables |> CallTarget.Set.elements |> List.map ~f:(CallTarget.to_json ~display_api)
     in
-    ["returned_callables", `List returned_callables; "calls", DefineCallGraph.to_json call_graph]
+    [
+      "returned_callables", `List returned_callables;
+      "calls", DefineCallGraph.to_json ~display_api call_graph;
+    ]
 
 
   include MakeSaveCallGraph (struct
@@ -2101,7 +2104,7 @@ let higher_order_call_graph_of_define
 
     let define = define
 
-    let define_name = Target.define_name_exn callable
+    let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable
 
     let callable = callable
 
@@ -2140,7 +2143,7 @@ let higher_order_call_graph_of_define
       PyreflyApi.InContext.create_at_function_scope
         pyrefly_api
         ~module_qualifier:qualifier
-        ~define_name:(Target.define_name_exn callable)
+        ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn Context.pyrefly_api callable)
         ~call_graph:Context.input_define_call_graph
     in
     List.fold
@@ -2210,9 +2213,12 @@ let build_whole_program_call_graph
     static_analysis_configuration.Configuration.StaticAnalysis.find_missing_flows
   in
   let is_instance_target =
-    PyreflyApi.ReadOnly.resolve_function_target pyrefly_api (Reference.create "builtins.isinstance")
+    PyreflyApi.ReadOnly.Target.resolve_function_target
+      pyrefly_api
+      (Reference.create "builtins.isinstance")
     |> Option.value_exn ~message:"unexpected: could not find builtins.isinstance"
   in
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   let transform_redirected_call_graph decorated_target call_graph =
     (* For call graph of decorated targets, add a call graph edge for the decorated function itself,
        in the return expression `decorator1(decorator2(original_function))` *)
@@ -2224,6 +2230,7 @@ let build_whole_program_call_graph
     }
       =
       CallableToDecoratorsMap.SharedMemory.decorated_callable_body
+        ~pyrefly_api
         callables_to_decorators_map
         original_callable
       |> Option.value_exn ~message:"Unexpected decorated target without a decorated body"
@@ -2244,9 +2251,9 @@ let build_whole_program_call_graph
       _;
     }
       =
-      PyreflyApi.ReadOnly.get_callable_metadata
+      PyreflyApi.ReadOnly.Target.get_callable_metadata
         pyrefly_api
-        (Target.define_name_exn original_callable)
+        (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api original_callable)
     in
     DefineCallGraph.set_identifier_callees
       ~error_if_new:false
@@ -2301,7 +2308,7 @@ let build_whole_program_call_graph
           let targets =
             PyreflyApi.ReadOnly.get_type_of_expression
               pyrefly_api
-              ~define_name:(Target.define_name_exn callable)
+              ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
               ~location:(Ast.Node.location base)
             >>| PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api
             >>| (fun { PyreflyApi.ClassNamesFromType.classes; _ } -> classes)
@@ -2460,7 +2467,7 @@ let build_whole_program_call_graph
           match shim_callee, shim_target_callee, nested_callees with
           | _, Shims.ShimArgumentMapping.Target.StaticMethod { class_name; method_name }, _ ->
               (* Only add a shim target if the method actually exists on the class. *)
-              PyreflyApi.ReadOnly.resolve_method_target
+              PyreflyApi.ReadOnly.Target.resolve_method_target
                 pyrefly_api
                 ~class_name
                 ~method_name
@@ -2491,7 +2498,7 @@ let build_whole_program_call_graph
                               on the made-up call `x.new_attribute(...)`. Here we fetch callees on
                               `x.y` and then replace `y` with `new_attribute`, dropping the target
                               if no such method exists on the class. *)
-                           PyreflyApi.ReadOnly.resolve_method_target
+                           PyreflyApi.ReadOnly.Target.resolve_method_target
                              pyrefly_api
                              ~class_name:(Reference.create class_name)
                              ~method_name:attribute
@@ -2847,6 +2854,7 @@ let build_whole_program_call_graph
   let () =
     let define_call_graphs_read_only = CallGraph.SharedMemory.read_only define_call_graphs in
     DefineCallGraph.save_to_directory
+      ~display_api
       ~scheduler
       ~static_analysis_configuration
       ~resolve_qualifier:(CallablesSharedMemory.ReadOnly.get_qualifier callables_to_definitions_map)

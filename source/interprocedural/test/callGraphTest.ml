@@ -93,7 +93,7 @@ let assert_call_graph_of_define
       ()
   in
   let callable =
-    Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
+    Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
       pyrefly_api
       ~override:false
       (Reference.create define_name)
@@ -172,7 +172,7 @@ let assert_higher_order_call_graph_of_define
     match callable with
     | Some callable -> callable pyrefly_api
     | None ->
-        Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
+        Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
           pyrefly_api
           ~override:false
           (Reference.create define_name)
@@ -8757,6 +8757,7 @@ let assert_resolve_decorator_callees ~source ~expected () context =
            (* For simplicity, don't compare the cases when there exist no decorator callees. *)
            callable
            |> CallableToDecoratorsMap.SharedMemory.decorated_callable_body
+                ~pyrefly_api
                 (CallableToDecoratorsMap.SharedMemory.read_only callables_to_decorators_map)
            >>| (fun {
                       CallableToDecoratorsMap.DecoratedDefineBody.return_expression;

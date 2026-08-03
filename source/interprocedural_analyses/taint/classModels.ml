@@ -186,7 +186,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       PyreflyApi.ReadOnly.ClassSummary.dataclass_ordered_attributes pyrefly_api class_summary
     in
     match
-      PyreflyApi.ReadOnly.resolve_method_target
+      PyreflyApi.ReadOnly.Target.resolve_method_target
         pyrefly_api
         ~class_name:(Reference.create class_name)
         ~method_name:"__init__"
@@ -215,7 +215,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
     in
     let prepend_init_model models =
       match
-        PyreflyApi.ReadOnly.resolve_method_target
+        PyreflyApi.ReadOnly.Target.resolve_method_target
           pyrefly_api
           ~class_name:(Reference.create class_name)
           ~method_name:"__init__"
@@ -244,7 +244,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       (* Should not omit this model. Otherwise the mode is "obscure", thus leading to a tito model,
          which joins the taint on every element of the tuple. *)
       match
-        PyreflyApi.ReadOnly.resolve_method_target
+        PyreflyApi.ReadOnly.Target.resolve_method_target
           pyrefly_api
           ~class_name:(Reference.create class_name)
           ~method_name:"__new__"
@@ -305,7 +305,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
         ~f:(add_sink_from_attribute_model ~class_name ~positional:false)
     in
     match
-      PyreflyApi.ReadOnly.resolve_method_target
+      PyreflyApi.ReadOnly.Target.resolve_method_target
         pyrefly_api
         ~class_name:(Reference.create class_name)
         ~method_name:"__init__"
