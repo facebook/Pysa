@@ -379,7 +379,7 @@ module ClassWithModifiers = struct
     JsonUtil.get_object_member json "class"
     >>= fun class_name ->
     GlobalClassId.from_json (`Assoc class_name)
-    >>= fun { PyreflyReport.GlobalClassId.module_id; local_class_id } ->
+    >>= fun global_class_id ->
     JsonUtil.get_optional_list_member json "modifiers"
     >>| List.map ~f:JsonUtil.as_string
     >>= Result.all
@@ -393,8 +393,8 @@ module ClassWithModifiers = struct
     >>= Result.all
     >>| fun modifiers ->
     {
-      PyreflyTypeRep.ClassWithModifiers.module_id = PyreflyTypes.ModuleId.to_int module_id;
-      class_id = PyreflyTypes.LocalClassId.to_int local_class_id;
+      PyreflyTypeRep.ClassWithModifiers.class_id =
+        PyreflyReport.GlobalClassId.to_class_id global_class_id;
       modifiers;
     }
 end

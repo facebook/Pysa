@@ -229,13 +229,12 @@ end
 module PyreflyType : sig
   module ClassWithModifiers : sig
     type t = {
-      module_id: int;
-      class_id: int;
+      class_id: ClassId.t;
       modifiers: TypeModifier.t list;
     }
     [@@deriving equal, compare, show]
 
-    val from_class : int * int -> t
+    val from_class : ClassId.t -> t
   end
 
   module ClassNamesFromType : sig
@@ -245,7 +244,7 @@ module PyreflyType : sig
     }
     [@@deriving equal, compare, show]
 
-    val from_class : int * int -> t
+    val from_class : ClassId.t -> t
   end
 
   type t = {

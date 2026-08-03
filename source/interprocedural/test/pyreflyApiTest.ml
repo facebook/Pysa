@@ -836,6 +836,12 @@ module PyrePysaApi = struct
   module Function = PyreflyApi.ModelQueries.Function
   module Global = PyreflyApi.ModelQueries.Global
 
+  let class_id ~module_id ~local_class_id =
+    PyreflyTypes.ClassId.encode
+      ~module_id:(PyreflyTypes.ModuleId.from_int module_id)
+      (PyreflyTypes.LocalClassId.from_int local_class_id)
+
+
   (* Build the Pyrefly type representation for the small set of types used in this file. *)
   let pyrefly_type = function
     | Type.NoneType ->
@@ -854,25 +860,37 @@ module PyrePysaApi = struct
         {
           PyreflyType.string = "int";
           scalar_properties = ScalarTypeProperties.integer;
-          class_names = Some (PyreflyType.ClassNamesFromType.from_class (116, 5));
+          class_names =
+            Some
+              (PyreflyType.ClassNamesFromType.from_class
+                 (class_id ~module_id:116 ~local_class_id:5));
         }
     | Type.Primitive "str" ->
         {
           PyreflyType.string = "str";
           scalar_properties = ScalarTypeProperties.none;
-          class_names = Some (PyreflyType.ClassNamesFromType.from_class (116, 10));
+          class_names =
+            Some
+              (PyreflyType.ClassNamesFromType.from_class
+                 (class_id ~module_id:116 ~local_class_id:10));
         }
     | Type.Primitive "test.Foo" ->
         {
           PyreflyType.string = "test.Foo";
           scalar_properties = ScalarTypeProperties.none;
-          class_names = Some (PyreflyType.ClassNamesFromType.from_class (1000, 0));
+          class_names =
+            Some
+              (PyreflyType.ClassNamesFromType.from_class
+                 (class_id ~module_id:1000 ~local_class_id:0));
         }
     | Type.Primitive "test.Bar" ->
         {
           PyreflyType.string = "test.Bar";
           scalar_properties = ScalarTypeProperties.none;
-          class_names = Some (PyreflyType.ClassNamesFromType.from_class (1000, 1));
+          class_names =
+            Some
+              (PyreflyType.ClassNamesFromType.from_class
+                 (class_id ~module_id:1000 ~local_class_id:1));
         }
     | annotation ->
         (* Fallback used only for expectations that are discarded under Pyrefly (e.g. cases with

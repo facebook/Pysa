@@ -570,13 +570,12 @@ end
 module PyreflyType = struct
   module ClassWithModifiers = struct
     type t = {
-      module_id: int;
-      class_id: int;
+      class_id: ClassId.t;
       modifiers: TypeModifier.t list;
     }
     [@@deriving equal, compare, show]
 
-    let from_class (module_id, class_id) = { module_id; class_id; modifiers = [] }
+    let from_class class_id = { class_id; modifiers = [] }
   end
 
   module ClassNamesFromType = struct
@@ -586,8 +585,8 @@ module PyreflyType = struct
     }
     [@@deriving equal, compare, show]
 
-    let from_class (module_id, class_id) =
-      { classes = [ClassWithModifiers.from_class (module_id, class_id)]; is_exhaustive = true }
+    let from_class class_id =
+      { classes = [ClassWithModifiers.from_class class_id]; is_exhaustive = true }
   end
 
   type t = {

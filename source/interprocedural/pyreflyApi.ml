@@ -4085,16 +4085,11 @@ module ReadOnly = struct
       match pysa_type with
       | { PyreflyType.class_names = None; _ } -> ClassNamesFromType.not_a_class
       | { PyreflyType.class_names = Some { classes; is_exhaustive }; _ } ->
-          let get_class_with_modifiers
-              { PyreflyType.ClassWithModifiers.module_id; class_id; modifiers }
-            =
+          let get_class_with_modifiers { PyreflyType.ClassWithModifiers.class_id; modifiers } =
             let class_name =
               ClassIdToQualifiedNameSharedMemory.get
                 class_id_to_qualified_name_shared_memory
-                {
-                  GlobalClassId.module_id = ModuleId.from_int module_id;
-                  local_class_id = LocalClassId.from_int class_id;
-                }
+                (GlobalClassId.of_class_id class_id)
               |> assert_shared_memory_key_exists (fun () -> "missing class id")
               |> FullyQualifiedName.to_reference
               |> Reference.show
@@ -4111,15 +4106,8 @@ module ReadOnly = struct
       match pysa_type with
       | { PyreflyType.class_names = None; _ } -> false
       | { PyreflyType.class_names = Some { classes; _ }; _ } ->
-          List.exists
-            classes
-            ~f:(fun { PyreflyType.ClassWithModifiers.module_id; class_id; modifiers } ->
-              let global_class_id =
-                {
-                  GlobalClassId.module_id = ModuleId.from_int module_id;
-                  local_class_id = LocalClassId.from_int class_id;
-                }
-              in
+          List.exists classes ~f:(fun { PyreflyType.ClassWithModifiers.class_id; modifiers } ->
+              let global_class_id = GlobalClassId.of_class_id class_id in
               List.for_all modifiers ~f:(TypeModifier.equal TypeModifier.Optional)
               && (List.exists dict_classes ~f:(fun { TypeshedClass.global_class_id = id; _ } ->
                       GlobalClassId.equal global_class_id id)

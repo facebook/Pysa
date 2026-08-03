@@ -132,8 +132,7 @@ let read_class_with_modifiers reader =
     |> List.filter_map ~f:read_type_modifier
   in
   {
-    PyreflyTypeRep.ClassWithModifiers.module_id = PyreflyTypes.ModuleId.to_int class_ref.module_id;
-    class_id = PyreflyTypes.LocalClassId.to_int class_ref.local_class_id;
+    PyreflyTypeRep.ClassWithModifiers.class_id = PyreflyReport.GlobalClassId.to_class_id class_ref;
     modifiers;
   }
 
