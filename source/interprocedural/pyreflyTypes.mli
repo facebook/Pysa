@@ -104,6 +104,8 @@ end
 module ClassId : sig
   type t [@@deriving compare, equal, sexp, hash, show]
 
+  val to_int : t -> int
+
   val encode : module_id:ModuleId.t -> LocalClassId.t -> t
 
   val decode : t -> ModuleId.t * LocalClassId.t

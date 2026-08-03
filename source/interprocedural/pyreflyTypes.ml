@@ -202,6 +202,8 @@ let () = assert (Int.num_bits >= 63)
 module ClassId : sig
   type t [@@deriving compare, equal, sexp, hash, show]
 
+  val to_int : t -> int
+
   val encode : module_id:ModuleId.t -> LocalClassId.t -> t
 
   val decode : t -> ModuleId.t * LocalClassId.t
@@ -211,6 +213,8 @@ module ClassId : sig
   val local_class_id : t -> LocalClassId.t
 end = struct
   type t = int [@@deriving sexp, hash]
+
+  let to_int = Fn.id
 
   let module_id_shift = 35
 

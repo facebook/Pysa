@@ -152,6 +152,12 @@ module CallableIdSharedMemoryKey = struct
   let to_string id = string_of_int (PyreflyTypes.CallableId.to_int id)
 end
 
+module ClassIdSharedMemoryKey = struct
+  type t = PyreflyTypes.ClassId.t [@@deriving compare]
+
+  let to_string id = string_of_int (PyreflyTypes.ClassId.to_int id)
+end
+
 (* The name of a module (e.g., `django.http.request`). This is a plain dotted name without any path
    prefix. Compare with `ModuleQualifier` which may include a path prefix for disambiguation. *)
 module ModuleName : sig
