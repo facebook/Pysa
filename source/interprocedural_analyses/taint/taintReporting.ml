@@ -233,7 +233,7 @@ let issues_to_newline_delimited_json
       if sorted then
         List.sort
           ~compare:(fun { Issue.handle = left; _ } { Issue.handle = right; _ } ->
-            IssueHandle.deterministic_compare left right)
+            IssueHandle.deterministic_compare ~display_api left right)
           issues
       else
         issues

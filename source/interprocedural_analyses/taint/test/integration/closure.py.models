@@ -2207,73 +2207,6 @@
     "callable_line": 11,
     "code": 5002,
     "line": 19,
-    "start": 10,
-    "end": 11,
-    "filename": "closure.py",
-    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
-    "traces": [
-      {
-        "name": "forward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "local_features": [ { "always-via": "special_source" } ],
-                "leaves": [
-                  { "name": "pysa._test_source", "port": "leaf:return" }
-                ],
-                "kind": "Test"
-              }
-            ],
-            "origin": { "line": 13, "start": 8, "end": 22 }
-          }
-        ]
-      },
-      {
-        "name": "backward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "leaves": [
-                  { "name": "pysa._test_sink", "port": "leaf:arg" }
-                ],
-                "length": 1,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 19, "start": 10, "end": 11 },
-              "resolves_to": [
-                "closure.nonlocal_closure_read_reduction.inner"
-              ],
-              "port": "formal(z, position=0)",
-              "call_site": "19:4-19:12"
-            }
-          }
-        ]
-      }
-    ],
-    "features": [
-      { "always-via": "special_source" }, { "always-via": "special_sink" }
-    ],
-    "sink_handle": {
-      "kind": "Call",
-      "callee": "closure.nonlocal_closure_read_reduction.inner",
-      "index": 0,
-      "parameter": "formal(z)"
-    },
-    "master_handle": "closure.nonlocal_closure_read_reduction:5002:0:Call|closure.nonlocal_closure_read_reduction.inner|0|formal(z):6cb6fe9e9a0bfb5ecf1a291816f7f7cc"
-  }
-}
-{
-  "kind": "issue",
-  "data": {
-    "callable": "closure.nonlocal_closure_read_reduction",
-    "callable_line": 11,
-    "code": 5002,
-    "line": 19,
     "start": 4,
     "end": 12,
     "filename": "closure.py",
@@ -2340,6 +2273,73 @@
   }
 }
 {
+  "kind": "issue",
+  "data": {
+    "callable": "closure.nonlocal_closure_read_reduction",
+    "callable_line": 11,
+    "code": 5002,
+    "line": 19,
+    "start": 10,
+    "end": 11,
+    "filename": "closure.py",
+    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
+    "traces": [
+      {
+        "name": "forward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "local_features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
+                "kind": "Test"
+              }
+            ],
+            "origin": { "line": 13, "start": 8, "end": 22 }
+          }
+        ]
+      },
+      {
+        "name": "backward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
+                "length": 1,
+                "kind": "Test"
+              }
+            ],
+            "call": {
+              "position": { "line": 19, "start": 10, "end": 11 },
+              "resolves_to": [
+                "closure.nonlocal_closure_read_reduction.inner"
+              ],
+              "port": "formal(z, position=0)",
+              "call_site": "19:4-19:12"
+            }
+          }
+        ]
+      }
+    ],
+    "features": [
+      { "always-via": "special_source" }, { "always-via": "special_sink" }
+    ],
+    "sink_handle": {
+      "kind": "Call",
+      "callee": "closure.nonlocal_closure_read_reduction.inner",
+      "index": 0,
+      "parameter": "formal(z)"
+    },
+    "master_handle": "closure.nonlocal_closure_read_reduction:5002:0:Call|closure.nonlocal_closure_read_reduction.inner|0|formal(z):6cb6fe9e9a0bfb5ecf1a291816f7f7cc"
+  }
+}
+{
   "kind": "model",
   "data": {
     "callable": "closure.nonlocal_closure_read_reduction.inner",
@@ -2384,80 +2384,6 @@
         ]
       }
     ]
-  }
-}
-{
-  "kind": "issue",
-  "data": {
-    "callable": "closure.nonlocal_closure_reduction",
-    "callable_line": 148,
-    "code": 5002,
-    "line": 170,
-    "start": 9,
-    "end": 13,
-    "filename": "closure.py",
-    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
-    "traces": [
-      {
-        "name": "forward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_source" } ],
-                "leaves": [
-                  { "name": "pysa._test_source", "port": "leaf:return" }
-                ],
-                "length": 1,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [ { "always-via": "tito" } ],
-            "tito_positions": [ { "line": 161, "start": 22, "end": 26 } ],
-            "call": {
-              "position": { "line": 160, "start": 11, "end": 19 },
-              "resolves_to": [ "closure.nonlocal_closure_reduction.source" ],
-              "port": "result"
-            }
-          }
-        ]
-      },
-      {
-        "name": "backward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "leaves": [
-                  { "name": "pysa._test_sink", "port": "leaf:arg" }
-                ],
-                "length": 1,
-                "kind": "Test"
-              }
-            ],
-            "call": {
-              "position": { "line": 170, "start": 9, "end": 13 },
-              "resolves_to": [ "closure.nonlocal_closure_reduction.sink" ],
-              "port": "formal(obj2, position=0)",
-              "call_site": "170:4-170:14"
-            }
-          }
-        ]
-      }
-    ],
-    "features": [
-      { "always-via": "special_source" },
-      { "always-via": "special_sink" },
-      { "always-via": "tito" }
-    ],
-    "sink_handle": {
-      "kind": "Call",
-      "callee": "closure.nonlocal_closure_reduction.sink",
-      "index": 0,
-      "parameter": "formal(obj2)"
-    },
-    "master_handle": "closure.nonlocal_closure_reduction:5002:0:Call|closure.nonlocal_closure_reduction.sink|0|formal(obj2):40c7eab5df7801acbedbf94abf4180f2"
   }
 }
 {
@@ -2621,6 +2547,80 @@
       "parameter": "captured_variable(obj3, closure.nonlocal_closure_reduction)"
     },
     "master_handle": "closure.nonlocal_closure_reduction:5002:0:Call|closure.nonlocal_closure_reduction.sink|0|captured_variable(obj3, closure.nonlocal_closure_reduction):ba65e34930423f6b93a92d10310493c9"
+  }
+}
+{
+  "kind": "issue",
+  "data": {
+    "callable": "closure.nonlocal_closure_reduction",
+    "callable_line": 148,
+    "code": 5002,
+    "line": 170,
+    "start": 9,
+    "end": 13,
+    "filename": "closure.py",
+    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
+    "traces": [
+      {
+        "name": "forward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
+                "length": 1,
+                "kind": "Test"
+              }
+            ],
+            "local_features": [ { "always-via": "tito" } ],
+            "tito_positions": [ { "line": 161, "start": 22, "end": 26 } ],
+            "call": {
+              "position": { "line": 160, "start": 11, "end": 19 },
+              "resolves_to": [ "closure.nonlocal_closure_reduction.source" ],
+              "port": "result"
+            }
+          }
+        ]
+      },
+      {
+        "name": "backward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
+                "length": 1,
+                "kind": "Test"
+              }
+            ],
+            "call": {
+              "position": { "line": 170, "start": 9, "end": 13 },
+              "resolves_to": [ "closure.nonlocal_closure_reduction.sink" ],
+              "port": "formal(obj2, position=0)",
+              "call_site": "170:4-170:14"
+            }
+          }
+        ]
+      }
+    ],
+    "features": [
+      { "always-via": "special_source" },
+      { "always-via": "special_sink" },
+      { "always-via": "tito" }
+    ],
+    "sink_handle": {
+      "kind": "Call",
+      "callee": "closure.nonlocal_closure_reduction.sink",
+      "index": 0,
+      "parameter": "formal(obj2)"
+    },
+    "master_handle": "closure.nonlocal_closure_reduction:5002:0:Call|closure.nonlocal_closure_reduction.sink|0|formal(obj2):40c7eab5df7801acbedbf94abf4180f2"
   }
 }
 {

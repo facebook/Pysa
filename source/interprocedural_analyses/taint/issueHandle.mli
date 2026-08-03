@@ -54,7 +54,7 @@ val strip_all_callable_parameters : t -> t
    remain stable across runs. See `Interprocedural.PyreflyApi.strip_target_path_prefix`. *)
 val strip_callable_path_prefix : t -> t
 
-val deterministic_compare : t -> t -> int
+val deterministic_compare : display_api:PyreflyTypes.DisplayApi.t -> t -> t -> int
 
 val master_handle : display_api:PyreflyTypes.DisplayApi.t -> t -> string
 

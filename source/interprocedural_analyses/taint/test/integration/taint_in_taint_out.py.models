@@ -1934,6 +1934,76 @@
     "callable": "taint_in_taint_out.test_complex_argument_tito",
     "callable_line": 585,
     "code": 5002,
+    "line": 607,
+    "start": 15,
+    "end": 24,
+    "filename": "taint_in_taint_out.py",
+    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
+    "traces": [
+      {
+        "name": "forward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "local_features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
+                "kind": "Test"
+              }
+            ],
+            "local_features": [
+              { "has": "first-field" },
+              { "first-field": "baz" },
+              { "always-via": "tito" }
+            ],
+            "tito_positions": [ { "line": 604, "start": 33, "end": 34 } ],
+            "origin": { "line": 595, "start": 12, "end": 26 }
+          }
+        ]
+      },
+      {
+        "name": "backward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "local_features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
+                "kind": "Test"
+              }
+            ],
+            "origin": { "line": 607, "start": 15, "end": 24 },
+            "call_site": "607:4-607:25"
+          }
+        ]
+      }
+    ],
+    "features": [
+      { "has": "first-field" },
+      { "first-field": "baz" },
+      { "always-via": "special_source" },
+      { "always-via": "special_sink" },
+      { "always-via": "tito" }
+    ],
+    "sink_handle": {
+      "kind": "Call",
+      "callee": "pysa._test_sink",
+      "index": 10,
+      "parameter": "formal(arg)"
+    },
+    "master_handle": "taint_in_taint_out.test_complex_argument_tito:5002:0:Call|pysa._test_sink|10|formal(arg):3e7ac4967368a3f4366bcf0baf4f8aeb"
+  }
+}
+{
+  "kind": "issue",
+  "data": {
+    "callable": "taint_in_taint_out.test_complex_argument_tito",
+    "callable_line": 585,
+    "code": 5002,
     "line": 592,
     "start": 15,
     "end": 20,
@@ -2194,76 +2264,6 @@
       "parameter": "formal(arg)"
     },
     "master_handle": "taint_in_taint_out.test_complex_argument_tito:5002:0:Call|pysa._test_sink|7|formal(arg):4ecd2c532d3bd59f638ae949119188dc"
-  }
-}
-{
-  "kind": "issue",
-  "data": {
-    "callable": "taint_in_taint_out.test_complex_argument_tito",
-    "callable_line": 585,
-    "code": 5002,
-    "line": 607,
-    "start": 15,
-    "end": 24,
-    "filename": "taint_in_taint_out.py",
-    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
-    "traces": [
-      {
-        "name": "forward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "local_features": [ { "always-via": "special_source" } ],
-                "leaves": [
-                  { "name": "pysa._test_source", "port": "leaf:return" }
-                ],
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "has": "first-field" },
-              { "first-field": "baz" },
-              { "always-via": "tito" }
-            ],
-            "tito_positions": [ { "line": 604, "start": 33, "end": 34 } ],
-            "origin": { "line": 595, "start": 12, "end": 26 }
-          }
-        ]
-      },
-      {
-        "name": "backward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "local_features": [ { "always-via": "special_sink" } ],
-                "leaves": [
-                  { "name": "pysa._test_sink", "port": "leaf:arg" }
-                ],
-                "kind": "Test"
-              }
-            ],
-            "origin": { "line": 607, "start": 15, "end": 24 },
-            "call_site": "607:4-607:25"
-          }
-        ]
-      }
-    ],
-    "features": [
-      { "has": "first-field" },
-      { "first-field": "baz" },
-      { "always-via": "special_source" },
-      { "always-via": "special_sink" },
-      { "always-via": "tito" }
-    ],
-    "sink_handle": {
-      "kind": "Call",
-      "callee": "pysa._test_sink",
-      "index": 10,
-      "parameter": "formal(arg)"
-    },
-    "master_handle": "taint_in_taint_out.test_complex_argument_tito:5002:0:Call|pysa._test_sink|10|formal(arg):3e7ac4967368a3f4366bcf0baf4f8aeb"
   }
 }
 {
@@ -2760,6 +2760,76 @@
     "callable": "taint_in_taint_out.test_tito_self",
     "callable_line": 514,
     "code": 5002,
+    "line": 541,
+    "start": 15,
+    "end": 20,
+    "filename": "taint_in_taint_out.py",
+    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
+    "traces": [
+      {
+        "name": "forward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "local_features": [ { "always-via": "special_source" } ],
+                "leaves": [
+                  { "name": "pysa._test_source", "port": "leaf:return" }
+                ],
+                "kind": "Test"
+              }
+            ],
+            "local_features": [
+              { "has": "first-field" },
+              { "first-field": "a" },
+              { "always-via": "tito" }
+            ],
+            "tito_positions": [ { "line": 540, "start": 19, "end": 33 } ],
+            "origin": { "line": 540, "start": 19, "end": 33 }
+          }
+        ]
+      },
+      {
+        "name": "backward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "local_features": [ { "always-via": "special_sink" } ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
+                "kind": "Test"
+              }
+            ],
+            "origin": { "line": 541, "start": 15, "end": 20 },
+            "call_site": "541:4-541:21"
+          }
+        ]
+      }
+    ],
+    "features": [
+      { "has": "first-field" },
+      { "first-field": "a" },
+      { "always-via": "special_source" },
+      { "always-via": "special_sink" },
+      { "always-via": "tito" }
+    ],
+    "sink_handle": {
+      "kind": "Call",
+      "callee": "pysa._test_sink",
+      "index": 11,
+      "parameter": "formal(arg)"
+    },
+    "master_handle": "taint_in_taint_out.test_tito_self:5002:0:Call|pysa._test_sink|11|formal(arg):977ee16e361dbe179143534eed0c9be1"
+  }
+}
+{
+  "kind": "issue",
+  "data": {
+    "callable": "taint_in_taint_out.test_tito_self",
+    "callable_line": 514,
+    "code": 5002,
     "line": 521,
     "start": 15,
     "end": 18,
@@ -3054,76 +3124,6 @@
       "parameter": "formal(arg)"
     },
     "master_handle": "taint_in_taint_out.test_tito_self:5002:0:Call|pysa._test_sink|9|formal(arg):4011f2fc758065326ef465bbbeb97445"
-  }
-}
-{
-  "kind": "issue",
-  "data": {
-    "callable": "taint_in_taint_out.test_tito_self",
-    "callable_line": 514,
-    "code": 5002,
-    "line": 541,
-    "start": 15,
-    "end": 20,
-    "filename": "taint_in_taint_out.py",
-    "message": "Data from [Test] source(s) may reach [Test] sink(s)",
-    "traces": [
-      {
-        "name": "forward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "local_features": [ { "always-via": "special_source" } ],
-                "leaves": [
-                  { "name": "pysa._test_source", "port": "leaf:return" }
-                ],
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "has": "first-field" },
-              { "first-field": "a" },
-              { "always-via": "tito" }
-            ],
-            "tito_positions": [ { "line": 540, "start": 19, "end": 33 } ],
-            "origin": { "line": 540, "start": 19, "end": 33 }
-          }
-        ]
-      },
-      {
-        "name": "backward",
-        "roots": [
-          {
-            "kinds": [
-              {
-                "local_features": [ { "always-via": "special_sink" } ],
-                "leaves": [
-                  { "name": "pysa._test_sink", "port": "leaf:arg" }
-                ],
-                "kind": "Test"
-              }
-            ],
-            "origin": { "line": 541, "start": 15, "end": 20 },
-            "call_site": "541:4-541:21"
-          }
-        ]
-      }
-    ],
-    "features": [
-      { "has": "first-field" },
-      { "first-field": "a" },
-      { "always-via": "special_source" },
-      { "always-via": "special_sink" },
-      { "always-via": "tito" }
-    ],
-    "sink_handle": {
-      "kind": "Call",
-      "callee": "pysa._test_sink",
-      "index": 11,
-      "parameter": "formal(arg)"
-    },
-    "master_handle": "taint_in_taint_out.test_tito_self:5002:0:Call|pysa._test_sink|11|formal(arg):977ee16e361dbe179143534eed0c9be1"
   }
 }
 {
