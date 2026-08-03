@@ -180,7 +180,8 @@ val apply_sanitizers : taint_configuration:TaintConfiguration.Heap.t -> t -> t
 val should_externalize : t -> bool
 
 val to_json
-  :  expand_overrides:OverrideGraph.SharedMemory.ReadOnly.t option ->
+  :  display_api:PyreflyTypes.DisplayApi.t ->
+  expand_overrides:OverrideGraph.SharedMemory.ReadOnly.t option ->
   is_valid_callee:
     (trace_kind:TraceKind.t option ->
     port:AccessPath.Root.t ->

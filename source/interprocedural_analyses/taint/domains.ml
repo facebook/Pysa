@@ -259,9 +259,7 @@ module CallInfo = struct
           "CallSite(callees=[%s], call_site=%a, location=%a, port=%a, class_intervals=%a)"
           (String.concat
              ~sep:", "
-             (List.map
-                ~f:(Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug)
-                callees))
+             (List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_external target) callees))
           CallSite.pp
           call_site
           Location.pp
@@ -312,7 +310,7 @@ module CallInfo = struct
 
 
   (* Returns the (dictionary key * json) to emit *)
-  let to_json trace : (string * Yojson.Safe.t) list =
+  let to_json ~display_api trace : (string * Yojson.Safe.t) list =
     let class_intervals_to_json call_info_intervals =
       if ClassIntervals.is_top call_info_intervals then
         []
@@ -330,9 +328,7 @@ module CallInfo = struct
     | CallSite { location; callees; port; path; class_intervals; call_site } ->
         let callee_json =
           callees
-          |> List.map ~f:(fun callable ->
-                 `String
-                   (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable))
+          |> List.map ~f:(fun callable -> `String (Target.external_name ~display_api callable))
         in
         let location_json = location_to_json location in
         let full_port = AccessPath.create port path in
@@ -458,10 +454,10 @@ module ExtraTraceFirstHop = struct
       | None -> None
 
 
-    let to_json { call_info; leaf_kind; message } =
+    let to_json ~display_api { call_info; leaf_kind; message } =
       let json =
         List.append
-          (CallInfo.to_json call_info)
+          (CallInfo.to_json ~display_api call_info)
           [
             "leaf_kind", `String (show_leaf_kind leaf_kind);
             "trace_kind", `String (leaf_kind |> trace_kind |> TraceKind.show);
@@ -480,7 +476,7 @@ module ExtraTraceFirstHop = struct
   module Set = struct
     include Abstract.SetDomain.Make (T)
 
-    let to_json ~expand_overrides ~is_valid_callee set =
+    let to_json ~display_api ~expand_overrides ~is_valid_callee set =
       let extra_traces = elements set in
       let extra_traces =
         match expand_overrides with
@@ -490,7 +486,7 @@ module ExtraTraceFirstHop = struct
               extra_traces
         | None -> extra_traces
       in
-      List.map ~f:T.to_json extra_traces
+      List.map ~f:(T.to_json ~display_api) extra_traces
   end
 end
 
@@ -719,7 +715,8 @@ module type TAINT_DOMAIN = sig
   val essential : preserve_return_access_paths:bool -> t -> t
 
   val to_json
-    :  expand_overrides:OverrideGraph.SharedMemory.ReadOnly.t option ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    expand_overrides:OverrideGraph.SharedMemory.ReadOnly.t option ->
     is_valid_callee:
       (trace_kind:TraceKind.t option ->
       port:AccessPath.Root.t ->
@@ -922,7 +919,7 @@ end = struct
     Map.fold kind ~init:[] ~f:List.cons map |> List.dedup_and_sort ~compare:Kind.compare
 
 
-  let to_json ~expand_overrides ~is_valid_callee ~trace_kind ~export_leaf_names taint =
+  let to_json ~display_api ~expand_overrides ~is_valid_callee ~trace_kind ~export_leaf_names taint =
     let cons_if_non_empty key list assoc =
       if List.is_empty list then
         assoc
@@ -959,7 +956,7 @@ end = struct
     in
 
     let trace_to_json (trace_info, local_taint) =
-      let json = CallInfo.to_json trace_info in
+      let json = CallInfo.to_json ~display_api trace_info in
 
       let tito_positions =
         LocalTaintDomain.get LocalTaintDomain.Slots.TitoPosition local_taint
@@ -1048,7 +1045,7 @@ end = struct
 
         let extra_traces =
           Frame.get Frame.Slots.ExtraTraceFirstHopSet frame
-          |> ExtraTraceFirstHop.Set.to_json ~expand_overrides ~is_valid_callee
+          |> ExtraTraceFirstHop.Set.to_json ~display_api ~expand_overrides ~is_valid_callee
         in
         let json = cons_if_non_empty "extra_traces" extra_traces json in
 
@@ -1387,6 +1384,9 @@ end = struct
       ~call_info_intervals
       taint
     =
+    let display_api =
+      PyreflyApi.ReadOnly.display_api (PyreflyApi.InContext.pyrefly_api pyrefly_in_context)
+    in
     let apply (call_info, local_taint) =
       let local_taint =
         local_taint
@@ -1554,12 +1554,7 @@ end = struct
                 else
                   let open Features in
                   let port = LeafPort.from_access_path ~root:port ~path in
-                  LeafName.
-                    {
-                      leaf =
-                        Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee;
-                      port;
-                    }
+                  LeafName.{ leaf = Target.external_name ~display_api callee; port }
                   |> LeafNameInterned.intern
                   |> Features.LeafNameSet.singleton
               in
@@ -1997,7 +1992,14 @@ module MakeTaintEnvironment (Taint : TAINT_DOMAIN) () = struct
       end)
       (Tree)
 
-  let to_json ~expand_overrides ~is_valid_callee ~trace_kind ~export_leaf_names environment =
+  let to_json
+      ~display_api
+      ~expand_overrides
+      ~is_valid_callee
+      ~trace_kind
+      ~export_leaf_names
+      environment
+    =
     let element_to_json json_list (root, tree) =
       let path_to_json (path, tip) json_list =
         let port = AccessPath.create root path in
@@ -2005,7 +2007,13 @@ module MakeTaintEnvironment (Taint : TAINT_DOMAIN) () = struct
           [
             "port", `String (AccessPath.show port);
             ( "taint",
-              Taint.to_json ~expand_overrides ~is_valid_callee ~trace_kind ~export_leaf_names tip );
+              Taint.to_json
+                ~display_api
+                ~expand_overrides
+                ~is_valid_callee
+                ~trace_kind
+                ~export_leaf_names
+                tip );
           ] )
         :: json_list
       in

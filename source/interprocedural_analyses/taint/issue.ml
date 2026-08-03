@@ -764,6 +764,7 @@ let get_name_and_detailed_message
 
 
 let to_error
+    ~pyrefly_api
     ~taint_configuration:({ TaintConfiguration.Heap.rules; _ } as taint_configuration)
     ({ handle = { code; callable; _ }; _ } as issue)
   =
@@ -773,16 +774,25 @@ let to_error
       let name, detail = get_name_and_detailed_message ~taint_configuration issue in
       let kind = { Error.name; messages = [detail]; code } in
       let location = canonical_location issue in
-      Error.create ~location ~kind ~define_name:(Target.define_name_exn callable)
+      Error.create
+        ~location
+        ~kind
+        ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
 
 
-let to_json ~taint_configuration ~expand_overrides ~is_valid_callee ~resolve_module_path issue =
-  let callable_name =
-    Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug issue.handle.callable
-  in
+let to_json
+    ~display_api
+    ~taint_configuration
+    ~expand_overrides
+    ~is_valid_callee
+    ~resolve_module_path
+    issue
+  =
+  let callable_name = Target.external_name ~display_api issue.handle.callable in
   let _, message = get_name_and_detailed_message ~taint_configuration issue in
   let source_traces =
     ForwardTaint.to_json
+      ~display_api
       ~expand_overrides
       ~is_valid_callee
       ~trace_kind:(Some TraceKind.Source)
@@ -791,6 +801,7 @@ let to_json ~taint_configuration ~expand_overrides ~is_valid_callee ~resolve_mod
   in
   let sink_traces =
     BackwardTaint.to_json
+      ~display_api
       ~expand_overrides
       ~is_valid_callee
       ~trace_kind:(Some TraceKind.Sink)

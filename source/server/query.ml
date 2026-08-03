@@ -740,14 +740,14 @@ let process_model_query
               let errors =
                 Taint.ModelQueryExecution.ExecutionResult.get_errors model_query_results
               in
+              let display_api = Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api in
               let to_taint_model (callable, model) =
                 {
                   Response.Base.callable =
-                    Target.external_name
-                      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
-                      callable;
+                    Interprocedural.PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api callable;
                   model =
                     Taint.Model.to_json
+                      ~display_api
                       ~expand_overrides:None
                       ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> true)
                       ~resolve_module_path:None

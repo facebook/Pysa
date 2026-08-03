@@ -10,10 +10,14 @@ open Taint
 open TestHelper
 
 let assert_model_query_results ?model_path ~context ~models_source ~source ~expected () =
-  let { TestEnvironment.model_query_results; _ } =
+  let { TestEnvironment.model_query_results; pyrefly_api; _ } =
     initialize ?model_path ~models_source ~context source
   in
-  let actual = ModelQueryExecution.ExecutionResult.dump_to_string model_query_results in
+  let actual =
+    ModelQueryExecution.ExecutionResult.dump_to_string
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
+      model_query_results
+  in
   let dumped_models_equal left right =
     let left, right = Yojson.Safe.from_string left, Yojson.Safe.from_string right in
     Yojson.Safe.equal left right

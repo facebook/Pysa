@@ -465,9 +465,10 @@ module ExecutionResult = struct
     { shared_models; errors = List.append errors new_errors; models_for_expected }
 
 
-  let dump_to_string { shared_models; _ } =
+  let dump_to_string ~display_api { shared_models; _ } =
     let model_to_json (callable, model) =
       Model.to_json
+        ~display_api
         ~expand_overrides:None
         ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> true)
         ~resolve_module_path:None
@@ -501,14 +502,14 @@ module ExecutionResult = struct
     `List (Map.data (Map.mapi map ~f:to_json)) |> Yojson.Safe.pretty_to_string
 
 
-  let dump_to_file model_query_results ~path =
+  let dump_to_file ~display_api model_query_results ~path =
     Log.warning "Emitting the model query results to `%s`" (PyrePath.absolute path);
-    path |> File.create ~content:(dump_to_string model_query_results) |> File.write
+    path |> File.create ~content:(dump_to_string ~display_api model_query_results) |> File.write
 
 
-  let dump_to_file_and_string model_query_results ~path =
+  let dump_to_file_and_string ~display_api model_query_results ~path =
     Log.warning "Emitting the model query results to `%s`" (PyrePath.absolute path);
-    let content = dump_to_string model_query_results in
+    let content = dump_to_string ~display_api model_query_results in
     path |> File.create ~content |> File.write;
     content
 end

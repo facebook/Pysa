@@ -8,7 +8,8 @@
 open Interprocedural
 
 val fetch_and_externalize
-  :  taint_configuration:TaintConfiguration.Heap.t ->
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  taint_configuration:TaintConfiguration.Heap.t ->
   fixpoint_state:TaintFixpoint.State.ReadOnly.t ->
   resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) ->
   resolve_callable_location:(Target.t -> Ast.Location.WithModule.t option) ->
@@ -19,7 +20,8 @@ val fetch_and_externalize
   NewlineDelimitedJson.Line.t list
 
 val produce_errors
-  :  scheduler:Scheduler.t ->
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  scheduler:Scheduler.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
   resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) ->
   taint_configuration:TaintConfiguration.SharedMemory.t ->
@@ -29,7 +31,8 @@ val produce_errors
   Yojson.Safe.t list
 
 val save_results_to_directory
-  :  scheduler:Scheduler.t ->
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  scheduler:Scheduler.t ->
   taint_configuration:TaintConfiguration.SharedMemory.t ->
   result_directory:PyrePath.t ->
   output_format:Configuration.TaintOutputFormat.t ->

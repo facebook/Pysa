@@ -311,7 +311,11 @@ let initialize_models
         in
         let () =
           match taint_configuration.dump_model_query_results_path with
-          | Some path -> ModelQueryExecution.ExecutionResult.dump_to_file model_query_results ~path
+          | Some path ->
+              ModelQueryExecution.ExecutionResult.dump_to_file
+                ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
+                model_query_results
+                ~path
           | None -> ()
         in
         let model_query_errors =
@@ -921,6 +925,7 @@ let run_taint_analysis
 
   let errors =
     TaintReporting.produce_errors
+      ~pyrefly_api
       ~scheduler
       ~static_analysis_configuration
       ~taint_configuration:taint_configuration_shared_memory
@@ -951,6 +956,7 @@ let run_taint_analysis
           Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map
         in
         TaintReporting.save_results_to_directory
+          ~pyrefly_api
           ~scheduler
           ~taint_configuration:taint_configuration_shared_memory
           ~result_directory

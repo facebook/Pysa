@@ -73,6 +73,7 @@ module Forward = struct
         (json_to_string
            ~indent:"    "
            (ForwardState.to_json
+              ~display_api:PyreflyTypes.DisplayApi.for_debug
               ~expand_overrides:None
               ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> true)
               ~trace_kind:(Some TraceKind.Source)
@@ -121,6 +122,7 @@ module Backward = struct
           (json_to_string
              ~indent:"    "
              (BackwardState.to_json
+                ~display_api:PyreflyTypes.DisplayApi.for_debug
                 ~expand_overrides:None
                 ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> true)
                 ~trace_kind:(Some TraceKind.Sink)
@@ -135,6 +137,7 @@ module Backward = struct
           (json_to_string
              ~indent:"    "
              (BackwardState.to_json
+                ~display_api:PyreflyTypes.DisplayApi.for_debug
                 ~expand_overrides:None
                 ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> false)
                 ~trace_kind:None
@@ -219,6 +222,7 @@ module ParameterSources = struct
         (json_to_string
            ~indent:"    "
            (ForwardState.to_json
+              ~display_api:PyreflyTypes.DisplayApi.for_debug
               ~expand_overrides:None
               ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> false)
               ~trace_kind:None
@@ -1160,6 +1164,7 @@ let join_user_models ({ modes = left_modes; _ } as left) ({ modes = right_modes;
 
 
 let to_json
+    ~display_api
     ~expand_overrides
     ~is_valid_callee
     ~resolve_module_path
@@ -1177,9 +1182,7 @@ let to_json
       modes;
     }
   =
-  let callable_name =
-    Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable
-  in
+  let callable_name = Target.external_name ~display_api callable in
   let model_json = ["callable", `String callable_name] in
   let model_json =
     match resolve_callable_location with
@@ -1201,6 +1204,7 @@ let to_json
           ( (* Use "sources" instead of "generations" for backward compatibility. *)
             "sources",
             ForwardState.to_json
+              ~display_api
               ~expand_overrides
               ~is_valid_callee
               ~trace_kind:(Some TraceKind.Source)
@@ -1216,6 +1220,7 @@ let to_json
       @ [
           ( "sinks",
             BackwardState.to_json
+              ~display_api
               ~expand_overrides
               ~is_valid_callee
               ~trace_kind:(Some TraceKind.Sink)
@@ -1231,6 +1236,7 @@ let to_json
       @ [
           ( "tito",
             BackwardState.to_json
+              ~display_api
               ~expand_overrides
               ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> false)
                 (* should only contain CallInfo.Tito *)
@@ -1247,6 +1253,7 @@ let to_json
       @ [
           ( "parameter_sources",
             ForwardState.to_json
+              ~display_api
               ~expand_overrides
               ~is_valid_callee:(fun ~trace_kind:_ ~port:_ ~path:_ ~callee:_ -> false)
                 (* should only contain CallInfo.Declaration *)

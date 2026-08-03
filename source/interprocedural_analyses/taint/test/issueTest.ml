@@ -11,8 +11,17 @@ open Taint
 open Domains
 open Core
 
-let test_no_errors _ =
+let test_no_errors context =
   let open Issue in
+  let pyrefly_api =
+    (* `to_error` needs a `pyrefly_api` for its define-name lookup; the handle is currently ignored,
+       so a scratch project over a dummy source suffices (Pyrefly rejects an empty source set). *)
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:true
+      ["test.py", "x = 0"]
+    |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
+  in
   let source_tree_a =
     ForwardTaint.singleton CallInfo.declaration (Sources.NamedSource "Demo") Frame.initial
     |> ForwardState.Tree.create_leaf
@@ -57,7 +66,7 @@ let test_no_errors _ =
           (Target.from_regular (Target.Regular.Function { name = "test.$toplevel"; kind = Normal }))
         ~define_location:Location.any
       |> IssueHandle.SerializableMap.data
-      |> List.map ~f:(to_error ~taint_configuration)
+      |> List.map ~f:(to_error ~pyrefly_api ~taint_configuration)
     in
     assert_equal
       ~msg:"Errors"
@@ -72,8 +81,17 @@ let test_no_errors _ =
   ()
 
 
-let test_errors _ =
+let test_errors context =
   let open Issue in
+  let pyrefly_api =
+    (* `to_error` needs a `pyrefly_api` for its define-name lookup; the handle is currently ignored,
+       so a scratch project over a dummy source suffices (Pyrefly rejects an empty source set). *)
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:true
+      ["test.py", "x = 0"]
+    |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
+  in
   let source_tree ~field ~source =
     ForwardTaint.singleton CallInfo.declaration (Sources.NamedSource source) Frame.initial
     |> ForwardState.Tree.create_leaf
@@ -116,7 +134,7 @@ let test_errors _ =
         ~taint_configuration
         ~define_location:Location.any
       |> IssueHandle.SerializableMap.data
-      |> List.map ~f:(to_error ~taint_configuration)
+      |> List.map ~f:(to_error ~pyrefly_api ~taint_configuration)
     in
     assert_equal
       ~msg:"Error"

@@ -396,7 +396,7 @@ let check_expectation
         ~lookup:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
     in
     get_errors callable
-    |> List.map ~f:(Issue.to_error ~taint_configuration)
+    |> List.map ~f:(Issue.to_error ~pyrefly_api ~taint_configuration)
     |> List.map ~f:to_analysis_error
   in
   assert_errors errors actual_errors
@@ -1159,6 +1159,7 @@ let end_to_end_integration_test path context =
       |> List.rev_append (TaintFixpoint.SharedModels.targets initial_models)
       |> List.dedup_and_sort ~compare:Target.compare
       |> TaintReporting.fetch_and_externalize
+           ~pyrefly_api
            ~taint_configuration
            ~fixpoint_state:(TaintFixpoint.State.read_only fixpoint.TaintFixpoint.state)
            ~resolve_module_path

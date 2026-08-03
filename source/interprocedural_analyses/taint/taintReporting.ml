@@ -115,7 +115,14 @@ let merge_issues_by_canonical_handle issues =
              Some (Algorithms.fold_balanced tail ~f:Issue.join ~init:head))
 
 
-let extract_errors ~scheduler ~scheduler_policies ~taint_configuration ~callables ~fixpoint_state =
+let extract_errors
+    ~pyrefly_api
+    ~scheduler
+    ~scheduler_policies
+    ~taint_configuration
+    ~callables
+    ~fixpoint_state
+  =
   let extract_errors ~fixpoint_state callables =
     callables
     |> List.map ~f:(fun callable ->
@@ -146,7 +153,7 @@ let extract_errors ~scheduler ~scheduler_policies ~taint_configuration ~callable
     ()
   |> List.concat_no_order
   |> merge_issues_by_canonical_handle
-  |> List.map ~f:(Issue.to_error ~taint_configuration)
+  |> List.map ~f:(Issue.to_error ~pyrefly_api ~taint_configuration)
 
 
 let filter_overrides ~dump_override_models callables =
@@ -157,6 +164,7 @@ let filter_overrides ~dump_override_models callables =
 
 
 let model_to_newline_delimited_json
+    ~display_api
     ~fixpoint_state
     ~resolve_module_path
     ~resolve_callable_location
@@ -176,6 +184,7 @@ let model_to_newline_delimited_json
         NewlineDelimitedJson.Line.kind = Model;
         data =
           Model.to_json
+            ~display_api
             ~expand_overrides:(Some override_graph)
             ~is_valid_callee:(has_significant_summary ~fixpoint_state)
             ~resolve_module_path:(Some resolve_module_path)
@@ -187,6 +196,7 @@ let model_to_newline_delimited_json
 
 
 let issues_to_newline_delimited_json
+    ~display_api
     ~fixpoint_state
     ~taint_configuration
     ~resolve_module_path
@@ -206,6 +216,7 @@ let issues_to_newline_delimited_json
     let issue_to_json issue =
       let json =
         Issue.to_json
+          ~display_api
           ~taint_configuration
           ~expand_overrides:(Some override_graph)
           ~is_valid_callee:(has_significant_summary ~fixpoint_state)
@@ -231,6 +242,7 @@ let issues_to_newline_delimited_json
 
 
 let callable_to_newline_delimited_json
+    ~display_api
     ~fixpoint_state
     ~taint_configuration
     ~resolve_module_path
@@ -242,6 +254,7 @@ let callable_to_newline_delimited_json
   =
   let model =
     model_to_newline_delimited_json
+      ~display_api
       ~fixpoint_state
       ~resolve_module_path
       ~resolve_callable_location
@@ -250,6 +263,7 @@ let callable_to_newline_delimited_json
   in
   let issues =
     issues_to_newline_delimited_json
+      ~display_api
       ~fixpoint_state
       ~taint_configuration
       ~resolve_module_path
@@ -266,6 +280,7 @@ let callable_to_newline_delimited_json
 
 
 let fetch_and_externalize
+    ~pyrefly_api
     ~taint_configuration
     ~fixpoint_state
     ~resolve_module_path
@@ -275,12 +290,14 @@ let fetch_and_externalize
     ~sorted
     callables
   =
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   let callables = filter_overrides ~dump_override_models callables in
   let callable_to_parameters = CallableToParameters.from_callables callables in
   callables
   |> List.map
        ~f:
          (callable_to_newline_delimited_json
+            ~display_api
             ~fixpoint_state
             ~taint_configuration
             ~resolve_module_path
@@ -292,6 +309,7 @@ let fetch_and_externalize
 
 
 let save_results_to_directory
+    ~pyrefly_api
     ~scheduler
     ~taint_configuration
     ~result_directory
@@ -308,6 +326,7 @@ let save_results_to_directory
     ~file_coverage
     ~rule_coverage
   =
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   let step_logger =
     StepLogger.start
       ~start_message:
@@ -333,6 +352,7 @@ let save_results_to_directory
           ~configuration:(`Assoc ["repo", `String root])
           ~to_json_lines:
             (callable_to_newline_delimited_json
+               ~display_api
                ~fixpoint_state
                ~taint_configuration
                ~resolve_module_path
@@ -349,6 +369,7 @@ let save_results_to_directory
           ~configuration:(`Assoc ["repo", `String root])
           ~to_json_lines:
             (callable_to_newline_delimited_json
+               ~display_api
                ~fixpoint_state
                ~taint_configuration
                ~resolve_module_path
@@ -427,6 +448,7 @@ let save_results_to_directory
 
 
 let produce_errors
+    ~pyrefly_api
     ~scheduler
     ~static_analysis_configuration:
       Configuration.StaticAnalysis.
@@ -439,6 +461,7 @@ let produce_errors
   =
   let errors =
     extract_errors
+      ~pyrefly_api
       ~taint_configuration
       ~scheduler
       ~scheduler_policies

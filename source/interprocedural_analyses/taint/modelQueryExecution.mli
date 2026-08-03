@@ -16,11 +16,19 @@ module ExecutionResult : sig
 
   val create_empty : unit -> t
 
-  val dump_to_string : t -> string
+  val dump_to_string : display_api:Interprocedural.PyreflyTypes.DisplayApi.t -> t -> string
 
-  val dump_to_file : t -> path:PyrePath.t -> unit
+  val dump_to_file
+    :  display_api:Interprocedural.PyreflyTypes.DisplayApi.t ->
+    t ->
+    path:PyrePath.t ->
+    unit
 
-  val dump_to_file_and_string : t -> path:PyrePath.t -> string
+  val dump_to_file_and_string
+    :  display_api:Interprocedural.PyreflyTypes.DisplayApi.t ->
+    t ->
+    path:PyrePath.t ->
+    string
 end
 
 module PartitionCacheQueries : sig

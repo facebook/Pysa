@@ -37,7 +37,8 @@ val canonical_location : t -> Location.WithModule.t
 val join : t -> t -> t
 
 val to_json
-  :  taint_configuration:TaintConfiguration.Heap.t ->
+  :  display_api:PyreflyTypes.DisplayApi.t ->
+  taint_configuration:TaintConfiguration.Heap.t ->
   expand_overrides:OverrideGraph.SharedMemory.ReadOnly.t option ->
   is_valid_callee:
     (trace_kind:TraceKind.t option ->
@@ -49,7 +50,11 @@ val to_json
   t ->
   Yojson.Safe.t
 
-val to_error : taint_configuration:TaintConfiguration.Heap.t -> t -> Error.t
+val to_error
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  taint_configuration:TaintConfiguration.Heap.t ->
+  t ->
+  Error.t
 
 (* A map from triggered sink kinds (which is a string) to their triggers. A triggered sink here
    means we found one source, and must find the other source, in order to file an issue for a
