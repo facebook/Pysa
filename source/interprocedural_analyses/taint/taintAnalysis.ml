@@ -746,6 +746,7 @@ let run_taint_analysis
   in
   let original_dependency_graph =
     Interprocedural.DependencyGraph.build_whole_program_dependency_graph
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~static_analysis_configuration
       ~prune:prune_method
       ~initial_callables
@@ -812,6 +813,7 @@ let run_taint_analysis
     in
     let dependency_graph =
       Interprocedural.DependencyGraph.build_whole_program_dependency_graph
+        ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
         ~static_analysis_configuration
         ~prune:prune_method
         ~initial_callables

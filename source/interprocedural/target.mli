@@ -46,6 +46,12 @@ module Regular : sig
 
   val define_name_exn : t -> Reference.t
 
+  val class_name : t -> string option
+
+  val method_name : t -> string option
+
+  val function_name : t -> string option
+
   val create_derived_override_exn : at_type:Reference.t -> t -> t
 
   val get_corresponding_method_exn : t -> t
@@ -119,7 +125,13 @@ val show_pretty_with_kind : t -> string
 
 val pp_external : Format.formatter -> t -> unit
 
-val external_name : t -> string
+(* Render a target as an external (user-facing) name. The `display_api` is currently ignored; the
+   payload swap will use it to decode packed ids into names. *)
+val external_name : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+(* Like `pp_internal`, but takes a display api (currently ignored). Meant to become the general
+   pretty-printing pattern once targets store ids. *)
+val pp_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
 
 (* Equivalent to pp_internal. Required by @@deriving. *)
 val pp : Format.formatter -> t -> unit

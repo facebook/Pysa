@@ -346,6 +346,56 @@ module ReadOnly : sig
   val state_root_of_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
 
   val ensures_qualified : t -> Ast.Source.t -> Ast.Source.t
+
+  (* Build a display api from the id->name shared-memory maps *)
+  val display_api : t -> PyreflyTypes.DisplayApi.t
+
+  (* Callable- and target-oriented queries. *)
+  module Target : sig
+    (* Render a target as an external (user-facing) name. Convenience wrapper that does not require
+       a display API. *)
+    val external_name : pyrefly_api:t -> Target.t -> string
+
+    (* Return the define name of a Function or Method target. Note that multiple targets can match
+       to the same define name (e.g, property getters and setters). Hence, use this at your own
+       risk. *)
+    val define_name : t -> Target.t -> Ast.Reference.t option
+
+    val define_name_exn : t -> Target.t -> Ast.Reference.t
+
+    val class_name : t -> Target.t -> string option
+
+    val method_name : t -> Target.t -> string option
+
+    val function_name : t -> Target.t -> string option
+
+    val get_callable_metadata : t -> Ast.Reference.t -> CallableMetadata.t
+
+    val get_callable_metadata_opt : t -> Ast.Reference.t -> CallableMetadata.t option
+
+    (* Return the fully qualified name of the class that defines this callable, or `None` if the
+       callable is not defined within a class. *)
+    val class_name_of_callable : t -> Ast.Reference.t -> Ast.Reference.t option
+
+    (* Resolve a `(class, bare method name)` pair to the real method target defined on that class,
+       or `None` if the class has no method with that bare name. `method_name` must be the bare name
+       (without suffixes like `@setter` or `$2`). *)
+    val resolve_method_target
+      :  t ->
+      class_name:Ast.Reference.t ->
+      method_name:string ->
+      is_property_setter:bool ->
+      Target.t option
+
+    (* Resolve a function name to its real function target, or `None` if no such function exists. *)
+    val resolve_function_target : t -> Ast.Reference.t -> Target.t option
+
+    val get_overriden_base_method : t -> Target.MethodReference.t -> Target.MethodReference.t option
+
+    val target_from_define_name : t -> override:bool -> Ast.Reference.t -> Target.t
+
+    val target_from_method_reference : Target.MethodReference.t -> Target.t
+  end
 end
 
 val add_builtins_prefix : Ast.Reference.t -> Ast.Reference.t

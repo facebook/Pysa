@@ -2740,6 +2740,47 @@ module ReadOnly = struct
     }
 
 
+  (* Build a `PyreflyTypes.DisplayApi.t` from the id->name shared-memory maps. *)
+  let display_api
+      { callable_id_to_qualified_name_shared_memory; class_id_to_qualified_name_shared_memory; _ }
+    =
+    let callable_define_name callable_id =
+      (* Decorated callables share their undecorated function's qualified name (the `@decorated`
+         suffix belongs to the external name, not the define name); only the undecorated id is
+         stored in the id->name map, so normalize before the lookup. *)
+      let callable_id =
+        if PyreflyTypes.CallableId.is_decorated callable_id then
+          PyreflyTypes.CallableId.to_undecorated callable_id
+        else
+          callable_id
+      in
+      let module_id, local_function_id = PyreflyTypes.CallableId.decode callable_id in
+      CallableIdToQualifiedNameSharedMemory.get
+        callable_id_to_qualified_name_shared_memory
+        { GlobalCallableId.module_id; local_function_id }
+      |> FullyQualifiedName.to_reference
+    in
+    let callable_external_name callable_id =
+      (* The external (user-facing) name is the define name, with `@decorated` appended to its last
+         component for decorated callables. *)
+      let define_name = callable_define_name callable_id in
+      if PyreflyTypes.CallableId.is_decorated callable_id then
+        Reference.create
+          ?prefix:(Reference.prefix define_name)
+          (Reference.last define_name ^ "@decorated")
+      else
+        define_name
+    in
+    let class_name class_id =
+      let module_id, local_class_id = PyreflyTypes.ClassId.decode class_id in
+      ClassIdToQualifiedNameSharedMemory.get_class_name
+        class_id_to_qualified_name_shared_memory
+        { GlobalClassId.module_id; local_class_id }
+      |> FullyQualifiedName.to_reference
+    in
+    { PyreflyTypes.DisplayApi.callable_external_name; callable_define_name; class_name }
+
+
   let all_sys_infos { all_sys_infos; _ } = all_sys_infos
 
   let artifact_path_of_qualifier { module_infos_shared_memory; _ } qualifier =
@@ -4208,6 +4249,43 @@ module ReadOnly = struct
 
 
   let ensures_qualified _api source = Preprocessing.qualify source
+
+  (* Callable- and target-oriented queries, grouped under `ReadOnly.Target`. The bodies live at the
+     top level of `ReadOnly` (where the internal call-graph parsers can reach them without shadowing
+     the global `Target` module) and are re-exported here so callers use `ReadOnly.Target.<fn>`. *)
+  module Target = struct
+    (* Render a target as an external (user-facing) name. Convenience wrapper that does not require
+       a display API. *)
+    let external_name ~pyrefly_api target =
+      Target.external_name ~display_api:(display_api pyrefly_api) target
+
+
+    let define_name _api target = target |> Target.get_regular |> Target.Regular.define_name
+
+    let define_name_exn _api target = target |> Target.get_regular |> Target.Regular.define_name_exn
+
+    let class_name _api target = target |> Target.get_regular |> Target.Regular.class_name
+
+    let method_name _api target = target |> Target.get_regular |> Target.Regular.method_name
+
+    let function_name _api target = target |> Target.get_regular |> Target.Regular.function_name
+
+    let get_callable_metadata = get_callable_metadata
+
+    let get_callable_metadata_opt = get_callable_metadata_opt
+
+    let class_name_of_callable = class_name_of_callable
+
+    let resolve_method_target = resolve_method_target
+
+    let resolve_function_target = resolve_function_target
+
+    let get_overriden_base_method = get_overriden_base_method
+
+    let target_from_define_name = target_from_define_name
+
+    let target_from_method_reference = target_from_method_reference
+  end
 end
 
 (* List of symbols exported from the 'builtins' module. To keep it short, this only contains symbols

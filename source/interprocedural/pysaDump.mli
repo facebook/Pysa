@@ -8,17 +8,38 @@
 (* Decides whether verbose "magic dump" logging is enabled for a given callable during a Pysa
    analysis phase. *)
 
-val should_dump_call_graph : define:Ast.Statement.Define.t -> callable:Target.t -> bool
+val should_dump_call_graph
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  define:Ast.Statement.Define.t ->
+  callable:Target.t ->
+  bool
 
-val should_dump_higher_order_call_graph : define:Ast.Statement.Define.t -> callable:Target.t -> bool
+val should_dump_higher_order_call_graph
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  define:Ast.Statement.Define.t ->
+  callable:Target.t ->
+  bool
 
-val should_dump_taint : define:Ast.Statement.Define.t -> callable:Target.t -> bool
+val should_dump_taint
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  define:Ast.Statement.Define.t ->
+  callable:Target.t ->
+  bool
 
-val should_dump_cfg : define:Ast.Statement.Define.t -> callable:Target.t -> bool
+val should_dump_cfg
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  define:Ast.Statement.Define.t ->
+  callable:Target.t ->
+  bool
 
-val should_dump_perf : define:Ast.Statement.Define.t -> callable:Target.t -> bool
+val should_dump_perf
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  define:Ast.Statement.Define.t ->
+  callable:Target.t ->
+  bool
 
 val should_dump_perf_higher_order_call_graph
-  :  define:Ast.Statement.Define.t ->
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  define:Ast.Statement.Define.t ->
   callable:Target.t ->
   bool

@@ -2090,7 +2090,12 @@ let higher_order_call_graph_of_define
 
     let get_callee_model = get_callee_model
 
-    let debug = PysaDump.should_dump_higher_order_call_graph ~define:(Node.value define) ~callable
+    let debug =
+      PysaDump.should_dump_higher_order_call_graph
+        ~pyrefly_api
+        ~define:(Node.value define)
+        ~callable
+
 
     let module_qualifier = qualifier
 
@@ -2770,7 +2775,7 @@ let build_whole_program_call_graph
       | AstResult.Some
           ({ CallablesSharedMemory.DefineAndQualifier.define = { Node.value = define; _ }; _ } as
           define_and_qualifier) ->
-          let debug = PysaDump.should_dump_call_graph ~define ~callable in
+          let debug = PysaDump.should_dump_call_graph ~pyrefly_api ~define ~callable in
           debug, Some define_and_qualifier
       | _ -> false, None
     in

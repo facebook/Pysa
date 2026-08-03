@@ -18,7 +18,7 @@ let static_method_decorators = ["staticmethod"; "abstractstaticmethod"; "abc.abs
 module CallableSignature = PyreflyTypes.CallableSignature
 
 let get_signature_and_definition ~pyrefly_api callable =
-  let define_name = Target.define_name_exn callable in
+  let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
   PyreflyApi.ReadOnly.get_callable_signature_opt pyrefly_api define_name
   >>| fun signature ->
   let define = PyreflyApi.ReadOnly.get_define_opt pyrefly_api define_name in
@@ -117,17 +117,17 @@ module ReadOnly = struct
   (* Return the define name for looking up a target in pyrefly. Returns [None] for targets that
      pyrefly does not know about: decorated targets (which have synthetic defines in shared memory),
      override targets and object targets (which have no define name). *)
-  let define_name_for_pyrefly_lookup target =
+  let define_name_for_pyrefly_lookup ~pyrefly_api target =
     let regular = Target.get_regular target in
     match Target.Regular.kind regular with
     | Some Decorated -> None
-    | _ -> Target.Regular.define_name regular
+    | _ -> PyreflyApi.ReadOnly.Target.define_name pyrefly_api target
 
 
   let get_define_from_pyrefly ~pyrefly_api target =
-    define_name_for_pyrefly_lookup target
+    define_name_for_pyrefly_lookup ~pyrefly_api target
     >>= fun define_name ->
-    PyreflyApi.ReadOnly.get_callable_metadata_opt pyrefly_api define_name
+    PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api define_name
     >>| fun { PyreflyApi.CallableMetadata.module_qualifier; _ } ->
     PyreflyApi.ReadOnly.get_define_opt pyrefly_api define_name
     |> AstResult.map ~f:(fun define -> { DefineAndQualifier.define; qualifier = module_qualifier })
@@ -144,7 +144,7 @@ module ReadOnly = struct
 
 
   let get_signature_from_pyrefly ~pyrefly_api target =
-    define_name_for_pyrefly_lookup target
+    define_name_for_pyrefly_lookup ~pyrefly_api target
     >>= PyreflyApi.ReadOnly.get_callable_signature_opt pyrefly_api
 
 
@@ -174,8 +174,8 @@ module ReadOnly = struct
 
 
   let get_method_kind_from_pyrefly ~pyrefly_api target =
-    define_name_for_pyrefly_lookup target
-    >>= PyreflyApi.ReadOnly.get_callable_metadata_opt pyrefly_api
+    define_name_for_pyrefly_lookup ~pyrefly_api target
+    >>= PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api
     >>| PyreflyApi.CallableMetadata.get_method_kind
 
 
@@ -205,7 +205,7 @@ module ReadOnly = struct
 
 
   let is_stub_like_from_pyrefly ~pyrefly_api target =
-    define_name_for_pyrefly_lookup target
+    define_name_for_pyrefly_lookup ~pyrefly_api target
     >>= PyreflyApi.ReadOnly.is_stub_like_callable_opt pyrefly_api
 
 
@@ -221,7 +221,7 @@ module ReadOnly = struct
 
 
   let get_captures_from_pyrefly ~pyrefly_api target =
-    define_name_for_pyrefly_lookup target
+    define_name_for_pyrefly_lookup ~pyrefly_api target
     >>= PyreflyApi.ReadOnly.get_callable_captures_opt pyrefly_api
 
 
@@ -237,7 +237,7 @@ module ReadOnly = struct
 
 
   let callable_from_reference_from_pyrefly ~pyrefly_api name =
-    PyreflyApi.ReadOnly.get_callable_metadata_opt pyrefly_api name
+    PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api name
     >>| fun metadata ->
     match PyreflyApi.CallableMetadata.get_method_kind metadata with
     | Some _ -> Target.create_method_from_reference name
@@ -263,9 +263,10 @@ module ReadOnly = struct
 
 
   let mem_from_pyrefly ~pyrefly_api target =
-    match define_name_for_pyrefly_lookup target with
+    match define_name_for_pyrefly_lookup ~pyrefly_api target with
     | Some define_name ->
-        Option.is_some (PyreflyApi.ReadOnly.get_callable_metadata_opt pyrefly_api define_name)
+        Option.is_some
+          (PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api define_name)
     | None -> false
 
 

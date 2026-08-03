@@ -246,7 +246,10 @@ module CallTarget = struct
         is_static_method;
       }
     =
-    ["index", `Int index; "target", `String (Target.external_name target)]
+    [
+      "index", `Int index;
+      "target", `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug target);
+    ]
     |> JsonHelper.add_flag_if "implicit_receiver" (`Bool true) implicit_receiver
     |> JsonHelper.add_flag_if "implicit_dunder_call" (`Bool true) implicit_dunder_call
     |> JsonHelper.add_optional "return_type" return_type ReturnType.to_json
@@ -1683,7 +1686,12 @@ struct
   let filename_and_path ~resolve_qualifier ~resolve_module_path callable
       : (string * Yojson.Safe.t) list
     =
-    let bindings = ["callable", `String (Target.external_name callable)] in
+    let bindings =
+      [
+        ( "callable",
+          `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable) );
+      ]
+    in
     let resolve_module_path = Option.value ~default:(fun _ -> None) resolve_module_path in
     callable
     |> resolve_qualifier

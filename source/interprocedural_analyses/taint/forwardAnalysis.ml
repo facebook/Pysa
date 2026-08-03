@@ -3526,7 +3526,7 @@ let extract_source_model
   let return_annotations =
     PyreflyApi.ReadOnly.get_callable_return_annotations
       pyrefly_api
-      ~define_name:(Target.define_name_exn callable)
+      ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
       ~define
   in
   let normalized_parameters = AccessPath.normalize_parameters parameters in
@@ -3640,7 +3640,7 @@ let run
     =
     define
   in
-  let define_name = Target.define_name_exn callable in
+  let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
   let module FunctionContext = struct
     let qualifier = qualifier
 
@@ -3650,7 +3650,9 @@ let run
 
     let callable = callable
 
-    let debug = Interprocedural.PysaDump.should_dump_taint ~define:define.value ~callable
+    let debug =
+      Interprocedural.PysaDump.should_dump_taint ~pyrefly_api ~define:define.value ~callable
+
 
     let profiler = profiler
 
@@ -3684,7 +3686,7 @@ let run
   let module Fixpoint = PyrePysaLogic.Fixpoint.Make (State) in
   if
     FunctionContext.debug
-    || Interprocedural.PysaDump.should_dump_call_graph ~define:define.value ~callable
+    || Interprocedural.PysaDump.should_dump_call_graph ~pyrefly_api ~define:define.value ~callable
   then
     Log.dump
       "Call graph of `%a`:@,%a"

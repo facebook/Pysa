@@ -137,6 +137,27 @@ module CallableId : sig
   val to_undecorated : t -> t
 end
 
+(* Pure id->reference closures used to render target names.
+
+   There are two flavors of callable name: - The *define name* is the actual definition's
+   fully-qualified name (`module.Class.method` / `module.function`). It never carries an
+   `@decorated` marker. - The *external name* is the user-facing rendering: identical to the define
+   name, except that a decorated callable (a `FunctionDecoratedTarget`) gets an `@decorated` suffix
+   appended to its last component. *)
+module DisplayApi : sig
+  type t = {
+    (* User-facing name; includes an `@decorated` suffix for decorated callables. *)
+    callable_external_name: CallableId.t -> Ast.Reference.t;
+    (* Python define name; never includes `@decorated`. *)
+    callable_define_name: CallableId.t -> Ast.Reference.t;
+    class_name: ClassId.t -> Ast.Reference.t;
+  }
+
+  (* Debug/no-api renderer for pretty-printers that hold no `PyreflyApi` handle; renders ids
+     structurally. *)
+  val for_debug : t
+end
+
 (* Scalar properties of a type (it is a bool/int/float/etc.) *)
 module ScalarTypeProperties : sig
   type t [@@deriving compare, equal, sexp, hash, show]

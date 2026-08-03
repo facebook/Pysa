@@ -125,7 +125,12 @@ module Analysis = struct
     =
     let taint_configuration = TaintConfiguration.SharedMemory.get taint_configuration in
     let profiler =
-      if Interprocedural.PysaDump.should_dump_perf ~define:(Ast.Node.value define) ~callable then
+      if
+        Interprocedural.PysaDump.should_dump_perf
+          ~pyrefly_api
+          ~define:(Ast.Node.value define)
+          ~callable
+      then
         TaintProfiler.start ~enable_perf:true ~callable ()
       else
         TaintProfiler.disabled
@@ -139,7 +144,12 @@ module Analysis = struct
       TaintProfiler.track_duration ~profiler ~name:"Control flow graph" ~f:(fun () ->
           PyrePysaLogic.Cfg.create ~normalize_asserts:false define.value)
     in
-    if Interprocedural.PysaDump.should_dump_cfg ~define:(Ast.Node.value define) ~callable then
+    if
+      Interprocedural.PysaDump.should_dump_cfg
+        ~pyrefly_api
+        ~define:(Ast.Node.value define)
+        ~callable
+    then
       Log.dump
         "CFG for %a in dot syntax for graphviz:\n----\n%s\n----"
         Ast.Reference.pp

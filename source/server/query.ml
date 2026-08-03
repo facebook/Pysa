@@ -742,7 +742,10 @@ let process_model_query
               in
               let to_taint_model (callable, model) =
                 {
-                  Response.Base.callable = Target.external_name callable;
+                  Response.Base.callable =
+                    Target.external_name
+                      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
+                      callable;
                   model =
                     Taint.Model.to_json
                       ~expand_overrides:None

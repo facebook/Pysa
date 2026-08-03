@@ -94,6 +94,7 @@ let assert_higher_order_call_graph_fixpoint
   in
   let dependency_graph =
     DependencyGraph.build_whole_program_dependency_graph
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~static_analysis_configuration
       ~prune:DependencyGraph.PruneMethod.None
       ~initial_callables

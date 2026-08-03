@@ -3305,7 +3305,7 @@ let run
     ()
   =
   let timer = Timer.start () in
-  let define_name = Target.define_name_exn callable in
+  let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
   let module FunctionContext = struct
     let qualifier = qualifier
 
@@ -3315,7 +3315,9 @@ let run
 
     let callable = callable
 
-    let debug = Interprocedural.PysaDump.should_dump_taint ~define:(Node.value define) ~callable
+    let debug =
+      Interprocedural.PysaDump.should_dump_taint ~pyrefly_api ~define:(Node.value define) ~callable
+
 
     let profiler = profiler
 

@@ -136,6 +136,7 @@ module CallGraphAnalysis = struct
       let profiler =
         if
           PysaDump.should_dump_perf_higher_order_call_graph
+            ~pyrefly_api
             ~define:(Ast.Node.value define)
             ~callable
         then (* Higher order call graph perf profiling is kept in-memory only. *)
@@ -191,7 +192,12 @@ module CallGraphAnalysis = struct
                |> Option.value ~default:true
                |> not)
       in
-      if PysaDump.should_dump_higher_order_call_graph ~define:(Ast.Node.value define) ~callable then (
+      if
+        PysaDump.should_dump_higher_order_call_graph
+          ~pyrefly_api
+          ~define:(Ast.Node.value define)
+          ~callable
+      then (
         Log.dump
           "Returned callables for `%a`: `%a`"
           Target.pp_pretty_with_kind

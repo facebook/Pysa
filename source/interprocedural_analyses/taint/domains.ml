@@ -257,7 +257,11 @@ module CallInfo = struct
         Format.fprintf
           formatter
           "CallSite(callees=[%s], call_site=%a, location=%a, port=%a, class_intervals=%a)"
-          (String.concat ~sep:", " (List.map ~f:Target.external_name callees))
+          (String.concat
+             ~sep:", "
+             (List.map
+                ~f:(Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug)
+                callees))
           CallSite.pp
           call_site
           Location.pp
@@ -325,7 +329,10 @@ module CallInfo = struct
         @ CallSite.to_json ~location call_site
     | CallSite { location; callees; port; path; class_intervals; call_site } ->
         let callee_json =
-          callees |> List.map ~f:(fun callable -> `String (Target.external_name callable))
+          callees
+          |> List.map ~f:(fun callable ->
+                 `String
+                   (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable))
         in
         let location_json = location_to_json location in
         let full_port = AccessPath.create port path in
@@ -1547,7 +1554,12 @@ end = struct
                 else
                   let open Features in
                   let port = LeafPort.from_access_path ~root:port ~path in
-                  LeafName.{ leaf = Target.external_name callee; port }
+                  LeafName.
+                    {
+                      leaf =
+                        Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee;
+                      port;
+                    }
                   |> LeafNameInterned.intern
                   |> Features.LeafNameSet.singleton
               in
@@ -1638,7 +1650,12 @@ end = struct
           let leaf_name =
             let open Features in
             let port = LeafPort.from_access_path ~root:port ~path in
-            LeafName.{ leaf = Target.external_name callable; port } |> LeafNameInterned.intern
+            LeafName.
+              {
+                leaf = Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable;
+                port;
+              }
+            |> LeafNameInterned.intern
           in
           let local_taint =
             LocalTaintDomain.transform Features.LeafNameSet.Element Add ~f:leaf_name local_taint

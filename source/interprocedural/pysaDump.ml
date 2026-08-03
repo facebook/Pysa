@@ -24,8 +24,10 @@ let perf_higher_order_call_graph_env = lazy (Sys.getenv "PYSA_DUMP_PERF_HIGHER_O
 (* A phase fires when the master switch is on (in-source `pysa_dump()` or `PYSA_DUMP` matching the
    fully-qualified name), or when the phase-specific in-source call or environment variable
    matches. *)
-let should_dump ~define ~callable ~in_source_phase ~phase_env =
-  let qualified_name = Ast.Reference.show (Target.define_name_exn callable) in
+let should_dump ~pyrefly_api ~define ~callable ~in_source_phase ~phase_env =
+  let qualified_name =
+    Ast.Reference.show (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
+  in
   let matches_env env =
     match Lazy.force env with
     | Some value -> String.equal value qualified_name
@@ -37,48 +39,54 @@ let should_dump ~define ~callable ~in_source_phase ~phase_env =
   || matches_env phase_env
 
 
-let should_dump_call_graph ~define ~callable =
+let should_dump_call_graph ~pyrefly_api ~define ~callable =
   should_dump
+    ~pyrefly_api
     ~define
     ~callable
     ~in_source_phase:Ast.Statement.Define.pysa_dump_call_graph
     ~phase_env:pysa_dump_call_graph_env
 
 
-let should_dump_higher_order_call_graph ~define ~callable =
+let should_dump_higher_order_call_graph ~pyrefly_api ~define ~callable =
   should_dump
+    ~pyrefly_api
     ~define
     ~callable
     ~in_source_phase:Ast.Statement.Define.pysa_dump_higher_order_call_graph
     ~phase_env:pysa_dump_higher_order_call_graph_env
 
 
-let should_dump_taint ~define ~callable =
+let should_dump_taint ~pyrefly_api ~define ~callable =
   should_dump
+    ~pyrefly_api
     ~define
     ~callable
     ~in_source_phase:Ast.Statement.Define.pysa_dump_taint
     ~phase_env:pysa_dump_taint_env
 
 
-let should_dump_cfg ~define ~callable =
+let should_dump_cfg ~pyrefly_api ~define ~callable =
   should_dump
+    ~pyrefly_api
     ~define
     ~callable
     ~in_source_phase:Ast.Statement.Define.pysa_dump_cfg
     ~phase_env:pysa_dump_cfg_env
 
 
-let should_dump_perf ~define ~callable =
+let should_dump_perf ~pyrefly_api ~define ~callable =
   should_dump
+    ~pyrefly_api
     ~define
     ~callable
     ~in_source_phase:Ast.Statement.Define.pysa_dump_perf
     ~phase_env:pysa_dump_perf_env
 
 
-let should_dump_perf_higher_order_call_graph ~define ~callable =
+let should_dump_perf_higher_order_call_graph ~pyrefly_api ~define ~callable =
   should_dump
+    ~pyrefly_api
     ~define
     ~callable
     ~in_source_phase:Ast.Statement.Define.pysa_dump_perf_higher_order_call_graph

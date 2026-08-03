@@ -789,6 +789,7 @@ let initialize
   in
   let dependency_graph =
     DependencyGraph.build_whole_program_dependency_graph
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~static_analysis_configuration
       ~prune:DependencyGraph.PruneMethod.None
       ~initial_callables:initial_callables_in_source
@@ -1088,6 +1089,7 @@ let end_to_end_integration_test path context =
     in
     let { DependencyGraph.dependency_graph; callables_to_analyze; override_targets; _ } =
       DependencyGraph.build_whole_program_dependency_graph
+        ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
         ~static_analysis_configuration
         ~prune:prune_method
         ~initial_callables

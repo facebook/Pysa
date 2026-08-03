@@ -193,6 +193,7 @@ type whole_program_dependency_graph = {
     dependees (i.e. override targets to overrides + callers to callees) into a scheduling graph that
     maps dependees to dependers. Always include the decorated targets from `decorator_resolution`. *)
 let build_whole_program_dependency_graph
+    ~display_api
     ~static_analysis_configuration
     ~prune
     ~initial_callables
@@ -252,7 +253,7 @@ let build_whole_program_dependency_graph
     | Some path ->
         let path = PyrePath.append path ~element:"dependency-graph.json" in
         Log.info "Writing the dependency graph to `%s`" (PyrePath.absolute path);
-        TargetGraph.dump ~path dependency_graph
+        TargetGraph.dump ~display_api ~path dependency_graph
     | None -> ()
   in
   whole_program_dependency_graph

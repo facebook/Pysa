@@ -1177,7 +1177,9 @@ let to_json
       modes;
     }
   =
-  let callable_name = Target.external_name callable in
+  let callable_name =
+    Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable
+  in
   let model_json = ["callable", `String callable_name] in
   let model_json =
     match resolve_callable_location with

@@ -139,14 +139,19 @@ module Sink = struct
           | None -> json
         in
         let json =
-          ("kind", `String "Call") :: ("callee", `String (Target.external_name callee)) :: json
+          ("kind", `String "Call")
+          :: ( "callee",
+               `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee)
+             )
+          :: json
         in
         `Assoc json
     | Global { callee; index } ->
         `Assoc
           [
             "kind", `String "Global";
-            "callee", `String (Target.external_name callee);
+            ( "callee",
+              `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee) );
             "index", `Int index;
           ]
     | Return -> `Assoc ["kind", `String "Return"]
@@ -158,7 +163,8 @@ module Sink = struct
         `Assoc
           [
             "kind", `String "StringFormat";
-            "callee", `String (Target.external_name callee);
+            ( "callee",
+              `String (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee) );
             "index", `Int index;
             "parameter_index", `Int parameter_index;
           ]
@@ -210,23 +216,31 @@ module T = struct
       | Call { callee; callee_suffix = _; index; parameter } ->
           Format.asprintf
             "Call|%s|%d|%s"
-            (Target.external_name callee)
+            (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee)
             index
             (AccessPath.Root.show_for_issue_handle parameter)
       | Global { callee; index } ->
-          Format.asprintf "Global|%s|%d" (Target.external_name callee) index
+          Format.asprintf
+            "Global|%s|%d"
+            (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee)
+            index
       | Return -> "Return"
       | LiteralStringSink sink -> Format.asprintf "LiteralStringSink|%a" Sinks.pp sink
       | ConditionalTestSink sink -> Format.asprintf "ConditionalTestSink|%a" Sinks.pp sink
       | StringFormat { callee; index; parameter_index } ->
           Format.asprintf
             "StringFormat|%s|%d|%d"
-            (Target.external_name callee)
+            (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callee)
             index
             parameter_index
     in
     let full_handle =
-      Format.asprintf "%s:%d:%d:%s" (Target.external_name callable) code version sink_handle
+      Format.asprintf
+        "%s:%d:%d:%s"
+        (Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug callable)
+        code
+        version
+        sink_handle
     in
     let hash = full_handle |> Md5.digest_string |> Md5.to_hex in
     let short_handle =

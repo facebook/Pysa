@@ -11,7 +11,7 @@ open Core
 
 type t = Target.t list Target.Map.Tree.t
 
-let dump ~path graph =
+let dump ~display_api ~path graph =
   let module Buffer = Stdlib.Buffer in
   let buffer = Buffer.create 1024 in
   Buffer.add_string buffer "{\n";
@@ -22,8 +22,9 @@ let dump ~path graph =
   let add_edges ~key:source ~data:targets =
     let add_edge target = Format.asprintf "    \"%s\",\n" target |> Buffer.add_string buffer in
     if not (List.is_empty targets) then (
-      Format.asprintf "  \"%s\": [\n" (Target.external_name source) |> Buffer.add_string buffer;
-      List.map targets ~f:Target.external_name
+      Format.asprintf "  \"%s\": [\n" (Target.external_name ~display_api source)
+      |> Buffer.add_string buffer;
+      List.map targets ~f:(Target.external_name ~display_api)
       |> List.sort ~compare:String.compare
       |> List.iter ~f:add_edge;
       remove_trailing_comma ();

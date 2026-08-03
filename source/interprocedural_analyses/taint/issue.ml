@@ -777,7 +777,9 @@ let to_error
 
 
 let to_json ~taint_configuration ~expand_overrides ~is_valid_callee ~resolve_module_path issue =
-  let callable_name = Target.external_name issue.handle.callable in
+  let callable_name =
+    Target.external_name ~display_api:PyreflyTypes.DisplayApi.for_debug issue.handle.callable
+  in
   let _, message = get_name_and_detailed_message ~taint_configuration issue in
   let source_traces =
     ForwardTaint.to_json

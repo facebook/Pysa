@@ -54,6 +54,7 @@ let assert_fixpoint
   in
   let { DependencyGraph.dependency_graph; callables_to_analyze; override_targets; _ } =
     DependencyGraph.build_whole_program_dependency_graph
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~static_analysis_configuration
       ~prune:DependencyGraph.PruneMethod.None
       ~initial_callables

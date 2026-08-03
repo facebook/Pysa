@@ -54,7 +54,7 @@ module Heap = struct
 
     let from_method_reference ~pyrefly_api method_reference =
       let base_callable =
-        try PyreflyApi.ReadOnly.get_overriden_base_method pyrefly_api method_reference with
+        try PyreflyApi.ReadOnly.Target.get_overriden_base_method pyrefly_api method_reference with
         | Analysis.ClassHierarchy.Untracked untracked_type ->
             Log.warning
               "Found untracked type `%s` when looking for a parent of `%a`. The method will be \
@@ -68,7 +68,7 @@ module Heap = struct
       >>= fun base_callable ->
       Some
         {
-          base_callable = PyreflyApi.ReadOnly.target_from_method_reference base_callable;
+          base_callable = PyreflyApi.ReadOnly.Target.target_from_method_reference base_callable;
           overriding_class = Target.MethodReference.class_name method_reference;
         }
   end
@@ -284,7 +284,8 @@ let build_whole_program_overrides
               data =
                 `Assoc
                   [
-                    "callable", `String (Target.external_name member);
+                    ( "callable",
+                      `String (PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api member) );
                     ( "overrides",
                       `List (List.map subtypes ~f:(fun subtype -> `String (Reference.show subtype)))
                     );

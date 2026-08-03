@@ -376,7 +376,13 @@ end)
 
 let pp_external = PrettyPrintExternal.pp
 
-let external_name = PrettyPrintExternal.show
+(* Render a target as an external (user-facing) name. The `display_api` is currently ignored
+   (targets store string names); the payload swap will use it to decode packed ids into names. *)
+let external_name ~display_api:_ target = PrettyPrintExternal.show target
+
+(* Like `pp_internal`, but takes a display api (currently ignored). Meant to become the general
+   pretty-printing pattern once targets store ids. *)
+let pp_with_display_api ~display_api:_ formatter target = pp_internal formatter target
 
 let from_regular regular = Regular regular
 

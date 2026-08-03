@@ -405,6 +405,40 @@ end = struct
   let show = Format.asprintf "%a" pp
 end
 
+module DisplayApi = struct
+  (* Pure id->reference closures used to render target names.
+
+     There are two flavors of callable name: - The *define name* is the actual definition's
+     fully-qualified name (`module.Class.method` / `module.function`). It never carries an
+     `@decorated` marker. - The *external name* is the user-facing rendering: identical to the
+     define name, except that a decorated callable (a `FunctionDecoratedTarget`) gets an
+     `@decorated` suffix appended to its last component. *)
+  type t = {
+    callable_external_name: CallableId.t -> Ast.Reference.t;
+    callable_define_name: CallableId.t -> Ast.Reference.t;
+    class_name: ClassId.t -> Ast.Reference.t;
+  }
+
+  (* Debug/no-api renderer for pretty-printers that hold no `PyreflyApi` handle; renders ids
+     structurally. The define name renders the raw id; the external name appends `@decorated` for
+     decorated ids, mirroring how the real builder distinguishes them. *)
+  let for_debug =
+    let callable_define_name callable_id = Ast.Reference.create (CallableId.show callable_id) in
+    {
+      callable_define_name;
+      callable_external_name =
+        (fun callable_id ->
+          let define_name = callable_define_name callable_id in
+          if CallableId.is_decorated callable_id then
+            Ast.Reference.create
+              ?prefix:(Ast.Reference.prefix define_name)
+              (Ast.Reference.last define_name ^ "@decorated")
+          else
+            define_name);
+      class_name = (fun class_id -> Ast.Reference.create (ClassId.show class_id));
+    }
+end
+
 (* Scalar properties of a type (it is a bool/int/float/etc.) *)
 module ScalarTypeProperties = struct
   type t = int [@@deriving compare, equal, sexp, hash]
