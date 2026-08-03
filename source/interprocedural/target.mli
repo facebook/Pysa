@@ -126,8 +126,14 @@ val show_pretty_with_kind : t -> string
 val pp_external : Format.formatter -> t -> unit
 
 (* Render a target as an external (user-facing) name. The `display_api` is currently ignored; the
-   payload swap will use it to decode packed ids into names. *)
-val external_name : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+   payload swap will use it to decode packed ids into names. `transform` (default identity) rewrites
+   each module/name component of the rendered name; it is used to strip the pyrefly source-path
+   prefix. *)
+val external_name
+  :  display_api:PyreflyTypes.DisplayApi.t ->
+  ?transform:(string -> string) ->
+  t ->
+  string
 
 (* Like `pp_internal`, but takes a display api (currently ignored). Meant to become the general
    pretty-printing pattern once targets store ids. *)

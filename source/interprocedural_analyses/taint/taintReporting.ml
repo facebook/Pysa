@@ -75,7 +75,7 @@ end = struct
   let get map target = Target.Map.find_opt target map |> Option.value ~default:[]
 end
 
-let merge_issues_by_canonical_handle issues =
+let merge_issues_by_canonical_handle ~display_api issues =
   (* We deduplicate issues in the following cases.
    * - Case 1: If `foo` has an issue with a non-parameterized sink callable `bar`, then there may
    * exist the same issue in `foo` with a parameterized `bar`.
@@ -94,7 +94,7 @@ let merge_issues_by_canonical_handle issues =
         Issue.handle =
           issue.Issue.handle
           |> IssueHandle.strip_all_callable_parameters
-          |> IssueHandle.strip_callable_path_prefix;
+          |> IssueHandle.strip_callable_path_prefix ~display_api;
       }
     in
     IssueHandle.SerializableMap.update
@@ -152,7 +152,7 @@ let extract_errors
     ~inputs:callables
     ()
   |> List.concat_no_order
-  |> merge_issues_by_canonical_handle
+  |> merge_issues_by_canonical_handle ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api)
   |> List.map ~f:(Issue.to_error ~pyrefly_api ~taint_configuration)
 
 
@@ -227,7 +227,9 @@ let issues_to_newline_delimited_json
     in
     let callables = callable :: CallableToParameters.get callable_to_parameters callable in
     let issues =
-      List.map ~f:fetch_issues callables |> List.concat_no_order |> merge_issues_by_canonical_handle
+      List.map ~f:fetch_issues callables
+      |> List.concat_no_order
+      |> merge_issues_by_canonical_handle ~display_api
     in
     let issues =
       if sorted then

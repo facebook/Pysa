@@ -324,7 +324,10 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           BackwardState.Tree.pp
           string_combine_partial_sink_tree;
       let location = Location.with_module ~module_reference:FunctionContext.qualifier location in
-      let sink_handle = IssueHandle.Sink.StringFormat { callee = target; index; parameter_index } in
+      let sink_handle =
+        IssueHandle.Sink.StringFormat
+          { callee = IssueHandle.CanonicalCallee.Target target; index; parameter_index }
+      in
       check_triggered_flows
         ~triggered_sinks_for_call:triggered_sinks
         ~sink_handle

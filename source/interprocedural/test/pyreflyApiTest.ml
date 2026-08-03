@@ -769,62 +769,54 @@ let test_strip_path_prefix _ =
   assert_strip_string ~expected:"a.b.c.foo" "a.b.c.foo";
   (* When the path itself contains a colon, we split on the last colon. *)
   assert_strip_string ~expected:"typing.foo" "typeshed://typing.py:typing.foo";
-  let assert_strip_target ~expected ~target =
+  (* `Target.external_name ~transform:PyreflyApi.strip_path_prefix` renders the external name with
+     the path prefix stripped from each module/name component. It must preserve the `Overrides{...}`
+     and `Obj{...}` wrappers and the `@decorated` suffix, matching the old target-component strip +
+     re-render, byte for byte -- while sharing `pp_external`'s single rendering path. *)
+  let assert_strip_external ~expected regular =
     assert_equal
-      ~cmp:(fun a b -> Target.compare a b = 0)
-      ~printer:Target.show_pretty
+      ~cmp:String.equal
+      ~printer:Fn.id
       expected
-      (PyreflyApi.strip_target_path_prefix target)
+      (Target.external_name
+         ~display_api:PyreflyTypes.DisplayApi.for_debug
+         ~transform:PyreflyApi.strip_path_prefix
+         (Target.from_regular regular))
   in
-  (* Function with a path prefix is stripped. *)
-  assert_strip_target
-    ~expected:
-      (Target.Regular.Function { name = "a.b.c.foo"; kind = Target.Normal } |> Target.from_regular)
-    ~target:
-      (Target.Regular.Function { name = "a/b/c.py:a.b.c.foo"; kind = Target.Normal }
-      |> Target.from_regular);
-  (* Method has the path prefix in its class_name. *)
-  assert_strip_target
-    ~expected:
-      (Target.Regular.Method { class_name = "a.b.c.C"; method_name = "foo"; kind = Target.Normal }
-      |> Target.from_regular)
-    ~target:
-      (Target.Regular.Method
-         { class_name = "a/b/c.py:a.b.c.C"; method_name = "foo"; kind = Target.Normal }
-      |> Target.from_regular);
-  (* Object with a path prefix is stripped. *)
-  assert_strip_target
-    ~expected:(Target.Regular.Object "a.b.c.x" |> Target.from_regular)
-    ~target:(Target.Regular.Object "a/b/c.py:a.b.c.x" |> Target.from_regular);
-  (* A parameterized target has the path prefix stripped from both the regular target and its
-     parameter targets. *)
-  assert_strip_target
-    ~expected:
-      (Target.Parameterized
-         {
-           regular = Target.Regular.Function { name = "a.b.c.foo"; kind = Target.Normal };
-           parameters =
-             [
-               ( AccessPath.Root.Variable "x",
-                 Target.Regular.Function { name = "d.e.f.bar"; kind = Target.Normal }
-                 |> Target.from_regular
-                 |> Target.ParameterValue.create );
-             ]
-             |> Target.ParameterMap.of_alist_exn;
-         })
-    ~target:
-      (Target.Parameterized
-         {
-           regular = Target.Regular.Function { name = "a/b/c.py:a.b.c.foo"; kind = Target.Normal };
-           parameters =
-             [
-               ( AccessPath.Root.Variable "x",
-                 Target.Regular.Function { name = "d/e/f.py:d.e.f.bar"; kind = Target.Normal }
-                 |> Target.from_regular
-                 |> Target.ParameterValue.create );
-             ]
-             |> Target.ParameterMap.of_alist_exn;
-         });
+  (* Function name (rendered bare): path prefix at the start is stripped. *)
+  assert_strip_external
+    ~expected:"a.b.c.foo"
+    (Target.Regular.Function { name = "a/b/c.py:a.b.c.foo"; kind = Target.Normal });
+  (* A `@decorated` kind suffix is preserved (the transform only rewrites the name component). *)
+  assert_strip_external
+    ~expected:"a.b.c.foo@decorated"
+    (Target.Regular.Function { name = "a/b/c.py:a.b.c.foo"; kind = Target.Decorated });
+  (* Method: the prefix sits in the `class_name` component. *)
+  assert_strip_external
+    ~expected:"a.b.c.C.foo"
+    (Target.Regular.Method
+       { class_name = "a/b/c.py:a.b.c.C"; method_name = "foo"; kind = Target.Normal });
+  (* Override is wrapped in `Overrides{...}`; the wrapper is preserved. *)
+  assert_strip_external
+    ~expected:"Overrides{a.b.c.C.foo}"
+    (Target.Regular.Override
+       { class_name = "a/b/c.py:a.b.c.C"; method_name = "foo"; kind = Target.Normal });
+  (* Object is wrapped in `Obj{...}`; the wrapper is preserved. *)
+  assert_strip_external ~expected:"Obj{a.b.c.x}" (Target.Regular.Object "a/b/c.py:a.b.c.x");
+  (* Names without a path prefix are unchanged, for every variant. *)
+  assert_strip_external
+    ~expected:"a.b.c.foo"
+    (Target.Regular.Function { name = "a.b.c.foo"; kind = Target.Normal });
+  assert_strip_external
+    ~expected:"Overrides{a.b.c.C.foo}"
+    (Target.Regular.Override { class_name = "a.b.c.C"; method_name = "foo"; kind = Target.Normal });
+  (* When the path itself contains a colon, we split on the last colon (inside wrappers too). *)
+  assert_strip_external
+    ~expected:"typing.foo"
+    (Target.Regular.Function { name = "typeshed://typing.py:typing.foo"; kind = Target.Normal });
+  assert_strip_external
+    ~expected:"Obj{typing.x}"
+    (Target.Regular.Object "typeshed://typing.py:typing.x");
   ()
 
 

@@ -164,7 +164,7 @@ let test_canonical_location _ =
         handle =
           {
             code = 1000;
-            callable = Target.create_function define_name;
+            callable = IssueHandle.CanonicalCallee.Target (Target.create_function define_name);
             sink = IssueHandle.Sink.Return;
           };
         locations;

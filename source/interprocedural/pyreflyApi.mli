@@ -382,10 +382,6 @@ val target_symbolic_name : Ast.Reference.t -> Ast.Reference.t
    prefix. *)
 val strip_path_prefix : string -> string
 
-(* Like `strip_path_prefix`, but operates on a callable target. Used to keep issue handles stable
-   across runs. *)
-val strip_target_path_prefix : Target.t -> Target.t
-
 module ModelQueries : sig
   module Function = PyreflyTypes.ModelQueries.Function
   module Global = PyreflyTypes.ModelQueries.Global

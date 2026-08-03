@@ -360,7 +360,12 @@ let generate_issues
       Some
         {
           flow;
-          handle = { code = rule.code; callable; sink = sink_handle };
+          handle =
+            {
+              code = rule.code;
+              callable = IssueHandle.CanonicalCallee.Target callable;
+              sink = sink_handle;
+            };
           locations = LocationSet.singleton location;
           define_location;
         }
@@ -774,10 +779,13 @@ let to_error
       let name, detail = get_name_and_detailed_message ~taint_configuration issue in
       let kind = { Error.name; messages = [detail]; code } in
       let location = canonical_location issue in
-      Error.create
-        ~location
-        ~kind
-        ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
+      let external_name =
+        IssueHandle.CanonicalCallee.external_name
+          ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api)
+          callable
+        |> Reference.create
+      in
+      Error.create ~location ~kind ~define_name:external_name
 
 
 let to_json
@@ -788,7 +796,9 @@ let to_json
     ~resolve_module_path
     issue
   =
-  let callable_name = Target.external_name ~display_api issue.handle.callable in
+  let callable_name =
+    IssueHandle.CanonicalCallee.external_name ~display_api issue.handle.callable
+  in
   let _, message = get_name_and_detailed_message ~taint_configuration issue in
   let source_traces =
     ForwardTaint.to_json

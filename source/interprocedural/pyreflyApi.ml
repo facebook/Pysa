@@ -4439,32 +4439,6 @@ let target_symbolic_name reference =
   Reference.create_from_list reference
 
 
-(* Remove the pyrefly source-path prefix from a callable's module name, recursively including the
-   names of its parameter targets. See `strip_path_prefix`. *)
-let rec strip_target_path_prefix target =
-  let strip_regular = function
-    | Target.Regular.Function ({ name; _ } as function_target) ->
-        Target.Regular.Function { function_target with name = strip_path_prefix name }
-    | Target.Regular.Method ({ class_name; _ } as method_target) ->
-        Target.Regular.Method { method_target with class_name = strip_path_prefix class_name }
-    | Target.Regular.Override ({ class_name; _ } as override_target) ->
-        Target.Regular.Override { override_target with class_name = strip_path_prefix class_name }
-    | Target.Regular.Object name -> Target.Regular.Object (strip_path_prefix name)
-  in
-  match target with
-  | Target.Regular regular -> Target.from_regular (strip_regular regular)
-  | Target.Parameterized { regular; parameters } ->
-      Target.Parameterized
-        {
-          regular = strip_regular regular;
-          parameters =
-            Target.ParameterMap.map
-              (fun ({ Target.target; _ } as value) ->
-                { value with Target.target = strip_target_path_prefix target })
-              parameters;
-        }
-
-
 module ModelQueries = struct
   module Function = PyreflyTypes.ModelQueries.Function
   module Global = PyreflyTypes.ModelQueries.Global

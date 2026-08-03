@@ -127,13 +127,22 @@ module Regular = struct
     | Object name -> Format.fprintf formatter "%s (object)" name
 
 
-  let pp_external formatter = function
-    | Function { name; kind } -> Format.fprintf formatter "%s%a" name pp_kind kind
+  (* `transform` is applied to the module/name component (the `name` for `Function`/`Object`, the
+     `class_name` for `Method`/`Override`) before rendering. It is used to strip the pyrefly
+     source-path prefix while sharing this single rendering path (so the format can't drift). *)
+  let pp_external ?(transform = Fn.id) formatter = function
+    | Function { name; kind } -> Format.fprintf formatter "%s%a" (transform name) pp_kind kind
     | Method { class_name; method_name; kind } ->
-        Format.fprintf formatter "%s.%s%a" class_name method_name pp_kind kind
+        Format.fprintf formatter "%s.%s%a" (transform class_name) method_name pp_kind kind
     | Override { class_name; method_name; kind } ->
-        Format.fprintf formatter "Overrides{%s.%s%a}" class_name method_name pp_kind kind
-    | Object name -> Format.fprintf formatter "Obj{%s}" name
+        Format.fprintf
+          formatter
+          "Overrides{%s.%s%a}"
+          (transform class_name)
+          method_name
+          pp_kind
+          kind
+    | Object name -> Format.fprintf formatter "Obj{%s}" (transform name)
 
 
   let get_corresponding_method_exn = function
@@ -288,50 +297,48 @@ module Map = struct
   end)
 end
 
-module type RegularTargetPrettyPrintType = sig
-  val pp : Format.formatter -> Regular.t -> unit
-end
-
-module MakePrettyPrint (RegularTargetPrettyPrint : RegularTargetPrettyPrintType) = struct
-  let rec pp formatter = function
-    | Regular regular -> RegularTargetPrettyPrint.pp formatter regular
-    | Parameterized { regular; parameters } ->
-        let pp_parameter_value formatter { target; implicit_receiver } =
-          Format.fprintf formatter "%a%s" pp target (if implicit_receiver then " (bound)" else "")
-        in
-        let rec pp_parameters formatter = function
-          | [] -> Format.fprintf formatter ""
-          | [(access_path, parameter_value)] ->
+let rec pp_from_regular ~pp_regular formatter = function
+  | Regular regular -> pp_regular formatter regular
+  | Parameterized { regular; parameters } ->
+      let recursive_pp = pp_from_regular ~pp_regular in
+      let pp_parameter_value formatter { target; implicit_receiver } =
+        Format.fprintf
+          formatter
+          "%a%s"
+          recursive_pp
+          target
+          (if implicit_receiver then " (bound)" else "")
+      in
+      let rec pp_parameters formatter = function
+        | [] -> Format.fprintf formatter ""
+        | [(access_path, parameter_value)] ->
+            Format.fprintf
+              formatter
+              "%a=%a"
+              AccessPath.Root.pp
+              access_path
+              pp_parameter_value
+              parameter_value
+        | (access_path, parameter_value) :: tail ->
+            let () =
               Format.fprintf
                 formatter
-                "%a=%a"
+                "%a=%a, "
                 AccessPath.Root.pp
                 access_path
                 pp_parameter_value
                 parameter_value
-          | (access_path, parameter_value) :: tail ->
-              let () =
-                Format.fprintf
-                  formatter
-                  "%a=%a, "
-                  AccessPath.Root.pp
-                  access_path
-                  pp_parameter_value
-                  parameter_value
-              in
-              pp_parameters formatter tail
-        in
-        Format.fprintf
-          formatter
-          "%a[%a]"
-          RegularTargetPrettyPrint.pp
-          regular
-          pp_parameters
-          (ParameterMap.to_alist parameters)
+            in
+            pp_parameters formatter tail
+      in
+      Format.fprintf
+        formatter
+        "%a[%a]"
+        pp_regular
+        regular
+        pp_parameters
+        (ParameterMap.to_alist parameters)
 
-
-  let show = Format.asprintf "%a" pp
-end
 
 let pp_internal = pp
 
@@ -340,13 +347,9 @@ let show_internal = Format.asprintf "%a" pp_internal
 (* Equivalent to pp_internal. Required by @@deriving. *)
 let pp = pp_internal
 
-module PrettyPrint = MakePrettyPrint (struct
-  let pp = Regular.pp_pretty
-end)
+let pp_pretty = pp_from_regular ~pp_regular:Regular.pp_pretty
 
-let pp_pretty = PrettyPrint.pp
-
-let show_pretty = PrettyPrint.show
+let show_pretty = Format.asprintf "%a" pp_pretty
 
 module ParameterValue = struct
   type t = parameter_value = {
@@ -362,23 +365,19 @@ module ParameterValue = struct
     Format.fprintf formatter "%a%s" pp_pretty target (if implicit_receiver then " (bound)" else "")
 end
 
-module PrettyPrintWithKind = MakePrettyPrint (struct
-  let pp = Regular.pp_pretty_with_kind
-end)
+let pp_pretty_with_kind = pp_from_regular ~pp_regular:Regular.pp_pretty_with_kind
 
-let pp_pretty_with_kind = PrettyPrintWithKind.pp
+let show_pretty_with_kind = Format.asprintf "%a" pp_pretty_with_kind
 
-let show_pretty_with_kind = PrettyPrintWithKind.show
-
-module PrettyPrintExternal = MakePrettyPrint (struct
-  let pp = Regular.pp_external
-end)
-
-let pp_external = PrettyPrintExternal.pp
+let pp_external = pp_from_regular ~pp_regular:Regular.pp_external
 
 (* Render a target as an external (user-facing) name. The `display_api` is currently ignored
-   (targets store string names); the payload swap will use it to decode packed ids into names. *)
-let external_name ~display_api:_ target = PrettyPrintExternal.show target
+   (targets store string names); the payload swap will use it to decode packed ids into names.
+   `transform` (default identity) rewrites each module/name component; it is used to strip the
+   pyrefly source-path prefix without duplicating the rendering (see `Regular.pp_external`). *)
+let external_name ~display_api:_ ?transform target =
+  Format.asprintf "%a" (pp_from_regular ~pp_regular:(Regular.pp_external ?transform)) target
+
 
 (* Like `pp_internal`, but takes a display api (currently ignored). Meant to become the general
    pretty-printing pattern once targets store ids. *)
