@@ -66,6 +66,7 @@ let assert_fixpoint
     TaintFixpoint.compute
       ~scheduler
       ~scheduler_policy
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~override_graph:
         (Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory)
       ~dependency_graph

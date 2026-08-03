@@ -252,18 +252,18 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "builtins.list.__iter__",
-            "index": 0,
-            "implicit_receiver": true,
-            "return_type": [],
-            "receiver_class": "builtins.list"
-          },
-          {
             "target": "builtins.tuple.__iter__",
             "index": 0,
             "implicit_receiver": true,
             "return_type": [],
             "receiver_class": "builtins.tuple"
+          },
+          {
+            "target": "builtins.list.__iter__",
+            "index": 0,
+            "implicit_receiver": true,
+            "return_type": [],
+            "receiver_class": "builtins.list"
           }
         ]
       }

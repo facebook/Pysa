@@ -156,12 +156,7 @@ let test_no_model context =
       |}
       [outcome ~kind:`Function "does_not_exist"]
   in
-  assert_raises
-    ("Model not found for (Regular\n\
-     \                       (Function { name = \"does_not_exist\"; kind = Normal }))"
-    |> Base.Error.of_string
-    |> Base.Error.to_exn)
-    assert_no_model
+  assert_raises (Failure "unexpected: missing callable metadata: `does_not_exist`") assert_no_model
 
 
 let test_simple_source context =

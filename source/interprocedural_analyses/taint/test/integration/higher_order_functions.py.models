@@ -1346,7 +1346,7 @@
             "call": {
               "position": { "line": 200, "start": 11, "end": 25 },
               "resolves_to": [
-                "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]"
+                "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]"
               ],
               "port": "formal(arg, position=1)",
               "call_site": "199:4-201:5"
@@ -1366,7 +1366,7 @@
             "call": {
               "position": { "line": 200, "start": 11, "end": 25 },
               "resolves_to": [
-                "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]"
+                "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]"
               ],
               "port": "formal(arg, position=1)",
               "call_site": "199:4-201:5"

@@ -20,7 +20,6 @@ module ClassNamesFromType = PyreflyTypes.ClassNamesFromType
 module FunctionParameter = PyreflyTypes.ModelQueries.FunctionParameter
 module FunctionParameters = PyreflyTypes.ModelQueries.FunctionParameters
 module FunctionSignature = PyreflyTypes.ModelQueries.FunctionSignature
-module MethodReference = Target.MethodReference
 
 module SysInfo = struct
   type t = {
@@ -62,7 +61,6 @@ exception NoSourceFilesToAnalyze
 module ModulePath = PyreflyReport.ModulePath
 module ModuleId = PyreflyTypes.ModuleId
 module LocalClassId = PyreflyTypes.LocalClassId
-module FuncDefIndex = PyreflyTypes.FuncDefIndex
 module GlobalClassId = PyreflyReport.GlobalClassId
 module GlobalClassIdSharedMemoryKey = PyreflyReport.GlobalClassIdSharedMemoryKey
 module LocalFunctionId = PyreflyTypes.LocalFunctionId
@@ -296,22 +294,6 @@ module CallableMetadata = struct
       Some MethodKind.Instance
     else
       None
-
-
-  let create_target { is_property_setter; parent_is_class; _ } ~override define_name =
-    let kind =
-      if is_property_setter then
-        Target.PropertySetter
-      else
-        Target.Normal
-    in
-    if parent_is_class then
-      if override then
-        Target.create_override_from_reference ~kind define_name
-      else
-        Target.create_method_from_reference ~kind define_name
-    else
-      Target.create_function ~kind define_name
 end
 
 let assert_shared_memory_key_exists message = function
@@ -338,7 +320,18 @@ module CallableMetadataSharedMemory = struct
       captured_variables: CapturedVariable.t list;
     }
 
-    let _unused_fields { name = _; module_id = _; _ } = ()
+    let create_target
+        { metadata = { parent_is_class; _ }; module_id; local_function_id; _ }
+        ~override
+      =
+      let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
+      if parent_is_class then
+        if override then
+          Target.create_override callable_id
+        else
+          Target.create_method callable_id
+      else
+        Target.create_function callable_id
   end
 
   include
@@ -2740,45 +2733,50 @@ module ReadOnly = struct
     }
 
 
-  (* Build a `PyreflyTypes.DisplayApi.t` from the id->name shared-memory maps. *)
-  let display_api
-      { callable_id_to_qualified_name_shared_memory; class_id_to_qualified_name_shared_memory; _ }
-    =
-    let callable_define_name callable_id =
-      (* Decorated callables share their undecorated function's qualified name (the `@decorated`
-         suffix belongs to the external name, not the define name); only the undecorated id is
-         stored in the id->name map, so normalize before the lookup. *)
-      let callable_id =
-        if PyreflyTypes.CallableId.is_decorated callable_id then
-          PyreflyTypes.CallableId.to_undecorated callable_id
-        else
-          callable_id
-      in
-      let module_id, local_function_id = PyreflyTypes.CallableId.decode callable_id in
-      CallableIdToQualifiedNameSharedMemory.get
-        callable_id_to_qualified_name_shared_memory
-        { GlobalCallableId.module_id; local_function_id }
-      |> FullyQualifiedName.to_reference
-    in
-    let callable_external_name callable_id =
-      (* The external (user-facing) name is the define name, with `@decorated` appended to its last
-         component for decorated callables. *)
-      let define_name = callable_define_name callable_id in
+  let define_name_from_callable_id { callable_id_to_qualified_name_shared_memory; _ } callable_id =
+    (* Decorated callables share their undecorated function's qualified name (the `@decorated`
+       suffix belongs to the external name, not the define name); only the undecorated id is stored
+       in the id->name map, so normalize before the lookup. *)
+    let callable_id =
       if PyreflyTypes.CallableId.is_decorated callable_id then
-        Reference.create
-          ?prefix:(Reference.prefix define_name)
-          (Reference.last define_name ^ "@decorated")
+        PyreflyTypes.CallableId.to_undecorated callable_id
       else
-        define_name
+        callable_id
     in
-    let class_name class_id =
-      let module_id, local_class_id = PyreflyTypes.ClassId.decode class_id in
-      ClassIdToQualifiedNameSharedMemory.get_class_name
-        class_id_to_qualified_name_shared_memory
-        { GlobalClassId.module_id; local_class_id }
-      |> FullyQualifiedName.to_reference
-    in
-    { PyreflyTypes.DisplayApi.callable_external_name; callable_define_name; class_name }
+    let module_id, local_function_id = PyreflyTypes.CallableId.decode callable_id in
+    CallableIdToQualifiedNameSharedMemory.get
+      callable_id_to_qualified_name_shared_memory
+      { GlobalCallableId.module_id; local_function_id }
+    |> FullyQualifiedName.to_reference
+
+
+  let external_name_from_callable_id api callable_id =
+    (* The external (user-facing) name is the define name, with `@decorated` appended to its last
+       component for decorated callables. *)
+    let define_name = define_name_from_callable_id api callable_id in
+    if PyreflyTypes.CallableId.is_decorated callable_id then
+      Reference.create
+        ?prefix:(Reference.prefix define_name)
+        (Reference.last define_name ^ "@decorated")
+    else
+      define_name
+
+
+  let class_name_from_class_id { class_id_to_qualified_name_shared_memory; _ } class_id =
+    let module_id, local_class_id = PyreflyTypes.ClassId.decode class_id in
+    ClassIdToQualifiedNameSharedMemory.get_class_name
+      class_id_to_qualified_name_shared_memory
+      { GlobalClassId.module_id; local_class_id }
+    |> FullyQualifiedName.to_reference
+
+
+  (* Build a `PyreflyTypes.DisplayApi.t` from the id->name shared-memory maps. *)
+  let display_api api =
+    {
+      PyreflyTypes.DisplayApi.callable_external_name = external_name_from_callable_id api;
+      callable_define_name = define_name_from_callable_id api;
+      class_name = class_name_from_class_id api;
+    }
 
 
   let all_sys_infos { all_sys_infos; _ } = all_sys_infos
@@ -3118,13 +3116,16 @@ module ReadOnly = struct
     | Some define_names ->
         define_names
         |> List.map ~f:(fun define_name ->
-               let { CallableMetadataSharedMemory.Value.metadata; _ } =
-                 CallableMetadataSharedMemory.get callable_metadata_shared_memory define_name
-                 |> assert_shared_memory_key_exists (fun () -> "missing callable metadata")
-               in
-               define_name, metadata)
-        |> List.filter ~f:(fun (_, { CallableMetadata.is_property_setter = is_setter; _ }) ->
-               Bool.equal is_property_setter is_setter)
+               CallableMetadataSharedMemory.get callable_metadata_shared_memory define_name
+               |> assert_shared_memory_key_exists (fun () -> "missing callable metadata"))
+        |> List.filter
+             ~f:(fun
+                  {
+                    CallableMetadataSharedMemory.Value.metadata =
+                      { CallableMetadata.is_property_setter = is_setter; _ };
+                    _;
+                  }
+                -> Bool.equal is_property_setter is_setter)
         |> List.hd
 
 
@@ -3132,17 +3133,13 @@ module ReadOnly = struct
      `None` if the class has no method with that bare name. *)
   let resolve_method_target api ~class_name ~method_name ~is_property_setter =
     resolve_method_definition api ~class_name ~method_name ~is_property_setter
-    >>| fun (define_name, metadata) ->
-    CallableMetadata.create_target
-      metadata
-      ~override:false
-      (FullyQualifiedName.to_reference define_name)
+    >>| CallableMetadataSharedMemory.Value.create_target ~override:false
 
 
   (* Resolve a function name to its real function target, or `None` if no such function exists. *)
   let resolve_function_target api reference =
-    get_callable_metadata_opt api reference
-    |> Option.map ~f:(fun _ -> Target.create_function reference)
+    get_callable_metadata_value_opt api reference
+    >>| CallableMetadataSharedMemory.Value.create_target ~override:false
 
 
   let is_stub_like_callable_opt ({ callable_parse_result_shared_memory; _ } as api) define_name =
@@ -3165,23 +3162,15 @@ module ReadOnly = struct
       (FullyQualifiedName.from_reference_unchecked define_name)
 
 
-  let get_overriden_base_method
-      { callable_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ }
-      { MethodReference.define_name; is_property_setter }
-    =
-    CallableMetadataSharedMemory.get
-      callable_metadata_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+  let get_overriden_base_method ({ callable_metadata_shared_memory; _ } as api) method_id =
+    define_name_from_callable_id api method_id
+    |> FullyQualifiedName.from_reference_unchecked
+    |> CallableMetadataSharedMemory.get callable_metadata_shared_memory
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
-    |> fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
-    overridden_base_method
-    >>| CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory
-    >>| fun define_name ->
-    {
-      MethodReference.define_name = FullyQualifiedName.to_reference define_name;
-      is_property_setter;
-    }
+           Format.asprintf "missing callable metadata: `%a`" PyreflyTypes.CallableId.pp method_id)
+    |> (fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
+         overridden_base_method)
+    >>| GlobalCallableId.to_callable_id
 
 
   let get_callable_captures_opt
@@ -3306,22 +3295,19 @@ module ReadOnly = struct
     if exclude_test_modules && is_test_qualifier api qualifier then
       []
     else
-      let convert_to_method_reference callable =
+      let convert_to_method_id callable =
         callable
         |> CallableMetadataSharedMemory.get callable_metadata_shared_memory
         |> assert_shared_memory_key_exists (fun () ->
                Format.asprintf "missing callable metadata: `%a`" FullyQualifiedName.pp callable)
-        |> fun { CallableMetadataSharedMemory.Value.metadata = { is_property_setter; _ }; _ } ->
-        {
-          MethodReference.define_name = FullyQualifiedName.to_reference callable;
-          is_property_setter;
-        }
+        |> fun { CallableMetadataSharedMemory.Value.module_id; local_function_id; _ } ->
+        PyreflyTypes.CallableId.encode ~module_id local_function_id
       in
       ModuleCallablesSharedMemory.get
         module_callables_shared_memory
         (ModuleQualifier.from_reference_unchecked qualifier)
       |> assert_shared_memory_key_exists (fun () -> "missing module callables for qualifier")
-      |> List.map ~f:convert_to_method_reference
+      |> List.map ~f:convert_to_method_id
 
 
   let get_define_opt { callable_ast_shared_memory; _ } define_name =
@@ -3393,10 +3379,11 @@ module ReadOnly = struct
       define_name
     =
     let fully_qualified_name = FullyQualifiedName.from_reference_unchecked define_name in
-    let { CallableMetadataSharedMemory.Value.metadata; _ } =
+    let { CallableMetadataSharedMemory.Value.metadata; module_id; local_function_id; _ } =
       CallableMetadataSharedMemory.get callable_metadata_shared_memory fully_qualified_name
       |> assert_shared_memory_key_exists (fun () -> "missing callable metadata")
     in
+    let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
     let undecorated_signatures =
       CallableUndecoratedSignaturesSharedMemory.get
         callable_undecorated_signatures_shared_memory
@@ -3411,7 +3398,8 @@ module ReadOnly = struct
       | NameLocation.UnknonwnForClassField -> None
     in
     {
-      PyreflyTypes.ModelQueries.Function.define_name;
+      PyreflyTypes.ModelQueries.Function.callable_id;
+      define_name;
       imported_name = None;
       undecorated_signatures;
       is_property_getter = metadata.is_property_getter;
@@ -3487,8 +3475,10 @@ module ReadOnly = struct
 
 
   let target_from_define_name api ~override define_name =
-    let metadata = get_callable_metadata api define_name in
-    CallableMetadata.create_target metadata ~override define_name
+    get_callable_metadata_value_opt api define_name
+    |> assert_shared_memory_key_exists (fun () ->
+           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+    |> CallableMetadataSharedMemory.Value.create_target ~override
 
 
   let instantiate_call_graph
@@ -3508,6 +3498,7 @@ module ReadOnly = struct
     =
     let open ModuleCallGraphs in
     let open CallGraph in
+    let display_api = display_api api in
     let instantiate_target ~receiver_class = function
       | PyreflyTarget.Function callable_id ->
           let fully_qualified_name =
@@ -3529,17 +3520,19 @@ module ReadOnly = struct
               callable_id
           in
           let target =
+            (* TODO(T278961928): Create the target directly from the callable id *)
             target_from_define_name
               api
               ~override:false
               (FullyQualifiedName.to_reference fully_qualified_name)
           in
-          let target_method =
-            match target with
-            | Target.Regular (Target.Regular.Method target_method) -> target_method
-            | _ -> failwith "unreachable"
+          let declaring_class =
+            (* TODO(T278961928): Get the class id directly from the callable id *)
+            FullyQualifiedName.to_reference fully_qualified_name
+            |> Reference.prefix
+            |> Option.value ~default:Reference.empty
+            |> Reference.show
           in
-          let declaring_class = target_method.class_name in
           let get_actual_target t =
             if overrides_exist t then
               t
@@ -3560,11 +3553,14 @@ module ReadOnly = struct
               | Some overriding_targets ->
                   let override_targets =
                     overriding_targets
-                    |> List.filter ~f:(fun { Target.Method.class_name; _ } ->
-                           is_subclass api ~parent:receiver_class ~child:class_name)
-                    |> List.map ~f:(fun override_method ->
-                           get_actual_target
-                             (Target.from_regular (Target.Regular.Method override_method)))
+                    |> List.filter_map ~f:(fun callable_id ->
+                           let override_target = Target.create_method callable_id in
+                           let class_name = Target.class_name_exn ~display_api override_target in
+                           (* TODO(T278961928): use class id instead of class name *)
+                           if is_subclass api ~parent:receiver_class ~child:class_name then
+                             Some (get_actual_target override_target)
+                           else
+                             None)
                   in
                   target :: override_targets))
       | PyreflyTarget.FormatString -> [Target.ArtificialTargets.format_string]
@@ -3885,8 +3881,9 @@ module ReadOnly = struct
             then
               None
             else
-              let define_name = FullyQualifiedName.to_reference qualified_name in
-              let callable = CallableMetadata.create_target metadata ~override:false define_name in
+              let callable =
+                CallableMetadataSharedMemory.Value.create_target callable_metadata ~override:false
+              in
               if Target.should_skip_analysis ~skip_analysis_targets callable then
                 None
               else
@@ -4123,7 +4120,12 @@ module ReadOnly = struct
           ~is_property_setter:false
       with
       | None -> false
-      | Some (_, { CallableMetadata.is_def_statement; _ }) -> is_def_statement
+      | Some
+          {
+            CallableMetadataSharedMemory.Value.metadata = { CallableMetadata.is_def_statement; _ };
+            _;
+          } ->
+          is_def_statement
 
 
     let is_dataclass _ { PysaClassSummary.metadata = { is_dataclass; _ }; _ } = is_dataclass
@@ -4221,11 +4223,6 @@ module ReadOnly = struct
     | None -> path
 
 
-  let target_from_method_reference { MethodReference.define_name; is_property_setter } =
-    let kind = if is_property_setter then Target.PropertySetter else Target.Normal in
-    Target.create_method_from_reference ~kind define_name
-
-
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
   let state_root_of_captured_variable _api captured_variable =
@@ -4239,20 +4236,104 @@ module ReadOnly = struct
      the global `Target` module) and are re-exported here so callers use `ReadOnly.Target.<fn>`. *)
   module Target = struct
     (* Render a target as an external (user-facing) name. Convenience wrapper that does not require
-       a display API. *)
+       a display API. The external name includes the `@decorated` suffix for decorated callables. *)
     let external_name ~pyrefly_api target =
       Target.external_name ~display_api:(display_api pyrefly_api) target
 
 
-    let define_name _api target = target |> Target.get_regular |> Target.Regular.define_name
+    (* Decode a callable's define name (`module.Class.method` / `module.function`) through the
+       display api. The define name never includes the `@decorated` suffix. *)
+    let define_name api target =
+      match Target.get_regular target with
+      | Target.Regular.Function callable_id
+      | Target.Regular.Method callable_id ->
+          Some (define_name_from_callable_id api callable_id)
+      | Target.Regular.Override _
+      | Target.Regular.Object _ ->
+          None
 
-    let define_name_exn _api target = target |> Target.get_regular |> Target.Regular.define_name_exn
 
-    let class_name _api target = target |> Target.get_regular |> Target.Regular.class_name
+    (* Like `define_name`, excludes the `@decorated` suffix; raises for overrides and objects. *)
+    let define_name_exn api target =
+      match define_name api target with
+      | Some name -> name
+      | None ->
+          Format.asprintf "expected a function or method target, got %a" Target.pp target
+          |> failwith
 
-    let method_name _api target = target |> Target.get_regular |> Target.Regular.method_name
 
-    let function_name _api target = target |> Target.get_regular |> Target.Regular.function_name
+    (* The class of a method is the prefix of its decoded define name. *)
+    let class_name api target =
+      match Target.get_regular target with
+      | Target.Regular.Method callable_id
+      | Target.Regular.Override callable_id ->
+          define_name_from_callable_id api callable_id
+          |> Reference.prefix
+          |> Option.map ~f:Reference.show
+      | Target.Regular.Function _
+      | Target.Regular.Object _ ->
+          None
+
+
+    let class_name_exn api target =
+      match class_name api target with
+      | Some name -> name
+      | None -> Format.asprintf "expected a method target, got %a" Target.pp target |> failwith
+
+
+    let method_name api target =
+      match Target.get_regular target with
+      | Target.Regular.Method callable_id
+      | Target.Regular.Override callable_id ->
+          Some (Reference.last (define_name_from_callable_id api callable_id))
+      | Target.Regular.Function _
+      | Target.Regular.Object _ ->
+          None
+
+
+    let method_name_exn api target =
+      match method_name api target with
+      | Some name -> name
+      | None -> Format.asprintf "expected a method target, got %a" Target.pp target |> failwith
+
+
+    let function_name api target =
+      match Target.get_regular target with
+      | Target.Regular.Function callable_id ->
+          Some (Reference.show (define_name_from_callable_id api callable_id))
+      | Target.Regular.Method _
+      | Target.Regular.Override _
+      | Target.Regular.Object _ ->
+          None
+
+
+    let function_name_exn api target =
+      match function_name api target with
+      | Some name -> name
+      | None -> Format.asprintf "expected a function target, got %a" Target.pp target |> failwith
+
+
+    (* Whether the target is a property setter (from metadata). Replaces the old `kind =
+       PropertySetter`. `Override` is checked via its corresponding method. *)
+    let is_property_setter api target =
+      match Target.get_regular target with
+      | Target.Regular.Function callable_id
+      | Target.Regular.Method callable_id
+      | Target.Regular.Override callable_id ->
+          let { CallableMetadata.is_property_setter; _ } =
+            get_callable_metadata api (define_name_from_callable_id api callable_id)
+          in
+          is_property_setter
+      | Target.Regular.Object _ -> false
+
+
+    (* A "normal" callable: neither decorated (the `CallableId` tag) nor a property setter (from
+       metadata), and not an `Object`. Replaces the old `Target.is_normal` (`kind = Normal`). *)
+    let is_normal api target =
+      (not (Target.is_object target))
+      && (not (Target.is_decorated target))
+      && not (is_property_setter api target)
+
 
     let get_callable_metadata = get_callable_metadata
 
@@ -4267,8 +4348,6 @@ module ReadOnly = struct
     let get_overriden_base_method = get_overriden_base_method
 
     let target_from_define_name = target_from_define_name
-
-    let target_from_method_reference = target_from_method_reference
   end
 end
 
@@ -4535,8 +4614,17 @@ module ModelQueries = struct
                        callable_metadata_shared_memory
                        fully_qualified_name
                    with
-                   | Some { CallableMetadataSharedMemory.Value.metadata; _ }
+                   | Some
+                       {
+                         CallableMetadataSharedMemory.Value.metadata;
+                         module_id;
+                         local_function_id;
+                         _;
+                       }
                      when Bool.equal is_property_setter metadata.is_property_setter ->
+                       let callable_id =
+                         PyreflyTypes.CallableId.encode ~module_id local_function_id
+                       in
                        let undecorated_signatures =
                          CallableUndecoratedSignaturesSharedMemory.get
                            callable_undecorated_signatures_shared_memory
@@ -4555,8 +4643,8 @@ module ModelQueries = struct
                        Some
                          (Global.Function
                             {
-                              Function.define_name =
-                                FullyQualifiedName.to_reference fully_qualified_name;
+                              Function.callable_id;
+                              define_name = FullyQualifiedName.to_reference fully_qualified_name;
                               imported_name = None;
                               undecorated_signatures = Some undecorated_signatures;
                               is_property_getter = metadata.is_property_getter;

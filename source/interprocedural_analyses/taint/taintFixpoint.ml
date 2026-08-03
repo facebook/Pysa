@@ -94,10 +94,10 @@ module Analysis = struct
       let expensive_callable_ms = 500
     end)
 
-    let iteration_end ~iteration ~expensive_callables ~number_of_callables ~timer =
+    let iteration_end ~display_api ~iteration ~expensive_callables ~number_of_callables ~timer =
       (* Explicitly collect the shared memory to reduce heap size. *)
       let () = Memory.SharedMemory.collect `gentle in
-      iteration_end ~iteration ~expensive_callables ~number_of_callables ~timer
+      iteration_end ~display_api ~iteration ~expensive_callables ~number_of_callables ~timer
   end
 
   module AnalyzeDefineResult = struct

@@ -27,7 +27,8 @@ module Callee : sig
   val from_callee_expression : Expression.t -> t
 
   val from_stringify_call_target
-    :  base:Expression.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    base:Expression.t ->
     stringify_origin:Ast.Expression.Origin.t option ->
     location:Location.t ->
     CallGraph.CallTarget.t ->
@@ -79,7 +80,7 @@ val match_actuals_to_formals
   arguments:Expression.Call.Argument.t list ->
   ArgumentMatches.t list
 
-val treat_tito_return_as_self_update : Target.t -> bool
+val treat_tito_return_as_self_update : pyrefly_api:PyreflyApi.ReadOnly.t -> Target.t -> bool
 
 (* A mapping from a taint-in-taint-out kind (e.g, `Sinks.LocalReturn`, `Sinks.ParameterUpdate` or
    `Sinks.AddFeatureToArgument`) to a tito taint (including features, return paths, depth) and the
@@ -100,7 +101,8 @@ module TaintInTaintOutMap : sig
 end
 
 val taint_in_taint_out_mapping_for_argument
-  :  transform_non_leaves:(Features.ReturnAccessPath.t -> BackwardTaint.t -> BackwardTaint.t) ->
+  :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+  transform_non_leaves:(Features.ReturnAccessPath.t -> BackwardTaint.t -> BackwardTaint.t) ->
   taint_configuration:TaintConfiguration.Heap.t ->
   ignore_local_return:bool ->
   model:Model.t ->

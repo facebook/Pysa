@@ -17,6 +17,53 @@ open Interprocedural
 module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
 
+(* Golden dump order, established before we used callable ids. *)
+type target_sort_key = {
+  parameterized_tier: int;
+  variant_tier: int;
+  primary_name: string;
+  secondary_name: string;
+  is_decorated: bool;
+  parameters: (string * target_sort_key * bool) list;
+}
+[@@deriving compare]
+
+let compare_targets_by_rendered_name ~display_api =
+  let rec sort_key target =
+    let name_of decoder = decoder ~display_api target |> Option.value ~default:"" in
+    let variant_tier, primary_name, secondary_name =
+      match Target.get_regular target with
+      | Target.Regular.Function _ -> 0, name_of Target.function_name, ""
+      | Target.Regular.Method _ -> 1, name_of Target.class_name, name_of Target.method_name
+      | Target.Regular.Override _ -> 2, name_of Target.class_name, name_of Target.method_name
+      | Target.Regular.Object name -> 3, name, ""
+    in
+    let parameters =
+      match target with
+      | Target.Parameterized { parameters; _ } ->
+          parameters
+          |> Target.ParameterMap.to_alist
+          |> List.map ~f:(fun (root, { Target.target = parameter_target; implicit_receiver }) ->
+                 ( Format.asprintf "%a" AccessPath.Root.pp root,
+                   sort_key parameter_target,
+                   implicit_receiver ))
+      | Target.Regular _ -> []
+    in
+    {
+      parameterized_tier = (if Target.is_parameterized target then 1 else 0);
+      variant_tier;
+      primary_name;
+      secondary_name;
+      is_decorated = Target.is_decorated target;
+      parameters;
+    }
+  in
+  fun left right ->
+    match compare_target_sort_key (sort_key left) (sort_key right) with
+    | 0 -> Target.compare left right
+    | ordering -> ordering
+
+
 type parameter_sinks = {
   name: string;
   sinks: Sinks.t list;
@@ -104,16 +151,20 @@ let outcome
   }
 
 
-let create_callable ~pyrefly_api:_ kind define_name =
+let create_callable ~pyrefly_api kind define_name =
   let name = Reference.create define_name in
+  let target_from_define_name ~override name =
+    Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override name
+  in
   match kind with
-  | `Method -> Target.create_method_from_reference name
-  | `Function -> Target.create_function name
+  | `Method
+  | `Function ->
+      target_from_define_name ~override:false name
   | `PropertySetter ->
-      Target.create_method_from_reference
-        ~kind:Target.PropertySetter
+      target_from_define_name
+        ~override:false
         (Reference.create (Format.sprintf "%s@setter" define_name))
-  | `Override -> Target.create_override_from_reference name
+  | `Override -> target_from_define_name ~override:true name
   | `Object -> Target.create_object name
 
 
@@ -726,6 +777,7 @@ let initialize
          ~skip_overrides_targets:
            (SharedModels.skip_overrides ~scheduler ~pyrefly_api initial_models)
     |> OverrideGraph.Heap.cap_overrides
+         ~pyrefly_api
          ~analyze_all_overrides_targets:
            (SharedModels.analyze_all_overrides ~scheduler initial_models)
          ~maximum_overrides:(TaintConfiguration.maximum_overrides_to_analyze taint_configuration)
@@ -986,14 +1038,14 @@ let end_to_end_integration_test path context =
       taint_configuration |> Option.value ~default:TaintConfiguration.Heap.default
     in
     let handle = PyrePath.show path |> String.split ~on:'/' |> List.last_exn in
-    let create_call_graph_files call_graph =
+    let create_call_graph_files ~display_api call_graph =
       let actual =
         Format.asprintf
           "@%s\nCall dependencies\n%s"
           "generated"
           (call_graph
           |> CallGraph.WholeProgramCallGraph.to_target_graph
-          |> TargetGraph.to_json ~skip_empty_callees:true ~sorted:true
+          |> TargetGraph.to_json ~display_api ~skip_empty_callees:true ~sorted:true
           |> Yojson.Safe.pretty_to_string)
       in
       create_expected_and_actual_files ~suffix:".cg" actual
@@ -1002,7 +1054,7 @@ let end_to_end_integration_test path context =
       let content =
         call_graph_fixpoint_state.CallGraphFixpoint.fixpoint
         |> CallGraphFixpoint.analyzed_callables
-        |> List.dedup_and_sort ~compare:Target.compare
+        |> List.dedup_and_sort ~compare:(compare_targets_by_rendered_name ~display_api)
         |> List.filter_map ~f:(fun callable ->
                match
                  CallGraphFixpoint.get_model
@@ -1015,7 +1067,8 @@ let end_to_end_integration_test path context =
                  when not (CallGraphBuilder.HigherOrderCallGraph.is_empty call_graph) ->
                    let json =
                      `Assoc
-                       (("callable", `String (Target.show_pretty callable))
+                       (( "callable",
+                          `String (Target.show_pretty_with_display_api ~display_api callable) )
                        :: CallGraphBuilder.HigherOrderCallGraph.to_json_alist
                             ~display_api
                             call_graph)
@@ -1027,12 +1080,12 @@ let end_to_end_integration_test path context =
       let actual = Format.asprintf "@%s\nHigher order call graphs\n%s" "generated" content in
       create_expected_and_actual_files ~suffix:".hofcg" actual
     in
-    let create_overrides_files overrides =
+    let create_overrides_files ~display_api overrides =
       let actual =
         Format.asprintf
           "@%s\nOverrides\n%a"
           "generated"
-          TargetGraph.pp
+          (TargetGraph.pp ~display_api)
           (DependencyGraph.Reversed.to_target_graph
              (DependencyGraph.Reversed.from_overrides overrides))
       in
@@ -1120,6 +1173,7 @@ let end_to_end_integration_test path context =
       TaintFixpoint.compute
         ~scheduler
         ~scheduler_policy:(Scheduler.Policy.legacy_fixed_chunk_count ())
+        ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
         ~override_graph:override_graph_shared_memory_read_only
         ~dependency_graph
         ~skip_analysis_targets:
@@ -1149,19 +1203,18 @@ let end_to_end_integration_test path context =
       >>| fun filename ->
       { RepositoryPath.filename = Some filename; path = PyrePath.create_absolute filename }
     in
+    let display_api = Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api in
     let divergent_files =
       [
-        create_call_graph_files whole_program_call_graph;
-        create_higher_order_call_graph_files
-          ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
-          call_graph_fixpoint_state;
-        create_overrides_files override_graph_heap;
+        create_call_graph_files ~display_api whole_program_call_graph;
+        create_higher_order_call_graph_files ~display_api call_graph_fixpoint_state;
+        create_overrides_files ~display_api override_graph_heap;
       ]
     in
     let model_divergent_file =
       callables_to_analyze
       |> List.rev_append (TaintFixpoint.SharedModels.targets initial_models)
-      |> List.dedup_and_sort ~compare:Target.compare
+      |> List.dedup_and_sort ~compare:(compare_targets_by_rendered_name ~display_api)
       |> TaintReporting.fetch_and_externalize
            ~pyrefly_api
            ~taint_configuration

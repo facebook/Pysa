@@ -771,6 +771,7 @@ module ModelQueries = struct
 
   module Function = struct
     type t = {
+      callable_id: CallableId.t;
       define_name: Ast.Reference.t;
       (* If the user-provided name is a re-export, this is the original name. *)
       imported_name: Ast.Reference.t option;
@@ -808,18 +809,6 @@ module ModelQueries = struct
           module_qualifier: Ast.Reference.t option;
           location: Ast.Location.t option;
         }
-      (* class attribute exists, but type is unknown. *)
-      | UnknownClassAttribute of {
-          name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
-          location: Ast.Location.t option;
-        }
-      (* module global exists, but type is unknown. *)
-      | UnknownModuleGlobal of {
-          name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
-          location: Ast.Location.t option;
-        }
     [@@deriving show]
 
     let is_module = function
@@ -839,10 +828,6 @@ module ModelQueries = struct
       | ClassAttribute { name; _ } ->
           ClassAttribute { name; module_qualifier = None; location = None }
       | ModuleGlobal { name; _ } -> ModuleGlobal { name; module_qualifier = None; location = None }
-      | UnknownClassAttribute { name; _ } ->
-          UnknownClassAttribute { name; module_qualifier = None; location = None }
-      | UnknownModuleGlobal { name; _ } ->
-          UnknownModuleGlobal { name; module_qualifier = None; location = None }
 
 
     let module_qualifier = function
@@ -851,8 +836,6 @@ module ModelQueries = struct
       | Function { module_qualifier; _ } -> module_qualifier
       | ClassAttribute { module_qualifier; _ } -> module_qualifier
       | ModuleGlobal { module_qualifier; _ } -> module_qualifier
-      | UnknownClassAttribute { module_qualifier; _ } -> module_qualifier
-      | UnknownModuleGlobal { module_qualifier; _ } -> module_qualifier
 
 
     let location = function
@@ -861,8 +844,6 @@ module ModelQueries = struct
       | Function { location; _ } -> location
       | ClassAttribute { location; _ } -> location
       | ModuleGlobal { location; _ } -> location
-      | UnknownClassAttribute { location; _ } -> location
-      | UnknownModuleGlobal { location; _ } -> location
   end
 
   module ModuleResolutionResult = struct

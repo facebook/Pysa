@@ -259,7 +259,7 @@ module CallInfo = struct
           "CallSite(callees=[%s], call_site=%a, location=%a, port=%a, class_intervals=%a)"
           (String.concat
              ~sep:", "
-             (List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_external target) callees))
+             (List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_internal target) callees))
           CallSite.pp
           call_site
           Location.pp

@@ -53,14 +53,16 @@ module type LOGGER = sig
 
   (** This is called at the beginning of each iteration. *)
   val iteration_start
-    :  iteration:int ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
     callables_to_analyze:Target.t list ->
     number_of_callables:int ->
     unit
 
   (** This is called at the end of each iteration. *)
   val iteration_end
-    :  iteration:int ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
     expensive_callables:expensive_callable list ->
     number_of_callables:int ->
     timer:Timer.t ->
@@ -265,6 +267,7 @@ module Make (Analysis : ANALYSIS) : sig
   val compute
     :  scheduler:Scheduler.t ->
     scheduler_policy:Scheduler.Policy.t ->
+    display_api:PyreflyTypes.DisplayApi.t ->
     override_graph:OverrideGraph.SharedMemory.ReadOnly.t ->
     dependency_graph:DependencyGraph.t ->
     skip_analysis_targets:Target.HashSet.t ->

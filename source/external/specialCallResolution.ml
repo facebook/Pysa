@@ -49,4 +49,12 @@ module NestedCallees = struct
     | None
 end
 
-let shim_calls ~class_mro:_ ~callable_exists:_ ~callees:_ ~nested_callees:_ ~arguments:_ = None
+let shim_calls
+    ~display_api:_
+    ~class_mro:_
+    ~callable_exists:_
+    ~callees:_
+    ~nested_callees:_
+    ~arguments:_
+  =
+  None

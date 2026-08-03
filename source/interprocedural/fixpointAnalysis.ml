@@ -69,14 +69,16 @@ module type LOGGER = sig
 
   (** This is called at the beginning of each iteration. *)
   val iteration_start
-    :  iteration:int ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
     callables_to_analyze:Target.t list ->
     number_of_callables:int ->
     unit
 
   (** This is called at the end of each iteration. *)
   val iteration_end
-    :  iteration:int ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
     expensive_callables:expensive_callable list ->
     number_of_callables:int ->
     timer:Timer.t ->
@@ -907,6 +909,7 @@ module Make (Analysis : ANALYSIS) = struct
   let compute
       ~scheduler
       ~scheduler_policy
+      ~display_api
       ~override_graph
       ~dependency_graph
       ~skip_analysis_targets
@@ -934,7 +937,9 @@ module Make (Analysis : ANALYSIS) = struct
           let () = Logger.reached_maximum_iteration_exit ~iteration ~callables_to_analyze in
           state, iteration
       else
-        let () = Logger.iteration_start ~iteration ~callables_to_analyze ~number_of_callables in
+        let () =
+          Logger.iteration_start ~display_api ~iteration ~callables_to_analyze ~number_of_callables
+        in
         let timer = Timer.start () in
         let step = { epoch; iteration } in
         let shared_models = State.oldify state callables_to_analyze in
@@ -1000,7 +1005,14 @@ module Make (Analysis : ANALYSIS) = struct
           initialize_new_dependencies ~scheduler ~shared_models ~shared_fixpoint ~step new_callables
         in
         let () = TopologicalOrder.register all_callables new_callables in
-        let () = Logger.iteration_end ~iteration ~expensive_callables ~number_of_callables ~timer in
+        let () =
+          Logger.iteration_end
+            ~display_api
+            ~iteration
+            ~expensive_callables
+            ~number_of_callables
+            ~timer
+        in
         let state = { state with State.shared_models } in
         iterate
           ~iteration:(iteration + 1)
@@ -1030,9 +1042,19 @@ module WithoutLogging = struct
     Log.info "Failed to reach a fixpoint after %d iterations. Terminate now." iteration
 
 
-  let iteration_start ~iteration:_ ~callables_to_analyze:_ ~number_of_callables:_ = ()
+  let iteration_start ~display_api:_ ~iteration:_ ~callables_to_analyze:_ ~number_of_callables:_ =
+    ()
 
-  let iteration_end ~iteration:_ ~expensive_callables:_ ~number_of_callables:_ ~timer:_ = ()
+
+  let iteration_end
+      ~display_api:_
+      ~iteration:_
+      ~expensive_callables:_
+      ~number_of_callables:_
+      ~timer:_
+    =
+    ()
+
 
   let iteration_progress ~iteration:_ ~callables_processed:_ ~number_of_callables:_ = ()
 
@@ -1084,17 +1106,19 @@ struct
       (show_callables ~max_to_show:15 callables_to_analyze)
 
 
-  let iteration_start ~iteration ~callables_to_analyze ~number_of_callables =
+  let iteration_start ~display_api ~iteration ~callables_to_analyze ~number_of_callables =
     let witnesses =
       if number_of_callables <= 6 then
-        String.concat ~sep:", " (List.map ~f:Target.show_pretty callables_to_analyze)
+        String.concat
+          ~sep:", "
+          (List.map ~f:(Target.show_pretty_with_display_api ~display_api) callables_to_analyze)
       else
         "..."
     in
     Log.info "Iteration #%d. %d callables [%s]" iteration number_of_callables witnesses
 
 
-  let iteration_end ~iteration ~expensive_callables ~number_of_callables ~timer =
+  let iteration_end ~display_api ~iteration ~expensive_callables ~number_of_callables ~timer =
     let () =
       if not (List.is_empty expensive_callables) then
         Log.log
@@ -1105,7 +1129,11 @@ struct
           |> List.sort ~compare:(fun left right ->
                  Int.compare right.time_to_analyze_in_ms left.time_to_analyze_in_ms)
           |> List.map ~f:(fun { time_to_analyze_in_ms; callable } ->
-                 Format.asprintf "`%a`: %d ms" Target.pp_pretty callable time_to_analyze_in_ms)
+                 Format.asprintf
+                   "`%a`: %d ms"
+                   (Target.pp_pretty_with_display_api ~display_api)
+                   callable
+                   time_to_analyze_in_ms)
           |> String.concat ~sep:", ")
     in
     Log.info

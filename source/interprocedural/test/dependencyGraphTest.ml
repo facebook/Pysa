@@ -122,7 +122,7 @@ let assert_call_graph ?other_sources ~context source ~expected =
     call_graph
     |> DependencyGraph.Reversed.from_call_graph
     |> DependencyGraph.Reversed.to_target_graph
-    |> TargetGraph.to_alist ~sorted:true
+    |> TargetGraph.to_alist ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api) ~sorted:true
   in
   compare_dependency_graph pyrefly_api graph ~expected
 
@@ -134,7 +134,7 @@ let assert_reverse_call_graph ~context source ~expected =
     |> DependencyGraph.Reversed.from_call_graph
     |> DependencyGraph.Reversed.reverse
     |> DependencyGraph.to_target_graph
-    |> TargetGraph.to_alist ~sorted:true
+    |> TargetGraph.to_alist ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api) ~sorted:true
   in
   compare_dependency_graph pyrefly_api graph ~expected
 
@@ -512,9 +512,18 @@ let test_type_collection context =
 
 (* Unlike the other tests in this file, this one operates on purely synthetic targets ("a.foo",
    "external.bar", ...) with no pyrefly backend, so its targets cannot be resolved through
-   `PyreflyApi.ReadOnly`. Once callables are represented by packed ids, this test will need to
-   construct targets from synthetic ids directly rather than from name strings. *)
+   `PyreflyApi.ReadOnly`. Callables are represented by packed ids, so we mint a fresh synthetic
+   `CallableId` for each distinct name and build a matching `DisplayApi` that decodes those ids back
+   to the original names (used to render/sort the graph). *)
+
 let test_prune_callables _ =
+  let synthetic_callables = InterproceduralTest.SyntheticCallables.create () in
+  let synthetic_callable_id_for_name =
+    InterproceduralTest.SyntheticCallables.callable_id synthetic_callables
+  in
+  let synthetic_display_api =
+    InterproceduralTest.SyntheticCallables.display_api synthetic_callables
+  in
   let assert_pruned
       ~callgraph
       ~overrides
@@ -523,35 +532,31 @@ let test_prune_callables _ =
       ~expected_dependencies
     =
     let create name =
-      if String.is_prefix ~prefix:"O|" (Reference.show name) then
-        Target.create_override_from_reference
-          (String.drop_prefix (Reference.show name) 2 |> Reference.create)
+      let name = Reference.show name in
+      if String.is_prefix ~prefix:"O|" name then
+        Target.create_override (synthetic_callable_id_for_name (String.drop_prefix name 2))
       else
-        Target.create_method_from_reference name
+        Target.create_method (synthetic_callable_id_for_name name)
     in
     let callgraph =
       List.map callgraph ~f:(fun (key, values) ->
-          ( Target.create_method_from_reference (Reference.create key),
+          ( Target.create_method (synthetic_callable_id_for_name key),
             List.map values ~f:(fun value -> create (Reference.create value)) ))
       |> CallGraph.WholeProgramCallGraph.of_alist_exn
     in
     let overrides =
       List.map overrides ~f:(fun (key, values) ->
           let method_name = Reference.last (Reference.create key) in
-          ( Target.create_method_from_reference (Reference.create key),
+          ( Target.create_method (synthetic_callable_id_for_name key),
             List.map values ~f:(fun overriding_class ->
-                match
-                  Reference.create ~prefix:(Reference.create overriding_class) method_name
-                  |> Target.create_override_from_reference
-                  |> Target.as_regular_exn
-                with
-                | Target.Regular.Override method_ -> method_
-                | _ -> failwith "expected an override target") ))
+                Reference.create ~prefix:(Reference.create overriding_class) method_name
+                |> Reference.show
+                |> synthetic_callable_id_for_name) ))
       |> OverrideGraph.Heap.of_alist_exn
     in
     let project_callables =
       List.map
-        ~f:(fun name -> name |> Reference.create |> Target.create_method_from_reference)
+        ~f:(fun name -> Target.create_method (synthetic_callable_id_for_name name))
         project_callables
     in
     let overrides = DependencyGraph.Reversed.from_overrides overrides in
@@ -588,7 +593,7 @@ let test_prune_callables _ =
       (List.map expected_dependencies ~f:(fun (key, values) ->
            ( create (Reference.create key),
              List.map values ~f:(fun value -> create (Reference.create value)) )))
-      (TargetGraph.to_alist ~sorted:true actual_dependencies)
+      (TargetGraph.to_alist ~display_api:synthetic_display_api ~sorted:true actual_dependencies)
   in
   (* Basic case. *)
   assert_pruned

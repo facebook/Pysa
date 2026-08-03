@@ -1017,13 +1017,13 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "attributes.PartiallyZonedDict.copy",
+            "target": "builtins.dict.copy",
             "index": 0,
             "implicit_receiver": true,
             "return_type": []
           },
           {
-            "target": "builtins.dict.copy",
+            "target": "attributes.PartiallyZonedDict.copy",
             "index": 0,
             "implicit_receiver": true,
             "return_type": []

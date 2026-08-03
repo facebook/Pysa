@@ -61,13 +61,17 @@ let resolve_stringify_call ~pyrefly_in_context ~outer_expression_identifier _exp
     -> (
       (* Note: the result is only used to create artificial AST nodes. It does not affect the
          analysis. *)
+      let pyrefly_api = PyreflyApi.InContext.pyrefly_api pyrefly_in_context in
       let method_name =
         Target.collect_nested_regular_targets target
         |> List.find_map ~f:(fun regular ->
                match regular with
-               | Target.Regular.Method { Target.Method.method_name; _ }
-               | Target.Regular.Override { Target.Method.method_name; _ } ->
-                   ResolvedStringify.from_method_name method_name
+               | Target.Regular.Method _
+               | Target.Regular.Override _ ->
+                   PyreflyApi.ReadOnly.Target.method_name_exn
+                     pyrefly_api
+                     (Target.from_regular regular)
+                   |> ResolvedStringify.from_method_name
                | _ -> None)
       in
       match method_name with
@@ -127,11 +131,10 @@ let apply_identified_shim_call ~identified_callee ~arguments =
   | _ -> None
 
 
-let shim_special_calls ~callees ~arguments =
+let shim_special_calls ~display_api ~callees ~arguments =
   let define_name_equals ~name call_target =
     SpecialCallResolution.CallTarget.target call_target
-    |> Target.get_regular
-    |> Target.Regular.define_name
+    |> Target.define_name ~display_api
     >>| Reference.show
     >>| String.equal name
     |> Option.value ~default:false
@@ -246,7 +249,8 @@ let preprocess_special_calls
 
 
 let shim_for_call ~pyrefly_api ~callables_to_definitions_map ~callees ~nested_callees ~arguments =
-  match shim_special_calls ~callees ~arguments with
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
+  match shim_special_calls ~display_api ~callees ~arguments with
   | Some identified_callee -> Some identified_callee
   | None ->
       let callable_exists name =
@@ -254,6 +258,7 @@ let shim_for_call ~pyrefly_api ~callables_to_definitions_map ~callees ~nested_ca
         |> Option.is_some
       in
       SpecialCallResolution.shim_calls
+        ~display_api
         ~class_mro:(PyreflyApi.ReadOnly.class_mro pyrefly_api)
         ~callable_exists
         ~callees
@@ -757,7 +762,13 @@ module HigherOrderCallGraph = struct
             (* For `__init__`, any functions stored in `self` would be returned, in order to
                propagate them. *)
             match Target.get_regular Context.callable with
-            | Target.Regular.Method { method_name = "__init__"; _ } -> State.get self_variable state
+            | Target.Regular.Method _
+              when String.equal
+                     (PyreflyApi.ReadOnly.Target.method_name_exn
+                        Context.pyrefly_api
+                        Context.callable)
+                     "__init__" ->
+                State.get self_variable state
             | _ -> CallTarget.Set.bottom)
       |> Option.value ~default:CallTarget.Set.bottom
       |> CallTarget.Set.join (State.get AccessPath.Root.LocalResult state)
@@ -1295,9 +1306,11 @@ module HigherOrderCallGraph = struct
               |> Target.from_regular
             in
             match target with
-            | Target.Regular
-                (Target.Regular.Method { class_name = callable_class; method_name = "__call__"; _ })
-              ->
+            | Target.Regular (Target.Regular.Method _)
+              when String.equal
+                     (PyreflyApi.ReadOnly.Target.method_name_exn pyrefly_api target)
+                     "__call__" ->
+                let callable_class = PyreflyApi.ReadOnly.Target.class_name_exn pyrefly_api target in
                 not (any_parameter_annotation_has_class callable_class signatures)
             | _ -> true
         in
@@ -1308,7 +1321,8 @@ module HigherOrderCallGraph = struct
                 callee
                 |> Target.get_regular
                 |> Target.Regular.override_to_method
-                |> Target.Regular.define_name_exn
+                |> Target.from_regular
+                |> PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api
               in
               let signatures =
                 PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name
@@ -2129,7 +2143,7 @@ let higher_order_call_graph_of_define
   log
     ~debug:Context.debug
     "Building higher order call graph of `%a` with initial state `%a`. Define call graph: `%a`"
-    Target.pp_external
+    Target.pp_internal
     callable
     HigherOrderCallGraph.State.pp
     initial_state
@@ -2177,7 +2191,7 @@ let higher_order_call_graph_of_define
   log
     ~debug:Context.debug
     "Built higher order call graph of `%a`: `%a`"
-    Target.pp_external
+    Target.pp_internal
     callable
     HigherOrderCallGraph.pp
     higher_order_call_graph;
@@ -2222,7 +2236,7 @@ let build_whole_program_call_graph
   let transform_redirected_call_graph decorated_target call_graph =
     (* For call graph of decorated targets, add a call graph edge for the decorated function itself,
        in the return expression `decorator1(decorator2(original_function))` *)
-    let original_callable = Target.set_kind Target.Normal decorated_target in
+    let original_callable = Target.to_undecorated_exn decorated_target in
     let {
       CallableToDecoratorsMap.DecoratedDefineBody.original_function_name;
       original_function_name_location;
@@ -2492,12 +2506,16 @@ let build_whole_program_call_graph
               let call_targets =
                 nested_callees
                 |> List.filter_map ~f:(fun call_target ->
-                       match SpecialCallResolution.CallTarget.target call_target with
-                       | Target.Regular (Method { class_name; _ }) ->
+                       let method_target = SpecialCallResolution.CallTarget.target call_target in
+                       match Target.get_regular method_target with
+                       | Method _ ->
                            (* Given call `x.y.original_attribute(...)`, we want to resolve callees
                               on the made-up call `x.new_attribute(...)`. Here we fetch callees on
                               `x.y` and then replace `y` with `new_attribute`, dropping the target
                               if no such method exists on the class. *)
+                           let class_name =
+                             PyreflyApi.ReadOnly.Target.class_name_exn pyrefly_api method_target
+                           in
                            PyreflyApi.ReadOnly.Target.resolve_method_target
                              pyrefly_api
                              ~class_name:(Reference.create class_name)
@@ -2790,7 +2808,7 @@ let build_whole_program_call_graph
       log
         ~debug
         "Transforming Pyrefly call graph for `%a`: %a"
-        Target.pp_external
+        Target.pp_internal
         callable
         DefineCallGraph.pp
         call_graph
@@ -2798,7 +2816,10 @@ let build_whole_program_call_graph
     let call_indexer = CallGraph.Indexer.create () in
     let call_graph =
       DefineCallGraph.map_target
-        ~f:(CallableToDecoratorsMap.SharedMemory.redirect_to_decorated callables_to_decorators_map)
+        ~f:
+          (CallableToDecoratorsMap.SharedMemory.redirect_to_decorated
+             ~pyrefly_api
+             callables_to_decorators_map)
         ~map_call_if:CallCallees.should_redirect_to_decorated
         ~map_return_if:(fun _ -> false)
         call_graph
@@ -2848,7 +2869,9 @@ let build_whole_program_call_graph
       ~definitions
       ~create_dependency_for
       ~redirect_to_decorated:
-        (CallableToDecoratorsMap.SharedMemory.redirect_to_decorated_opt callables_to_decorators_map)
+        (CallableToDecoratorsMap.SharedMemory.redirect_to_decorated_opt
+           ~pyrefly_api
+           callables_to_decorators_map)
       ~transform_call_graph
   in
   let () =

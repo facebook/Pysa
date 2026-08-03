@@ -77,10 +77,10 @@ module CallGraphAnalysis = struct
       let expensive_callable_ms = 500
     end)
 
-    let iteration_end ~iteration ~expensive_callables ~number_of_callables ~timer =
+    let iteration_end ~display_api ~iteration ~expensive_callables ~number_of_callables ~timer =
       (* Explicitly collect the shared memory to reduce heap size. *)
       let () = Memory.SharedMemory.collect `gentle in
-      iteration_end ~iteration ~expensive_callables ~number_of_callables ~timer
+      iteration_end ~display_api ~iteration ~expensive_callables ~number_of_callables ~timer
   end
 
   module AnalyzeDefineResult = struct
@@ -334,7 +334,7 @@ let log_decorated_targets_if_no_returned_callables
       >>| (fun { CallGraphBuilder.HigherOrderCallGraph.returned_callables; _ } ->
             if CallGraph.CallTarget.Set.is_bottom returned_callables then (
               let decorator_expressions =
-                Target.set_kind Target.Normal callable
+                Target.to_undecorated_exn callable
                 |> CallableToDecoratorsMap.SharedMemory.ReadOnly.get_decorators
                      callables_to_decorators_map
                 |> Option.value ~default:[]
@@ -516,6 +516,7 @@ let compute
     Fixpoint.compute
       ~scheduler
       ~scheduler_policy
+      ~display_api
       ~override_graph:(OverrideGraph.SharedMemory.read_only override_graph_shared_memory)
       ~dependency_graph
       ~skip_analysis_targets

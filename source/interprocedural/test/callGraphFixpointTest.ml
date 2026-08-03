@@ -13,6 +13,36 @@ open CallGraph
 open CallGraphBuilder
 open CallGraphTestHelper
 
+let function_regular pyrefly_api name =
+  InterproceduralTest.resolve_function_regular_exn ~pyrefly_api (Ast.Reference.create name)
+
+
+let function_regular_decorated pyrefly_api name =
+  InterproceduralTest.resolve_function_regular_decorated_exn
+    ~pyrefly_api
+    (Ast.Reference.create name)
+
+
+let method_regular pyrefly_api ~class_name ~method_name =
+  InterproceduralTest.resolve_method_regular_exn
+    ~pyrefly_api
+    ~class_name:(Ast.Reference.create class_name)
+    ~method_name
+    ()
+
+
+let method_regular_decorated pyrefly_api ~class_name ~method_name =
+  InterproceduralTest.resolve_method_regular_decorated_exn
+    ~pyrefly_api
+    ~class_name:(Ast.Reference.create class_name)
+    ~method_name
+
+
+let override_regular pyrefly_api ~class_name ~method_name =
+  method_regular pyrefly_api ~class_name ~method_name
+  |> Target.Regular.get_corresponding_override_exn
+
+
 module Expected = struct
   type t = {
     callable: Target.t;
@@ -23,8 +53,8 @@ end
 
 let assert_higher_order_call_graph_fixpoint
     ?(max_iterations = 10)
-    ?(skip_analysis_targets = Target.HashSet.create ())
-    ?(called_when_parameter = Target.HashSet.create ())
+    ?(skip_analysis_targets = fun _ -> Target.HashSet.create ())
+    ?(called_when_parameter = fun _ -> Target.HashSet.create ())
     ?(maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth)
     ~source
     ~expected
@@ -39,6 +69,8 @@ let assert_higher_order_call_graph_fixpoint
       ~source
       ()
   in
+  let skip_analysis_targets = skip_analysis_targets pyrefly_api in
+  let called_when_parameter = called_when_parameter pyrefly_api in
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth
@@ -118,7 +150,7 @@ let assert_higher_order_call_graph_fixpoint
       ~callables_to_definitions_map
       ~callables_to_decorators_map
   in
-  List.iter expected ~f:(fun { Expected.callable; call_graph; returned_callables } ->
+  List.iter (expected pyrefly_api) ~f:(fun { Expected.callable; call_graph; returned_callables } ->
       let actual_call_graph =
         callable
         |> CallGraphFixpoint.get_model
@@ -165,12 +197,10 @@ let test_higher_order_call_graph_fixpoint =
      def baz():
        return bar()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.bar"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.bar" |> Target.from_regular;
                  call_graph =
                    [
                      ( "5:9-5:12|identifier|foo",
@@ -182,7 +212,7 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~return_type:(Some ReturnType.integer)
-                                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                       (function_regular pyrefly_api "test.foo");
                                    ]
                                  ())
                             ()) );
@@ -191,33 +221,28 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create_regular
                        ~return_type:(Some ReturnType.integer)
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                       (function_regular pyrefly_api "test.foo");
                    ];
                };
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.baz"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.baz" |> Target.from_regular;
                  call_graph =
                    [
                      ( "7:9-7:14",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.bar")]
                             ()) );
                    ];
                  returned_callables =
                    [
                      CallTarget.create_regular
                        ~return_type:(Some ReturnType.integer)
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                       (function_regular pyrefly_api "test.foo");
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -231,12 +256,10 @@ let test_higher_order_call_graph_fixpoint =
        return bar(foo)
   |}
            ~max_iterations:1
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.baz"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.baz" |> Target.from_regular;
                  call_graph =
                    [
                      ( "7:9-7:17",
@@ -246,13 +269,11 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function { name = "test.bar"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.bar")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 0 "arg",
-                                           Target.Regular.Function
-                                             { name = "test.foo"; kind = Normal }
+                                           function_regular pyrefly_api "test.foo"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -266,14 +287,14 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~return_type:(Some ReturnType.integer)
-                                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                       (function_regular pyrefly_api "test.foo");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -281,12 +302,10 @@ let test_higher_order_call_graph_fixpoint =
      def foo():
        return foo
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "3:9-3:12|identifier|foo",
@@ -297,18 +316,15 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                       (function_regular pyrefly_api "test.foo");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.foo")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -316,27 +332,22 @@ let test_higher_order_call_graph_fixpoint =
      def foo():
        return foo()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "3:9-3:14",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.foo")]
                             ()) );
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -350,12 +361,10 @@ let test_higher_order_call_graph_fixpoint =
        else:
          return foo()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "6:11-6:14|identifier|bar",
@@ -367,7 +376,7 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~return_type:(Some ReturnType.integer)
-                                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                       (function_regular pyrefly_api "test.bar");
                                    ]
                                  ())
                             ()) );
@@ -378,7 +387,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create_regular
                                   ~return_type:(Some ReturnType.none)
-                                  (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                  (function_regular pyrefly_api "test.foo");
                               ]
                             ()) );
                    ];
@@ -386,10 +395,10 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create_regular
                        ~return_type:(Some ReturnType.integer)
-                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                       (function_regular pyrefly_api "test.bar");
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -402,12 +411,10 @@ let test_higher_order_call_graph_fixpoint =
      def foo():
        return propagate(bar)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "7:9-7:23",
@@ -417,14 +424,11 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.propagate"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.propagate")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 0 "x",
-                                           Target.Regular.Function
-                                             { name = "test.bar"; kind = Normal }
+                                           function_regular pyrefly_api "test.bar"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -438,35 +442,28 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~return_type:(Some ReturnType.integer)
-                                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                       (function_regular pyrefly_api "test.bar");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.bar")];
                };
                {
                  Expected.callable =
                    create_parameterized_target
-                     ~regular:(Target.Regular.Function { name = "test.propagate"; kind = Normal })
+                     ~regular:(function_regular pyrefly_api "test.propagate")
                      ~parameters:
                        [
                          ( create_positional_parameter 0 "x",
-                           Target.Regular.Function { name = "test.bar"; kind = Normal }
-                           |> Target.from_regular );
+                           function_regular pyrefly_api "test.bar" |> Target.from_regular );
                        ];
                  call_graph = [];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.bar")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -481,12 +478,10 @@ let test_higher_order_call_graph_fixpoint =
      def foo():
        return wrap_propagate(bar)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "9:9-9:28",
@@ -496,14 +491,11 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.wrap_propagate"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.wrap_propagate")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 0 "x",
-                                           Target.Regular.Function
-                                             { name = "test.bar"; kind = Normal }
+                                           function_regular pyrefly_api "test.bar"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -517,18 +509,15 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~return_type:(Some ReturnType.integer)
-                                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                       (function_regular pyrefly_api "test.bar");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.bar")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -544,12 +533,10 @@ let test_higher_order_call_graph_fixpoint =
      def foo():
        return decorator(bar)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "10:9-10:23",
@@ -559,14 +546,11 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.decorator"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.decorator")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 0 "f",
-                                           Target.Regular.Function
-                                             { name = "test.bar"; kind = Normal }
+                                           function_regular pyrefly_api "test.bar"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -580,7 +564,7 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~return_type:(Some ReturnType.integer)
-                                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                       (function_regular pyrefly_api "test.bar");
                                    ]
                                  ())
                             ()) );
@@ -589,9 +573,7 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.decorator.inner"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.decorator.inner")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -600,12 +582,11 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "f";
                                        defining_function = Ast.Reference.create "test.decorator";
                                      }),
-                                Target.Regular.Function { name = "test.bar"; kind = Normal }
-                                |> Target.from_regular );
+                                function_regular pyrefly_api "test.bar" |> Target.from_regular );
                             ]);
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -624,12 +605,10 @@ let test_higher_order_call_graph_fixpoint =
      def bar():
         return foo(baz, 0)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.bar"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.bar" |> Target.from_regular;
                  call_graph =
                    [
                      ( "13:10-13:21",
@@ -639,14 +618,11 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.decorator.inner"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.decorator.inner")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 0 "x",
-                                           Target.Regular.Function
-                                             { name = "test.baz"; kind = Normal }
+                                           function_regular pyrefly_api "test.baz"
                                            |> Target.from_regular );
                                          ( AccessPath.Root.CapturedVariable
                                              (AccessPath.CapturedVariable.FromFunction
@@ -655,8 +631,7 @@ let test_higher_order_call_graph_fixpoint =
                                                   defining_function =
                                                     Ast.Reference.create "test.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.foo"; kind = Normal }
+                                           function_regular pyrefly_api "test.foo"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -669,18 +644,15 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                       (function_regular pyrefly_api "test.baz");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.baz"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.baz")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -695,12 +667,10 @@ let test_higher_order_call_graph_fixpoint =
          return inner_most
        return inner()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.outer"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.outer" |> Target.from_regular;
                  call_graph =
                    [
                      ( "4:2-8:21",
@@ -709,8 +679,7 @@ let test_higher_order_call_graph_fixpoint =
                             ~define_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.outer.inner"; kind = Normal });
+                                  (function_regular pyrefly_api "test.outer.inner");
                               ]
                             ()) );
                      ( "9:9-9:16",
@@ -719,8 +688,7 @@ let test_higher_order_call_graph_fixpoint =
                             ~call_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.outer.inner"; kind = Normal });
+                                  (function_regular pyrefly_api "test.outer.inner");
                               ]
                             ()) );
                    ];
@@ -728,11 +696,10 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create_regular
                        ~return_type:(Some ReturnType.integer)
-                       (Target.Regular.Function
-                          { name = "test.outer.inner.inner_most"; kind = Normal });
+                       (function_regular pyrefly_api "test.outer.inner.inner_most");
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -752,12 +719,10 @@ let test_higher_order_call_graph_fixpoint =
      def baz():
        return decorated()(1)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.baz"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.baz" |> Target.from_regular;
                  call_graph =
                    [
                      ( "14:9-14:20",
@@ -766,18 +731,14 @@ let test_higher_order_call_graph_fixpoint =
                             ~call_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.decorator.wrapper"; kind = Normal });
+                                  (function_regular pyrefly_api "test.decorator.wrapper");
                               ]
                             ()) );
                      ( "14:9-14:23",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.foo")]
                             ~unresolved:
                               (CallGraph.Unresolved.True
                                  CallGraph.Unresolved.UnexpectedCalleeExpression)
@@ -785,7 +746,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -815,12 +776,10 @@ let test_higher_order_call_graph_fixpoint =
          f = foo3
          return f  # Return `Decorated` target from identifiers
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.bar"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.bar" |> Target.from_regular;
                  call_graph =
                    [
                      ( "19:11-19:15|identifier|foo1",
@@ -834,24 +793,20 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~is_static_method:true
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "builtins.object";
-                                            method_name = "__new__";
-                                            kind = Normal;
-                                          });
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"builtins.object"
+                                          ~method_name:"__new__");
                                    ]
                                  ~init_targets:
                                    [
                                      CallTarget.create_regular
                                        ~implicit_receiver:true
                                        ~receiver_class:"test.C"
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "builtins.object";
-                                            method_name = "__init__";
-                                            kind = Normal;
-                                          });
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"builtins.object"
+                                          ~method_name:"__init__");
                                    ]
                                  ())
                             ()) );
@@ -868,8 +823,7 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function
-                                          { name = "test.decorator.inner"; kind = Normal });
+                                       (function_regular pyrefly_api "test.decorator.inner");
                                    ]
                                  ())
                             ()) );
@@ -878,9 +832,7 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.decorator.inner"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.decorator.inner")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -889,14 +841,11 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "f";
                                        defining_function = Ast.Reference.create "test.decorator";
                                      }),
-                                Target.Regular.Function { name = "test.foo1"; kind = Normal }
-                                |> Target.from_regular );
+                                function_regular pyrefly_api "test.foo1" |> Target.from_regular );
                             ]);
                      CallTarget.create
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.decorator.inner"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.decorator.inner")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -905,15 +854,12 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "f";
                                        defining_function = Ast.Reference.create "test.decorator";
                                      }),
-                                Target.Regular.Function { name = "test.foo3"; kind = Normal }
-                                |> Target.from_regular );
+                                function_regular pyrefly_api "test.foo3" |> Target.from_regular );
                             ]);
                      CallTarget.create
                        ~implicit_receiver:true
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.decorator.inner"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.decorator.inner")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -922,13 +868,12 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "f";
                                        defining_function = Ast.Reference.create "test.decorator";
                                      }),
-                                Target.Regular.Method
-                                  { class_name = "test.C"; method_name = "foo2"; kind = Normal }
+                                method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo2"
                                 |> Target.from_regular );
                             ]);
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -947,12 +892,10 @@ let test_higher_order_call_graph_fixpoint =
      def baz(a: A):
        return a.m()  # Test `Override` target
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.baz"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.baz" |> Target.from_regular;
                  call_graph =
                    [
                      ( "13:9-13:14",
@@ -963,20 +906,20 @@ let test_higher_order_call_graph_fixpoint =
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
                                   ~receiver_class:"test.A"
-                                  (Target.Regular.Override
-                                     { class_name = "test.A"; method_name = "m"; kind = Normal });
+                                  (override_regular
+                                     pyrefly_api
+                                     ~class_name:"test.A"
+                                     ~method_name:"m");
                               ]
                             ()) );
                    ];
                  returned_callables =
                    [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                     CallTarget.create_regular (function_regular pyrefly_api "test.foo");
+                     CallTarget.create_regular (function_regular pyrefly_api "test.bar");
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -996,12 +939,10 @@ let test_higher_order_call_graph_fixpoint =
      def main():
        baz()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "14:2-14:7",
@@ -1011,9 +952,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.decorator.foo"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.decorator.foo")
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
@@ -1023,8 +962,7 @@ let test_higher_order_call_graph_fixpoint =
                                                   defining_function =
                                                     Ast.Reference.create "test.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.baz"; kind = Normal }
+                                           function_regular pyrefly_api "test.baz"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -1032,7 +970,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1047,17 +985,12 @@ let test_higher_order_call_graph_fixpoint =
          return
        return foo(g)  # Test skip analysis
   |}
-           ~skip_analysis_targets:
-             (Target.HashSet.of_list
-                [
-                  Target.Regular.Function { name = "test.foo"; kind = Normal } |> Target.from_regular;
-                ])
-           ~expected:
+           ~skip_analysis_targets:(fun pyrefly_api ->
+             Target.HashSet.of_list [function_regular pyrefly_api "test.foo" |> Target.from_regular])
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.bar"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.bar" |> Target.from_regular;
                  call_graph =
                    [
                      ( "7:2-8:10",
@@ -1065,8 +998,7 @@ let test_higher_order_call_graph_fixpoint =
                          (DefineCallees.create
                             ~define_targets:
                               [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.bar.g"; kind = Normal });
+                                CallTarget.create_regular (function_regular pyrefly_api "test.bar.g");
                               ]
                             ()) );
                      ( "9:13-9:14|identifier|g",
@@ -1077,8 +1009,7 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function
-                                          { name = "test.bar.g"; kind = Normal });
+                                       (function_regular pyrefly_api "test.bar.g");
                                    ]
                                  ())
                             ()) );
@@ -1086,10 +1017,7 @@ let test_higher_order_call_graph_fixpoint =
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.foo")]
                             ~higher_order_parameters:
                               (HigherOrderParameterMap.from_list
                                  [
@@ -1098,8 +1026,7 @@ let test_higher_order_call_graph_fixpoint =
                                      call_targets =
                                        [
                                          CallTarget.create_regular
-                                           (Target.Regular.Function
-                                              { name = "test.bar.g"; kind = Normal });
+                                           (function_regular pyrefly_api "test.bar.g");
                                        ];
                                      unresolved = CallGraph.Unresolved.False;
                                    };
@@ -1108,7 +1035,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1126,31 +1053,23 @@ let test_higher_order_call_graph_fixpoint =
      def baz():
        return bar()  # Test resolving calls that require redirecting expressions
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.baz"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.baz" |> Target.from_regular;
                  call_graph =
                    [
                      ( "12:9-12:14",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.bar")]
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.foo")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1171,12 +1090,10 @@ let test_higher_order_call_graph_fixpoint =
      def foo():
        return  # Test building higher order call graphs for decorated targets
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.log"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.log" |> Target.from_regular;
                  call_graph =
                    [
                      ( "8:2-11:18",
@@ -1185,8 +1102,7 @@ let test_higher_order_call_graph_fixpoint =
                             ~define_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.log.inner"; kind = Normal });
+                                  (function_regular pyrefly_api "test.log.inner");
                               ]
                             ()) );
                      ( "12:9-12:14|identifier|inner",
@@ -1197,32 +1113,24 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function
-                                          { name = "test.log.inner"; kind = Normal });
+                                       (function_regular pyrefly_api "test.log.inner");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.log.inner"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.log.inner")];
                };
                {
                  Expected.callable =
-                   Target.Regular.Function { name = "test.foo"; kind = Decorated }
-                   |> Target.from_regular;
+                   function_regular_decorated pyrefly_api "test.foo" |> Target.from_regular;
                  call_graph =
                    [
                      ( "13:1-13:15",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.log"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.log")]
                             ()) );
                      ( "13:1-13:15|artificial-call|for-decorated-target",
                        ExpressionCallees.from_call
@@ -1231,14 +1139,11 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.log.inner"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.log.inner")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 0 "func",
-                                           Target.Regular.Function
-                                             { name = "test.foo"; kind = Normal }
+                                           function_regular pyrefly_api "test.foo"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -1254,7 +1159,7 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                       (function_regular pyrefly_api "test.foo");
                                    ]
                                  ())
                             ()) );
@@ -1263,9 +1168,7 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.log.inner.wrapper"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.log.inner.wrapper")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -1274,14 +1177,12 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "func";
                                        defining_function = Ast.Reference.create "test.log.inner";
                                      }),
-                                Target.Regular.Function { name = "test.foo"; kind = Normal }
-                                |> Target.from_regular );
+                                function_regular pyrefly_api "test.foo" |> Target.from_regular );
                             ]);
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                     CallTarget.create_regular (function_regular pyrefly_api "test.foo");
                    ];
                };
-             ]
+             ])
            ();
       (* TODO: This test requires the higher order call graph analysis to handle attributes. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -1307,12 +1208,10 @@ let test_higher_order_call_graph_fixpoint =
      def main(o: MyClass):
        return o.bar()  # Test storing decorated functions into object attributes
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "19:9-19:16",
@@ -1324,17 +1223,14 @@ let test_higher_order_call_graph_fixpoint =
                  Expected.callable =
                    create_parameterized_target_with_values
                      ~regular:
-                       (Target.Regular.Method
-                          {
-                            class_name = "test.classproperty";
-                            method_name = "__init__";
-                            kind = Normal;
-                          })
+                       (method_regular
+                          pyrefly_api
+                          ~class_name:"test.classproperty"
+                          ~method_name:"__init__")
                      ~parameters:
                        [
                          ( create_positional_parameter 1 "fget",
-                           Target.Regular.Method
-                             { class_name = "test.MyClass"; method_name = "bar"; kind = Normal }
+                           method_regular pyrefly_api ~class_name:"test.MyClass" ~method_name:"bar"
                            |> Target.from_regular
                            |> Target.ParameterValue.create ~implicit_receiver:true );
                        ];
@@ -1343,8 +1239,10 @@ let test_higher_order_call_graph_fixpoint =
                };
                {
                  Expected.callable =
-                   Target.Regular.Method
-                     { class_name = "test.MyClass"; method_name = "bar"; kind = Decorated }
+                   method_regular_decorated
+                     pyrefly_api
+                     ~class_name:"test.MyClass"
+                     ~method_name:"bar"
                    |> Target.from_regular;
                  call_graph =
                    [
@@ -1358,21 +1256,17 @@ let test_higher_order_call_graph_fixpoint =
                                   ~receiver_class:"test.classproperty"
                                   (create_parameterized_target_with_values
                                      ~regular:
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "test.classproperty";
-                                            method_name = "__init__";
-                                            kind = Normal;
-                                          })
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"test.classproperty"
+                                          ~method_name:"__init__")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 1 "fget",
-                                           Target.Regular.Method
-                                             {
-                                               class_name = "test.MyClass";
-                                               method_name = "bar";
-                                               kind = Normal;
-                                             }
+                                           method_regular
+                                             pyrefly_api
+                                             ~class_name:"test.MyClass"
+                                             ~method_name:"bar"
                                            |> Target.from_regular
                                            |> Target.ParameterValue.create ~implicit_receiver:false
                                          );
@@ -1382,12 +1276,10 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create_regular
                                   ~is_static_method:true
-                                  (Target.Regular.Method
-                                     {
-                                       class_name = "builtins.object";
-                                       method_name = "__new__";
-                                       kind = Normal;
-                                     });
+                                  (method_regular
+                                     pyrefly_api
+                                     ~class_name:"builtins.object"
+                                     ~method_name:"__new__");
                               ]
                             ()) );
                      ( "16:2-17:14|identifier|bar",
@@ -1398,19 +1290,17 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "test.MyClass";
-                                            method_name = "bar";
-                                            kind = Normal;
-                                          });
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"test.MyClass"
+                                          ~method_name:"bar");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1429,12 +1319,10 @@ let test_higher_order_call_graph_fixpoint =
      def main():
        return bar()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "13:9-13:14",
@@ -1444,9 +1332,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.decorator.inner"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.decorator.inner")
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
@@ -1456,8 +1342,7 @@ let test_higher_order_call_graph_fixpoint =
                                                   defining_function =
                                                     Ast.Reference.create "test.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.bar"; kind = Normal }
+                                           function_regular pyrefly_api "test.bar"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -1465,7 +1350,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1490,12 +1375,10 @@ let test_higher_order_call_graph_fixpoint =
      def main(a: A):
        return await a.bar()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "19:15-19:22",
@@ -1505,18 +1388,17 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
-                                  (Target.Regular.Method
-                                     { class_name = "test.A"; method_name = "bar"; kind = Normal });
+                                  (method_regular
+                                     pyrefly_api
+                                     ~class_name:"test.A"
+                                     ~method_name:"bar");
                               ]
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.foo")];
                };
-             ]
+             ])
            ();
       (* This test requires our higher order call graph analysis to handle attributes. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -1545,12 +1427,10 @@ let test_higher_order_call_graph_fixpoint =
      def main(a: A):
        return await a.bar()
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "22:15-22:22",
@@ -1558,7 +1438,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1575,12 +1455,11 @@ let test_higher_order_call_graph_fixpoint =
      def main(a: A):
        return A.name  # Test accessing a property
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
                  Expected.callable =
-                   Target.Regular.Method
-                     { class_name = "test.A"; method_name = "name"; kind = Decorated }
+                   method_regular_decorated pyrefly_api ~class_name:"test.A" ~method_name:"name"
                    |> Target.from_regular;
                  call_graph =
                    [
@@ -1590,8 +1469,7 @@ let test_higher_order_call_graph_fixpoint =
                             ~call_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "pyre_extensions.classproperty"; kind = Normal });
+                                  (function_regular pyrefly_api "pyre_extensions.classproperty");
                               ]
                             ()) );
                      ( "8:2-9:14|identifier|name",
@@ -1602,12 +1480,10 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "test.A";
-                                            method_name = "name";
-                                            kind = Normal;
-                                          });
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"test.A"
+                                          ~method_name:"name");
                                    ]
                                  ())
                             ()) );
@@ -1615,14 +1491,11 @@ let test_higher_order_call_graph_fixpoint =
                  returned_callables =
                    [
                      CallTarget.create_regular
-                       (Target.Regular.Method
-                          { class_name = "test.A"; method_name = "name"; kind = Normal });
+                       (method_regular pyrefly_api ~class_name:"test.A" ~method_name:"name");
                    ];
                };
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "11:9-11:10|identifier|A",
@@ -1634,24 +1507,20 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~is_static_method:true
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "builtins.object";
-                                            method_name = "__new__";
-                                            kind = Normal;
-                                          });
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"builtins.object"
+                                          ~method_name:"__new__");
                                    ]
                                  ~init_targets:
                                    [
                                      CallTarget.create_regular
                                        ~implicit_receiver:true
                                        ~receiver_class:"test.A"
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "builtins.object";
-                                            method_name = "__init__";
-                                            kind = Normal;
-                                          });
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"builtins.object"
+                                          ~method_name:"__init__");
                                    ]
                                  ())
                             ()) );
@@ -1663,11 +1532,10 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      (* TODO(T276351487): Handle `__classproperty__`. *)
                      CallTarget.create_regular
-                       (Target.Regular.Method
-                          { class_name = "test.A"; method_name = "name"; kind = Normal });
+                       (method_regular pyrefly_api ~class_name:"test.A" ~method_name:"name");
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1683,12 +1551,10 @@ let test_higher_order_call_graph_fixpoint =
      def main(a: A):
        return a.name  # Test accessing a property
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "10:9-10:15",
@@ -1699,27 +1565,26 @@ let test_higher_order_call_graph_fixpoint =
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
                                   ~receiver_class:"test.A"
-                                  (Target.Regular.Method
-                                     { class_name = "test.A"; method_name = "name"; kind = Normal });
+                                  (method_regular
+                                     pyrefly_api
+                                     ~class_name:"test.A"
+                                     ~method_name:"name");
                               ]
                             ~if_called:
                               (CallCallees.create
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                       (function_regular pyrefly_api "test.foo");
                                    ]
                                  ())
                             ~is_attribute:false
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.foo")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1746,11 +1611,11 @@ let test_higher_order_call_graph_fixpoint =
      def contextmanager_subclass(x):
        print(x)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
                  Expected.callable =
-                   Target.Regular.Function { name = "test.contextmanager"; kind = Decorated }
+                   function_regular_decorated pyrefly_api "test.contextmanager"
                    |> Target.from_regular;
                  call_graph =
                    [
@@ -1765,17 +1630,14 @@ let test_higher_order_call_graph_fixpoint =
                                   ~receiver_class:"test.Base"
                                   (create_parameterized_target
                                      ~regular:
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "test.Base";
-                                            method_name = "__call__";
-                                            kind = Normal;
-                                          })
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"test.Base"
+                                          ~method_name:"__call__")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 1 "func",
-                                           Target.Regular.Function
-                                             { name = "test.contextmanager"; kind = Normal }
+                                           function_regular pyrefly_api "test.contextmanager"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -1788,8 +1650,7 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function
-                                          { name = "test.contextmanager"; kind = Normal });
+                                       (function_regular pyrefly_api "test.contextmanager");
                                    ]
                                  ())
                             ()) );
@@ -1798,9 +1659,7 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.Base.__call__.inner"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.Base.__call__.inner")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -1809,16 +1668,14 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "func";
                                        defining_function = Ast.Reference.create "test.Base.__call__";
                                      }),
-                                Target.Regular.Function
-                                  { name = "test.contextmanager"; kind = Normal }
+                                function_regular pyrefly_api "test.contextmanager"
                                 |> Target.from_regular );
                             ]);
                    ];
                };
                {
                  Expected.callable =
-                   Target.Regular.Function
-                     { name = "test.contextmanager_subclass"; kind = Decorated }
+                   function_regular_decorated pyrefly_api "test.contextmanager_subclass"
                    |> Target.from_regular;
                  call_graph =
                    [
@@ -1833,20 +1690,16 @@ let test_higher_order_call_graph_fixpoint =
                                   ~receiver_class:"test.Subclass"
                                   (create_parameterized_target
                                      ~regular:
-                                       (Target.Regular.Method
-                                          {
-                                            class_name = "test.Base";
-                                            method_name = "__call__";
-                                            kind = Normal;
-                                          })
+                                       (method_regular
+                                          pyrefly_api
+                                          ~class_name:"test.Base"
+                                          ~method_name:"__call__")
                                      ~parameters:
                                        [
                                          ( create_positional_parameter 1 "func",
-                                           Target.Regular.Function
-                                             {
-                                               name = "test.contextmanager_subclass";
-                                               kind = Normal;
-                                             }
+                                           function_regular
+                                             pyrefly_api
+                                             "test.contextmanager_subclass"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -1859,8 +1712,7 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function
-                                          { name = "test.contextmanager_subclass"; kind = Normal });
+                                       (function_regular pyrefly_api "test.contextmanager_subclass");
                                    ]
                                  ())
                             ()) );
@@ -1869,9 +1721,7 @@ let test_higher_order_call_graph_fixpoint =
                    [
                      CallTarget.create
                        (create_parameterized_target
-                          ~regular:
-                            (Target.Regular.Function
-                               { name = "test.Base.__call__.inner"; kind = Normal })
+                          ~regular:(function_regular pyrefly_api "test.Base.__call__.inner")
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
@@ -1880,13 +1730,12 @@ let test_higher_order_call_graph_fixpoint =
                                        name = "func";
                                        defining_function = Ast.Reference.create "test.Base.__call__";
                                      }),
-                                Target.Regular.Function
-                                  { name = "test.contextmanager_subclass"; kind = Normal }
+                                function_regular pyrefly_api "test.contextmanager_subclass"
                                 |> Target.from_regular );
                             ]);
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1903,11 +1752,11 @@ let test_higher_order_call_graph_fixpoint =
      def stub_contextmanager(x):
        print(x)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
                  Expected.callable =
-                   Target.Regular.Function { name = "test.stub_contextmanager"; kind = Decorated }
+                   function_regular_decorated pyrefly_api "test.stub_contextmanager"
                    |> Target.from_regular;
                  call_graph =
                    [
@@ -1920,12 +1769,10 @@ let test_higher_order_call_graph_fixpoint =
                                   ~implicit_receiver:true
                                   ~implicit_dunder_call:true
                                   ~receiver_class:"test.Subclass"
-                                  (Target.Regular.Method
-                                     {
-                                       class_name = "test.Base";
-                                       method_name = "__call__";
-                                       kind = Normal;
-                                     });
+                                  (method_regular
+                                     pyrefly_api
+                                     ~class_name:"test.Base"
+                                     ~method_name:"__call__");
                               ]
                             ()) );
                      ( "10:0-11:10|identifier|stub_contextmanager",
@@ -1936,8 +1783,7 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function
-                                          { name = "test.stub_contextmanager"; kind = Normal });
+                                       (function_regular pyrefly_api "test.stub_contextmanager");
                                    ]
                                  ())
                             ()) );
@@ -1945,10 +1791,10 @@ let test_higher_order_call_graph_fixpoint =
                  returned_callables =
                    [
                      CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.stub_contextmanager"; kind = Normal });
+                       (function_regular pyrefly_api "test.stub_contextmanager");
                    ];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -1962,12 +1808,11 @@ let test_higher_order_call_graph_fixpoint =
      def bar():
        return foo
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
                  Expected.callable =
-                   Target.Regular.Function { name = "test.bar"; kind = Decorated }
-                   |> Target.from_regular;
+                   function_regular_decorated pyrefly_api "test.bar" |> Target.from_regular;
                  call_graph =
                    [
                      ( "6:1-6:10|artificial-call|for-decorated-target",
@@ -1976,8 +1821,7 @@ let test_higher_order_call_graph_fixpoint =
                             ~call_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.decorator"; kind = Normal });
+                                  (function_regular pyrefly_api "test.decorator");
                               ]
                             ()) );
                      ( "7:0-8:12|identifier|bar",
@@ -1988,18 +1832,15 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                       (function_regular pyrefly_api "test.bar");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables =
-                   [
-                     CallTarget.create_regular
-                       (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                   ];
+                   [CallTarget.create_regular (function_regular pyrefly_api "test.bar")];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -2015,22 +1856,17 @@ let test_higher_order_call_graph_fixpoint =
        x = a.foo  # Test not propagating property targets
        return bar(x)
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "10:9-10:15",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.bar")]
                             ()) );
                      ( "9:6-9:11",
                        ExpressionCallees.from_attribute_access
@@ -2041,15 +1877,17 @@ let test_higher_order_call_graph_fixpoint =
                                   ~implicit_receiver:true
                                   ~receiver_class:"test.A"
                                   ~return_type:(Some ReturnType.integer)
-                                  (Target.Regular.Method
-                                     { class_name = "test.A"; method_name = "foo"; kind = Normal });
+                                  (method_regular
+                                     pyrefly_api
+                                     ~class_name:"test.A"
+                                     ~method_name:"foo");
                               ]
                             ~is_attribute:false
                             ()) );
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -2062,25 +1900,20 @@ let test_higher_order_call_graph_fixpoint =
      def main():
        return bar(foo)  # Test treating parameters as being called
   |}
-           ~called_when_parameter:
-             ([Target.Regular.Function { name = "test.foo"; kind = Normal } |> Target.from_regular]
+           ~called_when_parameter:(fun pyrefly_api ->
+             [function_regular pyrefly_api "test.foo" |> Target.from_regular]
              |> Target.HashSet.of_list)
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "7:9-7:17",
                        ExpressionCallees.from_call
                          (CallCallees.create
                             ~call_targets:
-                              [
-                                CallTarget.create_regular
-                                  (Target.Regular.Function { name = "test.bar"; kind = Normal });
-                              ]
+                              [CallTarget.create_regular (function_regular pyrefly_api "test.bar")]
                             ~higher_order_parameters:
                               (HigherOrderParameterMap.from_list
                                  [
@@ -2089,8 +1922,7 @@ let test_higher_order_call_graph_fixpoint =
                                      call_targets =
                                        [
                                          CallTarget.create_regular
-                                           (Target.Regular.Function
-                                              { name = "test.foo"; kind = Normal });
+                                           (function_regular pyrefly_api "test.foo");
                                        ];
                                      unresolved = CallGraph.Unresolved.False;
                                    };
@@ -2104,14 +1936,14 @@ let test_higher_order_call_graph_fixpoint =
                                  ~call_targets:
                                    [
                                      CallTarget.create_regular
-                                       (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                       (function_regular pyrefly_api "test.foo");
                                    ]
                                  ())
                             ()) );
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -2127,12 +1959,10 @@ let test_higher_order_call_graph_fixpoint =
          return
        inner(0)  # Test creating decorated targets for inner functions
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "10:2-10:10",
@@ -2142,9 +1972,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.decorator.inner"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.decorator.inner")
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
@@ -2154,8 +1982,7 @@ let test_higher_order_call_graph_fixpoint =
                                                   defining_function =
                                                     Ast.Reference.create "test.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.main.inner"; kind = Normal }
+                                           function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -2167,9 +1994,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   (create_parameterized_target
-                                     ~regular:
-                                       (Target.Regular.Function
-                                          { name = "test.decorator.inner"; kind = Normal })
+                                     ~regular:(function_regular pyrefly_api "test.decorator.inner")
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
@@ -2179,8 +2004,7 @@ let test_higher_order_call_graph_fixpoint =
                                                   defining_function =
                                                     Ast.Reference.create "test.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.main.inner"; kind = Normal }
+                                           function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -2188,7 +2012,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_fixpoint
@@ -2206,12 +2030,10 @@ let test_higher_order_call_graph_fixpoint =
          return
        inner(0)  # Test creating decorated targets for inner functions
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                {
-                 Expected.callable =
-                   Target.Regular.Function { name = "test.main"; kind = Normal }
-                   |> Target.from_regular;
+                 Expected.callable = function_regular pyrefly_api "test.main" |> Target.from_regular;
                  call_graph =
                    [
                      ( "12:2-12:10",
@@ -2220,16 +2042,13 @@ let test_higher_order_call_graph_fixpoint =
                             ~call_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.main.inner"; kind = Normal });
+                                  (function_regular pyrefly_api "test.main.inner");
                                 CallTarget.create
                                   (create_parameterized_target
                                      ~regular:
-                                       (Target.Regular.Function
-                                          {
-                                            name = "test.decorator_factory.decorator.inner";
-                                            kind = Normal;
-                                          })
+                                       (function_regular
+                                          pyrefly_api
+                                          "test.decorator_factory.decorator.inner")
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
@@ -2240,8 +2059,7 @@ let test_higher_order_call_graph_fixpoint =
                                                     Ast.Reference.create
                                                       "test.decorator_factory.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.main.inner"; kind = Normal }
+                                           function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -2252,16 +2070,13 @@ let test_higher_order_call_graph_fixpoint =
                             ~define_targets:
                               [
                                 CallTarget.create_regular
-                                  (Target.Regular.Function
-                                     { name = "test.main.inner"; kind = Normal });
+                                  (function_regular pyrefly_api "test.main.inner");
                                 CallTarget.create
                                   (create_parameterized_target
                                      ~regular:
-                                       (Target.Regular.Function
-                                          {
-                                            name = "test.decorator_factory.decorator.inner";
-                                            kind = Normal;
-                                          })
+                                       (function_regular
+                                          pyrefly_api
+                                          "test.decorator_factory.decorator.inner")
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
@@ -2272,8 +2087,7 @@ let test_higher_order_call_graph_fixpoint =
                                                     Ast.Reference.create
                                                       "test.decorator_factory.decorator";
                                                 }),
-                                           Target.Regular.Function
-                                             { name = "test.main.inner"; kind = Normal }
+                                           function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
                               ]
@@ -2281,7 +2095,7 @@ let test_higher_order_call_graph_fixpoint =
                    ];
                  returned_callables = [];
                };
-             ]
+             ])
            ();
     ]
 

@@ -1012,7 +1012,7 @@ module Modelable = struct
         | None ->
             Format.asprintf
               "unknown target `%a` in `Modelable.create_callable`"
-              Target.pp_external
+              Target.pp_internal
               target
             |> failwith
         | Some signature -> signature)

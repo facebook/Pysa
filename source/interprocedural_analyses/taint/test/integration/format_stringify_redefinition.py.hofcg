@@ -148,14 +148,14 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "format_stringify_redefinition.Base.__str__$2",
+            "target": "format_stringify_redefinition.Base.__unicode__",
             "index": 0,
             "implicit_receiver": true,
             "return_type": [],
             "receiver_class": "format_stringify_redefinition.Base"
           },
           {
-            "target": "format_stringify_redefinition.Base.__unicode__",
+            "target": "format_stringify_redefinition.Base.__str__$2",
             "index": 0,
             "implicit_receiver": true,
             "return_type": [],
@@ -194,14 +194,14 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "format_stringify_redefinition.Base.__str__$2",
+            "target": "format_stringify_redefinition.Base.__unicode__",
             "index": 0,
             "implicit_receiver": true,
             "return_type": [],
             "receiver_class": "format_stringify_redefinition.Sub"
           },
           {
-            "target": "format_stringify_redefinition.Base.__unicode__",
+            "target": "format_stringify_redefinition.Base.__str__$2",
             "index": 0,
             "implicit_receiver": true,
             "return_type": [],

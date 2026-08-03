@@ -1395,16 +1395,15 @@ let test_query_parsing_model_parameters context =
 
 
 let test_query_parsing_expected_models context =
-  let create_expected_model ?source ~model_source function_name =
+  let create_expected_model ?source ~model_source _function_name =
     let { ModelParseResult.models; _ } =
       set_up_environment ?source ~context ~model_source ~validate:true ()
     in
-    let model = Option.value_exn (Registry.get models (List.hd_exn (Registry.targets models))) in
-    {
-      ModelParseResult.ModelQuery.ExpectedModel.model;
-      target = Target.create_function (Ast.Reference.create function_name);
-      model_source;
-    }
+    (* Each `model_source` here defines exactly one model, so the registry holds a single target,
+       which is the one this expected model is for. *)
+    let target = List.hd_exn (Registry.targets models) in
+    let model = Option.value_exn (Registry.get models target) in
+    { ModelParseResult.ModelQuery.ExpectedModel.model; target; model_source }
   in
   assert_queries
     ~source:"def food(): ..."

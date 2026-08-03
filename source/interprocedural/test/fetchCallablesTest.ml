@@ -9,6 +9,13 @@ open OUnit2
 open Core
 open Interprocedural
 
+let define_target pyrefly_api name =
+  PyreflyApi.ReadOnly.Target.target_from_define_name
+    pyrefly_api
+    ~override:false
+    (Ast.Reference.create name)
+
+
 let test_callables context =
   let assert_callables ?(additional_sources = []) ?(source_filename = "test.py") source ~expected =
     let pyrefly_api =
@@ -26,7 +33,7 @@ let test_callables context =
     |> assert_equal
          ~printer:(List.to_string ~f:Target.show_internal)
          ~cmp:(List.equal Target.equal)
-         (List.map ~f:Target.from_regular expected)
+         (expected pyrefly_api |> List.sort ~compare:Target.compare)
   in
   assert_callables
     {|
@@ -34,12 +41,12 @@ let test_callables context =
       def foo() -> int:
         ...
     |}
-    ~expected:
+    ~expected:(fun pyrefly_api ->
       [
-        Target.Regular.Function { name = "test.$toplevel"; kind = Normal };
-        Target.Regular.Function { name = "test.C.$class_toplevel"; kind = Normal };
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal };
-      ];
+        define_target pyrefly_api "test.$toplevel";
+        define_target pyrefly_api "test.C.$class_toplevel";
+        define_target pyrefly_api "test.C.foo";
+      ]);
   assert_callables
     {|
       import unittest
@@ -47,7 +54,7 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:[];
+    ~expected:(fun _ -> []);
   assert_callables
     {|
       import pytest
@@ -55,12 +62,12 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:
+    ~expected:(fun pyrefly_api ->
       [
-        Target.Regular.Function { name = "test.$toplevel"; kind = Normal };
-        Target.Regular.Function { name = "test.C.$class_toplevel"; kind = Normal };
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal };
-      ];
+        define_target pyrefly_api "test.$toplevel";
+        define_target pyrefly_api "test.C.$class_toplevel";
+        define_target pyrefly_api "test.C.foo";
+      ]);
 
   assert_callables
     {|
@@ -71,7 +78,7 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:[];
+    ~expected:(fun _ -> []);
   assert_callables
     {|
       from pytest import raises
@@ -81,7 +88,7 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:[];
+    ~expected:(fun _ -> []);
   assert_callables
     {|
       import pytest.raises as throws
@@ -91,7 +98,7 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:[];
+    ~expected:(fun _ -> []);
   assert_callables
     {|
       import pytest
@@ -101,7 +108,7 @@ let test_callables context =
         def test_int() -> int:
           return 0
     |}
-    ~expected:[];
+    ~expected:(fun _ -> []);
   assert_callables
     {|
       import foo.pytest
@@ -111,13 +118,13 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:
+    ~expected:(fun pyrefly_api ->
       [
-        Target.Regular.Function { name = "test.$toplevel"; kind = Normal };
-        Target.Regular.Function { name = "test.C.$class_toplevel"; kind = Normal };
-        Target.Regular.Function { name = "test.test_int"; kind = Normal };
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal };
-      ];
+        define_target pyrefly_api "test.$toplevel";
+        define_target pyrefly_api "test.C.$class_toplevel";
+        define_target pyrefly_api "test.test_int";
+        define_target pyrefly_api "test.C.foo";
+      ]);
 
   assert_callables
     "pass"
@@ -132,7 +139,7 @@ let test_callables context =
           |}
         );
       ]
-    ~expected:[Target.Regular.Function { name = "test.$toplevel"; kind = Normal }];
+    ~expected:(fun pyrefly_api -> [define_target pyrefly_api "test.$toplevel"]);
 
   assert_callables
     ~source_filename:"test.pyi"
@@ -142,8 +149,7 @@ let test_callables context =
         def foo() -> int:
           ...
     |}
-    ~expected:
-      [Target.Regular.Method { class_name = "test.Toplevel"; method_name = "foo"; kind = Normal }]
+    ~expected:(fun pyrefly_api -> [define_target pyrefly_api "test.Toplevel.foo"])
 
 
 let () = "staticAnalysis" >::: ["callables" >:: test_callables] |> Test.run

@@ -15,11 +15,11 @@ open Core
 open Pyre
 open Ast
 
-(** Override graph in the ocaml heap, mapping each member method to the list of its overriding
-    methods (`Target.Method.t`), resolved to real callables at build time. Consumers wrap each
-    stored method into an `Override` target at the use site. *)
+(** Override graph in the ocaml heap, mapping each member method to the list of the `CallableId`s of
+    its overriding methods, resolved to real callables at build time. Consumers wrap each stored id
+    into an `Override` target at the use site. *)
 module Heap = struct
-  type t = Target.Method.t list Target.Map.Tree.t
+  type t = PyreflyTypes.CallableId.t list Target.Map.Tree.t
 
   let empty = Target.Map.Tree.empty
 
@@ -29,7 +29,7 @@ module Heap = struct
     Target.Map.Tree.fold graph ~init ~f:(fun ~key:member ~data:overrides -> f ~member ~overrides)
 
 
-  let equal left right = Target.Map.Tree.equal (List.equal Target.Method.equal) left right
+  let equal left right = Target.Map.Tree.equal (List.equal PyreflyTypes.CallableId.equal) left right
 
   let pp formatter overrides =
     let pp_pair formatter (member, overrides) =
@@ -38,7 +38,7 @@ module Heap = struct
         "@,%a -> %s"
         Target.pp_internal
         member
-        (List.map ~f:Target.Method.show overrides |> String.concat ~sep:", ")
+        (List.map ~f:PyreflyTypes.CallableId.show overrides |> String.concat ~sep:", ")
     in
     let pp_pairs formatter = List.iter ~f:(pp_pair formatter) in
     Format.fprintf formatter "{@[<v 2>%a@]@,}" pp_pairs (Target.Map.Tree.to_alist overrides)
@@ -47,62 +47,34 @@ module Heap = struct
   let show = Format.asprintf "%a" pp
 
   module OverridingRelation = struct
-    (* Represent a relation where `base_callable` is overridden by `override_method`, the resolved
-       method (`Target.Method.t`) of a real method with the same name defined in an overriding
-       subclass. Consumers wrap it into an `Override` target. *)
+    (* Represent a relation where `base_callable` is overridden by `override_callable_id`, the
+       `CallableId` of a real method with the same name defined in an overriding subclass. Consumers
+       wrap it into an `Override` target. *)
     type t = {
       base_callable: Target.t;
-      override_method: Target.Method.t;
+      override_callable_id: PyreflyTypes.CallableId.t;
     }
 
-    let from_method_reference ~pyrefly_api method_reference =
-      let base_callable =
-        try PyreflyApi.ReadOnly.Target.get_overriden_base_method pyrefly_api method_reference with
-        | Analysis.ClassHierarchy.Untracked untracked_type ->
-            Log.warning
-              "Found untracked type `%s` when looking for a parent of `%a`. The method will be \
-               considered has having no parent, which could lead to false negatives."
-              untracked_type
-              Target.MethodReference.pp
-              method_reference;
-            None
-      in
-      base_callable
+    let from_method_id ~pyrefly_api method_id =
+      PyreflyApi.ReadOnly.Target.get_overriden_base_method pyrefly_api method_id
       >>= fun base_callable ->
-      let override_method =
-        match
-          PyreflyApi.ReadOnly.Target.target_from_method_reference method_reference
-          |> Target.as_regular_exn
-        with
-        | Target.Regular.Method method_ -> method_
-        | regular ->
-            Format.asprintf
-              "expected `target_from_method_reference` to yield a method, got `%a`"
-              Target.Regular.pp
-              regular
-            |> failwith
-      in
-      Some
-        {
-          base_callable = PyreflyApi.ReadOnly.Target.target_from_method_reference base_callable;
-          override_method;
-        }
+      Some { base_callable = Target.create_method base_callable; override_callable_id = method_id }
   end
 
   let from_overriding_relations relations =
-    let accumulate map { OverridingRelation.base_callable; override_method } =
+    let accumulate map { OverridingRelation.base_callable; override_callable_id } =
       let update_overrides = function
-        | Some overrides -> override_method :: overrides
-        | None -> [override_method]
+        | Some overrides -> override_callable_id :: overrides
+        | None -> [override_callable_id]
       in
       Target.Map.Tree.update map base_callable ~f:update_overrides
     in
     relations
     |> List.fold ~init:Target.Map.Tree.empty ~f:accumulate
-    |> Target.Map.Tree.map ~f:(List.dedup_and_sort ~compare:Target.Method.compare)
+    |> Target.Map.Tree.map ~f:(List.dedup_and_sort ~compare:PyreflyTypes.CallableId.compare)
 
 
-  let skip_overrides ~to_skip overrides =
+  let skip_overrides ~pyrefly_api ~to_skip overrides =
     Target.Map.Tree.filter_keys
       ~f:(fun override ->
         to_skip
@@ -110,16 +82,17 @@ module Heap = struct
              (override
              |> Target.get_regular
              |> Target.Regular.override_to_method
-             |> Target.Regular.define_name_exn)
+             |> Target.from_regular
+             |> PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api)
         |> Core.not)
       overrides
 
 
   let from_qualifier ~pyrefly_api ~skip_overrides_targets qualifier =
     PyreflyApi.ReadOnly.get_methods_for_qualifier ~exclude_test_modules:true pyrefly_api qualifier
-    |> List.filter_map ~f:(OverridingRelation.from_method_reference ~pyrefly_api)
+    |> List.filter_map ~f:(OverridingRelation.from_method_id ~pyrefly_api)
     |> from_overriding_relations
-    |> skip_overrides ~to_skip:skip_overrides_targets
+    |> skip_overrides ~pyrefly_api ~to_skip:skip_overrides_targets
 
 
   type cap_overrides_result = {
@@ -128,7 +101,7 @@ module Heap = struct
   }
 
   (** If a method has too many overrides, ignore them. *)
-  let cap_overrides ~analyze_all_overrides_targets ~maximum_overrides overrides =
+  let cap_overrides ~pyrefly_api ~analyze_all_overrides_targets ~maximum_overrides overrides =
     (* Keep the information of whether we're skipping overrides in a ref that we accumulate while we
        filter the map. *)
     let skipped_overrides = ref [] in
@@ -137,7 +110,7 @@ module Heap = struct
         let () =
           Log.info
             "Analyzing all overrides of `%s` as per @AnalyzeAllOverrides"
-            (Target.show_pretty member)
+            (PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api member)
         in
         true
       else
@@ -150,7 +123,7 @@ module Heap = struct
               Log.log
                 ~section:`SkippedOverride
                 "Omitting overrides for `%s`. The number of overrides %d exceeds the limit %d."
-                (Target.show_pretty member)
+                (PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api member)
                 number_of_overrides
                 cap;
               skipped_overrides := member :: !skipped_overrides;
@@ -160,7 +133,7 @@ module Heap = struct
             if number_of_overrides > 50 then
               Log.warning
                 "`%s` has %d overrides, this might slow down the analysis considerably."
-                (Target.show_pretty member)
+                (PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api member)
                 number_of_overrides;
             true
     in
@@ -168,14 +141,14 @@ module Heap = struct
     { overrides; skipped_overrides = !skipped_overrides }
 end
 
-(** Override graph in the shared memory, mapping each member method to the list of its overriding
-    methods (`Target.Method.t`). *)
+(** Override graph in the shared memory, mapping each member method to the list of the `CallableId`s
+    of its overriding methods. *)
 module SharedMemory = struct
   module T =
     SaveLoadSharedMemory.MakeKeyValue
       (Target.SharedMemoryKey)
       (struct
-        type t = Target.Method.t list
+        type t = PyreflyTypes.CallableId.t list
 
         let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -220,7 +193,8 @@ module SharedMemory = struct
             handle
             |> get_override_targets ~member:corresponding_method
             |> Option.value ~default:[]
-            |> List.map ~f:(fun method_ -> Target.from_regular (Target.Regular.Override method_))
+            |> List.map ~f:(fun callable_id ->
+                   Target.from_regular (Target.Regular.Override callable_id))
           in
           corresponding_method :: List.fold overrides ~f:expand_and_gather ~init:expanded
       in
@@ -280,7 +254,7 @@ let build_whole_program_overrides
       ()
   in
   let { Heap.overrides = override_graph_heap; skipped_overrides } =
-    Heap.cap_overrides ~analyze_all_overrides_targets ~maximum_overrides overrides
+    Heap.cap_overrides ~pyrefly_api ~analyze_all_overrides_targets ~maximum_overrides overrides
   in
   let override_graph_shared_memory = SharedMemory.from_heap override_graph_heap in
   let () =
@@ -298,9 +272,8 @@ let build_whole_program_overrides
                       `String (PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api member) );
                     ( "overrides",
                       `List
-                        (List.map overrides ~f:(fun method_ ->
-                             Target.Regular.Method method_
-                             |> Target.from_regular
+                        (List.map overrides ~f:(fun callable_id ->
+                             Target.create_method callable_id
                              |> PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api
                              |> fun s -> `String s)) );
                   ];

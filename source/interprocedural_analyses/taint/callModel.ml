@@ -60,6 +60,7 @@ module Callee = struct
 
 
   let from_stringify_call_target
+      ~pyrefly_api
       ~base
       ~stringify_origin
       ~location
@@ -70,10 +71,14 @@ module Callee = struct
     in
     let name =
       match Target.get_regular target with
-      | Target.Regular.Method { method_name; _ } -> callee_name_from_method_name method_name
-      | Override { method_name; _ } -> callee_name_from_method_name method_name
-      | Function { name; _ } -> Some (Name.Identifier name)
-      | Object _ -> failwith "callees should be either methods or functions"
+      | Target.Regular.Method _
+      | Target.Regular.Override _ ->
+          PyreflyApi.ReadOnly.Target.method_name_exn pyrefly_api target
+          |> callee_name_from_method_name
+      | Target.Regular.Function _ ->
+          let name = PyreflyApi.ReadOnly.Target.function_name_exn pyrefly_api target in
+          Some (Name.Identifier name)
+      | Target.Regular.Object _ -> failwith "callees should be either methods or functions"
     in
     { name; location }
 
@@ -307,19 +312,23 @@ module TaintInTaintOutMap = struct
   let map map ~f = Map.Poly.map map ~f
 end
 
-let treat_tito_return_as_self_update target =
+let treat_tito_return_as_self_update ~pyrefly_api target =
   match Target.get_regular target with
-  | Target.Regular.Method { method_name = "__init__"; _ }
-  | Target.Regular.Override { method_name = "__init__"; _ }
-  | Target.Regular.Method { method_name = "__setitem__"; _ }
-  | Target.Regular.Override { method_name = "__setitem__"; _ }
-  | Target.Regular.Method { kind = PropertySetter; _ }
-  | Target.Regular.Override { kind = PropertySetter; _ } ->
-      true
-  | _ -> false
+  | Target.Regular.Method _
+  | Target.Regular.Override _ ->
+      (match PyreflyApi.ReadOnly.Target.method_name_exn pyrefly_api target with
+      | "__init__"
+      | "__setitem__" ->
+          true
+      | _ -> false)
+      || PyreflyApi.ReadOnly.Target.is_property_setter pyrefly_api target
+  | Target.Regular.Function _
+  | Target.Regular.Object _ ->
+      false
 
 
 let taint_in_taint_out_mapping_for_argument
+    ~pyrefly_api
     ~transform_non_leaves
     ~taint_configuration
     ~ignore_local_return
@@ -377,7 +386,7 @@ let taint_in_taint_out_mapping_for_argument
           roots;
         })
   in
-  let treat_obscure_as_self_update = treat_tito_return_as_self_update callable in
+  let treat_obscure_as_self_update = treat_tito_return_as_self_update ~pyrefly_api callable in
   let mapping =
     if
       Model.ModeSet.contains Obscure modes

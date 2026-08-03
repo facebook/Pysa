@@ -41,7 +41,8 @@ module NestedCallees : sig
 end
 
 val shim_calls
-  :  class_mro:(string -> string list) ->
+  :  display_api:PyreflyTypes.DisplayApi.t ->
+  class_mro:(string -> string list) ->
   callable_exists:(Reference.t -> bool) ->
   callees:CallTarget.t list ->
   nested_callees:NestedCallees.t ->

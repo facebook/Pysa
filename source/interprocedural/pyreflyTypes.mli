@@ -364,6 +364,7 @@ module ModelQueries : sig
 
   module Function : sig
     type t = {
+      callable_id: CallableId.t;
       define_name: Ast.Reference.t;
       (* If the user-provided name is a re-export, this is the original name. *)
       imported_name: Ast.Reference.t option;
@@ -397,18 +398,6 @@ module ModelQueries : sig
         }
       (* non-callable module global variable. *)
       | ModuleGlobal of {
-          name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
-          location: Ast.Location.t option;
-        }
-      (* class attribute exists, but type is unknown. *)
-      | UnknownClassAttribute of {
-          name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
-          location: Ast.Location.t option;
-        }
-      (* module global exists, but type is unknown. *)
-      | UnknownModuleGlobal of {
           name: Ast.Reference.t;
           module_qualifier: Ast.Reference.t option;
           location: Ast.Location.t option;

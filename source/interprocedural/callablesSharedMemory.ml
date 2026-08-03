@@ -118,10 +118,10 @@ module ReadOnly = struct
      pyrefly does not know about: decorated targets (which have synthetic defines in shared memory),
      override targets and object targets (which have no define name). *)
   let define_name_for_pyrefly_lookup ~pyrefly_api target =
-    let regular = Target.get_regular target in
-    match Target.Regular.kind regular with
-    | Some Decorated -> None
-    | _ -> PyreflyApi.ReadOnly.Target.define_name pyrefly_api target
+    if Target.is_decorated target then
+      None
+    else
+      PyreflyApi.ReadOnly.Target.define_name pyrefly_api target
 
 
   let get_define_from_pyrefly ~pyrefly_api target =
@@ -196,8 +196,11 @@ module ReadOnly = struct
       | Some result -> result
       | None -> get_method_kind_from_shared_memory ~signatures method_target
     in
-    match method_kind, method_target with
-    | _, Target.Regular.Method { method_name = "__new__"; _ } -> false, true
+    let method_target_name =
+      PyreflyApi.ReadOnly.Target.method_name pyrefly_api (Target.from_regular method_target)
+    in
+    match method_kind, method_target_name with
+    | _, Some "__new__" -> false, true
     | Some Class, _ -> true, false
     | Some Static, _ -> false, true
     | Some Instance, _ -> false, false
@@ -236,30 +239,10 @@ module ReadOnly = struct
     | None -> get_captures_from_shared_memory ~signatures target
 
 
-  let callable_from_reference_from_pyrefly ~pyrefly_api name =
+  let callable_from_reference { pyrefly_api; _ } name =
+    (* Note: we can only create callable ids for names that are known to pyrefly. *)
     PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api name
-    >>| fun metadata ->
-    match PyreflyApi.CallableMetadata.get_method_kind metadata with
-    | Some _ -> Target.create_method_from_reference name
-    | None -> Target.create_function name
-
-
-  let callable_from_reference_from_shared_memory ~defines name =
-    let function_target = Target.create_function name in
-    if DefinesSharedMemory.ReadOnly.mem defines function_target then
-      Some function_target
-    else
-      let method_target = Target.create_method_from_reference name in
-      if DefinesSharedMemory.ReadOnly.mem defines method_target then
-        Some method_target
-      else
-        None
-
-
-  let callable_from_reference { defines; pyrefly_api; _ } name =
-    match callable_from_reference_from_pyrefly ~pyrefly_api name with
-    | Some _ as result -> result
-    | None -> callable_from_reference_from_shared_memory ~defines name
+    >>| fun _ -> PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false name
 
 
   let mem_from_pyrefly ~pyrefly_api target =

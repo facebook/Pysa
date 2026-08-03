@@ -830,18 +830,18 @@ Higher order call graphs
     "72:12-72:13|format-string-stringify": {
       "format_string_stringify": [
         {
-          "target": "string_conversion.A.__str__",
-          "index": 0,
-          "implicit_receiver": true,
-          "return_type": [],
-          "receiver_class": "string_conversion.A"
-        },
-        {
           "target": "string_conversion.StrIsTainted.__str__",
           "index": 0,
           "implicit_receiver": true,
           "return_type": [],
           "receiver_class": "string_conversion.StrIsTainted"
+        },
+        {
+          "target": "string_conversion.A.__str__",
+          "index": 0,
+          "implicit_receiver": true,
+          "return_type": [],
+          "receiver_class": "string_conversion.A"
         }
       ]
     }

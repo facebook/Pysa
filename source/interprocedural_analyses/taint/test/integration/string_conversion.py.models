@@ -1196,10 +1196,10 @@
             ],
             "call": {
               "position": { "line": 194, "start": 9, "end": 15 },
-              "resolves_to": [ "string_conversion.ReprIsTainted.__repr__" ],
+              "resolves_to": [ "string_conversion.StrIsTainted.__str__" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 5, "upper": 18 } ],
+            "receiver_interval": [ { "lower": 16, "upper": 17 } ],
             "is_self_call": false
           },
           {
@@ -1220,10 +1220,10 @@
             ],
             "call": {
               "position": { "line": 194, "start": 9, "end": 15 },
-              "resolves_to": [ "string_conversion.StrIsTainted.__str__" ],
+              "resolves_to": [ "string_conversion.ReprIsTainted.__repr__" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 16, "upper": 17 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 18 } ],
             "is_self_call": false
           }
         ]

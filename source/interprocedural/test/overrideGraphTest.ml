@@ -40,9 +40,9 @@ let test_method_overrides context =
                    |> InterproceduralTest.resolve_method_target_from_reference_exn ~pyrefly_api
                    |> Target.as_regular_exn
                  with
-                 | Target.Regular.Method method_ -> method_
+                 | Target.Regular.Method callable_id -> callable_id
                  | _ -> failwith "expected a method target")
-          |> List.dedup_and_sort ~compare:Target.Method.compare )
+          |> List.dedup_and_sort ~compare:PyreflyTypes.CallableId.compare )
       in
       List.map expected ~f:create_callables
     in

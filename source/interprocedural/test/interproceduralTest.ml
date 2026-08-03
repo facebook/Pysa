@@ -9,6 +9,76 @@ module CamlUnix = Unix
 open Core
 open Analysis
 
+(* Synthetic callable and class ids for tests that build `Target`s without a Pyrefly backend.
+
+   `Target`s store packed `CallableId`/`ClassId` values, not names. Tests that fabricate targets
+   from human-readable names mint a distinct, stable `CallableId` per name (same name -> same id, so
+   the same name denotes the same target) and render ids back to names through a matching
+   `DisplayApi`. This module factors out that shared machinery. *)
+module SyntheticCallables = struct
+  module PyreflyTypes = Interprocedural.PyreflyTypes
+
+  type t = {
+    (* Forward map, for minting/reusing a stable id per name. *)
+    callable_ids: (string, PyreflyTypes.CallableId.t) Hashtbl.t;
+    (* Reverse map, for decoding an id back to its name in `display_api` without scanning. *)
+    names_by_callable_id: (PyreflyTypes.CallableId.t, string) Hashtbl.t;
+  }
+
+  let create () =
+    {
+      callable_ids = Hashtbl.create (module String);
+      names_by_callable_id = Hashtbl.create (module PyreflyTypes.CallableId);
+    }
+
+
+  (* Generate a callable id for the given define name *)
+  let callable_id { callable_ids; names_by_callable_id } name =
+    Hashtbl.find_or_add callable_ids name ~default:(fun () ->
+        let module_id = Hashtbl.length callable_ids in
+        let callable_id =
+          PyreflyTypes.CallableId.encode
+            ~module_id:(PyreflyTypes.ModuleId.from_int module_id)
+            (PyreflyTypes.LocalFunctionId.Function (PyreflyTypes.FuncDefIndex.from_int 0))
+        in
+        Hashtbl.set names_by_callable_id ~key:callable_id ~data:name;
+        callable_id)
+
+
+  let display_api { names_by_callable_id; _ } =
+    let callable_define_name callable_id =
+      let callable_id =
+        if PyreflyTypes.CallableId.is_decorated callable_id then
+          PyreflyTypes.CallableId.to_undecorated callable_id
+        else
+          callable_id
+      in
+      Hashtbl.find names_by_callable_id callable_id
+      |> Option.value_exn ~message:"synthetic callable id was never registered"
+      |> Ast.Reference.create
+    in
+    let callable_external_name callable_id =
+      let define_name = callable_define_name callable_id in
+      if PyreflyTypes.CallableId.is_decorated callable_id then
+        Ast.Reference.create
+          ?prefix:(Ast.Reference.prefix define_name)
+          (Ast.Reference.last define_name ^ "@decorated")
+      else
+        define_name
+    in
+    {
+      PyreflyTypes.DisplayApi.callable_define_name;
+      callable_external_name;
+      class_name = (fun _ -> failwith "no synthetic class ids registered");
+    }
+
+
+  let class_id ~module_id ~local_class_id =
+    PyreflyTypes.ClassId.encode
+      ~module_id:(PyreflyTypes.ModuleId.from_int module_id)
+      (PyreflyTypes.LocalClassId.from_int local_class_id)
+end
+
 module ScratchPyreflyProject = struct
   type t = {
     api: Interprocedural.PyreflyApi.ReadWrite.t;
@@ -396,7 +466,7 @@ let resolve_function_regular_exn ~pyrefly_api reference =
 
 
 let resolve_function_regular_decorated_exn ~pyrefly_api reference =
-  resolve_function_regular_exn ~pyrefly_api reference |> Target.Regular.set_kind Target.Decorated
+  resolve_function_regular_exn ~pyrefly_api reference |> Target.Regular.to_decorated
 
 
 let resolve_method_regular_exn
@@ -411,8 +481,7 @@ let resolve_method_regular_exn
 
 
 let resolve_method_regular_decorated_exn ~pyrefly_api ~class_name ~method_name =
-  resolve_method_regular_exn ~pyrefly_api ~class_name ~method_name ()
-  |> Target.Regular.set_kind Target.Decorated
+  resolve_method_regular_exn ~pyrefly_api ~class_name ~method_name () |> Target.Regular.to_decorated
 
 
 let resolve_define_name_regular_exn ~pyrefly_api reference =

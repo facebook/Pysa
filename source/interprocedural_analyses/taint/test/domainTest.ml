@@ -14,11 +14,13 @@ open Test
 
 let test_partition_call_map context =
   let pyrefly_api =
-    (* Pyrefly rejects an empty source set, so provide a dummy source file. *)
     InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:true
-      ["test.py", "x = 0"]
+      ["test.py", {|
+class Foo:
+  def bar(self): ...
+|}]
     |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
   in
   let pyrefly_in_context =
@@ -32,8 +34,12 @@ let test_partition_call_map context =
     ForwardTaint.singleton CallInfo.declaration (Sources.NamedSource "UserControlled") Frame.initial
   in
   let callee =
-    Target.Regular.Method { class_name = "test.Foo"; method_name = "bar"; kind = Normal }
-    |> Target.from_regular
+    Interprocedural.PyreflyApi.ReadOnly.Target.resolve_method_target
+      pyrefly_api
+      ~class_name:(Reference.create "test.Foo")
+      ~method_name:"bar"
+      ~is_property_setter:false
+    |> Option.value_exn ~message:"expected test.Foo.bar to resolve"
   in
   let call_taint1 =
     ForwardTaint.apply_call

@@ -10,11 +10,13 @@ open OUnit2
 open Interprocedural
 open Ast
 module ModulePath = PyreflyApi.ModulePath
-module ModuleId = PyreflyApi.ModuleId
+module ModuleId = PyreflyTypes.ModuleId
 module ModuleQualifier = PyreflyApi.ModuleQualifier
 module ModuleDefinitionsFile = PyreflyApi.ModuleDefinitionsFile
-module FuncDefIndex = PyreflyApi.FuncDefIndex
+module FuncDefIndex = PyreflyTypes.FuncDefIndex
 module FullyQualifiedName = PyreflyApi.FullyQualifiedName
+module LocalFunctionId = PyreflyTypes.LocalFunctionId
+module LocalClassId = PyreflyTypes.LocalClassId
 
 module ModuleQualifierInput = struct
   type t = {
@@ -507,7 +509,7 @@ let test_fully_qualified_names _ =
                ->
                  Some (local_class_id, class_definition)
              | _ -> None)
-      |> PyreflyApi.LocalClassId.Map.of_alist_exn
+      |> LocalClassId.Map.of_alist_exn
     in
     let function_definitions =
       definitions
@@ -518,7 +520,7 @@ let test_fully_qualified_names _ =
                  function_definition) ->
                  Some (local_function_id, function_definition)
              | _ -> None)
-      |> PyreflyApi.LocalFunctionId.Map.of_alist_exn
+      |> LocalFunctionId.Map.of_alist_exn
     in
     let actual =
       PyreflyApi.Testing.create_fully_qualified_names
@@ -544,7 +546,7 @@ let test_fully_qualified_names _ =
       {
         ModuleDefinitionsFile.FunctionDefinition.name;
         name_location = Some (location_at_line line);
-        local_function_id = PyreflyApi.LocalFunctionId.create_function (FuncDefIndex.from_int line);
+        local_function_id = PyreflyTypes.LocalFunctionId.Function (FuncDefIndex.from_int line);
         parent;
         is_overload;
         undecorated_signatures = [];
@@ -568,7 +570,7 @@ let test_fully_qualified_names _ =
         ModuleDefinitionsFile.ClassDefinition.name;
         name_location = location_at_line line;
         parent;
-        local_class_id = PyreflyApi.LocalClassId.from_int line;
+        local_class_id = LocalClassId.from_int line;
         bases = [];
         mro = ModuleDefinitionsFile.ClassMro.Resolved [];
         is_synthesized = false;
@@ -579,9 +581,7 @@ let test_fully_qualified_names _ =
         decorator_callees = Location.SerializableMap.empty;
       }
   in
-  let class_parent ~line =
-    ModuleDefinitionsFile.ParentScope.Class (PyreflyApi.LocalClassId.from_int line)
-  in
+  let class_parent ~line = ModuleDefinitionsFile.ParentScope.Class (LocalClassId.from_int line) in
   let function_parent ~line =
     ModuleDefinitionsFile.ParentScope.Function (FuncDefIndex.from_int line)
   in
@@ -773,66 +773,55 @@ let test_strip_path_prefix _ =
      the path prefix stripped from each module/name component. It must preserve the `Overrides{...}`
      and `Obj{...}` wrappers and the `@decorated` suffix, matching the old target-component strip +
      re-render, byte for byte -- while sharing `pp_external`'s single rendering path. *)
-  let assert_strip_external ~expected regular =
+  (* Targets store packed ids, so mint a fresh synthetic `CallableId` for each rendered name and a
+     `DisplayApi` that decodes those ids back to the name (normalizing decorated ids to their
+     undecorated form, since the `@decorated` suffix is rendered separately from the name). *)
+  let synthetic_callables = InterproceduralTest.SyntheticCallables.create () in
+  let id_for = InterproceduralTest.SyntheticCallables.callable_id synthetic_callables in
+  let display_api = InterproceduralTest.SyntheticCallables.display_api synthetic_callables in
+  let assert_strip_external ~expected target =
     assert_equal
       ~cmp:String.equal
       ~printer:Fn.id
       expected
-      (Target.external_name
-         ~display_api:PyreflyTypes.DisplayApi.for_debug
-         ~transform:PyreflyApi.strip_path_prefix
-         (Target.from_regular regular))
+      (Target.external_name ~display_api ~transform:PyreflyApi.strip_path_prefix target)
   in
+  let func name = Target.create_function (id_for name) in
+  let func_decorated name = Target.to_decorated (Target.create_function (id_for name)) in
+  let meth class_name method_name =
+    Target.create_method (id_for (class_name ^ "." ^ method_name))
+  in
+  let override class_name method_name =
+    Target.create_override (id_for (class_name ^ "." ^ method_name))
+  in
+  let obj name = Target.create_object (Reference.create name) in
   (* Function name (rendered bare): path prefix at the start is stripped. *)
-  assert_strip_external
-    ~expected:"a.b.c.foo"
-    (Target.Regular.Function { name = "a/b/c.py:a.b.c.foo"; kind = Target.Normal });
-  (* A `@decorated` kind suffix is preserved (the transform only rewrites the name component). *)
-  assert_strip_external
-    ~expected:"a.b.c.foo@decorated"
-    (Target.Regular.Function { name = "a/b/c.py:a.b.c.foo"; kind = Target.Decorated });
+  assert_strip_external ~expected:"a.b.c.foo" (func "a/b/c.py:a.b.c.foo");
+  (* A `@decorated` tag suffix is preserved (the transform only rewrites the name component). *)
+  assert_strip_external ~expected:"a.b.c.foo@decorated" (func_decorated "a/b/c.py:a.b.c.foo");
   (* Method: the prefix sits in the `class_name` component. *)
-  assert_strip_external
-    ~expected:"a.b.c.C.foo"
-    (Target.Regular.Method
-       { class_name = "a/b/c.py:a.b.c.C"; method_name = "foo"; kind = Target.Normal });
+  assert_strip_external ~expected:"a.b.c.C.foo" (meth "a/b/c.py:a.b.c.C" "foo");
   (* Override is wrapped in `Overrides{...}`; the wrapper is preserved. *)
-  assert_strip_external
-    ~expected:"Overrides{a.b.c.C.foo}"
-    (Target.Regular.Override
-       { class_name = "a/b/c.py:a.b.c.C"; method_name = "foo"; kind = Target.Normal });
+  assert_strip_external ~expected:"Overrides{a.b.c.C.foo}" (override "a/b/c.py:a.b.c.C" "foo");
   (* Object is wrapped in `Obj{...}`; the wrapper is preserved. *)
-  assert_strip_external ~expected:"Obj{a.b.c.x}" (Target.Regular.Object "a/b/c.py:a.b.c.x");
+  assert_strip_external ~expected:"Obj{a.b.c.x}" (obj "a/b/c.py:a.b.c.x");
   (* Names without a path prefix are unchanged, for every variant. *)
-  assert_strip_external
-    ~expected:"a.b.c.foo"
-    (Target.Regular.Function { name = "a.b.c.foo"; kind = Target.Normal });
-  assert_strip_external
-    ~expected:"Overrides{a.b.c.C.foo}"
-    (Target.Regular.Override { class_name = "a.b.c.C"; method_name = "foo"; kind = Target.Normal });
+  assert_strip_external ~expected:"a.b.c.foo" (func "a.b.c.foo");
+  assert_strip_external ~expected:"Overrides{a.b.c.C.foo}" (override "a.b.c.C" "foo");
   (* When the path itself contains a colon, we split on the last colon (inside wrappers too). *)
-  assert_strip_external
-    ~expected:"typing.foo"
-    (Target.Regular.Function { name = "typeshed://typing.py:typing.foo"; kind = Target.Normal });
-  assert_strip_external
-    ~expected:"Obj{typing.x}"
-    (Target.Regular.Object "typeshed://typing.py:typing.x");
+  assert_strip_external ~expected:"typing.foo" (func "typeshed://typing.py:typing.foo");
+  assert_strip_external ~expected:"Obj{typing.x}" (obj "typeshed://typing.py:typing.x");
   ()
 
 
 module PyrePysaApi = struct
-  open Pyre
   open Analysis
   module PyreflyType = PyreflyApi.PyreflyType
   module ScalarTypeProperties = PyreflyApi.ScalarTypeProperties
   module Function = PyreflyApi.ModelQueries.Function
   module Global = PyreflyApi.ModelQueries.Global
 
-  let class_id ~module_id ~local_class_id =
-    PyreflyTypes.ClassId.encode
-      ~module_id:(PyreflyTypes.ModuleId.from_int module_id)
-      (PyreflyTypes.LocalClassId.from_int local_class_id)
-
+  let class_id = InterproceduralTest.SyntheticCallables.class_id
 
   (* Build the Pyrefly type representation for the small set of types used in this file. *)
   let pyrefly_type = function
@@ -894,14 +883,8 @@ module PyrePysaApi = struct
         }
 
 
-  (* Pyrefly does not have the concept of imported names. *)
-  let convert_to_pyrefly_global = function
-    | Global.Function function_ -> Global.Function { function_ with Function.imported_name = None }
-    | global -> global
-
-
   let test_resolve_user_qualified_name context =
-    let assert_resolve ~context ?pyrefly_expect sources name ~expect =
+    let assert_resolve ~context sources name ~expect =
       let pyrefly_api =
         InterproceduralTest.ScratchPyrePysaProject.setup
           ~context
@@ -926,12 +909,6 @@ module PyrePysaApi = struct
              | ResolutionResult.BaseModuleNotFound -> [])
         |> List.map ~f:Global.strip_location_and_module
       in
-      let expect =
-        match pyrefly_expect with
-        | Some pyrefly_expect -> pyrefly_expect
-        | None -> expect
-      in
-      let expect = expect >>| convert_to_pyrefly_global in
       let expected_list = Option.to_list expect in
       let printer globals =
         List.map globals ~f:Global.show |> String.concat ~sep:", " |> Format.asprintf "[%s]"
@@ -951,15 +928,18 @@ module PyrePysaApi = struct
     in
     let create_callable
         ~define_name
-        ?imported_name
         ?(is_method = false)
         ?(signatures = [create_signature []])
+        ?(module_id = 1000)
+        ?(function_id = LocalFunctionId.Function (FuncDefIndex.from_int 0))
         ()
       =
       let define_name = Reference.create define_name in
       {
-        Function.define_name;
-        imported_name = imported_name >>| Reference.create;
+        Function.callable_id =
+          PyreflyTypes.CallableId.encode ~module_id:(ModuleId.from_int module_id) function_id;
+        define_name;
+        imported_name = None;
         undecorated_signatures = Some signatures;
         is_property_getter = false;
         is_property_setter = false;
@@ -976,9 +956,7 @@ module PyrePysaApi = struct
         return
     |}]
       "test.foo"
-      ~expect:
-        (Some
-           (Global.Function (create_callable ~define_name:"test.foo" ~imported_name:"test.foo" ())));
+      ~expect:(Some (Global.Function (create_callable ~define_name:"test.foo" ())));
     assert_resolve
       ~context
       ["test.py", {|
@@ -1012,13 +990,6 @@ module PyrePysaApi = struct
       "test.foo"
       ~expect:
         (Some
-           (Global.Function
-              (create_callable
-                 ~define_name:"test.foo"
-                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
-                 ())))
-      ~pyrefly_expect:
-        (Some
            (Global.ModuleGlobal
               { name = Reference.create "test.foo"; module_qualifier = None; location = None }));
     assert_resolve
@@ -1039,6 +1010,12 @@ module PyrePysaApi = struct
               (create_callable
                  ~define_name:"test.Foo.bar"
                  ~is_method:true
+                 ~function_id:
+                   (LocalFunctionId.ClassField
+                      {
+                        class_id = LocalClassId.from_int 0;
+                        field_id = PyreflyTypes.LocalClassFieldId.from_int 0;
+                      })
                  ~signatures:[create_signature ~return_annotation:Type.NoneType []]
                  ())));
     assert_resolve
@@ -1098,10 +1075,6 @@ module PyrePysaApi = struct
     |}]
       "test.x"
       ~expect:
-        (Some
-           (Global.UnknownModuleGlobal
-              { name = Reference.create "test.x"; module_qualifier = None; location = None }))
-      ~pyrefly_expect:
         (Some
            (Global.ModuleGlobal
               { name = Reference.create "test.x"; module_qualifier = None; location = None }));
@@ -1178,7 +1151,7 @@ module PyrePysaApi = struct
            (Global.Function
               (create_callable
                  ~define_name:"test.foo"
-                 ~imported_name:"test.foo"
+                 ~function_id:(LocalFunctionId.Function (FuncDefIndex.from_int 3))
                  ~signatures:
                    [
                      create_signature
@@ -1214,6 +1187,7 @@ module PyrePysaApi = struct
               (create_callable
                  ~define_name:"test.Bar.baz"
                  ~is_method:true
+                 ~function_id:(LocalFunctionId.Function (FuncDefIndex.from_int 3))
                  ~signatures:
                    [
                      create_signature
@@ -1247,34 +1221,7 @@ module PyrePysaApi = struct
               (create_callable
                  ~define_name:"test.Foo.bar"
                  ~is_method:true
-                 ~signatures:
-                   [
-                     create_signature
-                       ~return_annotation:Type.string
-                       [
-                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
-                         create_parameter ~annotation:Type.integer ~position:1 "x";
-                       ];
-                     create_signature
-                       ~return_annotation:Type.string
-                       [
-                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
-                         create_parameter ~annotation:Type.integer ~position:1 "x";
-                       ];
-                     create_signature
-                       ~return_annotation:Type.integer
-                       [
-                         create_parameter ~annotation:(Type.Primitive "test.Foo") "self";
-                         create_parameter ~annotation:Type.string ~position:1 "x";
-                       ];
-                   ]
-                 ())))
-      ~pyrefly_expect:
-        (Some
-           (Global.Function
-              (create_callable
-                 ~define_name:"test.Foo.bar"
-                 ~is_method:true
+                 ~function_id:(LocalFunctionId.Function (FuncDefIndex.from_int 1))
                  ~signatures:
                    [
                      create_signature
@@ -1308,14 +1255,16 @@ module PyrePysaApi = struct
       "test.Foo.baz"
       ~expect:
         (Some
-           (Global.UnknownClassAttribute
-              { name = Reference.create "test.Foo.baz"; module_qualifier = None; location = None }))
-      ~pyrefly_expect:
-        (Some
            (Global.Function
               (create_callable
                  ~define_name:"test.Foo.baz"
                  ~is_method:true
+                 ~function_id:
+                   (LocalFunctionId.ClassField
+                      {
+                        class_id = LocalClassId.from_int 0;
+                        field_id = PyreflyTypes.LocalClassFieldId.from_int 1;
+                      })
                  ~signatures:
                    [
                      create_signature
@@ -1336,7 +1285,6 @@ module PyrePysaApi = struct
            (Global.Function
               (create_callable
                  ~define_name:"test.foo"
-                 ~imported_name:"test.foo"
                  ~signatures:[create_signature ~return_annotation:Type.NoneType []]
                  ())));
     assert_resolve
@@ -1371,13 +1319,6 @@ module PyrePysaApi = struct
       "test.foo"
       ~expect:
         (Some
-           (Global.Function
-              (create_callable
-                 ~define_name:"test.foo"
-                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
-                 ())))
-      ~pyrefly_expect:
-        (Some
            (Global.ModuleGlobal
               { name = Reference.create "test.foo"; module_qualifier = None; location = None }));
     assert_resolve
@@ -1403,15 +1344,7 @@ module PyrePysaApi = struct
     |};
       ]
       "outer.middle.inner.b.foo"
-      ~expect:
-        (Some
-           (Global.Function
-              (create_callable
-                 ~define_name:"outer.middle.inner.b.foo"
-                 ~imported_name:"outer.middle.inner.a.foo"
-                 ~signatures:[create_signature ~return_annotation:Type.NoneType []]
-                 ())))
-      ~pyrefly_expect:None;
+      ~expect:None;
     assert_resolve
       ~context
       [
@@ -1424,24 +1357,7 @@ module PyrePysaApi = struct
     |};
       ]
       "outer.middle.inner.b.Foo.bar"
-      ~expect:
-        (Some
-           (Global.Function
-              (create_callable
-                 ~define_name:"outer.middle.inner.b.Foo.bar"
-                 ~imported_name:"outer.middle.inner.a.Foo.bar"
-                 ~is_method:true
-                 ~signatures:
-                   [
-                     create_signature
-                       [
-                         create_parameter
-                           ~annotation:(Type.Primitive "outer.middle.inner.a.Foo")
-                           "self";
-                       ];
-                   ]
-                 ())))
-      ~pyrefly_expect:None;
+      ~expect:None;
     ()
 end
 

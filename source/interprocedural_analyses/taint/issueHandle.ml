@@ -60,7 +60,7 @@ module Sink = struct
 
   (* Strip target parameters from the callee. Must be used with the `CanonicalCallee.Target`
      variant. *)
-  let strip_callee_parameters = function
+  let strip_callee_parameters ~display_api = function
     | Call ({ callee; callee_suffix = Some callee_suffix; _ } as call) ->
         (* This runs before path-prefix stripping, so the callee is always a `Target`. *)
         let callee =
@@ -74,18 +74,20 @@ module Sink = struct
         let regular_targets_matching_suffix =
           callee
           |> Target.collect_nested_regular_targets
-          |> List.filter ~f:(function
-                 | Target.Regular.Function { name; _ }
-                 | Target.Regular.Object name
-                   when String.equal
-                          callee_suffix
-                          (name |> Ast.Reference.create |> Ast.Reference.last) ->
-                     true
-                 | Target.Regular.Method { method_name; _ }
-                 | Target.Regular.Override { method_name; _ }
-                   when String.equal callee_suffix method_name ->
-                     true
-                 | _ -> false)
+          |> List.filter ~f:(fun regular ->
+                 let target = Target.from_regular regular in
+                 match regular with
+                 | Target.Regular.Object name ->
+                     String.equal callee_suffix (name |> Ast.Reference.create |> Ast.Reference.last)
+                 | Target.Regular.Function _ ->
+                     String.equal
+                       callee_suffix
+                       (Target.function_name_exn ~display_api target
+                       |> Ast.Reference.create
+                       |> Ast.Reference.last)
+                 | Target.Regular.Method _
+                 | Target.Regular.Override _ ->
+                     String.equal callee_suffix (Target.method_name_exn ~display_api target))
         in
         let callee =
           match regular_targets_matching_suffix with
@@ -199,11 +201,11 @@ module T = struct
 
   (* Strip the target parameters from callables. Must be used with `CanonicalCallee.Target`
      variants. *)
-  let strip_all_callable_parameters ({ callable; sink; _ } as handle) =
+  let strip_all_callable_parameters ~display_api ({ callable; sink; _ } as handle) =
     {
       handle with
       callable = CanonicalCallee.strip_parameters callable;
-      sink = Sink.strip_callee_parameters sink;
+      sink = Sink.strip_callee_parameters ~display_api sink;
     }
 
 

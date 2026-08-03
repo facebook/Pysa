@@ -54,17 +54,6 @@ exception
 
 exception NoSourceFilesToAnalyze
 
-(* Exposed for testing purposes *)
-module FuncDefIndex : sig
-  type t [@@deriving compare, equal, sexp, hash, show]
-
-  val from_int : int -> t
-
-  val to_int : t -> int
-
-  val of_string : string -> t
-end
-
 module NameLocation : sig
   type t =
     | DefineName of
@@ -204,7 +193,7 @@ module ReadOnly : sig
     :  t ->
     exclude_test_modules:bool ->
     Ast.Reference.t ->
-    Target.MethodReference.t list
+    PyreflyTypes.CallableId.t list
 
   (* Is this a test module (i.e, unit test code that we shouldn't analyze) *)
   val is_test_qualifier : t -> Ast.Reference.t -> bool
@@ -261,7 +250,7 @@ module ReadOnly : sig
     scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
     overrides_exist:(Target.t -> bool) ->
-    get_overriding_targets:(Target.t -> Target.Method.t list option) ->
+    get_overriding_targets:(Target.t -> PyreflyTypes.CallableId.t list option) ->
     global_is_string_literal:(Ast.Reference.t -> bool) ->
     store_shared_memory:bool ->
     attribute_targets:Target.Set.t ->
@@ -338,9 +327,22 @@ module ReadOnly : sig
 
     val class_name : t -> Target.t -> string option
 
+    val class_name_exn : t -> Target.t -> string
+
     val method_name : t -> Target.t -> string option
 
+    val method_name_exn : t -> Target.t -> string
+
     val function_name : t -> Target.t -> string option
+
+    val function_name_exn : t -> Target.t -> string
+
+    (* Whether the target is a property setter (from metadata). *)
+    val is_property_setter : t -> Target.t -> bool
+
+    (* Whether the target is a "normal" callable: neither decorated nor a property setter, and not
+       an `Object`. *)
+    val is_normal : t -> Target.t -> bool
 
     val get_callable_metadata : t -> Ast.Reference.t -> CallableMetadata.t
 
@@ -363,11 +365,12 @@ module ReadOnly : sig
     (* Resolve a function name to its real function target, or `None` if no such function exists. *)
     val resolve_function_target : t -> Ast.Reference.t -> Target.t option
 
-    val get_overriden_base_method : t -> Target.MethodReference.t -> Target.MethodReference.t option
+    val get_overriden_base_method
+      :  t ->
+      PyreflyTypes.CallableId.t ->
+      PyreflyTypes.CallableId.t option
 
     val target_from_define_name : t -> override:bool -> Ast.Reference.t -> Target.t
-
-    val target_from_method_reference : Target.MethodReference.t -> Target.t
   end
 end
 
@@ -482,22 +485,6 @@ module InContext : sig
 end
 
 (* Exposed for testing purposes *)
-module ModuleId : sig
-  type t [@@deriving compare, equal, show]
-
-  val from_int : int -> t
-end
-
-(* Exposed for testing purposes *)
-module LocalClassId : sig
-  type t [@@deriving compare, equal, show]
-
-  val from_int : int -> t
-
-  module Map : Map.S with type Key.t = t
-end
-
-(* Exposed for testing purposes *)
 module GlobalCallableId : sig
   type t [@@deriving compare, equal, show]
 end
@@ -525,7 +512,7 @@ end
 module ProjectFile : sig
   module Module : sig
     type t = {
-      module_id: ModuleId.t;
+      module_id: PyreflyTypes.ModuleId.t;
       module_name: Ast.Reference.t;
       absolute_source_path: ModulePath.t;
       relative_source_path: string option;
@@ -545,15 +532,6 @@ end
 (* Exposed for testing purposes *)
 module GlobalClassId : sig
   type t [@@deriving show]
-end
-
-(* Exposed for testing purposes *)
-module LocalFunctionId : sig
-  type t [@@deriving show]
-
-  val create_function : FuncDefIndex.t -> t
-
-  module Map : Map.S with type Key.t = t
 end
 
 (* Exposed for testing purposes *)
@@ -581,8 +559,8 @@ module ModuleDefinitionsFile : sig
   module ParentScope : sig
     type t =
       | TopLevel
-      | Class of LocalClassId.t
-      | Function of FuncDefIndex.t
+      | Class of PyreflyTypes.LocalClassId.t
+      | Function of PyreflyTypes.FuncDefIndex.t
     [@@deriving equal, show]
   end
 
@@ -634,7 +612,7 @@ module ModuleDefinitionsFile : sig
     type t = {
       name: string;
       name_location: Ast.Location.t option;
-      local_function_id: LocalFunctionId.t;
+      local_function_id: PyreflyTypes.LocalFunctionId.t;
       parent: ParentScope.t;
       undecorated_signatures: FunctionSignature.t list;
       captured_variables: CapturedVariable.t list;
@@ -675,7 +653,7 @@ module ModuleDefinitionsFile : sig
   module ClassDefinition : sig
     type t = {
       name: string;
-      local_class_id: LocalClassId.t;
+      local_class_id: PyreflyTypes.LocalClassId.t;
       name_location: Ast.Location.t;
       parent: ParentScope.t;
       bases: GlobalClassId.t list;
@@ -715,7 +693,7 @@ end
 module Testing : sig
   module Module : sig
     type t = {
-      module_id: ModuleId.t;
+      module_id: PyreflyTypes.ModuleId.t;
       module_name: Ast.Reference.t;
       absolute_source_path: ArtifactPath.t option;
       relative_source_path: string option;
@@ -755,7 +733,8 @@ module Testing : sig
   val create_fully_qualified_names
     :  module_qualifier:ModuleQualifier.t ->
     module_exists:(ModuleQualifier.t -> bool) ->
-    class_definitions:ModuleDefinitionsFile.ClassDefinition.t LocalClassId.Map.t ->
-    function_definitions:ModuleDefinitionsFile.FunctionDefinition.t LocalFunctionId.Map.t ->
+    class_definitions:ModuleDefinitionsFile.ClassDefinition.t PyreflyTypes.LocalClassId.Map.t ->
+    function_definitions:
+      ModuleDefinitionsFile.FunctionDefinition.t PyreflyTypes.LocalFunctionId.Map.t ->
     QualifiedDefinition.t list
 end

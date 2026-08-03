@@ -14,8 +14,8 @@ open Core
 let test_no_errors context =
   let open Issue in
   let pyrefly_api =
-    (* `to_error` needs a `pyrefly_api` for its define-name lookup; the handle is currently ignored,
-       so a scratch project over a dummy source suffices (Pyrefly rejects an empty source set). *)
+    (* `to_error` and the callable target both resolve through the api; the module top-level
+       (`test.$toplevel`) of any source suffices as the enclosing callable. *)
     InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:true
@@ -63,7 +63,10 @@ let test_no_errors context =
         candidates
         ~taint_configuration
         ~callable:
-          (Target.from_regular (Target.Regular.Function { name = "test.$toplevel"; kind = Normal }))
+          (Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+             pyrefly_api
+             ~override:false
+             (Reference.create "test.$toplevel"))
         ~define_location:Location.any
       |> IssueHandle.SerializableMap.data
       |> List.map ~f:(to_error ~pyrefly_api ~taint_configuration)
@@ -84,8 +87,8 @@ let test_no_errors context =
 let test_errors context =
   let open Issue in
   let pyrefly_api =
-    (* `to_error` needs a `pyrefly_api` for its define-name lookup; the handle is currently ignored,
-       so a scratch project over a dummy source suffices (Pyrefly rejects an empty source set). *)
+    (* `to_error` and the callable target both resolve through the api; the module top-level
+       (`test.$toplevel`) of any source suffices as the enclosing callable. *)
     InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:true
@@ -130,7 +133,10 @@ let test_errors context =
       Candidates.generate_issues
         candidates
         ~callable:
-          (Target.from_regular (Target.Regular.Function { name = "test.$toplevel"; kind = Normal }))
+          (Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+             pyrefly_api
+             ~override:false
+             (Reference.create "test.$toplevel"))
         ~taint_configuration
         ~define_location:Location.any
       |> IssueHandle.SerializableMap.data
@@ -151,7 +157,6 @@ let test_errors context =
 
 let test_canonical_location _ =
   let assert_canonical_location ~set ~expected =
-    let define_name = Ast.Reference.create "$toplevel" in
     let locations =
       List.fold
         ~init:Issue.LocationSet.empty
@@ -164,7 +169,7 @@ let test_canonical_location _ =
         handle =
           {
             code = 1000;
-            callable = IssueHandle.CanonicalCallee.Target (Target.create_function define_name);
+            callable = IssueHandle.CanonicalCallee.Name "$toplevel";
             sink = IssueHandle.Sink.Return;
           };
         locations;

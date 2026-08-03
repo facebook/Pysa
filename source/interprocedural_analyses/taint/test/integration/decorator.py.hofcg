@@ -290,12 +290,12 @@ Higher order call graphs
   "callable": "decorator.conditional_no_op_decorator_factory",
   "returned_callables": [
     {
-      "target": "decorator.conditional_no_op_decorator_factory.inner_false",
+      "target": "decorator.conditional_no_op_decorator_factory.inner_true",
       "index": 0,
       "return_type": []
     },
     {
-      "target": "decorator.conditional_no_op_decorator_factory.inner_true",
+      "target": "decorator.conditional_no_op_decorator_factory.inner_false",
       "index": 0,
       "return_type": []
     }
@@ -2127,12 +2127,12 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "decorator.conditional_no_op_decorator_factory.inner_false[formal(f, position=0)=decorator.sink_via_conditional_no_op_decorator_factory]",
+            "target": "decorator.conditional_no_op_decorator_factory.inner_true[formal(f, position=0)=decorator.sink_via_conditional_no_op_decorator_factory]",
             "index": 0,
             "return_type": []
           },
           {
-            "target": "decorator.conditional_no_op_decorator_factory.inner_true[formal(f, position=0)=decorator.sink_via_conditional_no_op_decorator_factory]",
+            "target": "decorator.conditional_no_op_decorator_factory.inner_false[formal(f, position=0)=decorator.sink_via_conditional_no_op_decorator_factory]",
             "index": 0,
             "return_type": []
           }

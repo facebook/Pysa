@@ -15,55 +15,18 @@
 
 open Core
 open Ast
-
-type kind =
-  | Normal
-  | PropertySetter
-  | Decorated
-    (* This represents a callable but with all its decorators applied (i.e., the decorated
-       function). By contrast, we use `Normal` to represent the undecorated function. *)
-[@@deriving show { with_path = false }, sexp, compare, hash, equal]
-
-module Function = struct
-  type t = {
-    name: string;
-    kind: kind;
-  }
-  [@@deriving show { with_path = false }, sexp, compare, hash, equal]
-
-  let create ?(kind = Normal) reference =
-    let () =
-      if Reference.is_local reference then
-        failwith (Format.asprintf "Invalid callable name: %a" Reference.pp reference)
-    in
-    { name = Reference.show reference; kind }
-end
-
-module Method = struct
-  type t = {
-    class_name: string;
-    method_name: string;
-    kind: kind;
-  }
-  [@@deriving show { with_path = false }, sexp, compare, hash, equal]
-
-  let create ?(kind = Normal) class_name method_name =
-    let () =
-      if Reference.is_local class_name then
-        failwith (Format.asprintf "Invalid class name: %a" Reference.pp class_name)
-    in
-    { class_name = Reference.show class_name; method_name; kind }
-end
+module CallableId = PyreflyTypes.CallableId
+module DisplayApi = PyreflyTypes.DisplayApi
 
 module Regular = struct
   type t =
-    | Function of Function.t
-    | Method of Method.t
-    | Override of Method.t
+    | Function of CallableId.t
+    | Method of CallableId.t
+    | Override of CallableId.t
     (* Represents a global variable or field of a class that we want to model,
      * e.g os.environ or HttpRequest.GET *)
     | Object of string
-  [@@deriving show { with_path = false }, sexp, compare, hash, equal]
+  [@@deriving sexp, hash, equal]
 
   (* Lower priority appears earlier in comparison. *)
   let priority = function
@@ -79,104 +42,91 @@ module Regular = struct
       priority_comparison
     else
       match left, right with
-      | Function first, Function second -> Function.compare first second
-      | Method first, Method second -> Method.compare first second
-      | Override first, Override second -> Method.compare first second
+      | Function first, Function second
+      | Method first, Method second
+      | Override first, Override second ->
+          CallableId.compare first second
       | Object first, Object second -> String.compare first second
       | _ -> failwith "The compared targets must belong to the same variant."
 
 
-  let pp_kind formatter = function
-    | Normal -> ()
-    | PropertySetter ->
-        (* Property setters already have '@setter' in their define name when using pyrefly. *)
-        ()
-    | Decorated -> Format.fprintf formatter "@decorated"
+  (* Structural, api-free pretty-printer. Used for debug output, logging, and `[@@deriving show]`
+     contexts that hold no display api. Renders the raw packed id, not a name. *)
+  let pp formatter = function
+    | Function callable_id -> Format.fprintf formatter "Function(%a)" CallableId.pp callable_id
+    | Method callable_id -> Format.fprintf formatter "Method(%a)" CallableId.pp callable_id
+    | Override callable_id -> Format.fprintf formatter "Override(%a)" CallableId.pp callable_id
+    | Object name -> Format.fprintf formatter "Object(%s)" name
 
 
-  let kind = function
-    | Function { kind; _ }
-    | Method { kind; _ }
-    | Override { kind; _ } ->
-        Some kind
-    | Object _ -> None
+  let show = Format.asprintf "%a" pp
 
-
-  let set_kind kind = function
-    | Function (_ as function_name) -> Function { function_name with kind }
-    | Method (_ as method_name) -> Method { method_name with kind }
-    | Override (_ as method_name) -> Override { method_name with kind }
-    | Object _ as regular -> regular
-
-
+  (* Structural (api-free) pretty-printers. Kept for debug/logging/test-printer sites; they render
+     the raw id, not a name. Golden-generating sites use the `*_with_display_api` variants below. *)
   let pp_pretty formatter = function
-    | Function { name; kind } -> Format.fprintf formatter "%s%a" name pp_kind kind
-    | Method { class_name; method_name; kind } ->
-        Format.fprintf formatter "%s.%s%a" class_name method_name pp_kind kind
-    | Override { class_name; method_name; kind } ->
-        Format.fprintf formatter "Overrides{%s.%s%a}" class_name method_name pp_kind kind
+    | Function callable_id
+    | Method callable_id ->
+        Format.fprintf formatter "%a" CallableId.pp callable_id
+    | Override callable_id -> Format.fprintf formatter "Overrides{%a}" CallableId.pp callable_id
     | Object name -> Format.fprintf formatter "Object{%s}" name
 
 
   let pp_pretty_with_kind formatter = function
-    | Function { name; kind } -> Format.fprintf formatter "%s%a (fun)" name pp_kind kind
-    | Method { class_name; method_name; kind } ->
-        Format.fprintf formatter "%s.%s%a (method)" class_name method_name pp_kind kind
-    | Override { class_name; method_name; kind } ->
-        Format.fprintf formatter "%s.%s%a (override)" class_name method_name pp_kind kind
+    | Function callable_id -> Format.fprintf formatter "%a (fun)" CallableId.pp callable_id
+    | Method callable_id -> Format.fprintf formatter "%a (method)" CallableId.pp callable_id
+    | Override callable_id -> Format.fprintf formatter "%a (override)" CallableId.pp callable_id
     | Object name -> Format.fprintf formatter "%s (object)" name
 
 
-  (* `transform` is applied to the module/name component (the `name` for `Function`/`Object`, the
-     `class_name` for `Method`/`Override`) before rendering. It is used to strip the pyrefly
-     source-path prefix while sharing this single rendering path (so the format can't drift). *)
-  let pp_external ?(transform = Fn.id) formatter = function
-    | Function { name; kind } -> Format.fprintf formatter "%s%a" (transform name) pp_kind kind
-    | Method { class_name; method_name; kind } ->
-        Format.fprintf formatter "%s.%s%a" (transform class_name) method_name pp_kind kind
-    | Override { class_name; method_name; kind } ->
+  (* Decode a callable id to its external (user-facing) name through the display api. The external
+     name already includes the `@decorated` suffix for decorated callables. *)
+  let callable_external_name ~display_api:{ DisplayApi.callable_external_name; _ } callable_id =
+    Reference.show (callable_external_name callable_id)
+
+
+  (* `transform` (default identity) rewrites the rendered qualified name; it is used to strip the
+     pyrefly source-path prefix. Byte-identical to the old string-based rendering: the display api
+     decodes the same qualified name the string target carried, and `strip_path_prefix` only affects
+     the leading module prefix (the `@decorated` suffix has no colon, so it is left intact). *)
+  let pp_external ~display_api ?(transform = Fn.id) formatter = function
+    | Function callable_id
+    | Method callable_id ->
+        Format.fprintf formatter "%s" (transform (callable_external_name ~display_api callable_id))
+    | Override callable_id ->
         Format.fprintf
           formatter
-          "Overrides{%s.%s%a}"
-          (transform class_name)
-          method_name
-          pp_kind
-          kind
+          "Overrides{%s}"
+          (transform (callable_external_name ~display_api callable_id))
     | Object name -> Format.fprintf formatter "Obj{%s}" (transform name)
 
 
+  let pp_pretty_with_display_api ~display_api formatter = function
+    | Function callable_id
+    | Method callable_id ->
+        Format.fprintf formatter "%s" (callable_external_name ~display_api callable_id)
+    | Override callable_id ->
+        Format.fprintf formatter "Overrides{%s}" (callable_external_name ~display_api callable_id)
+    | Object name -> Format.fprintf formatter "Object{%s}" name
+
+
+  let pp_pretty_with_kind_with_display_api ~display_api formatter = function
+    | Function callable_id ->
+        Format.fprintf formatter "%s (fun)" (callable_external_name ~display_api callable_id)
+    | Method callable_id ->
+        Format.fprintf formatter "%s (method)" (callable_external_name ~display_api callable_id)
+    | Override callable_id ->
+        Format.fprintf formatter "%s (override)" (callable_external_name ~display_api callable_id)
+    | Object name -> Format.fprintf formatter "%s (object)" name
+
+
   let get_corresponding_method_exn = function
-    | Override method_name -> Method method_name
+    | Override callable_id -> Method callable_id
     | _ -> failwith "not an override target"
 
 
   let get_corresponding_override_exn = function
-    | Method method_name -> Override method_name
+    | Method callable_id -> Override callable_id
     | _ -> failwith "unexpected"
-
-
-  let class_name = function
-    | Method { class_name; _ } -> Some class_name
-    | Override { class_name; _ } -> Some class_name
-    | Function _
-    | Object _ ->
-        None
-
-
-  let method_name = function
-    | Method { method_name; _ } -> Some method_name
-    | Override { method_name; _ } -> Some method_name
-    | Function _
-    | Object _ ->
-        None
-
-
-  let function_name = function
-    | Function { name; _ } -> Some name
-    | Method _
-    | Override _
-    | Object _ ->
-        None
 
 
   let object_name = function
@@ -222,41 +172,47 @@ module Regular = struct
     | _ -> false
 
 
-  let is_normal regular =
-    match kind regular with
-    | Some Normal -> true
-    | _ -> false
-
-
-  let is_decorated regular =
-    match kind regular with
-    | Some Decorated -> true
-    | _ -> false
+  let is_decorated = function
+    | Function callable_id
+    | Method callable_id
+    | Override callable_id ->
+        CallableId.is_decorated callable_id
+    | Object _ -> false
 
 
   let override_to_method = function
-    | Function target -> Function target
-    | Method target
-    | Override target ->
-        Method target
-    | Object name -> Object name
+    | Override callable_id -> Method callable_id
+    | (Function _ | Method _ | Object _) as regular -> regular
 
 
-  let define_name = function
-    | Function { name; _ } -> Some (Reference.create name)
-    | Method { class_name; method_name; _ } ->
-        Some (Reference.create ~prefix:(Reference.create class_name) method_name)
-    | Override _
-    | Object _ ->
-        None
+  (* Mark a callable as its decorated variant (the `FunctionDecoratedTarget` id tag). *)
+  let to_decorated =
+    let mark callable_id =
+      if CallableId.is_decorated callable_id then
+        failwith "to_decorated on already decorated target"
+      else
+        CallableId.to_decorated callable_id
+    in
+    function
+    | Function callable_id -> Function (mark callable_id)
+    | Method callable_id -> Method (mark callable_id)
+    | Override callable_id -> Override (mark callable_id)
+    | Object _ -> failwith "to_decorated on object target"
 
 
-  (** Return the define name of a Function or Method target. Note that multiple targets can match to
-      the same define name (e.g, property getters and setters). Hence, use this at your own risk. *)
-  let define_name_exn regular =
-    match define_name regular with
-    | Some name -> name
-    | None -> Format.asprintf "Unexpected: %a" pp_pretty_with_kind regular |> failwith
+  (* Mark a decorated callable as its undecorated variant, or raise an error. *)
+  let to_undecorated_exn =
+    let unmark callable_id =
+      if CallableId.is_decorated callable_id then
+        CallableId.to_undecorated callable_id
+      else
+        failwith "to_undecorated_exn on non decorated target"
+    in
+    function
+    | Function callable_id -> Function (unmark callable_id)
+    | Method callable_id -> Method (unmark callable_id)
+    | Override callable_id -> Override (unmark callable_id)
+    | Object _ -> failwith "to_undecorated_exn on object target"
 end
 
 module ParameterMap = Data_structures.SerializableMap.Make (AccessPath.Root)
@@ -364,19 +320,36 @@ let pp_pretty_with_kind = pp_from_regular ~pp_regular:Regular.pp_pretty_with_kin
 
 let show_pretty_with_kind = Format.asprintf "%a" pp_pretty_with_kind
 
-let pp_external = pp_from_regular ~pp_regular:Regular.pp_external
-
-(* Render a target as an external (user-facing) name. The `display_api` is currently ignored
-   (targets store string names); the payload swap will use it to decode packed ids into names.
-   `transform` (default identity) rewrites each module/name component; it is used to strip the
-   pyrefly source-path prefix without duplicating the rendering (see `Regular.pp_external`). *)
-let external_name ~display_api:_ ?transform target =
-  Format.asprintf "%a" (pp_from_regular ~pp_regular:(Regular.pp_external ?transform)) target
+(* Api-aware pretty-printers used by golden-generating output sites (call/override graph dumps), so
+   those keep rendering names (not raw ids) after the payload swap. *)
+let pp_pretty_with_display_api ~display_api =
+  pp_from_regular ~pp_regular:(Regular.pp_pretty_with_display_api ~display_api)
 
 
-(* Like `pp_internal`, but takes a display api (currently ignored). Meant to become the general
-   pretty-printing pattern once targets store ids. *)
-let pp_with_display_api ~display_api:_ formatter target = pp_internal formatter target
+let show_pretty_with_display_api ~display_api =
+  Format.asprintf "%a" (pp_pretty_with_display_api ~display_api)
+
+
+let pp_pretty_with_kind_with_display_api ~display_api =
+  pp_from_regular ~pp_regular:(Regular.pp_pretty_with_kind_with_display_api ~display_api)
+
+
+let show_pretty_with_kind_with_display_api ~display_api =
+  Format.asprintf "%a" (pp_pretty_with_kind_with_display_api ~display_api)
+
+
+let pp_external ~display_api = pp_from_regular ~pp_regular:(Regular.pp_external ~display_api)
+
+(* Render a target as an external (user-facing) name, decoding packed ids through the display api.
+   The external name includes the `@decorated` suffix for decorated callables. `transform` (default
+   identity) rewrites the rendered qualified name; it is used to strip the pyrefly source-path
+   prefix without duplicating the rendering (see `Regular.pp_external`). *)
+let external_name ~display_api ?transform target =
+  Format.asprintf
+    "%a"
+    (pp_from_regular ~pp_regular:(Regular.pp_external ~display_api ?transform))
+    target
+
 
 let from_regular regular = Regular regular
 
@@ -384,6 +357,76 @@ let get_regular = function
   | Regular regular
   | Parameterized { regular; _ } ->
       regular
+
+
+(* Decode a `Method`/`Override`'s class name (the prefix of its define name) via the display api.
+   `None` for functions and objects. *)
+let class_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
+  match get_regular target with
+  | Regular.Method callable_id
+  | Regular.Override callable_id ->
+      callable_define_name callable_id |> Reference.prefix |> Option.map ~f:Reference.show
+  | Regular.Function _
+  | Regular.Object _ ->
+      None
+
+
+let class_name_exn ~display_api target =
+  match class_name ~display_api target with
+  | Some name -> name
+  | None -> Format.asprintf "expected a method target, got %a" pp target |> failwith
+
+
+(* Decode a `Method`/`Override`'s bare method name (the last component of its define name) via the
+   display api. `None` for functions and objects. *)
+let method_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
+  match get_regular target with
+  | Regular.Method callable_id
+  | Regular.Override callable_id ->
+      Some (Reference.last (callable_define_name callable_id))
+  | Regular.Function _
+  | Regular.Object _ ->
+      None
+
+
+let method_name_exn ~display_api target =
+  match method_name ~display_api target with
+  | Some name -> name
+  | None -> Format.asprintf "expected a method target, got %a" pp target |> failwith
+
+
+(* Decode a `Function`'s define name via the display api. `None` otherwise. *)
+let function_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
+  match get_regular target with
+  | Regular.Function callable_id -> Some (Reference.show (callable_define_name callable_id))
+  | Regular.Method _
+  | Regular.Override _
+  | Regular.Object _ ->
+      None
+
+
+let function_name_exn ~display_api target =
+  match function_name ~display_api target with
+  | Some name -> name
+  | None -> Format.asprintf "expected a function target, got %a" pp target |> failwith
+
+
+(* Decode a `Function`/`Method`'s fully-qualified define name via the display api. `None` for
+   overrides and objects (which have no define name). *)
+let define_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
+  match get_regular target with
+  | Regular.Function callable_id
+  | Regular.Method callable_id ->
+      Some (callable_define_name callable_id)
+  | Regular.Override _
+  | Regular.Object _ ->
+      None
+
+
+let define_name_exn ~display_api target =
+  match define_name ~display_api target with
+  | None -> Format.asprintf "expected a function or method target, got %a" pp target |> failwith
+  | Some name -> name
 
 
 let strip_parameters target = target |> get_regular |> from_regular
@@ -405,33 +448,11 @@ let collect_nested_regular_targets =
   fold []
 
 
-let create_function ?kind reference = Function (Function.create ?kind reference) |> from_regular
+let create_function callable_id = Function callable_id |> from_regular
 
-let create_method ?kind class_name method_name =
-  Method (Method.create ?kind class_name method_name) |> from_regular
+let create_method callable_id = Method callable_id |> from_regular
 
-
-let create_method_from_reference ?kind reference =
-  Method
-    (Method.create
-       ?kind
-       (Reference.prefix reference |> Option.value ~default:Reference.empty)
-       (Reference.last reference))
-  |> from_regular
-
-
-let create_override ?kind class_name method_name =
-  Override (Method.create ?kind class_name method_name) |> from_regular
-
-
-let create_override_from_reference ?kind reference =
-  Override
-    (Method.create
-       ?kind
-       (Reference.prefix reference |> Option.value ~default:Reference.empty)
-       (Reference.last reference))
-  |> from_regular
-
+let create_override callable_id = Override callable_id |> from_regular
 
 let create_object reference = Object (Reference.show reference) |> from_regular
 
@@ -457,8 +478,6 @@ let is_function target = target |> get_regular |> Regular.is_function
 let is_override target = target |> get_regular |> Regular.is_override
 
 let is_object target = target |> get_regular |> Regular.is_object
-
-let is_normal target = target |> get_regular |> Regular.is_normal
 
 let is_decorated target = target |> get_regular |> Regular.is_decorated
 
@@ -512,10 +531,16 @@ let rec for_issue_handle = function
         }
 
 
-let set_kind kind = function
-  | Regular regular -> Regular (Regular.set_kind kind regular)
+let to_decorated = function
+  | Regular regular -> Regular (Regular.to_decorated regular)
   | Parameterized { regular; parameters } ->
-      Parameterized { regular = Regular.set_kind kind regular; parameters }
+      Parameterized { regular = Regular.to_decorated regular; parameters }
+
+
+let to_undecorated_exn = function
+  | Regular regular -> Regular (Regular.to_undecorated_exn regular)
+  | Parameterized { regular; parameters } ->
+      Parameterized { regular = Regular.to_undecorated_exn regular; parameters }
 
 
 module MakePrettyPrintContainer (Container : sig
@@ -612,17 +637,6 @@ module SharedMemoryKey = struct
   let to_string key = sexp_of_t key |> Sexp.to_string
 
   let from_string sexp_string = Sexp.of_string sexp_string |> t_of_sexp
-end
-
-module MethodReference = struct
-  type t = {
-    define_name: Reference.t;
-    is_property_setter: bool;
-  }
-  [@@deriving show]
-
-  let class_name { define_name; _ } =
-    define_name |> Reference.prefix |> Option.value_exn ~message:"Expect a method name"
 end
 
 (* Represent a hashset of targets inside the shared memory *)

@@ -61,7 +61,7 @@ module Heap = struct
     let open Option.Monad_infix in
     qualifier
     |> PyreflyApi.ReadOnly.get_qualifier_top_level_define_name pyrefly_api
-    |> Target.create_function
+    |> PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false
     |> CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
     |> AstResult.to_option
     >>| (fun { CallablesSharedMemory.DefineAndQualifier.define; _ } -> define)

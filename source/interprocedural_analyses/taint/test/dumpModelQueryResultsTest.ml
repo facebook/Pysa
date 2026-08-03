@@ -91,19 +91,6 @@ let test_dump_model_query_results context =
   {
     "get_foo": [
       {
-        "callable": "test.barfooo",
-        "sources": [
-          {
-            "port": "result",
-            "taint": [
-              { "kinds": [ { "kind": "Test" } ], "declaration": null }
-            ]
-          }
-        ],
-        "model_generators": [ "get_bar", "get_foo", "get_fooo" ],
-        "modes": [ "Obscure" ]
-      },
-      {
         "callable": "test.foo1",
         "sources": [
           {
@@ -127,6 +114,19 @@ let test_dump_model_query_results context =
           }
         ],
         "model_generators": [ "get_foo" ],
+        "modes": [ "Obscure" ]
+      },
+      {
+        "callable": "test.barfooo",
+        "sources": [
+          {
+            "port": "result",
+            "taint": [
+              { "kinds": [ { "kind": "Test" } ], "declaration": null }
+            ]
+          }
+        ],
+        "model_generators": [ "get_bar", "get_foo", "get_fooo" ],
         "modes": [ "Obscure" ]
       }
     ]
@@ -177,7 +177,7 @@ let test_dump_model_query_results context =
   {
     "get_Base_child_sources": [
       {
-        "callable": "test.Base.baz",
+        "callable": "test.Base.foo",
         "parameter_sources": [
           {
             "port": "formal(self, position=0)",
@@ -189,7 +189,7 @@ let test_dump_model_query_results context =
         "model_generators": [ "get_Base_child_sources" ]
       },
       {
-        "callable": "test.Base.foo",
+        "callable": "test.Base.baz",
         "parameter_sources": [
           {
             "port": "formal(self, position=0)",
@@ -390,6 +390,19 @@ let test_dump_model_query_results context =
   {
     "get_parent_of_baz_class_transitive_sources": [
       {
+        "callable": "test.Foo.__init__",
+        "parameter_sources": [
+          {
+            "port": "formal(b, position=2)",
+            "taint": [
+              { "kinds": [ { "kind": "Test" } ], "declaration": null }
+            ]
+          }
+        ],
+        "model_generators": [ "get_parent_of_baz_class_transitive_sources" ],
+        "modes": [ "Obscure" ]
+      },
+      {
         "callable": "test.Bar.__init__",
         "parameter_sources": [
           {
@@ -404,19 +417,6 @@ let test_dump_model_query_results context =
       },
       {
         "callable": "test.Baz.__init__",
-        "parameter_sources": [
-          {
-            "port": "formal(b, position=2)",
-            "taint": [
-              { "kinds": [ { "kind": "Test" } ], "declaration": null }
-            ]
-          }
-        ],
-        "model_generators": [ "get_parent_of_baz_class_transitive_sources" ],
-        "modes": [ "Obscure" ]
-      },
-      {
-        "callable": "test.Foo.__init__",
         "parameter_sources": [
           {
             "port": "formal(b, position=2)",
@@ -501,21 +501,6 @@ let test_dump_model_query_results context =
   {
     "/a/b.pysa/get_foo": [
       {
-        "callable": "test.barfooo",
-        "sources": [
-          {
-            "port": "result",
-            "taint": [
-              { "kinds": [ { "kind": "Test" } ], "declaration": null }
-            ]
-          }
-        ],
-        "model_generators": [
-          "/a/b.pysa/get_bar", "/a/b.pysa/get_foo", "/a/b.pysa/get_fooo"
-        ],
-        "modes": [ "Obscure" ]
-      },
-      {
         "callable": "test.foo1",
         "sources": [
           {
@@ -539,6 +524,21 @@ let test_dump_model_query_results context =
           }
         ],
         "model_generators": [ "/a/b.pysa/get_foo" ],
+        "modes": [ "Obscure" ]
+      },
+      {
+        "callable": "test.barfooo",
+        "sources": [
+          {
+            "port": "result",
+            "taint": [
+              { "kinds": [ { "kind": "Test" } ], "declaration": null }
+            ]
+          }
+        ],
+        "model_generators": [
+          "/a/b.pysa/get_bar", "/a/b.pysa/get_foo", "/a/b.pysa/get_fooo"
+        ],
         "modes": [ "Obscure" ]
       }
     ]

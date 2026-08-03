@@ -93,7 +93,7 @@ let merge_issues_by_canonical_handle ~display_api issues =
         issue with
         Issue.handle =
           issue.Issue.handle
-          |> IssueHandle.strip_all_callable_parameters
+          |> IssueHandle.strip_all_callable_parameters ~display_api
           |> IssueHandle.strip_callable_path_prefix ~display_api;
       }
     in
@@ -400,7 +400,7 @@ let save_results_to_directory
             ( "skipped_overrides",
               `List
                 (List.map skipped_overrides ~f:(fun override ->
-                     `String (Target.show_pretty override))) );
+                     `String (Target.show_pretty_with_display_api ~display_api override))) );
           ]
       in
       Yojson.Safe.Util.combine global_statistics (statistics ~model_verification_errors)

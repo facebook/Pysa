@@ -2920,8 +2920,13 @@ let convert_return_into_self_annotation ~source_sink_filter annotation =
 (* We allow users to model constructors, property setters and __setitem__ as if they implicitly
    returned `self`, for instance `def Foo.__init__() -> TaintSource[..]`. We need to fix those
    annotations before creating the model. *)
-let fix_constructors_and_property_setters_annotations ~callable ~source_sink_filter annotations =
-  if CallModel.treat_tito_return_as_self_update callable then
+let fix_constructors_and_property_setters_annotations
+    ~pyrefly_api
+    ~callable
+    ~source_sink_filter
+    annotations
+  =
+  if CallModel.treat_tito_return_as_self_update ~pyrefly_api callable then
     List.map ~f:(convert_return_into_self_annotation ~source_sink_filter) annotations
   else
     annotations
@@ -3353,16 +3358,11 @@ let check_decorators
     Ok ()
 
 
-let resolved_callable_target
-    ~pyrefly_api:_
-    { PyreflyApi.ModelQueries.Function.define_name; is_property_setter; is_method; _ }
-  =
-  if is_property_setter then
-    Target.create_method_from_reference ~kind:Target.PropertySetter define_name
-  else if is_method then
-    Target.create_method_from_reference define_name
+let resolved_callable_target { PyreflyApi.ModelQueries.Function.callable_id; is_method; _ } =
+  if is_method then
+    Target.create_method callable_id
   else
-    Target.create_function define_name
+    Target.create_function callable_id
 
 
 let parse_decorator_annotations
@@ -3757,23 +3757,6 @@ let create_models_from_signature
             let callables, classify_errors =
               List.partition_map globals ~f:(function
                   | Global.Function resolved_callable -> First resolved_callable
-                  | ( Global.UnknownClassAttribute { name; module_qualifier; location; _ }
-                    | Global.UnknownModuleGlobal { name; module_qualifier; location; _ } ) as kind
-                    ->
-                      First
-                        {
-                          Function.define_name = name;
-                          imported_name = None;
-                          undecorated_signatures = None;
-                          is_property_getter;
-                          is_property_setter;
-                          is_method =
-                            (match kind with
-                            | Global.UnknownClassAttribute _ -> true
-                            | _ -> false);
-                          module_qualifier;
-                          location;
-                        }
                   | Global.Class _ as global ->
                       Second
                         (make_verification_error
@@ -4058,14 +4041,17 @@ let create_models_from_signature
       ~origin:DefineDecoratorCapturedVariables
       ~top_level_decorators:taint_decorators
     >>= fun captured_variables_annotations ->
-    let callable = resolved_callable_target ~pyrefly_api callable in
+    let callable = resolved_callable_target callable in
     let default_model = if is_obscure callable then Model.obscure_model else Model.empty_model in
     let all_annotations =
       return_annotations
       |> List.rev_append (List.concat parameters_annotations)
       |> List.rev_append captured_variables_annotations
       |> List.rev_append decorator_annotations
-      |> fix_constructors_and_property_setters_annotations ~callable ~source_sink_filter
+      |> fix_constructors_and_property_setters_annotations
+           ~pyrefly_api
+           ~callable
+           ~source_sink_filter
     in
     List.fold_result
       all_annotations
@@ -4183,10 +4169,7 @@ let create_models_from_attribute
         in
         let resolved_attributes, classify_errors =
           List.partition_map resolved_attributes ~f:(function
-              | ( Global.ClassAttribute { name; _ }
-                | Global.ModuleGlobal { name; _ }
-                | Global.UnknownClassAttribute { name; _ }
-                | Global.UnknownModuleGlobal { name; _ } ) as global ->
+              | (Global.ClassAttribute { name; _ } | Global.ModuleGlobal { name; _ }) as global ->
                   First (name, lazy (source_location_of_global ~path_of_qualifier global))
               | Global.Class _ as global ->
                   Second
@@ -4338,8 +4321,7 @@ let create_models_from_class
                     (make_verification_error
                        (ModelVerificationError.ModelingModuleAsClass
                           { name = Reference.show user_provided_class_name; module_path }))
-              | ( Global.ClassAttribute _ | Global.ModuleGlobal _ | Global.UnknownClassAttribute _
-                | Global.UnknownModuleGlobal _ ) as global ->
+              | (Global.ClassAttribute _ | Global.ModuleGlobal _) as global ->
                   Second
                     (make_verification_error
                        (ModelVerificationError.ModelingAttributeAsClass
@@ -5166,6 +5148,7 @@ let create_callable_model_from_annotations
   let default_model = if is_obscure then Model.obscure_model else Model.empty_model in
   let annotations =
     fix_constructors_and_property_setters_annotations
+      ~pyrefly_api
       ~callable:target
       ~source_sink_filter
       annotations

@@ -876,20 +876,19 @@ module CallCallees = struct
     && RecognizedCall.equal recognized_call_left recognized_call_right
 
 
-  let is_method_of_class ~is_class_name callees =
-    let is_call_target call_target =
-      match
-        Target.get_regular call_target.CallTarget.target, call_target.CallTarget.receiver_class
-      with
-      | (Target.Regular.Method _ | Target.Regular.Override _), Some receiver_class
-        when is_class_name receiver_class ->
-          (* Is it not enough to check the class name, since methods can be inherited.
-           * For instance, `__iter__` is not defined on `Mapping`, but is defined in the parent class `Iterable`. *)
-          true
-      | Target.Regular.Method { class_name; _ }, _
-      | Target.Regular.Override { class_name; _ }, _
-        when is_class_name class_name ->
-          true
+  (* It is not enough to check the class name, since methods can be inherited. For
+   * instance, `__iter__` is not defined on `Mapping`, but is defined in the parent class
+   * `Iterable`. *)
+
+  let is_method_of_class ~display_api ~is_class_name callees =
+    let is_call_target { CallTarget.target; receiver_class; _ } =
+      match Target.get_regular target with
+      | Target.Regular.Method _
+      | Target.Regular.Override _ ->
+          (match receiver_class with
+          | Some receiver_class when is_class_name receiver_class -> true
+          | _ -> false)
+          || is_class_name (Target.class_name_exn ~display_api target)
       | _ -> false
     in
     match callees with
@@ -897,7 +896,7 @@ module CallCallees = struct
     | { call_targets; _ } -> List.for_all call_targets ~f:is_call_target
 
 
-  let is_mapping_method callees =
+  let is_mapping_method ~display_api callees =
     let is_class_name = function
       | "dict"
       | "builtins.dict"
@@ -911,10 +910,10 @@ module CallCallees = struct
           true
       | _ -> false
     in
-    is_method_of_class ~is_class_name callees
+    is_method_of_class ~display_api ~is_class_name callees
 
 
-  let is_sequence_method callees =
+  let is_sequence_method ~display_api callees =
     let is_class_name = function
       | "list"
       | "builtins.list"
@@ -926,42 +925,38 @@ module CallCallees = struct
           true
       | _ -> false
     in
-    is_method_of_class ~is_class_name callees
+    is_method_of_class ~display_api ~is_class_name callees
 
 
-  let is_string_method callees =
+  let is_string_method ~display_api callees =
     let is_class_name = function
       | "str"
       | "builtins.str" ->
           true
       | _ -> false
     in
-    is_method_of_class ~is_class_name callees
+    is_method_of_class ~display_api ~is_class_name callees
 
 
-  let is_object_new = function
-    | [] -> (* Unresolved call, assume it's object.__new__ *) true
+  (* Whether the single call target is `object.__new__` / `object.__init__` (undecorated): decode
+     the callable's class and method name through the display api and compare. *)
+  let is_object_dunder ~display_api ~dunder = function
+    | [] -> (* Unresolved call, assume it is the object dunder *) true
     | [{ CallTarget.target; _ }] -> (
         match Target.get_regular target with
-        | Target.Regular.Method { class_name = "object"; method_name = "__new__"; kind = Normal }
-        | Target.Regular.Method
-            { class_name = "builtins.object"; method_name = "__new__"; kind = Normal } ->
-            true
+        | Target.Regular.Method _ when not (Target.is_decorated target) -> (
+            match Target.class_name_exn ~display_api target with
+            | "object"
+            | "builtins.object" ->
+                String.equal (Target.method_name_exn ~display_api target) dunder
+            | _ -> false)
         | _ -> false)
     | _ -> false
 
 
-  let is_object_init = function
-    | [] -> (* Unresolved call, assume it's object.__init__ *) true
-    | [{ CallTarget.target; _ }] -> (
-        match Target.get_regular target with
-        | Target.Regular.Method { class_name = "object"; method_name = "__init__"; kind = Normal }
-        | Target.Regular.Method
-            { class_name = "builtins.object"; method_name = "__init__"; kind = Normal } ->
-            true
-        | _ -> false)
-    | _ -> false
+  let is_object_new ~display_api callees = is_object_dunder ~display_api ~dunder:"__new__" callees
 
+  let is_object_init ~display_api callees = is_object_dunder ~display_api ~dunder:"__init__" callees
 
   let to_json
       ~display_api
@@ -1047,10 +1042,7 @@ module CallCallees = struct
         call_callees with
         call_targets =
           List.map decorated_targets ~f:(fun call_target ->
-              {
-                call_target with
-                CallTarget.target = Target.set_kind Target.Normal call_target.target;
-              });
+              { call_target with CallTarget.target = Target.to_undecorated_exn call_target.target });
       }
     else
       call_callees
@@ -1887,7 +1879,7 @@ module DefineCallGraph = struct
                   "Invariant error: When trying to add callees for expression %a in callable %a, \
                    found different existing callees. This bug in Pysa might introduce false \
                    positives."
-                  Target.pp_external
+                  Target.pp_internal
                   caller
                   ExpressionIdentifier.pp_json_key
                   expression_identifier;
@@ -1897,7 +1889,7 @@ module DefineCallGraph = struct
                 Format.asprintf
                   "Invariant error: When trying to add callees for expression %a in callable %a, \
                    found different existing callees."
-                  Target.pp_external
+                  Target.pp_internal
                   caller
                   ExpressionIdentifier.pp_json_key
                   expression_identifier

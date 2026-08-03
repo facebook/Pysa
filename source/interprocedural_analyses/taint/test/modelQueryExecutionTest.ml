@@ -13,6 +13,27 @@ open Interprocedural
 open TestHelper
 module ModelQuery = ModelParseResult.ModelQuery
 
+let function_regular pyrefly_api name =
+  InterproceduralTest.resolve_function_regular_exn ~pyrefly_api (Ast.Reference.create name)
+
+
+let method_regular pyrefly_api ~class_name ~method_name =
+  InterproceduralTest.resolve_method_regular_exn
+    ~pyrefly_api
+    ~class_name:(Ast.Reference.create class_name)
+    ~method_name
+    ()
+
+
+let method_regular_property_setter pyrefly_api ~class_name ~method_name =
+  InterproceduralTest.resolve_method_regular_exn
+    ~is_property_setter:true
+    ~pyrefly_api
+    ~class_name:(Ast.Reference.create class_name)
+    ~method_name
+    ()
+
+
 type query_element = ModelParseResult.ModelAnnotation.t [@@deriving show, equal]
 
 let source ?subkind name =
@@ -60,7 +81,7 @@ let assert_generated_annotations context ~source ~query ~callable ~expected () =
            ~pyrefly_api
            ~callables_to_definitions_map:
              (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-           (Target.from_regular callable))
+           (Target.from_regular (callable pyrefly_api)))
       query
   in
   Interprocedural.CallablesSharedMemory.ReadWrite.cleanup callables_to_definitions_map;
@@ -175,7 +196,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -194,7 +215,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -213,7 +234,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -232,7 +253,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -251,7 +272,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -270,7 +291,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   (* Multiple definitions *)
@@ -291,7 +312,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -311,7 +332,7 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo$2"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo$2")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -337,8 +358,8 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:
-      (Target.Regular.Method { class_name = "test.Foo"; method_name = "bar"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.Foo" ~method_name:"bar")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -364,9 +385,8 @@ let test_generated_annotations_function_name context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:
-      (Target.Regular.Method
-         { class_name = "test.Foo"; method_name = "bar@setter"; kind = PropertySetter })
+    ~callable:(fun pyrefly_api ->
+      method_regular_property_setter pyrefly_api ~class_name:"test.Foo" ~method_name:"bar")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -396,7 +416,7 @@ let test_generated_annotations_and context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.barfoo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.barfoo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -420,7 +440,7 @@ let test_generated_annotations_and context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
 
@@ -442,7 +462,8 @@ let test_generated_annotations_and context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[]
     ();
 
@@ -463,7 +484,8 @@ let test_generated_annotations_and context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -493,7 +515,8 @@ let test_generated_annotations_multiple_productions context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test");
@@ -529,7 +552,7 @@ let test_generated_annotations_constants context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -548,7 +571,7 @@ let test_generated_annotations_constants context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   ()
@@ -574,7 +597,8 @@ let test_generated_annotations_all_parameters context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -612,7 +636,8 @@ let test_generated_annotations_all_parameters context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -642,7 +667,8 @@ let test_generated_annotations_all_parameters context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -685,7 +711,8 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -722,7 +749,8 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -763,7 +791,8 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -805,7 +834,8 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -841,7 +871,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -877,7 +907,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -917,7 +947,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -958,7 +988,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -994,7 +1024,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -1030,7 +1060,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -1059,7 +1089,7 @@ let test_generated_annotations_parameter_taint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -1103,7 +1133,7 @@ let test_generated_annotations_typing_annotated context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -1128,7 +1158,7 @@ let test_generated_annotations_typing_annotated context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   ()
@@ -1171,8 +1201,8 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:
-      (Target.Regular.Method { class_name = "test.Test"; method_name = "test1"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.Test" ~method_name:"test1")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -1209,8 +1239,8 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:
-      (Target.Regular.Method { class_name = "test.Test"; method_name = "test2"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.Test" ~method_name:"test2")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1247,8 +1277,8 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:
-      (Target.Regular.Method { class_name = "test.Test"; method_name = "test3"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.Test" ~method_name:"test3")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1286,7 +1316,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1324,7 +1354,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test2"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test2")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1362,7 +1392,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test3"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test3")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1395,7 +1425,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -1421,7 +1451,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1447,7 +1477,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1477,7 +1507,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1503,7 +1533,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1533,7 +1563,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1570,7 +1600,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (sink "Test")]
     ();
   assert_generated_annotations
@@ -1597,7 +1627,7 @@ let test_generated_annotations_return_extends context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.test1"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.test1")
     ~expected:[]
     ();
   ()
@@ -1630,7 +1660,7 @@ let test_generated_annotations_any_of context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -1657,7 +1687,7 @@ let test_generated_annotations_any_of context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -1690,7 +1720,7 @@ let test_generated_annotations_all_of context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Some cases where we don't match with "AllOf". *)
@@ -1718,7 +1748,7 @@ let test_generated_annotations_all_of context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -1745,7 +1775,7 @@ let test_generated_annotations_all_of context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   ()
@@ -1782,7 +1812,7 @@ let test_generated_annotations_any_parameter context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -1827,7 +1857,7 @@ let test_generated_annotations_any_parameter context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:
       [
         ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -1862,7 +1892,7 @@ let test_generated_annotations_return_annotation context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -1882,7 +1912,7 @@ let test_generated_annotations_return_annotation context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.bar"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.bar")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -1902,7 +1932,7 @@ let test_generated_annotations_return_annotation context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -1924,7 +1954,7 @@ let test_generated_annotations_return_annotation context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.bar"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.bar")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -1960,7 +1990,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Basic test case for `FullyQualifiedCallee`. *)
@@ -1991,7 +2021,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Test `FullyQualifiedCallee` when the callee is unresolvable. *)
@@ -2017,7 +2047,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[]
     ();
   (* Test `FullyQualifiedCallee` on a decorator factory. *)
@@ -2048,7 +2078,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Test `FullyQualifiedCallee` when there are multiple decorators. We consider it as being matched
@@ -2083,7 +2113,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Test `FullyQualifiedCallee` when the decorator is overridden. *)
@@ -2117,7 +2147,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Test `FullyQualifiedCallee` when the decorator is a base method. *)
@@ -2150,7 +2180,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Test `FullyQualifiedCallee` for class decorators. *)
@@ -2187,7 +2217,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.my_view"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.my_view")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2217,7 +2247,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2247,7 +2277,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.bar"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.bar")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2277,7 +2307,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2306,7 +2336,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2329,7 +2359,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2359,7 +2389,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2389,7 +2419,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2434,7 +2464,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2479,7 +2509,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2525,7 +2555,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2571,7 +2601,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2624,7 +2654,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2677,7 +2707,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2730,7 +2760,7 @@ let test_generated_annotations_any_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.baz"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.baz")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -2760,7 +2790,8 @@ let test_generated_annotations_class_constraint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2785,7 +2816,8 @@ let test_generated_annotations_class_constraint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo")
     ~expected:[]
     ();
 
@@ -2811,7 +2843,8 @@ let test_generated_annotations_class_constraint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.DC"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.DC" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2840,7 +2873,8 @@ let test_generated_annotations_class_constraint context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -2874,7 +2908,8 @@ let test_generated_annotations_class_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2919,7 +2954,8 @@ let test_generated_annotations_class_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -2964,7 +3000,8 @@ let test_generated_annotations_class_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -2991,7 +3028,8 @@ let test_generated_annotations_class_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Negative: class B is decorated with d2, not d1 *)
@@ -3019,7 +3057,8 @@ let test_generated_annotations_class_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   (* Matches variant *)
@@ -3048,7 +3087,8 @@ let test_generated_annotations_class_decorator context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -3444,7 +3484,7 @@ let test_generated_annotations_not context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -3468,7 +3508,7 @@ let test_generated_annotations_not context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.barfoo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.barfoo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -3488,7 +3528,7 @@ let test_generated_annotations_not context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Function { name = "test.foo"; kind = Normal })
+    ~callable:(fun pyrefly_api -> function_regular pyrefly_api "test.foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -3517,7 +3557,8 @@ let test_generated_annotations_not context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -3546,7 +3587,8 @@ let test_generated_annotations_not context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.DC"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.DC" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations_for_attributes
@@ -3764,7 +3806,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -3796,7 +3839,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -3828,7 +3872,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -3860,7 +3905,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
 
@@ -3980,7 +4026,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4011,7 +4058,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4042,7 +4090,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4073,7 +4122,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4104,7 +4154,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4135,7 +4186,8 @@ let test_generated_annotations_class_constraints context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
 
@@ -4180,7 +4232,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4218,7 +4271,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4256,7 +4310,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4294,7 +4349,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4332,7 +4388,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4370,7 +4427,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4408,7 +4466,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4446,7 +4505,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4484,7 +4544,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4522,7 +4583,8 @@ let test_generated_annotations_class_any_child context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -4565,7 +4627,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4602,7 +4665,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4639,7 +4703,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4676,7 +4741,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4713,7 +4779,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4750,7 +4817,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4787,7 +4855,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4824,7 +4893,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4861,7 +4931,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4898,7 +4969,8 @@ let test_generated_annotations_class_any_parent context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -4933,7 +5005,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -4962,7 +5035,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -4991,7 +5065,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -5020,7 +5095,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "bar"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"bar")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -5049,7 +5125,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.D"; method_name = "bar"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.D" ~method_name:"bar")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   (* Only consider instance methods. *)
@@ -5075,7 +5152,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -5100,7 +5178,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -5123,7 +5202,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   assert_generated_annotations
@@ -5146,7 +5226,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -5171,7 +5252,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo")
     ~expected:[]
     ();
   assert_generated_annotations
@@ -5196,7 +5278,8 @@ let test_generated_annotations_class_any_overriden_method context =
         expected_models = [];
         unexpected_models = [];
       }
-    ~callable:(Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal })
+    ~callable:(fun pyrefly_api ->
+      method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo")
     ~expected:[ModelParseResult.ModelAnnotation.ReturnAnnotation (source "Test")]
     ();
   ()
@@ -5398,7 +5481,7 @@ let test_generated_cache context =
         ~callables_to_definitions_map:
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
         ~class_hierarchy_graph
-        ~targets:(List.map regular_callables ~f:Target.from_regular)
+        ~targets:(List.map (regular_callables pyrefly_api) ~f:Target.from_regular)
         queries
     in
     let expected =
@@ -5410,7 +5493,7 @@ let test_generated_cache context =
             ~kind
             ~name
             ~target:(Target.from_regular target))
-        expected
+        (expected pyrefly_api)
     in
     Interprocedural.CallablesSharedMemory.ReadWrite.cleanup callables_to_definitions_map;
     assert_equal
@@ -5445,12 +5528,9 @@ let test_generated_cache context =
           unexpected_models = [];
         };
       ]
-    ~regular_callables:
-      [
-        Target.Regular.Function { name = "test.foo"; kind = Normal };
-        Target.Regular.Function { name = "test.no_match"; kind = Normal };
-      ]
-    ~expected:["thrift", "foo", Target.Regular.Function { name = "test.foo"; kind = Normal }];
+    ~regular_callables:(fun pyrefly_api ->
+      [function_regular pyrefly_api "test.foo"; function_regular pyrefly_api "test.no_match"])
+    ~expected:(fun pyrefly_api -> ["thrift", "foo", function_regular pyrefly_api "test.foo"]);
   assert_generated_cache
     ~source:
       {|
@@ -5485,20 +5565,16 @@ let test_generated_cache context =
           unexpected_models = [];
         };
       ]
-    ~regular_callables:
+    ~regular_callables:(fun pyrefly_api ->
       [
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal };
-        Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal };
-      ]
-    ~expected:
+        method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+        method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo";
+      ])
+    ~expected:(fun pyrefly_api ->
       [
-        ( "thrift",
-          "C:foo",
-          Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal } );
-        ( "thrift",
-          "D:foo",
-          Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal } );
-      ];
+        "thrift", "C:foo", method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+        "thrift", "D:foo", method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo";
+      ]);
   (* We can have multiple targets for the same kind+name *)
   assert_generated_cache
     ~source:
@@ -5529,20 +5605,16 @@ let test_generated_cache context =
           unexpected_models = [];
         };
       ]
-    ~regular_callables:
+    ~regular_callables:(fun pyrefly_api ->
       [
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal };
-        Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal };
-      ]
-    ~expected:
+        method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+        method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo";
+      ])
+    ~expected:(fun pyrefly_api ->
       [
-        ( "thrift",
-          "foo",
-          Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal } );
-        ( "thrift",
-          "foo",
-          Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal } );
-      ];
+        "thrift", "foo", method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+        "thrift", "foo", method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo";
+      ]);
   (* Multiple WriteToCache in the same query. *)
   assert_generated_cache
     ~source:
@@ -5578,24 +5650,38 @@ let test_generated_cache context =
           unexpected_models = [];
         };
       ]
-    ~regular_callables:
+    ~regular_callables:(fun pyrefly_api ->
       [
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal };
-        Target.Regular.Method { class_name = "test.D"; method_name = "foo"; kind = Normal };
-      ]
-    ~expected:
+        method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+        method_regular pyrefly_api ~class_name:"test.D" ~method_name:"foo";
+      ])
+    ~expected:(fun pyrefly_api ->
       [
-        ( "a",
-          "foo",
-          Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal } );
-        ( "b",
-          "foo",
-          Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal } );
-      ];
+        "a", "foo", method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+        "b", "foo", method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
+      ]);
   ()
 
 
-let test_read_from_cache_constraints _ =
+let test_read_from_cache_constraints context =
+  let pyrefly_api =
+    InterproceduralTest.ScratchPyrePysaProject.setup
+      ~context
+      ~requires_type_of_expressions:false
+      [
+        ( "test.py",
+          {|
+      class A:
+        def foo(self): ...
+      class B:
+        def foo(self): ...
+      class C:
+        def foo(self): ...
+      |}
+        );
+      ]
+    |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
+  in
   let assert_target_candidates ~cache ~constraints ~expected =
     let cache =
       List.fold
@@ -5619,15 +5705,9 @@ let test_read_from_cache_constraints _ =
   in
   let cache =
     [
-      ( "thrift",
-        "A:foo",
-        Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal } );
-      ( "thrift",
-        "B:foo",
-        Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal } );
-      ( "thrift",
-        "C:foo",
-        Target.Regular.Method { class_name = "test.C"; method_name = "foo"; kind = Normal } );
+      "thrift", "A:foo", method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo";
+      "thrift", "B:foo", method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo";
+      "thrift", "C:foo", method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo";
     ]
   in
   assert_target_candidates
@@ -5637,7 +5717,7 @@ let test_read_from_cache_constraints _ =
       (Set
          (Target.Set.of_list
             [
-              Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal }
+              method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo"
               |> Target.from_regular;
             ]));
   assert_target_candidates
@@ -5655,7 +5735,7 @@ let test_read_from_cache_constraints _ =
       (Set
          (Target.Set.of_list
             [
-              Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal }
+              method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo"
               |> Target.from_regular;
             ]));
   assert_target_candidates
@@ -5680,9 +5760,9 @@ let test_read_from_cache_constraints _ =
       (Set
          (Target.Set.of_list
             [
-              Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal }
+              method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo"
               |> Target.from_regular;
-              Target.Regular.Method { class_name = "test.B"; method_name = "foo"; kind = Normal }
+              method_regular pyrefly_api ~class_name:"test.B" ~method_name:"foo"
               |> Target.from_regular;
             ]));
   assert_target_candidates
@@ -5725,7 +5805,7 @@ let test_read_from_cache_constraints _ =
       (Set
          (Target.Set.of_list
             [
-              Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal }
+              method_regular pyrefly_api ~class_name:"test.A" ~method_name:"foo"
               |> Target.from_regular;
             ]));
   ()

@@ -61,7 +61,7 @@ type t = {
 
 (* Strip the target parameters from callables. Must be used with `CanonicalCallee.Target`
    variants. *)
-val strip_all_callable_parameters : t -> t
+val strip_all_callable_parameters : display_api:PyreflyTypes.DisplayApi.t -> t -> t
 
 (* Remove the source path prefix - that we sometimes add to callable names to disambiguate
    conflicting module names - so that issue handles remain stable across runs. Must be used with the

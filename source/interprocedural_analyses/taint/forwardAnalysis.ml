@@ -85,6 +85,8 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
 
   let pyrefly_api = FunctionContext.pyrefly_api
 
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api
+
   let bottom = { taint = ForwardState.bottom }
 
   let pp formatter { taint } = ForwardState.pp formatter taint
@@ -626,6 +628,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           track_apply_call_step BuildTaintInTaintOutMapping (fun () ->
               if apply_tito then
                 CallModel.taint_in_taint_out_mapping_for_argument
+                  ~pyrefly_api
                   ~transform_non_leaves:(fun _ tito -> tito)
                   ~taint_configuration:FunctionContext.taint_configuration
                   ~ignore_local_return:(not is_result_used)
@@ -956,8 +959,8 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       ~init_targets
       ~state:initial_state
     =
-    let is_object_new = CallGraph.CallCallees.is_object_new new_targets in
-    let is_object_init = CallGraph.CallCallees.is_object_init init_targets in
+    let is_object_new = CallGraph.CallCallees.is_object_new ~display_api new_targets in
+    let is_object_init = CallGraph.CallCallees.is_object_init ~display_api init_targets in
 
     (* If both `is_object_new` and `is_object_init` are true, this is probably a stub
      * class (e.g, `class X: ...`), in which case, we treat it as an obscure call. *)
@@ -1740,8 +1743,12 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       ( Target.get_regular call_target.CallGraph.CallTarget.target,
         call_target.CallGraph.CallTarget.receiver_class )
     with
-    | Target.Regular.Method { method_name = "__getitem__"; _ }, Some receiver_class
-    | Override { method_name = "__getitem__"; _ }, Some receiver_class ->
+    | (Target.Regular.Method _ | Target.Regular.Override _), Some receiver_class
+      when String.equal
+             (PyreflyApi.ReadOnly.Target.method_name_exn
+                pyrefly_api
+                call_target.CallGraph.CallTarget.target)
+             "__getitem__" ->
         (* Potentially access a named tuple *)
         analyze_getitem receiver_class
     | _ ->
@@ -1847,7 +1854,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
         in
         let label =
           (* For dictionaries, the default iterator is keys. *)
-          if CallGraph.CallCallees.is_mapping_method callees then
+          if CallGraph.CallCallees.is_mapping_method ~display_api callees then
             AccessPath.dictionary_keys
           else
             Abstract.TreeDomain.Label.AnyIndex
@@ -1862,8 +1869,8 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
        arguments;
      origin;
     } ->
-        let is_dict_setitem = CallGraph.CallCallees.is_mapping_method callees in
-        let is_sequence_setitem = CallGraph.CallCallees.is_sequence_method callees in
+        let is_dict_setitem = CallGraph.CallCallees.is_mapping_method ~display_api callees in
+        let is_sequence_setitem = CallGraph.CallCallees.is_sequence_method ~display_api callees in
         let use_custom_tito =
           is_dict_setitem
           || is_sequence_setitem
@@ -2069,7 +2076,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
      arguments = [];
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees ->
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees ->
         analyze_expression ~pyrefly_in_context ~state ~is_result_used ~expression:base
         |>> ForwardState.Tree.read [Abstract.TreeDomain.Label.AnyIndex]
         |>> ForwardState.Tree.prepend [Abstract.TreeDomain.Label.AnyIndex]
@@ -2078,7 +2085,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
      arguments = [];
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees ->
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees ->
         analyze_expression ~pyrefly_in_context ~state ~is_result_used ~expression:base
         |>> ForwardState.Tree.read [AccessPath.dictionary_keys]
         |>> ForwardState.Tree.prepend [Abstract.TreeDomain.Label.AnyIndex]
@@ -2101,7 +2108,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
        [{ Call.Argument.value = { Node.value = Expression.Dictionary entries; _ }; name = None }];
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees
            && Option.is_some (Dictionary.string_literal_keys entries) ->
         let base_root =
           PyreflyApi.InContext.root_of_identifier
@@ -2159,7 +2166,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
      arguments = [{ Call.Argument.value = argument; name = None }];
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees
            && PyreflyApi.ReadOnly.Type.is_dictionary_or_mapping
                 pyrefly_api
                 (PyreflyApi.InContext.type_of_expression pyrefly_in_context argument) ->
@@ -2212,7 +2219,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
        :: (([] | [_]) as optional_arguments);
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees ->
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees ->
         let base_root =
           PyreflyApi.InContext.root_of_identifier
             pyrefly_in_context
@@ -2256,7 +2263,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
      arguments = [];
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees ->
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees ->
         let taint, state =
           analyze_expression ~pyrefly_in_context ~state ~is_result_used ~expression:base
         in
@@ -2283,7 +2290,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
        :: (([] | [_]) as optional_arguments);
      origin = _;
     }
-      when CallGraph.CallCallees.is_mapping_method callees ->
+      when CallGraph.CallCallees.is_mapping_method ~display_api callees ->
         let index = Abstract.TreeDomain.Label.Index index in
         let taint, state =
           analyze_expression ~pyrefly_in_context ~state ~is_result_used ~expression:base
@@ -2474,7 +2481,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
      arguments;
      origin = _;
     }
-      when CallGraph.CallCallees.is_string_method callees ->
+      when CallGraph.CallCallees.is_string_method ~display_api callees ->
         let breadcrumbs =
           match function_name with
           | "__mod__"
@@ -2733,6 +2740,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           ~state:base_state
           ~callee:
             (CallModel.Callee.from_stringify_call_target
+               ~pyrefly_api
                ~base
                ~stringify_origin
                ~location:call_location

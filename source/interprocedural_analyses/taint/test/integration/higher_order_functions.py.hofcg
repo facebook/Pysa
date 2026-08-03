@@ -1250,12 +1250,12 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]",
+            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]",
             "index": 0,
             "return_type": []
           },
           {
-            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]",
+            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]",
             "index": 0,
             "return_type": []
           }
@@ -1267,12 +1267,12 @@ Higher order call graphs
         "if_called": {
           "calls": [
             {
-              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar",
+              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo",
               "index": 0,
               "return_type": []
             },
             {
-              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo",
+              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar",
               "index": 0,
               "return_type": []
             }
@@ -2377,12 +2377,12 @@ Higher order call graphs
       "call": {
         "calls": [
           {
-            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]",
+            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]",
             "index": 0,
             "return_type": []
           },
           {
-            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]",
+            "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]",
             "index": 0,
             "return_type": []
           }
@@ -2394,12 +2394,12 @@ Higher order call graphs
         "if_called": {
           "calls": [
             {
-              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar",
+              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo",
               "index": 0,
               "return_type": []
             },
             {
-              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo",
+              "target": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar",
               "index": 0,
               "return_type": []
             }

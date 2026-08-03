@@ -154,7 +154,7 @@ let should_keep_decorator_pyrefly ~pyrefly_api ~callable decorator =
 
 let collect_decorators ~pyrefly_api ~callables_to_definitions_map callable =
   callable
-  |> Option.some_if (Target.is_normal callable)
+  |> Option.some_if (PyreflyApi.ReadOnly.Target.is_normal pyrefly_api callable)
   >>| CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map
   >>= function
   | Some
@@ -322,21 +322,21 @@ module SharedMemory = struct
     { handle = shared_memory }
 
 
-  let is_decorated { ReadOnly.handle; _ } callable =
-    Target.is_normal callable && T.ReadOnly.mem handle callable
+  let is_decorated ~pyrefly_api { ReadOnly.handle; _ } callable =
+    PyreflyApi.ReadOnly.Target.is_normal pyrefly_api callable && T.ReadOnly.mem handle callable
 
 
   (* Redirect any call to callable `foo` to its decorated version, if any. *)
-  let redirect_to_decorated decorators callable =
-    if is_decorated decorators callable then
-      Target.set_kind Target.Decorated callable
+  let redirect_to_decorated ~pyrefly_api decorators callable =
+    if is_decorated ~pyrefly_api decorators callable then
+      Target.to_decorated callable
     else
       callable
 
 
-  let redirect_to_decorated_opt decorators callable =
-    if is_decorated decorators callable then
-      Some (Target.set_kind Target.Decorated callable)
+  let redirect_to_decorated_opt ~pyrefly_api decorators callable =
+    if is_decorated ~pyrefly_api decorators callable then
+      Some (Target.to_decorated callable)
     else
       None
 
@@ -376,13 +376,13 @@ module SharedMemory = struct
            })
     in
     callable
-    |> Option.some_if (Target.is_normal callable)
+    |> Option.some_if (PyreflyApi.ReadOnly.Target.is_normal pyrefly_api callable)
     >>= ReadOnly.get decorators
     >>| fun { decorators; define_location; module_qualifier } ->
     let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
     let original_function_name_location = define_location in
     let original_function_name = Ast.Expression.Name.Identifier (Reference.last define_name) in
-    let decorated_callable = Target.set_kind Target.Decorated callable in
+    let decorated_callable = Target.to_decorated callable in
     let define_name = Reference.create ~prefix:define_name "@decorated" in
     let return_expression =
       List.fold
@@ -440,7 +440,7 @@ module SharedMemory = struct
                ~message:(Format.asprintf "Could not get decorated define for %a" Target.pp callable)
              |> Node.create_with_default_location
            in
-           let decorated_callable = Target.set_kind Target.Decorated callable in
+           let decorated_callable = Target.to_decorated callable in
            let signature =
              {
                CallablesSharedMemory.CallableSignature.qualifier =
@@ -460,5 +460,5 @@ module SharedMemory = struct
 
 
   let decorated_targets decorators =
-    decorators |> targets_with_decorators |> List.map ~f:(Target.set_kind Target.Decorated)
+    decorators |> targets_with_decorators |> List.map ~f:Target.to_decorated
 end

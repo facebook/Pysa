@@ -817,22 +817,29 @@ let find_parents ~pyrefly_api ~is_transitive ~includes_self class_name =
   parents
 
 
-let find_base_methods
-    ~pyrefly_api
-    ~callables_to_definitions_map
-    { Target.Method.class_name; method_name; kind }
-  =
+let find_base_methods ~pyrefly_api ~callables_to_definitions_map target =
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
+  let class_name = Target.class_name_exn ~display_api target in
+  let method_name = Target.method_name_exn ~display_api target in
   let find_instance_method parent_class =
-    let base_method = Target.create_method ~kind (Reference.create parent_class) method_name in
-    match CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map base_method with
-    | Some
-        {
-          CallablesSharedMemory.CallableSignature.method_kind =
-            Some PyreflyTypes.MethodKind.Instance;
-          _;
-        } ->
-        Some base_method
-    | _ -> None
+    let define_name = Reference.create ~prefix:(Reference.create parent_class) method_name in
+    match PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api define_name with
+    | None -> None
+    | Some _ -> (
+        let base_method =
+          PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false define_name
+        in
+        match
+          CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map base_method
+        with
+        | Some
+            {
+              CallablesSharedMemory.CallableSignature.method_kind =
+                Some PyreflyTypes.MethodKind.Instance;
+              _;
+            } ->
+            Some base_method
+        | _ -> None)
   in
   find_parents ~pyrefly_api ~is_transitive:true ~includes_self:false class_name
   |> List.filter_map ~f:find_instance_method
@@ -966,8 +973,8 @@ let rec matches_constraint
                parameter_constraint)
   | ModelQuery.Constraint.AnyOverridenMethod constraint_ -> (
       match value |> Modelable.target |> Target.get_regular with
-      | Target.Regular.Method method_name when Modelable.is_instance_method value ->
-          find_base_methods ~pyrefly_api ~callables_to_definitions_map method_name
+      | Target.Regular.Method _ when Modelable.is_instance_method value ->
+          find_base_methods ~pyrefly_api ~callables_to_definitions_map (Modelable.target value)
           |> List.exists ~f:(fun base_method ->
                  matches_constraint
                    ~pyrefly_api
@@ -1106,7 +1113,7 @@ module ReadWriteCache = struct
   let show_set set =
     set
     |> Target.Set.elements
-    |> List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_external target)
+    |> List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_internal target)
     |> String.concat ~sep:", "
     |> Format.sprintf "{%s}"
 

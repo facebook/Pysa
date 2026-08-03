@@ -883,6 +883,7 @@ let run_taint_analysis
     Taint.TaintFixpoint.compute
       ~scheduler
       ~scheduler_policy:(Taint.TaintFixpoint.get_scheduler_policy scheduler_policies)
+      ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~override_graph:override_graph_shared_memory_read_only
       ~dependency_graph
       ~skip_analysis_targets:skip_analysis_targets_hashset

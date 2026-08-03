@@ -38,35 +38,37 @@ let dump ~display_api ~path graph =
   path |> File.create ~content:(Buffer.contents buffer) |> File.write
 
 
-let show_target = Target.show_pretty_with_kind
+let show_target ~display_api = Target.show_pretty_with_kind_with_display_api ~display_api
 
-let compare_target left right = String.compare (show_target left) (show_target right)
+let compare_target ~display_api left right =
+  String.compare (show_target ~display_api left) (show_target ~display_api right)
 
-let to_alist ~sorted edges =
+
+let to_alist ~display_api ~sorted edges =
   let edges = Target.Map.Tree.to_alist edges in
   if sorted then
-    List.sort ~compare:(fun (left, _) (right, _) -> compare_target left right) edges
-    |> List.map ~f:(fun (key, value) -> key, List.sort ~compare:compare_target value)
+    List.sort ~compare:(fun (left, _) (right, _) -> compare_target ~display_api left right) edges
+    |> List.map ~f:(fun (key, value) -> key, List.sort ~compare:(compare_target ~display_api) value)
   else
     edges
 
 
-let pp formatter edges =
+let pp ~display_api formatter edges =
   let pp_edge (callable, callees) =
-    let targets = List.map ~f:show_target callees |> String.concat ~sep:" " in
-    Format.fprintf formatter "%s -> [%s]\n" (show_target callable) targets
+    let targets = List.map ~f:(show_target ~display_api) callees |> String.concat ~sep:" " in
+    Format.fprintf formatter "%s -> [%s]\n" (show_target ~display_api callable) targets
   in
-  edges |> to_alist ~sorted:true |> List.iter ~f:pp_edge
+  edges |> to_alist ~display_api ~sorted:true |> List.iter ~f:pp_edge
 
 
-let to_json ~skip_empty_callees ~sorted edges =
+let to_json ~display_api ~skip_empty_callees ~sorted edges =
   let callees_to_json callees =
-    `List (List.map ~f:(fun target -> `String (show_target target)) callees)
+    `List (List.map ~f:(fun target -> `String (show_target ~display_api target)) callees)
   in
-  to_alist ~sorted edges
+  to_alist ~display_api ~sorted edges
   |> List.filter_map ~f:(fun (caller, callees) ->
          if skip_empty_callees && List.is_empty callees then
            None
          else
-           Some (show_target caller, callees_to_json callees))
+           Some (show_target ~display_api caller, callees_to_json callees))
   |> fun list -> `Assoc list

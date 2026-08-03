@@ -7,34 +7,11 @@
 
 open Ast
 
-type kind =
-  | Normal
-  | PropertySetter
-  | Decorated
-[@@deriving show, sexp, compare, hash, equal]
-
-module Function : sig
-  type t = {
-    name: string;
-    kind: kind;
-  }
-  [@@deriving show, sexp, compare, hash, equal]
-end
-
-module Method : sig
-  type t = {
-    class_name: string;
-    method_name: string;
-    kind: kind;
-  }
-  [@@deriving show, sexp, compare, hash, equal]
-end
-
 module Regular : sig
   type t =
-    | Function of Function.t
-    | Method of Method.t
-    | Override of Method.t
+    | Function of PyreflyTypes.CallableId.t
+    | Method of PyreflyTypes.CallableId.t
+    | Override of PyreflyTypes.CallableId.t
     (* Represents a global variable or field of a class that we want to model, * e.g os.environ or
        HttpRequest.GET *)
     | Object of string
@@ -42,23 +19,17 @@ module Regular : sig
 
   val override_to_method : t -> t
 
-  val define_name : t -> Reference.t option
-
-  val define_name_exn : t -> Reference.t
-
-  val class_name : t -> string option
-
-  val method_name : t -> string option
-
-  val function_name : t -> string option
-
   val get_corresponding_method_exn : t -> t
 
   val get_corresponding_override_exn : t -> t
 
-  val kind : t -> kind option
+  val is_decorated : t -> bool
 
-  val set_kind : kind -> t -> t
+  (* Mark a callable as its decorated variant (the `FunctionDecoratedTarget` id tag). *)
+  val to_decorated : t -> t
+
+  (* Mark a decorated callable as its undecorated variant, or raise an error. *)
+  val to_undecorated_exn : t -> t
 end
 
 module ParameterMap : Data_structures.SerializableMap.S with type key = AccessPath.Root.t
@@ -117,40 +88,76 @@ val pp_pretty : Format.formatter -> t -> unit
 
 val show_pretty : t -> string
 
+(* Structural (api-free) pretty-printers. They render the raw packed id, not a name. Used for
+   debug/logging/test-printer sites; golden-generating sites use the `*_with_display_api`
+   variants. *)
 val pp_pretty_with_kind : Format.formatter -> t -> unit
 
 val show_pretty_with_kind : t -> string
 
-val pp_external : Format.formatter -> t -> unit
+(* Api-aware pretty-printers, used by golden-generating output sites so they keep rendering
+   names. *)
+val pp_pretty_with_display_api
+  :  display_api:PyreflyTypes.DisplayApi.t ->
+  Format.formatter ->
+  t ->
+  unit
 
-(* Render a target as an external (user-facing) name. The `display_api` is currently ignored; the
-   payload swap will use it to decode packed ids into names. `transform` (default identity) rewrites
-   each module/name component of the rendered name; it is used to strip the pyrefly source-path
-   prefix. *)
+val show_pretty_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+val pp_pretty_with_kind_with_display_api
+  :  display_api:PyreflyTypes.DisplayApi.t ->
+  Format.formatter ->
+  t ->
+  unit
+
+val show_pretty_with_kind_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+val pp_external : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
+
+(* Render a target as an external (user-facing) name, decoding packed ids through the display api.
+   `transform` (default identity) rewrites the rendered qualified name; it is used to strip the
+   pyrefly source-path prefix. *)
 val external_name
   :  display_api:PyreflyTypes.DisplayApi.t ->
   ?transform:(string -> string) ->
   t ->
   string
 
-(* Like `pp_internal`, but takes a display api (currently ignored). Meant to become the general
-   pretty-printing pattern once targets store ids. *)
-val pp_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
+(* Decode a `Method`/`Override`'s class name / bare method name via the display api. `None` for
+   functions and objects. *)
+val class_name : display_api:PyreflyTypes.DisplayApi.t -> t -> string option
+
+(* Returns the class name; raises if the target isn't a method or override. *)
+val class_name_exn : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+val method_name : display_api:PyreflyTypes.DisplayApi.t -> t -> string option
+
+(* Returns the bare method name; raises if the target isn't a method or override. *)
+val method_name_exn : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+(* Decode a `Function`'s fully-qualified name via the display api. `None` otherwise. *)
+val function_name : display_api:PyreflyTypes.DisplayApi.t -> t -> string option
+
+(* Returns the function name; raises if the target isn't a function. *)
+val function_name_exn : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+(* Decode a `Function`/`Method`'s fully-qualified define name via the display api. `None` for
+   overrides and objects. *)
+val define_name : display_api:PyreflyTypes.DisplayApi.t -> t -> Reference.t option
+
+val define_name_exn : display_api:PyreflyTypes.DisplayApi.t -> t -> Reference.t
 
 (* Equivalent to pp_internal. Required by @@deriving. *)
 val pp : Format.formatter -> t -> unit
 
 (* Constructors. *)
 
-val create_function : ?kind:kind -> Reference.t -> t
+val create_function : PyreflyTypes.CallableId.t -> t
 
-val create_method : ?kind:kind -> Reference.t -> string -> t
+val create_method : PyreflyTypes.CallableId.t -> t
 
-val create_method_from_reference : ?kind:kind -> Reference.t -> t
-
-val create_override : ?kind:kind -> Reference.t -> string -> t
-
-val create_override_from_reference : ?kind:kind -> Reference.t -> t
+val create_override : PyreflyTypes.CallableId.t -> t
 
 val create_object : Reference.t -> t
 
@@ -184,8 +191,6 @@ val is_override : t -> bool
 
 val is_object : t -> bool
 
-val is_normal : t -> bool
-
 val is_decorated : t -> bool
 
 val is_parameterized : t -> bool
@@ -202,7 +207,11 @@ val depth : t -> int
 
 val for_issue_handle : t -> t
 
-val set_kind : kind -> t -> t
+(* Mark a callable as its decorated / undecorated variant (the `CallableId` tag). Idempotent. *)
+val to_decorated : t -> t
+
+(* Mark a decorated callable as its undecorated variant, or raise an error. *)
+val to_undecorated_exn : t -> t
 
 module Set : sig
   include Stdlib.Set.S with type elt = t
@@ -269,14 +278,4 @@ module HashsetSharedMemory : sig
   end
 
   val read_only : t -> ReadOnly.t
-end
-
-module MethodReference : sig
-  type t = {
-    define_name: Reference.t;
-    is_property_setter: bool;
-  }
-  [@@deriving show]
-
-  val class_name : t -> Reference.t
 end

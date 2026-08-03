@@ -270,15 +270,15 @@ module CallCallees : sig
 
   val pp_option : Format.formatter -> t option -> unit
 
-  val is_mapping_method : t -> bool
+  val is_mapping_method : display_api:PyreflyTypes.DisplayApi.t -> t -> bool
 
-  val is_sequence_method : t -> bool
+  val is_sequence_method : display_api:PyreflyTypes.DisplayApi.t -> t -> bool
 
-  val is_string_method : t -> bool
+  val is_string_method : display_api:PyreflyTypes.DisplayApi.t -> t -> bool
 
-  val is_object_new : CallTarget.t list -> bool
+  val is_object_new : display_api:PyreflyTypes.DisplayApi.t -> CallTarget.t list -> bool
 
-  val is_object_init : CallTarget.t list -> bool
+  val is_object_init : display_api:PyreflyTypes.DisplayApi.t -> CallTarget.t list -> bool
 
   val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 

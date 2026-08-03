@@ -7,16 +7,20 @@
 
 open Ast
 
-(** Override graph in the ocaml heap, mapping each member method to the list of its overriding
-    methods (`Target.Method.t`), which consumers wrap into `Override` targets at use. *)
+(** Override graph in the ocaml heap, mapping each member method to the list of the `CallableId`s of
+    its overriding methods, which consumers wrap into `Override` targets at use. *)
 module Heap : sig
   type t
 
   val empty : t
 
-  val of_alist_exn : (Target.t * Target.Method.t list) list -> t
+  val of_alist_exn : (Target.t * PyreflyTypes.CallableId.t list) list -> t
 
-  val fold : t -> init:'a -> f:(member:Target.t -> overrides:Target.Method.t list -> 'a -> 'a) -> 'a
+  val fold
+    :  t ->
+    init:'a ->
+    f:(member:Target.t -> overrides:PyreflyTypes.CallableId.t list -> 'a -> 'a) ->
+    'a
 
   val equal : t -> t -> bool
 
@@ -37,14 +41,15 @@ module Heap : sig
 
   (** If a method has too many overrides, ignore them. *)
   val cap_overrides
-    :  analyze_all_overrides_targets:Target.Set.t ->
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    analyze_all_overrides_targets:Target.Set.t ->
     maximum_overrides:int option ->
     t ->
     cap_overrides_result
 end
 
-(** Override graph in the shared memory, mapping each member method to the list of its overriding
-    methods (`Target.Method.t`). *)
+(** Override graph in the shared memory, mapping each member method to the list of the `CallableId`s
+    of its overriding methods. *)
 module SharedMemory : sig
   type t
 
@@ -66,7 +71,7 @@ module SharedMemory : sig
   module ReadOnly : sig
     type t
 
-    val get_override_targets : t -> member:Target.t -> Target.Method.t list option
+    val get_override_targets : t -> member:Target.t -> PyreflyTypes.CallableId.t list option
 
     val overrides_exist : t -> Target.t -> bool
 

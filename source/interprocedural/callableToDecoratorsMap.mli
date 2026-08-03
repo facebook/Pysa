@@ -52,9 +52,17 @@ module SharedMemory : sig
     t ->
     unit
 
-  val redirect_to_decorated : ReadOnly.t -> Target.t -> Target.t
+  val redirect_to_decorated
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    ReadOnly.t ->
+    Target.t ->
+    Target.t
 
-  val redirect_to_decorated_opt : ReadOnly.t -> Target.t -> Target.t option
+  val redirect_to_decorated_opt
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    ReadOnly.t ->
+    Target.t ->
+    Target.t option
 
   val decorated_callable_body
     :  pyrefly_api:PyreflyApi.ReadOnly.t ->
