@@ -854,8 +854,8 @@ let to_json
     canonical_location issue |> Location.WithModule.instantiate ~lookup:filename_lookup
   in
   let callable_line = Ast.(Location.line issue.define_location) in
-  let sink_handle = IssueHandle.Sink.to_json issue.handle.sink in
-  let master_handle = IssueHandle.master_handle issue.handle in
+  let sink_handle = IssueHandle.Sink.to_json ~display_api issue.handle.sink in
+  let master_handle = IssueHandle.master_handle ~display_api issue.handle in
   `Assoc
     [
       "callable", `String callable_name;

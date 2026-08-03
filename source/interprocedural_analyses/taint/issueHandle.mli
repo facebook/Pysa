@@ -38,7 +38,7 @@ module Sink : sig
 
   val make_global : call_target:CallGraph.CallTarget.t -> t
 
-  val to_json : t -> Yojson.Safe.t
+  val to_json : display_api:PyreflyTypes.DisplayApi.t -> t -> Yojson.Safe.t
 end
 
 type t = {
@@ -56,7 +56,7 @@ val strip_callable_path_prefix : t -> t
 
 val deterministic_compare : t -> t -> int
 
-val master_handle : t -> string
+val master_handle : display_api:PyreflyTypes.DisplayApi.t -> t -> string
 
 val name : string
 
