@@ -146,6 +146,12 @@ module GlobalCallableIdSharedMemoryKey = struct
     Format.asprintf "%d|%a" (ModuleId.to_int module_id) LocalFunctionId.pp local_function_id
 end
 
+module CallableIdSharedMemoryKey = struct
+  type t = PyreflyTypes.CallableId.t [@@deriving compare]
+
+  let to_string id = string_of_int (PyreflyTypes.CallableId.to_int id)
+end
+
 (* The name of a module (e.g., `django.http.request`). This is a plain dotted name without any path
    prefix. Compare with `ModuleQualifier` which may include a path prefix for disambiguation. *)
 module ModuleName : sig

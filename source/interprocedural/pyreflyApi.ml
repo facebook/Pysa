@@ -68,6 +68,7 @@ module GlobalCallableId = PyreflyReport.GlobalCallableId
 module PyreflyTarget = PyreflyReport.PyreflyTarget
 module ModuleIdSharedMemoryKey = PyreflyReport.ModuleIdSharedMemoryKey
 module GlobalCallableIdSharedMemoryKey = PyreflyReport.GlobalCallableIdSharedMemoryKey
+module CallableIdSharedMemoryKey = PyreflyReport.CallableIdSharedMemoryKey
 module ModuleName = PyreflyReport.ModuleName
 module ModuleNameSharedMemoryKey = PyreflyReport.ModuleNameSharedMemoryKey
 module ModuleQualifier = PyreflyReport.ModuleQualifier
@@ -336,7 +337,7 @@ module CallableMetadataSharedMemory = struct
 
   include
     Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
-      (FullyQualifiedNameSharedMemoryKey)
+      (CallableIdSharedMemoryKey)
       (struct
         type t = Value.t
 
@@ -587,7 +588,7 @@ end
 
 module CallableAstSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
-    (FullyQualifiedNameSharedMemoryKey)
+    (CallableIdSharedMemoryKey)
     (struct
       type t = Statement.Define.t Ast.Node.t AstResult.t
 
@@ -599,7 +600,7 @@ module CallableAstSharedMemory =
 (* Define signature of each callable, resulting from parsing the source file. *)
 module CallableDefineSignatureSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
-    (FullyQualifiedNameSharedMemoryKey)
+    (CallableIdSharedMemoryKey)
     (struct
       type t = Statement.Define.Signature.t Ast.Node.t AstResult.t
 
@@ -610,7 +611,7 @@ module CallableDefineSignatureSharedMemory =
 
 module CallableParseResultSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
-    (FullyQualifiedNameSharedMemoryKey)
+    (CallableIdSharedMemoryKey)
     (struct
       type t = unit AstResult.t
 
@@ -628,17 +629,17 @@ module CallableParseResultSharedMemory =
 let is_stub_like_from_metadata
     ~metadata:{ CallableMetadata.is_stub_define; _ }
     ~callable_parse_result_shared_memory
-    fully_qualified_name
+    callable_id
   =
   is_stub_define
   ||
   let parse_result =
-    CallableParseResultSharedMemory.get callable_parse_result_shared_memory fully_qualified_name
+    CallableParseResultSharedMemory.get callable_parse_result_shared_memory callable_id
     |> assert_shared_memory_key_exists (fun () ->
            Format.asprintf
              "missing callable parse result: `%a`"
-             FullyQualifiedName.pp
-             fully_qualified_name)
+             PyreflyTypes.CallableId.pp
+             callable_id)
   in
   match parse_result with
   | AstResult.Some () -> false
@@ -668,7 +669,7 @@ let captures_from_metadata
 (* Undecorated signatures of each callable, provided by pyrefly. *)
 module CallableUndecoratedSignaturesSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
-    (FullyQualifiedNameSharedMemoryKey)
+    (CallableIdSharedMemoryKey)
     (struct
       type t = FunctionSignature.t list
 
@@ -1089,9 +1090,17 @@ module ReadWrite = struct
       ~module_classes_shared_memory
       ~callable_metadata_shared_memory
       ~class_metadata_shared_memory
+      ~fully_qualified_name_to_callable_id_shared_memory
     =
     let timer = Timer.start () in
     let () = Log.info "Parsing source files..." in
+    let callable_id_of_name callable =
+      FullyQualifiedNameToCallableIdSharedMemory.get
+        fully_qualified_name_to_callable_id_shared_memory
+        callable
+      |> assert_shared_memory_key_exists (fun () ->
+             Format.asprintf "missing callable id: `%a`" FullyQualifiedName.pp callable)
+    in
     let callable_ast_shared_memory = CallableAstSharedMemory.create () in
     let callable_define_signature_shared_memory = CallableDefineSignatureSharedMemory.create () in
     let callable_parse_result_shared_memory = CallableParseResultSharedMemory.create () in
@@ -1104,18 +1113,19 @@ module ReadWrite = struct
     in
     let store_callable_asts callables define_result =
       List.iter callables ~f:(fun callable ->
-          CallableAstSharedMemory.add callable_ast_shared_memory callable define_result;
+          let callable_id = callable_id_of_name callable in
+          CallableAstSharedMemory.add callable_ast_shared_memory callable_id define_result;
           let signature_result =
             AstResult.map_node ~f:(fun { Statement.Define.signature; _ } -> signature) define_result
           in
           CallableDefineSignatureSharedMemory.add
             callable_define_signature_shared_memory
-            callable
+            callable_id
             signature_result;
           ();
           CallableParseResultSharedMemory.add
             callable_parse_result_shared_memory
-            callable
+            callable_id
             (AstResult.map ~f:(fun _ -> ()) define_result))
     in
     let store_class_decorators classes decorator_result =
@@ -1132,7 +1142,9 @@ module ReadWrite = struct
               _;
             }
               =
-              CallableMetadataSharedMemory.get callable_metadata_shared_memory callable
+              CallableMetadataSharedMemory.get
+                callable_metadata_shared_memory
+                (callable_id_of_name callable)
               |> assert_shared_memory_key_exists (fun () ->
                      Format.asprintf
                        "missing callable metadata: `%a`"
@@ -1306,17 +1318,18 @@ module ReadWrite = struct
       else
         Map.iteri
           ~f:(fun ~key:callable ~data:define_result ->
+            let callable_id = callable_id_of_name callable in
             let define_result = AstResult.map ~f:Preprocessing.drop_nested_body define_result in
-            CallableAstSharedMemory.add callable_ast_shared_memory callable define_result;
+            CallableAstSharedMemory.add callable_ast_shared_memory callable_id define_result;
             CallableDefineSignatureSharedMemory.add
               callable_define_signature_shared_memory
-              callable
+              callable_id
               (AstResult.map_node
                  ~f:(fun { Statement.Define.signature; _ } -> signature)
                  define_result);
             CallableParseResultSharedMemory.add
               callable_parse_result_shared_memory
-              callable
+              callable_id
               (AstResult.map ~f:(fun _ -> ()) define_result);
             ())
           callable_to_define
@@ -2045,7 +2058,7 @@ module ReadWrite = struct
             } ->
             CallableMetadataSharedMemory.write_around
               callable_metadata_shared_memory
-              qualified_name
+              (PyreflyTypes.CallableId.encode ~module_id local_function_id)
               {
                 CallableMetadataSharedMemory.Value.metadata =
                   {
@@ -2256,36 +2269,29 @@ module ReadWrite = struct
             };
         }
       in
-      let get_function_name local_function_id =
-        CallableIdToQualifiedNameSharedMemory.get
-          callable_id_to_qualified_name_shared_memory
-          { GlobalCallableId.module_id; local_function_id }
-      in
       let add_function
           ~key:local_function_id
           ~data:{ ModuleDefinitionsFile.FunctionDefinition.undecorated_signatures; _ }
         =
-        let qualified_name = get_function_name local_function_id in
+        let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
         let undecorated_signatures =
           List.map ~f:convert_function_signature undecorated_signatures
         in
         CallableUndecoratedSignaturesSharedMemory.add
           callable_undecorated_signatures_shared_memory
-          qualified_name
+          callable_id
           undecorated_signatures
       in
       let add_undecorated_signature_for_class
           ~key:_
           ~data:{ ModuleDefinitionsFile.ClassDefinition.local_class_id; _ }
         =
-        let class_name =
-          ClassIdToQualifiedNameSharedMemory.get_class_name
-            class_id_to_qualified_name_shared_memory
-            { GlobalClassId.module_id; local_class_id }
+        let callable_id =
+          PyreflyTypes.CallableId.encode ~module_id (LocalFunctionId.ClassTopLevel local_class_id)
         in
         CallableUndecoratedSignaturesSharedMemory.add
           callable_undecorated_signatures_shared_memory
-          (FullyQualifiedName.create_class_toplevel class_name)
+          callable_id
           [toplevel_undecorated_signature];
         ()
       in
@@ -2294,7 +2300,7 @@ module ReadWrite = struct
       let () =
         CallableUndecoratedSignaturesSharedMemory.add
           callable_undecorated_signatures_shared_memory
-          (FullyQualifiedName.create_module_toplevel ~module_qualifier)
+          (PyreflyTypes.CallableId.encode ~module_id LocalFunctionId.ModuleTopLevel)
           [toplevel_undecorated_signature]
       in
       {
@@ -2428,6 +2434,7 @@ module ReadWrite = struct
         ~module_classes_shared_memory
         ~callable_metadata_shared_memory
         ~class_metadata_shared_memory
+        ~fully_qualified_name_to_callable_id_shared_memory
     in
 
     let all_sys_infos =
@@ -2606,15 +2613,14 @@ module ReadWrite = struct
         ()
     in
     let cleanup_callable ~module_id ~local_function_id callable_name =
-      CallableMetadataSharedMemory.remove callable_metadata_shared_memory callable_name;
-      CallableAstSharedMemory.remove callable_ast_shared_memory callable_name;
-      CallableDefineSignatureSharedMemory.remove
-        callable_define_signature_shared_memory
-        callable_name;
-      CallableParseResultSharedMemory.remove callable_parse_result_shared_memory callable_name;
+      let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
+      CallableMetadataSharedMemory.remove callable_metadata_shared_memory callable_id;
+      CallableAstSharedMemory.remove callable_ast_shared_memory callable_id;
+      CallableDefineSignatureSharedMemory.remove callable_define_signature_shared_memory callable_id;
+      CallableParseResultSharedMemory.remove callable_parse_result_shared_memory callable_id;
       CallableUndecoratedSignaturesSharedMemory.remove
         callable_undecorated_signatures_shared_memory
-        callable_name;
+        callable_id;
       CallableIdToQualifiedNameSharedMemory.remove
         callable_id_to_qualified_name_shared_memory
         { GlobalCallableId.module_id; local_function_id };
@@ -2658,8 +2664,18 @@ module ReadWrite = struct
             ModuleCallablesSharedMemory.get module_callables_shared_memory module_id
             |> assert_shared_memory_key_exists (fun () -> "missing module callables")
             |> List.map ~f:(fun callable ->
+                   let callable_id =
+                     FullyQualifiedNameToCallableIdSharedMemory.get
+                       fully_qualified_name_to_callable_id_shared_memory
+                       callable
+                     |> assert_shared_memory_key_exists (fun () ->
+                            Format.asprintf
+                              "missing callable id: `%a`"
+                              FullyQualifiedName.pp
+                              callable)
+                   in
                    let metadata =
-                     CallableMetadataSharedMemory.get callable_metadata_shared_memory callable
+                     CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
                      |> assert_shared_memory_key_exists (fun () ->
                             Format.asprintf
                               "missing callable metadata: `%a`"
@@ -3185,14 +3201,6 @@ module ReadOnly = struct
                    class_id))
 
 
-  let get_callable_metadata_value_opt { callable_metadata_shared_memory; _ } define_name =
-    CallableMetadataSharedMemory.get
-      callable_metadata_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
-
-
-  (* Consult the forward name->id indices. Currently unused; they will become the primary lookup
-     path once the content maps are re-keyed on packed ids. *)
   let resolve_callable_id
       { fully_qualified_name_to_callable_id_shared_memory; _ }
       fully_qualified_name
@@ -3202,15 +3210,25 @@ module ReadOnly = struct
       fully_qualified_name
 
 
+  let resolve_callable_id_exn api fully_qualified_name =
+    resolve_callable_id api fully_qualified_name
+    |> assert_shared_memory_key_exists (fun () ->
+           Format.asprintf "missing callable id: `%a`" FullyQualifiedName.pp fully_qualified_name)
+
+
   let resolve_class_id { fully_qualified_name_to_class_id_shared_memory; _ } fully_qualified_name =
     FullyQualifiedNameToClassIdSharedMemory.get
       fully_qualified_name_to_class_id_shared_memory
       fully_qualified_name
 
 
-  let _ = resolve_callable_id
-
   let _ = resolve_class_id
+
+  let get_callable_metadata_value_opt ({ callable_metadata_shared_memory; _ } as api) define_name =
+    FullyQualifiedName.from_reference_unchecked define_name
+    |> resolve_callable_id api
+    >>= CallableMetadataSharedMemory.get callable_metadata_shared_memory
+
 
   let get_callable_metadata api define_name =
     get_callable_metadata_value_opt api define_name
@@ -3245,7 +3263,7 @@ module ReadOnly = struct
      name. `method_name` must be the BARE name (without the fully qualified suffixes like `@setter`
      or `$2`). *)
   let resolve_method_definition
-      { class_method_index_shared_memory; callable_metadata_shared_memory; _ }
+      ({ class_method_index_shared_memory; callable_metadata_shared_memory; _ } as api)
       ~class_name
       ~method_name
       ~is_property_setter
@@ -3259,7 +3277,9 @@ module ReadOnly = struct
     | Some define_names ->
         define_names
         |> List.map ~f:(fun define_name ->
-               CallableMetadataSharedMemory.get callable_metadata_shared_memory define_name
+               CallableMetadataSharedMemory.get
+                 callable_metadata_shared_memory
+                 (resolve_callable_id_exn api define_name)
                |> assert_shared_memory_key_exists (fun () -> "missing callable metadata"))
         |> List.filter
              ~f:(fun
@@ -3291,7 +3311,7 @@ module ReadOnly = struct
     is_stub_like_from_metadata
       ~metadata
       ~callable_parse_result_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
 
 
   let is_stub_like_callable ({ callable_parse_result_shared_memory; _ } as api) define_name =
@@ -3302,13 +3322,11 @@ module ReadOnly = struct
     is_stub_like_from_metadata
       ~metadata
       ~callable_parse_result_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
 
 
-  let get_overriden_base_method ({ callable_metadata_shared_memory; _ } as api) method_id =
-    define_name_from_callable_id api method_id
-    |> FullyQualifiedName.from_reference_unchecked
-    |> CallableMetadataSharedMemory.get callable_metadata_shared_memory
+  let get_overriden_base_method { callable_metadata_shared_memory; _ } method_id =
+    CallableMetadataSharedMemory.get callable_metadata_shared_memory method_id
     |> assert_shared_memory_key_exists (fun () ->
            Format.asprintf "missing callable metadata: `%a`" PyreflyTypes.CallableId.pp method_id)
     |> (fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
@@ -3332,27 +3350,27 @@ module ReadOnly = struct
 
 
   let get_callable_return_annotations
-      { callable_undecorated_signatures_shared_memory; _ }
+      ({ callable_undecorated_signatures_shared_memory; _ } as api)
       ~define_name
       ~define:_
     =
     CallableUndecoratedSignaturesSharedMemory.get
       callable_undecorated_signatures_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
     |> assert_shared_memory_key_exists (fun () ->
            Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
     |> List.map ~f:(fun { FunctionSignature.return_annotation; _ } -> return_annotation)
 
 
   let get_callable_parameter_annotations
-      { callable_undecorated_signatures_shared_memory; _ }
+      ({ callable_undecorated_signatures_shared_memory; _ } as api)
       ~define_name
       parameters
     =
     let signatures =
       CallableUndecoratedSignaturesSharedMemory.get
         callable_undecorated_signatures_shared_memory
-        (FullyQualifiedName.from_reference_unchecked define_name)
+        (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
       |> assert_shared_memory_key_exists (fun () ->
              Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
     in
@@ -3397,13 +3415,13 @@ module ReadOnly = struct
 
 
   let get_callable_decorator_callees
-      { callable_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ }
+      ({ callable_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ } as api)
       define_name
       location
     =
     CallableMetadataSharedMemory.get
       callable_metadata_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
     |> assert_shared_memory_key_exists (fun () ->
            Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
     |> (fun { CallableMetadataSharedMemory.Value.decorator_callees; _ } -> decorator_callees)
@@ -3440,6 +3458,7 @@ module ReadOnly = struct
     else
       let convert_to_method_id callable =
         callable
+        |> resolve_callable_id_exn api
         |> CallableMetadataSharedMemory.get callable_metadata_shared_memory
         |> assert_shared_memory_key_exists (fun () ->
                Format.asprintf "missing callable metadata: `%a`" FullyQualifiedName.pp callable)
@@ -3453,10 +3472,10 @@ module ReadOnly = struct
       |> List.map ~f:convert_to_method_id
 
 
-  let get_define_opt { callable_ast_shared_memory; _ } define_name =
+  let get_define_opt ({ callable_ast_shared_memory; _ } as api) define_name =
     CallableAstSharedMemory.get
       callable_ast_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
     |> assert_shared_memory_key_exists (fun () -> "missing callable ast")
 
 
@@ -3467,16 +3486,16 @@ module ReadOnly = struct
          callable_parse_result_shared_memory;
          callable_id_to_qualified_name_shared_memory;
          _;
-       } as _api)
+       } as api)
       define_name
     =
-    let fully_qualified_name = FullyQualifiedName.from_reference_unchecked define_name in
-    CallableMetadataSharedMemory.get callable_metadata_shared_memory fully_qualified_name
+    FullyQualifiedName.from_reference_unchecked define_name
+    |> resolve_callable_id api
+    >>= fun callable_id ->
+    CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
     >>| fun ({ CallableMetadataSharedMemory.Value.metadata; _ } as metadata_value) ->
     let define_signature_result =
-      CallableDefineSignatureSharedMemory.get
-        callable_define_signature_shared_memory
-        fully_qualified_name
+      CallableDefineSignatureSharedMemory.get callable_define_signature_shared_memory callable_id
       |> assert_shared_memory_key_exists (fun () ->
              Format.asprintf "missing callable define signature: `%a`" Reference.pp define_name)
     in
@@ -3485,7 +3504,7 @@ module ReadOnly = struct
       captures_from_metadata ~callable_id_to_qualified_name_shared_memory metadata_value
     in
     let is_stub_like =
-      is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory fully_qualified_name
+      is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory callable_id
     in
     let define_signature = AstResult.map ~f:Node.value define_signature_result in
     {
@@ -3510,27 +3529,31 @@ module ReadOnly = struct
     }
 
 
-  let get_undecorated_signatures { callable_undecorated_signatures_shared_memory; _ } define_name =
+  let get_undecorated_signatures
+      ({ callable_undecorated_signatures_shared_memory; _ } as api)
+      define_name
+    =
     CallableUndecoratedSignaturesSharedMemory.get
       callable_undecorated_signatures_shared_memory
-      (FullyQualifiedName.from_reference_unchecked define_name)
+      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
     |> assert_shared_memory_key_exists (fun () -> "missing callable undecorated signature")
 
 
   let get_model_parser_function_info
-      { callable_metadata_shared_memory; callable_undecorated_signatures_shared_memory; _ }
+      ({ callable_metadata_shared_memory; callable_undecorated_signatures_shared_memory; _ } as api)
       define_name
     =
-    let fully_qualified_name = FullyQualifiedName.from_reference_unchecked define_name in
-    let { CallableMetadataSharedMemory.Value.metadata; module_id; local_function_id; _ } =
-      CallableMetadataSharedMemory.get callable_metadata_shared_memory fully_qualified_name
+    let callable_id =
+      resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name)
+    in
+    let { CallableMetadataSharedMemory.Value.metadata; _ } =
+      CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
       |> assert_shared_memory_key_exists (fun () -> "missing callable metadata")
     in
-    let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
     let undecorated_signatures =
       CallableUndecoratedSignaturesSharedMemory.get
         callable_undecorated_signatures_shared_memory
-        fully_qualified_name
+        callable_id
     in
     let location =
       match metadata.name_location with
@@ -4005,13 +4028,14 @@ module ReadOnly = struct
          `FetchCallables.from_qualifier`. *)
       let relevant_callables =
         List.filter_map module_callables ~f:(fun qualified_name ->
+            let callable_id = resolve_callable_id_exn api qualified_name in
             let ({
                    CallableMetadataSharedMemory.Value.metadata =
                      { CallableMetadata.is_toplevel; is_class_toplevel; _ } as metadata;
                    _;
                  } as callable_metadata)
               =
-              CallableMetadataSharedMemory.get callable_metadata_shared_memory qualified_name
+              CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
               |> assert_shared_memory_key_exists (fun () ->
                      Format.asprintf
                        "missing callable metadata: `%a`"
@@ -4021,10 +4045,7 @@ module ReadOnly = struct
             if is_stub && (is_toplevel || is_class_toplevel) then
               None
             else if
-              is_stub_like_from_metadata
-                ~metadata
-                ~callable_parse_result_shared_memory
-                qualified_name
+              is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory callable_id
             then
               None
             else
@@ -4193,7 +4214,7 @@ module ReadOnly = struct
 
 
   let get_type_of_expression
-      { type_of_expressions_shared_memory; callable_metadata_shared_memory; _ }
+      ({ type_of_expressions_shared_memory; callable_metadata_shared_memory; _ } as api)
       ~define_name
       ~location
     =
@@ -4205,7 +4226,7 @@ module ReadOnly = struct
     | Some type_of_expressions_shared_memory ->
         CallableMetadataSharedMemory.get
           callable_metadata_shared_memory
-          (FullyQualifiedName.from_reference_unchecked define_name)
+          (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
         |> assert_shared_memory_key_exists (fun () ->
                Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
         |> fun { CallableMetadataSharedMemory.Value.module_id; local_function_id; _ } ->
@@ -4759,25 +4780,21 @@ module ModelQueries = struct
                  in
                  if Reference.equal local_part suffix then
                    match
-                     CallableMetadataSharedMemory.get
-                       callable_metadata_shared_memory
-                       fully_qualified_name
+                     ReadOnly.resolve_callable_id api fully_qualified_name
+                     >>| fun callable_id ->
+                     let metadata_value =
+                       CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
+                       |> assert_shared_memory_key_exists (fun () ->
+                              "missing metadata for callable")
+                     in
+                     callable_id, metadata_value
                    with
-                   | Some
-                       {
-                         CallableMetadataSharedMemory.Value.metadata;
-                         module_id;
-                         local_function_id;
-                         _;
-                       }
+                   | Some (callable_id, { CallableMetadataSharedMemory.Value.metadata; _ })
                      when Bool.equal is_property_setter metadata.is_property_setter ->
-                       let callable_id =
-                         PyreflyTypes.CallableId.encode ~module_id local_function_id
-                       in
                        let undecorated_signatures =
                          CallableUndecoratedSignaturesSharedMemory.get
                            callable_undecorated_signatures_shared_memory
-                           fully_qualified_name
+                           callable_id
                          |> assert_shared_memory_key_exists (fun () ->
                                 "missing undecorated signatures for callable")
                        in
@@ -4920,12 +4937,12 @@ module ModelQueries = struct
 
 
   let class_method_signatures
-      {
-        ReadOnly.class_metadata_shared_memory;
-        module_callables_shared_memory;
-        callable_define_signature_shared_memory;
-        _;
-      }
+      ({
+         ReadOnly.class_metadata_shared_memory;
+         module_callables_shared_memory;
+         callable_define_signature_shared_memory;
+         _;
+       } as api)
       class_name
     =
     match
@@ -4952,7 +4969,7 @@ module ModelQueries = struct
           let signature =
             CallableDefineSignatureSharedMemory.get
               callable_define_signature_shared_memory
-              callable_name
+              (ReadOnly.resolve_callable_id_exn api callable_name)
             |> assert_shared_memory_key_exists (fun () -> "missing signature for callable")
             |> AstResult.to_option
             >>| Node.value

@@ -258,6 +258,8 @@ end
 module CallableId : sig
   type t [@@deriving compare, equal, sexp, hash, show]
 
+  val to_int : t -> int
+
   val encode : module_id:ModuleId.t -> LocalFunctionId.t -> t
 
   val decode : t -> ModuleId.t * LocalFunctionId.t
@@ -273,6 +275,8 @@ module CallableId : sig
   val to_undecorated : t -> t
 end = struct
   type t = int [@@deriving sexp, hash]
+
+  let to_int = Fn.id
 
   let tag_shift = 59
 

@@ -94,6 +94,12 @@ module GlobalCallableIdSharedMemoryKey : sig
   val to_string : t -> string
 end
 
+module CallableIdSharedMemoryKey : sig
+  type t = PyreflyTypes.CallableId.t [@@deriving compare]
+
+  val to_string : t -> string
+end
+
 (* The name of a module without any path prefix. *)
 module ModuleName : sig
   type t [@@deriving compare, equal, sexp, hash, show]

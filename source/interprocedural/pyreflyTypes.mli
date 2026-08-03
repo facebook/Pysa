@@ -119,6 +119,8 @@ end
 module CallableId : sig
   type t [@@deriving compare, equal, sexp, hash, show]
 
+  val to_int : t -> int
+
   val encode : module_id:ModuleId.t -> LocalFunctionId.t -> t
 
   val decode : t -> ModuleId.t * LocalFunctionId.t
