@@ -98,7 +98,7 @@ let assert_call_graph_of_define
       ~override:false
       (Reference.create define_name)
   in
-  let expected = DefineCallGraphForTest.from_expected expected in
+  let expected = DefineCallGraphForTest.from_expected (expected pyrefly_api) in
   let actual, callables_to_definitions_map =
     compute_define_call_graph
       ~callable
@@ -120,8 +120,8 @@ let assert_call_graph_of_define
 
 let assert_higher_order_call_graph_of_define
     ?(object_targets = [])
-    ?(initial_state = CallGraphBuilder.HigherOrderCallGraph.State.empty)
-    ?(called_when_parameter = Target.HashSet.create ())
+    ?initial_state
+    ?called_when_parameter
     ?(maximum_parameterized_targets_at_call_site =
       Configuration.StaticAnalysis.default_maximum_parameterized_targets_at_call_site)
     ?callable
@@ -134,13 +134,6 @@ let assert_higher_order_call_graph_of_define
     context
   =
   let open CallGraphTestHelper in
-  let expected =
-    HigherOrderCallGraphForTest.from_expected
-      {
-        HigherOrderCallGraphForTest.Expected.returned_callables = expected_returned_callables;
-        call_graph = expected_call_graph;
-      }
-  in
   let module_name, pyrefly_api, configuration =
     TestHelper.setup_single_py_file
       ~requires_type_of_expressions:true
@@ -148,6 +141,14 @@ let assert_higher_order_call_graph_of_define
       ~context
       ~source
       ()
+  in
+  let expected =
+    HigherOrderCallGraphForTest.from_expected
+      {
+        HigherOrderCallGraphForTest.Expected.returned_callables =
+          expected_returned_callables pyrefly_api;
+        call_graph = expected_call_graph pyrefly_api;
+      }
   in
   let override_graph_shared_memory =
     module_name
@@ -157,9 +158,19 @@ let assert_higher_order_call_graph_of_define
     |> OverrideGraph.SharedMemory.from_heap
   in
   let () = OverrideGraph.SharedMemory.cleanup override_graph_shared_memory in
+  let initial_state =
+    match initial_state with
+    | Some initial_state -> initial_state pyrefly_api
+    | None -> CallGraphBuilder.HigherOrderCallGraph.State.empty
+  in
+  let called_when_parameter =
+    match called_when_parameter with
+    | Some called_when_parameter -> called_when_parameter pyrefly_api
+    | None -> Target.HashSet.create ()
+  in
   let callable =
     match callable with
-    | Some callable -> callable
+    | Some callable -> callable pyrefly_api
     | None ->
         Interprocedural.PyreflyApi.ReadOnly.target_from_define_name
           pyrefly_api
@@ -213,7 +224,7 @@ let assert_higher_order_call_graph_of_define
     actual
 
 
-let class_identifier_without_constructors class_name =
+let class_identifier_without_constructors pyrefly_api class_name =
   ExpressionCallees.from_identifier
     (IdentifierCallees.create
        ~if_called:
@@ -224,16 +235,22 @@ let class_identifier_without_constructors class_name =
                   ~implicit_receiver:true
                   ~return_type:(Some ReturnType.unknown)
                   ~receiver_class:class_name
-                  (Target.Regular.Method
-                     { class_name = "builtins.object"; method_name = "__init__"; kind = Normal });
+                  (InterproceduralTest.resolve_method_regular_exn
+                     ~pyrefly_api
+                     ~class_name:!&"builtins.object"
+                     ~method_name:"__init__"
+                     ());
               ]
             ~new_targets:
               [
                 CallTarget.create_regular
                   ~return_type:(Some ReturnType.unknown)
                   ~is_static_method:true
-                  (Target.Regular.Method
-                     { class_name = "builtins.object"; method_name = "__new__"; kind = Normal });
+                  (InterproceduralTest.resolve_method_regular_exn
+                     ~pyrefly_api
+                     ~class_name:!&"builtins.object"
+                     ~method_name:"__new__"
+                     ());
               ]
             ())
        ())
@@ -252,7 +269,7 @@ let test_call_graph_of_define =
          pass
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:4-3:9",
                  ExpressionCallees.from_call
@@ -260,10 +277,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -277,7 +296,7 @@ let test_call_graph_of_define =
          pass
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:4-3:9",
                  ExpressionCallees.from_call
@@ -287,10 +306,14 @@ let test_call_graph_of_define =
                           CallTarget.create
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.create_method !&"test.C" "m");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"m"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -306,7 +329,7 @@ let test_call_graph_of_define =
      def bar() -> bool: ...
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:5-3:10|artificial-call|comparison",
                  ExpressionCallees.from_call
@@ -324,7 +347,9 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
@@ -335,10 +360,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -353,7 +380,7 @@ let test_call_graph_of_define =
      def bar(): ...
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "3:5-3:10|artificial-call|comparison",
                  ExpressionCallees.from_call
@@ -368,7 +395,7 @@ let test_call_graph_of_define =
                       ~unresolved:
                         (CallGraph.Unresolved.True CallGraph.Unresolved.EmptyPyreflyCallTarget)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -384,7 +411,7 @@ let test_call_graph_of_define =
 
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:2-5:7",
                  ExpressionCallees.from_call
@@ -394,10 +421,14 @@ let test_call_graph_of_define =
                           CallTarget.create
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.create_method !&"test.C" "m");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"m"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -418,7 +449,7 @@ let test_call_graph_of_define =
          ...
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:2-5:7",
                  ExpressionCallees.from_call
@@ -428,10 +459,13 @@ let test_call_graph_of_define =
                           CallTarget.create
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.create_override !&"test.C" "m");
+                            (InterproceduralTest.resolve_override_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"m");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -451,7 +485,7 @@ let test_call_graph_of_define =
          ...
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:2-5:7",
                  ExpressionCallees.from_call
@@ -461,14 +495,22 @@ let test_call_graph_of_define =
                           CallTarget.create
                             ~implicit_receiver:true
                             ~receiver_class:"test.D"
-                            (Target.create_method !&"test.C" "m");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"m"
+                               ());
                           CallTarget.create
                             ~implicit_receiver:true
                             ~receiver_class:"test.D"
-                            (Target.create_method !&"test.E" "m");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.E"
+                               ~method_name:"m"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -480,7 +522,7 @@ let test_call_graph_of_define =
        c(1)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:3-5:7",
                  ExpressionCallees.from_call
@@ -491,10 +533,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~implicit_dunder_call:true
                             ~receiver_class:"test.C"
-                            (Target.create_method !&"test.C" "__call__");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__call__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -507,7 +553,7 @@ let test_call_graph_of_define =
        c(1)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:3-6:7",
                  ExpressionCallees.from_call
@@ -518,10 +564,14 @@ let test_call_graph_of_define =
                             ~implicit_dunder_call:true
                             ~return_type:(Some ReturnType.bool)
                             ~is_static_method:true
-                            (Target.create_method !&"test.C" "__call__");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__call__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -533,7 +583,7 @@ let test_call_graph_of_define =
        c.__call__(1)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:3-5:4|identifier|c",
                  ExpressionCallees.from_identifier
@@ -547,7 +597,11 @@ let test_call_graph_of_define =
                                  ~implicit_dunder_call:true
                                  ~return_type:(Some ReturnType.unknown)
                                  ~receiver_class:"test.C"
-                                 (Target.create_method !&"test.C" "__call__");
+                                 (InterproceduralTest.resolve_method_target_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.C"
+                                    ~method_name:"__call__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -560,10 +614,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
                             ~receiver_class:"test.C"
-                            (Target.create_method !&"test.C" "__call__");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__call__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -576,7 +634,7 @@ let test_call_graph_of_define =
        c(1)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:3-6:7",
                  ExpressionCallees.from_call
@@ -588,10 +646,14 @@ let test_call_graph_of_define =
                             ~implicit_dunder_call:true
                             ~return_type:(Some ReturnType.bool)
                             ~receiver_class:"test.C"
-                            (Target.create_method !&"test.C" "__call__");
+                            (InterproceduralTest.resolve_method_target_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__call__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -603,7 +665,7 @@ let test_call_graph_of_define =
          C()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:2-5:5",
                  ExpressionCallees.from_call
@@ -612,23 +674,25 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "__init__"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -637,7 +701,7 @@ let test_call_graph_of_define =
          return int(x)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:9-3:15",
                  ExpressionCallees.from_call
@@ -647,27 +711,25 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~new_targets:
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.int";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.int"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -679,7 +741,7 @@ let test_call_graph_of_define =
          C()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:2-5:5",
                  ExpressionCallees.from_call
@@ -689,23 +751,25 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.unknown)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~new_targets:
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.unknown)
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "__new__"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -718,7 +782,7 @@ let test_call_graph_of_define =
          B()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:2-6:5",
                  ExpressionCallees.from_call
@@ -727,23 +791,25 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.B"
-                            (Target.Regular.Method
-                               { class_name = "test.B"; method_name = "__init__"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.B"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -756,7 +822,7 @@ let test_call_graph_of_define =
          B()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:2-6:5",
                  ExpressionCallees.from_call
@@ -766,23 +832,25 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.unknown)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~new_targets:
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.unknown)
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               { class_name = "test.B"; method_name = "__new__"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.B"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -797,7 +865,7 @@ let test_call_graph_of_define =
           c.p = c.p
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:2-8:5",
                  ExpressionCallees.from_attribute_access
@@ -807,12 +875,12 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "test.C";
-                                 method_name = "p@setter";
-                                 kind = PropertySetter;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~is_property_setter:true
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"p"
+                               ());
                         ]
                       ~is_attribute:false
                       ()) );
@@ -825,12 +893,15 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "p"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"p"
+                               ());
                         ]
                       ~is_attribute:false
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -843,7 +914,7 @@ let test_call_graph_of_define =
           C.f()
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:2-6:3|identifier|C",
                  ExpressionCallees.from_identifier
@@ -854,24 +925,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -883,11 +952,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -901,9 +973,9 @@ let test_call_graph_of_define =
           c.f()
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               "6:2-6:3|identifier|C", class_identifier_without_constructors "test.C";
+               "6:2-6:3|identifier|C", class_identifier_without_constructors pyrefly_api "test.C";
                ( "6:2-6:7",
                  ExpressionCallees.from_call
                    (CallCallees.create
@@ -914,8 +986,11 @@ let test_call_graph_of_define =
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
                ( "7:2-7:7",
@@ -929,11 +1004,14 @@ let test_call_graph_of_define =
                             ~is_class_method:true
                             ~index:1
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -959,7 +1037,7 @@ let test_call_graph_of_define =
       B.foo()
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "19:2-19:3|identifier|B",
                  ExpressionCallees.from_identifier
@@ -970,24 +1048,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.B"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -1000,11 +1076,15 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"test.B"
                             ~is_class_method:true
-                            (Target.Regular.Method
-                               { class_name = "test.B"; method_name = "foo"; kind = Normal });
+                            (* `test.B` defines `foo` twice (two conditional `@classmethod`
+                               branches), so the bare-name method resolver is ambiguous; resolve by
+                               the exact define name the call graph uses instead. *)
+                            (InterproceduralTest.resolve_define_name_regular_exn
+                               ~pyrefly_api
+                               !&"test.B.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1024,7 +1104,7 @@ let test_call_graph_of_define =
             pass
       |}
            ~define_name:"test.A.f"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:13-5:21",
                  ExpressionCallees.from_call
@@ -1034,11 +1114,13 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Override
-                               { class_name = "test.A"; method_name = "g"; kind = Normal });
+                            (InterproceduralTest.resolve_override_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"g");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1047,7 +1129,7 @@ let test_call_graph_of_define =
           1 > 2
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:2-3:7|artificial-call|comparison",
                  ExpressionCallees.from_call
@@ -1058,15 +1140,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
                             ~receiver_class:"builtins.int"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.int";
-                                 method_name = "__gt__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.int"
+                               ~method_name:"__gt__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1075,7 +1156,7 @@ let test_call_graph_of_define =
           1 > 2 > 3
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:2-3:7|artificial-call|comparison",
                  ExpressionCallees.from_call
@@ -1086,12 +1167,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
                             ~receiver_class:"builtins.int"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.int";
-                                 method_name = "__gt__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.int"
+                               ~method_name:"__gt__"
+                               ());
                         ]
                       ()) );
                ( "3:6-3:11|artificial-call|comparison",
@@ -1104,15 +1184,14 @@ let test_call_graph_of_define =
                             ~return_type:(Some ReturnType.bool)
                             ~receiver_class:"builtins.int"
                             ~index:1
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.int";
-                                 method_name = "__gt__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.int"
+                               ~method_name:"__gt__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1125,7 +1204,7 @@ let test_call_graph_of_define =
         repr(c)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:2-6:9",
                  ExpressionCallees.from_call
@@ -1133,7 +1212,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "builtins.repr"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.repr");
                         ]
                       ()) );
                ( "6:2-6:9|artificial-call|repr-call",
@@ -1144,11 +1225,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "__repr__"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"__repr__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1162,7 +1246,7 @@ let test_call_graph_of_define =
         partial(f, 1)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:10-7:11|identifier|f",
                  ExpressionCallees.from_identifier
@@ -1172,7 +1256,9 @@ let test_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.f"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.f");
                              ]
                            ())
                       ()) );
@@ -1183,23 +1269,21 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "functools.partial";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"functools.partial"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~shim_target:
                         (Some
@@ -1207,7 +1291,9 @@ let test_call_graph_of_define =
                              ShimTarget.call_targets =
                                [
                                  CallTarget.create_regular
-                                   (Target.Regular.Function { name = "test.f"; kind = Normal });
+                                   (InterproceduralTest.resolve_function_regular_exn
+                                      ~pyrefly_api
+                                      !&"test.f");
                                ];
                              decorated_targets = [];
                              argument_mapping =
@@ -1225,7 +1311,7 @@ let test_call_graph_of_define =
                                };
                            })
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1237,7 +1323,7 @@ let test_call_graph_of_define =
         pass
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "2:10-2:15",
                  ExpressionCallees.from_call
@@ -1245,10 +1331,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1266,7 +1354,7 @@ let test_call_graph_of_define =
           super().f(1)
       |}
            ~define_name:"test.D.g"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "11:4-11:11",
                  ExpressionCallees.from_call
@@ -1275,24 +1363,22 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.super"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.super";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.super"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "11:4-11:16",
@@ -1304,11 +1390,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.D"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1326,9 +1415,9 @@ let test_call_graph_of_define =
         C.f(c, 1)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               "11:2-11:3|identifier|C", class_identifier_without_constructors "test.C";
+               "11:2-11:3|identifier|C", class_identifier_without_constructors pyrefly_api "test.C";
                ( "11:2-11:11",
                  ExpressionCallees.from_call
                    (CallCallees.create
@@ -1336,11 +1425,14 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1365,9 +1457,9 @@ let test_call_graph_of_define =
         D.g()
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               "16:2-16:3|identifier|C", class_identifier_without_constructors "test.C";
+               "16:2-16:3|identifier|C", class_identifier_without_constructors pyrefly_api "test.C";
                ( "16:2-16:11",
                  ExpressionCallees.from_call
                    (CallCallees.create
@@ -1378,11 +1470,14 @@ let test_call_graph_of_define =
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-               "17:2-17:3|identifier|D", class_identifier_without_constructors "test.D";
+               "17:2-17:3|identifier|D", class_identifier_without_constructors pyrefly_api "test.D";
                ( "17:2-17:7",
                  ExpressionCallees.from_call
                    (CallCallees.create
@@ -1393,11 +1488,14 @@ let test_call_graph_of_define =
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
                             ~receiver_class:"test.D"
-                            (Target.Regular.Method
-                               { class_name = "test.D"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.D"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-               "18:2-18:3|identifier|D", class_identifier_without_constructors "test.D";
+               "18:2-18:3|identifier|D", class_identifier_without_constructors pyrefly_api "test.D";
                ( "18:2-18:7",
                  ExpressionCallees.from_call
                    (CallCallees.create
@@ -1407,11 +1505,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~is_class_method:true
                             ~receiver_class:"test.D"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "g"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"g"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1427,7 +1528,7 @@ let test_call_graph_of_define =
         hof(bar, 1)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "9:2-9:13",
                  ExpressionCallees.from_call
@@ -1436,7 +1537,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.bool)
-                            (Target.Regular.Function { name = "test.hof"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.hof");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -1447,7 +1550,9 @@ let test_call_graph_of_define =
                                  [
                                    CallTarget.create_regular
                                      ~return_type:(Some ReturnType.integer)
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -1462,11 +1567,13 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1486,7 +1593,7 @@ let test_call_graph_of_define =
         hof(foo, bar, 1)
       |}
            ~define_name:"test.test"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "13:2-13:18",
                  ExpressionCallees.from_call
@@ -1495,7 +1602,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.bool)
-                            (Target.Regular.Function { name = "test.hof"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.hof");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -1506,7 +1615,9 @@ let test_call_graph_of_define =
                                  [
                                    CallTarget.create_regular
                                      ~return_type:(Some ReturnType.integer)
-                                     (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.foo");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -1516,7 +1627,9 @@ let test_call_graph_of_define =
                                  [
                                    CallTarget.create_regular
                                      ~return_type:(Some ReturnType.integer)
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -1531,7 +1644,9 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
@@ -1544,11 +1659,13 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1568,7 +1685,7 @@ let test_call_graph_of_define =
           return False
       |}
            ~define_name:"test.Permission.action_name"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "11:11-11:21",
                  ExpressionCallees.from_attribute_access
@@ -1578,8 +1695,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Permission"
-                            (Target.Regular.Method
-                               { class_name = "test.Enum"; method_name = "value"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Enum"
+                               ~method_name:"value"
+                               ());
                         ]
                       ~is_attribute:false
                       ()) );
@@ -1590,10 +1710,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "builtins.len"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.len");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1602,7 +1724,7 @@ let test_call_graph_of_define =
         return map(lambda x: x, [0])
       |}
            ~define_name:"test.test"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:9-3:30",
                  ExpressionCallees.from_call
@@ -1611,23 +1733,21 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.map";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.map"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -1639,7 +1759,7 @@ let test_call_graph_of_define =
                              };
                            ])
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1663,7 +1783,7 @@ let test_call_graph_of_define =
             builder.set_not_saved("true").set_saved("false")
    |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "16:14-16:23",
                  ExpressionCallees.from_call
@@ -1672,24 +1792,22 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Builder"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "test.Builder";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Builder"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "17:4-17:33",
@@ -1700,12 +1818,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Builder"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "test.Builder";
-                                 method_name = "set_not_saved";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Builder"
+                               ~method_name:"set_not_saved"
+                               ());
                         ]
                       ()) );
                ( "17:4-17:52",
@@ -1716,15 +1833,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Builder"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "test.Builder";
-                                 method_name = "set_saved";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Builder"
+                               ~method_name:"set_saved"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1739,7 +1855,7 @@ let test_call_graph_of_define =
         f()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:2-8:5",
                  ExpressionCallees.from_call
@@ -1748,10 +1864,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.f"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.f");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Imprecise call graph due to `@lru_cache` and inner functions. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -1768,7 +1886,7 @@ let test_call_graph_of_define =
         c.m(1)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "9:2-9:8",
                  ExpressionCallees.from_call
@@ -1779,11 +1897,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "m"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"m"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1799,7 +1920,7 @@ let test_call_graph_of_define =
         inner()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:2-7:12",
                  ExpressionCallees.from_define
@@ -1808,7 +1929,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.none)
-                            (Target.Regular.Function { name = "test.foo.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.inner");
                         ]
                       ()) );
                ( "9:2-9:9",
@@ -1818,10 +1941,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.foo.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.inner");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1836,7 +1961,7 @@ let test_call_graph_of_define =
         result = [c.run() for c in cs]
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:19-7:22",
                  ExpressionCallees.from_call
@@ -1845,24 +1970,22 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "8:14-8:21",
@@ -1873,8 +1996,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "run"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"run"
+                               ());
                         ]
                       ()) );
                ( "8:31-8:33|artificial-call|generator-iter",
@@ -1885,12 +2011,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "8:31-8:33|artificial-call|generator-next",
@@ -1901,15 +2026,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Ensure we don't infinite loop when resolving callable classes. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -1929,7 +2053,7 @@ let test_call_graph_of_define =
       c()
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "12:2-12:5",
                  ExpressionCallees.from_call
@@ -1937,7 +2061,7 @@ let test_call_graph_of_define =
                       ~unresolved:
                         (CallGraph.Unresolved.True CallGraph.Unresolved.UnexpectedPyreflyTarget)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -1951,7 +2075,7 @@ let test_call_graph_of_define =
         def to_cm() -> ContextManager[int]: ...
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "4:7-4:14",
                  ExpressionCallees.from_call
@@ -1959,7 +2083,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.to_cm"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.to_cm");
                         ]
                       ()) );
                ( "4:7-4:14|artificial-call|with-enter",
@@ -1968,7 +2094,7 @@ let test_call_graph_of_define =
                       ~unresolved:
                         (CallGraph.Unresolved.True CallGraph.Unresolved.UnexpectedPyreflyTarget)
                       ()) );
-             ]
+             ])
            ();
       (* Only the last attribute is a setter for chained property setter calls. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -1987,7 +2113,7 @@ let test_call_graph_of_define =
           c.p.p = c
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "11:2-11:5",
                  ExpressionCallees.from_attribute_access
@@ -1997,8 +2123,11 @@ let test_call_graph_of_define =
                          CallTarget.create_regular
                            ~implicit_receiver:true
                            ~receiver_class:"test.C"
-                           (Target.Regular.Method
-                              { class_name = "test.C"; method_name = "p"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.C"
+                              ~method_name:"p"
+                              ());
                        ];
                      global_targets = [];
                      is_attribute = false;
@@ -2012,18 +2141,18 @@ let test_call_graph_of_define =
                          CallTarget.create_regular
                            ~implicit_receiver:true
                            ~receiver_class:"test.C"
-                           (Target.Regular.Method
-                              {
-                                class_name = "test.C";
-                                method_name = "p@setter";
-                                kind = PropertySetter;
-                              });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~is_property_setter:true
+                              ~pyrefly_api
+                              ~class_name:!&"test.C"
+                              ~method_name:"p"
+                              ());
                        ];
                      global_targets = [];
                      is_attribute = false;
                      if_called = CallCallees.empty;
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2038,7 +2167,7 @@ let test_call_graph_of_define =
           C.f(c)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:2-7:7",
                  ExpressionCallees.from_call
@@ -2049,8 +2178,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
                ( "8:2-8:3|identifier|C",
@@ -2062,24 +2194,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -2091,11 +2221,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~index:1
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2119,7 +2252,7 @@ let test_call_graph_of_define =
         y = c_or_e.foo
     |}
            ~define_name:"test.uses_foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "16:6-16:16",
                  ExpressionCallees.from_attribute_access
@@ -2128,12 +2261,18 @@ let test_call_graph_of_define =
                        [
                          CallTarget.create_regular
                            ~implicit_receiver:true
-                           (Target.Regular.Method
-                              { class_name = "test.C"; method_name = "foo"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.C"
+                              ~method_name:"foo"
+                              ());
                          CallTarget.create_regular
                            ~implicit_receiver:true
-                           (Target.Regular.Method
-                              { class_name = "test.D"; method_name = "foo"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.D"
+                              ~method_name:"foo"
+                              ());
                        ];
                      global_targets = [];
                      is_attribute = false;
@@ -2148,14 +2287,17 @@ let test_call_graph_of_define =
                            ~implicit_receiver:true
                            ~index:1
                            ~return_type:(Some ReturnType.integer)
-                           (Target.Regular.Method
-                              { class_name = "test.C"; method_name = "foo"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.C"
+                              ~method_name:"foo"
+                              ());
                        ];
                      global_targets = [];
                      is_attribute = true;
                      if_called = CallCallees.empty;
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2177,7 +2319,7 @@ let test_call_graph_of_define =
         x = c_or_d.foo
     |}
            ~define_name:"test.uses_foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:6-15:16",
                  ExpressionCallees.from_attribute_access
@@ -2187,14 +2329,17 @@ let test_call_graph_of_define =
                          CallTarget.create_regular
                            ~implicit_receiver:true
                            ~return_type:(Some ReturnType.integer)
-                           (Target.Regular.Method
-                              { class_name = "test.C"; method_name = "foo"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.C"
+                              ~method_name:"foo"
+                              ());
                        ];
                      global_targets = [];
                      is_attribute = false;
                      if_called = CallCallees.empty;
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2213,7 +2358,7 @@ let test_call_graph_of_define =
       |}
            ~define_name:"test.calls_d_method"
            ~object_targets:[Target.Regular.Object "test.d"]
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "11:2-11:3|identifier|d",
                  ExpressionCallees.from_identifier
@@ -2233,12 +2378,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__getitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__getitem__"
+                               ());
                         ]
                       ()) );
                ( "11:2-11:12",
@@ -2250,11 +2394,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~is_class_method:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "foo"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"foo"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2277,7 +2424,7 @@ let test_call_graph_of_define =
          )
       |}
            ~define_name:"test.fun"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:2-10:7",
                  ExpressionCallees.from_call
@@ -2285,7 +2432,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "10:2-10:20|artificial-call|subscript-set-item",
@@ -2296,12 +2445,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
                ( "10:15-10:20",
@@ -2311,7 +2459,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
                ( "11:2-11:18|artificial-call|subscript-set-item",
@@ -2323,12 +2473,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
                             ~index:1
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
                ( "11:4-11:9",
@@ -2337,7 +2486,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                         ]
                       ()) );
                ( "11:13-11:18",
@@ -2348,7 +2499,9 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
                             ~index:1
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
                ( "12:2-12:8|artificial-call|subscript-get-item",
@@ -2359,12 +2512,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__getitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__getitem__"
+                               ());
                         ]
                       ()) );
                ( "12:2-12:17|artificial-call|subscript-set-item",
@@ -2376,12 +2528,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
                             ~index:2
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
                ( "13:2-13:13|artificial-call|subscript-set-item",
@@ -2393,12 +2544,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
                             ~index:3
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
                ( "14:2-16:3|artificial-call|subscript-set-item",
@@ -2410,15 +2560,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.dict"
                             ~index:4
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.dict";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.dict"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2431,7 +2580,7 @@ let test_call_graph_of_define =
         inner(x)
   |}
            ~define_name:"test.outer"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:2-4:12",
                  ExpressionCallees.from_define
@@ -2439,7 +2588,9 @@ let test_call_graph_of_define =
                       ~define_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.outer.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.outer.inner");
                         ]
                       ()) );
                ( "6:2-6:10",
@@ -2448,10 +2599,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.outer.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.outer.inner");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2465,7 +2618,7 @@ let test_call_graph_of_define =
           inner(x)
   |}
            ~define_name:"test.Foo.outer"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "4:4-5:10",
                  ExpressionCallees.from_define
@@ -2473,8 +2626,9 @@ let test_call_graph_of_define =
                       ~define_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function
-                               { name = "test.Foo.outer.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.Foo.outer.inner");
                         ]
                       ()) );
                ( "7:4-7:12",
@@ -2483,11 +2637,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function
-                               { name = "test.Foo.outer.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.Foo.outer.inner");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2501,7 +2656,7 @@ let test_call_graph_of_define =
        return f"hello {c.m()}"
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:9-7:25|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
@@ -2514,12 +2669,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.str"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.str";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.str"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:18-7:23",
                  ExpressionCallees.from_call
@@ -2529,11 +2683,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "m"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"m"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2548,7 +2705,7 @@ let test_call_graph_of_define =
        return c.attribute()
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:9-8:20",
                  ExpressionCallees.from_attribute_access
@@ -2558,8 +2715,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "attribute"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"attribute"
+                               ());
                         ]
                       ~is_attribute:false
                       ~if_called:
@@ -2574,7 +2734,7 @@ let test_call_graph_of_define =
                       ~unresolved:
                         (CallGraph.Unresolved.True CallGraph.Unresolved.UnexpectedPyreflyTarget)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2591,7 +2751,7 @@ let test_call_graph_of_define =
          bar(x)
       |}
            ~define_name:"test.test"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:11-8:16",
                  ExpressionCallees.from_call
@@ -2599,7 +2759,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "10:4-10:10",
@@ -2608,10 +2770,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2628,7 +2792,7 @@ let test_call_graph_of_define =
          bar(x)
       |}
            ~define_name:"test.test"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:4-10:10",
                  ExpressionCallees.from_call
@@ -2636,7 +2800,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
                ( "8:10-8:21",
@@ -2646,27 +2812,25 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.BaseException";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.BaseException"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.Exception"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.BaseException";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.BaseException"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* TODO(T105570363): Resolve calls with mixed function and methods. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -2686,7 +2850,7 @@ let test_call_graph_of_define =
           g()
   |}
            ~define_name:"test.f"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:11-10:25|artificial-call|for-iter",
                  ExpressionCallees.from_call
@@ -2696,12 +2860,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "10:11-10:25|artificial-call|for-next",
@@ -2712,12 +2875,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
                ( "10:12-10:19",
@@ -2731,8 +2893,11 @@ let test_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.Foo"
-                                 (Target.Regular.Method
-                                    { class_name = "test.Foo"; method_name = "bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.Foo"
+                                    ~method_name:"bar"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -2744,7 +2909,9 @@ let test_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
@@ -2754,15 +2921,20 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* TODO(T105570363): Resolve calls with mixed function and constructors. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -2781,7 +2953,7 @@ let test_call_graph_of_define =
           g()
   |}
            ~define_name:"test.f"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:4-10:7",
                  ExpressionCallees.from_call
@@ -2789,30 +2961,30 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ~new_targets:
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "9:11-9:21|artificial-call|for-iter",
@@ -2823,12 +2995,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "9:11-9:21|artificial-call|for-next",
@@ -2839,12 +3010,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
                ( "9:12-9:15|identifier|Foo",
@@ -2856,24 +3026,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.Foo"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -2885,11 +3053,13 @@ let test_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       (* Well-typed decorators are 'safely' ignored (when not inlined). *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -2917,7 +3087,7 @@ let test_call_graph_of_define =
         foo(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "20:2-20:8",
                  ExpressionCallees.from_call
@@ -2925,10 +3095,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Decorated });
+                            (InterproceduralTest.resolve_function_regular_decorated_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -2956,7 +3128,7 @@ let test_call_graph_of_define =
         foo.bar(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "21:2-21:12",
                  ExpressionCallees.from_call
@@ -2966,11 +3138,13 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Decorated });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Partially-typed decorators are 'safely' ignored (when not inlined). *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -2995,7 +3169,7 @@ let test_call_graph_of_define =
         foo(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "17:2-17:8",
                  ExpressionCallees.from_call
@@ -3004,10 +3178,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.foo"; kind = Decorated });
+                            (InterproceduralTest.resolve_function_regular_decorated_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3032,7 +3208,7 @@ let test_call_graph_of_define =
         foo.bar(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "18:2-18:12",
                  ExpressionCallees.from_call
@@ -3043,11 +3219,13 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Decorated });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Untyped decorators are 'safely' ignored (when not inlined). *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -3065,7 +3243,7 @@ let test_call_graph_of_define =
         foo(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:2-10:8",
                  ExpressionCallees.from_call
@@ -3073,10 +3251,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Decorated });
+                            (InterproceduralTest.resolve_function_regular_decorated_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3094,7 +3274,7 @@ let test_call_graph_of_define =
         foo.bar(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "11:2-11:12",
                  ExpressionCallees.from_call
@@ -3104,11 +3284,13 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Decorated });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Well-typed decorators with @classmethod or @staticmethod. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -3138,7 +3320,7 @@ let test_call_graph_of_define =
         Foo.bar(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "22:2-22:12",
                  ExpressionCallees.from_call
@@ -3149,8 +3331,10 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~is_class_method:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Decorated });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar");
                         ]
                       ()) );
                ( "22:2-22:5|identifier|Foo",
@@ -3162,28 +3346,26 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.Foo"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3212,7 +3394,7 @@ let test_call_graph_of_define =
         Foo.bar(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "22:2-22:12",
                  ExpressionCallees.from_call
@@ -3221,8 +3403,10 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Decorated });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar");
                         ]
                       ()) );
                ( "22:2-22:5|identifier|Foo",
@@ -3234,28 +3418,26 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.Foo"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3285,7 +3467,7 @@ let test_call_graph_of_define =
           cls.bar(1)
     |}
            ~define_name:"test.Foo.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "23:4-23:14",
                  ExpressionCallees.from_call
@@ -3296,8 +3478,10 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~is_class_method:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               { class_name = "test.Foo"; method_name = "bar"; kind = Decorated });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Foo"
+                               ~method_name:"bar");
                         ]
                       ()) );
                ( "23:4-23:7|identifier|cls",
@@ -3309,28 +3493,26 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.Foo"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       (* Decorators with type errors. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -3356,7 +3538,7 @@ let test_call_graph_of_define =
         foo(1)
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "18:2-18:8",
                  ExpressionCallees.from_call
@@ -3364,10 +3546,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Decorated });
+                            (InterproceduralTest.resolve_function_regular_decorated_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Resolving __call__ via __getattr__ when a union including self type is involved. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -3385,7 +3569,7 @@ let test_call_graph_of_define =
         y = print(x.attribute)
     |}
            ~define_name:"test.baz"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:6-10:24",
                  ExpressionCallees.from_call
@@ -3393,10 +3577,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "builtins.print"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.print");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Detecting a __call__ picked up via __getattr__ redirection *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -3418,7 +3604,7 @@ let test_call_graph_of_define =
         y = print(x.attribute)
     |}
            ~define_name:"test.baz"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "14:12-14:23",
                  ExpressionCallees.from_attribute_access
@@ -3432,12 +3618,11 @@ let test_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
                                  ~receiver_class:"test.CallableClass"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "test.CallableClass";
-                                      method_name = "__call__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.CallableClass"
+                                    ~method_name:"__call__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -3447,7 +3632,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "builtins.print"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.print");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -3460,18 +3647,17 @@ let test_call_graph_of_define =
                                      ~implicit_receiver:true
                                      ~implicit_dunder_call:true
                                      ~receiver_class:"test.CallableClass"
-                                     (Target.Regular.Method
-                                        {
-                                          class_name = "test.CallableClass";
-                                          method_name = "__call__";
-                                          kind = Normal;
-                                        });
+                                     (InterproceduralTest.resolve_method_regular_exn
+                                        ~pyrefly_api
+                                        ~class_name:!&"test.CallableClass"
+                                        ~method_name:"__call__"
+                                        ());
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
                            ])
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3488,7 +3674,7 @@ let test_call_graph_of_define =
         return obj.token, obj2.token2
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "9:9-9:18",
                  ExpressionCallees.from_attribute_access
@@ -3499,7 +3685,7 @@ let test_call_graph_of_define =
                      is_attribute = true;
                      if_called = CallCallees.empty;
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3522,7 +3708,7 @@ let test_call_graph_of_define =
         return obj.attribute
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "14:9-14:22",
                  ExpressionCallees.from_attribute_access
@@ -3536,7 +3722,7 @@ let test_call_graph_of_define =
                      is_attribute = true;
                      if_called = CallCallees.empty;
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3555,7 +3741,7 @@ let test_call_graph_of_define =
         return request.access_token.token
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "11:9-11:35",
                  ExpressionCallees.from_attribute_access
@@ -3563,7 +3749,7 @@ let test_call_graph_of_define =
                       ~global_targets:
                         [CallTarget.create_regular (Target.Regular.Object "test.Token.token")]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3577,7 +3763,7 @@ let test_call_graph_of_define =
         return getattr(obj, "token", None)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:9-6:36",
                  ExpressionCallees.from_call
@@ -3585,7 +3771,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "builtins.getattr"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.getattr");
                         ]
                       ()) );
                ( "6:9-6:36|artificial-attribute-access|get-attr-constant-literal",
@@ -3604,7 +3792,7 @@ let test_call_graph_of_define =
                          ~unresolved:(Unresolved.True Unresolved.EmptyPyreflyCallTarget)
                          ();
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3618,7 +3806,7 @@ let test_call_graph_of_define =
         return obj.__setattr__(obj, "token", x)
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "6:9-6:41",
                  ExpressionCallees.from_call
@@ -3626,7 +3814,7 @@ let test_call_graph_of_define =
                       ~unresolved:
                         (CallGraph.Unresolved.True CallGraph.Unresolved.UnresolvedMagicDunderAttr)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3640,7 +3828,8 @@ let test_call_graph_of_define =
         obj.attribute = "value"
     |}
            ~define_name:"test.foo"
-           ~expected:[] (* TODO(T137969662): We should see a call to `Test.__setattr__` *)
+           ~expected:(fun _pyrefly_api -> [])
+             (* TODO(T137969662): We should see a call to `Test.__setattr__` *)
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3651,7 +3840,7 @@ let test_call_graph_of_define =
         return x
     |}
            ~define_name:"test.foo"
-           ~expected:[]
+           ~expected:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3665,7 +3854,7 @@ let test_call_graph_of_define =
         return f"{a}{b}{c}{d}{w}{x}{y}{z}{e}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:12-7:13|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3674,12 +3863,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.int"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.int";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.int"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:15-7:16|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3688,12 +3876,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.float"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.float";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.float"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:18-7:19|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3702,12 +3889,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.str"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.str";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.str"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:24-7:25|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3716,12 +3902,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.object"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.object";
-                               method_name = "__repr__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.object"
+                             ~method_name:"__repr__"
+                             ());
                       ]) );
                ( "7:27-7:28|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3731,12 +3916,11 @@ let test_call_graph_of_define =
                           ~implicit_receiver:true
                           ~index:1
                           ~receiver_class:"builtins.int"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.int";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.int"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:30-7:31|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3745,12 +3929,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~index:1
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.str";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.str"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:33-7:34|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3760,18 +3943,17 @@ let test_call_graph_of_define =
                           ~implicit_receiver:true
                           ~index:1
                           ~receiver_class:"builtins.float"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.float";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.float"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "7:9-7:39|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3785,7 +3967,7 @@ let test_call_graph_of_define =
           return True
     |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:6-3:19|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
@@ -3798,14 +3980,16 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.bool)
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
                ( "4:9-4:15|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create ~index:1 Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3814,7 +3998,7 @@ let test_call_graph_of_define =
         return f"{x}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:12-3:13|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3823,18 +4007,17 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.object"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.object";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.object"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "3:9-3:15|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3843,7 +4026,7 @@ let test_call_graph_of_define =
         return f"{x}:{x}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:12-3:13|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3852,12 +4035,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.object"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.object";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.object"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "3:16-3:17|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -3867,18 +4049,17 @@ let test_call_graph_of_define =
                           ~implicit_receiver:true
                           ~index:1
                           ~receiver_class:"builtins.object"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.object";
-                               method_name = "__format__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.object"
+                             ~method_name:"__format__"
+                             ());
                       ]) );
                ( "3:9-3:19|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3887,13 +4068,13 @@ let test_call_graph_of_define =
         return f"{x}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "3:9-3:15|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3907,7 +4088,7 @@ let test_call_graph_of_define =
         "hello %s" % a
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:6-6:9",
                  ExpressionCallees.from_call
@@ -3916,24 +4097,22 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "7:2-7:16|artificial-call|binary",
@@ -3943,15 +4122,14 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.str";
-                                 method_name = "__mod__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.str"
+                               ~method_name:"__mod__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -3962,7 +4140,7 @@ let test_call_graph_of_define =
         f"{type(e)}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:2-3:8|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
@@ -3975,12 +4153,11 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.Exception"
-                          (Target.Regular.Method
-                             {
-                               class_name = "builtins.BaseException";
-                               method_name = "__str__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.BaseException"
+                             ~method_name:"__str__"
+                             ());
                       ]) );
                ( "4:2-4:14|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
@@ -3993,29 +4170,27 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.type";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.type"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.type"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.type";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.type"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~unresolved:
                         (CallGraph.Unresolved.True CallGraph.Unresolved.UnexpectedDefiningClass)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4025,13 +4200,13 @@ let test_call_graph_of_define =
         return f"{error_type}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "3:9-3:24|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4041,13 +4216,13 @@ let test_call_graph_of_define =
         return f"{error_type}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "3:9-3:24|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4063,13 +4238,13 @@ let test_call_graph_of_define =
         f"{x.__class__}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "8:2-8:18|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4083,7 +4258,7 @@ let test_call_graph_of_define =
         f"{x.__class__}"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:2-6:18|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
@@ -4101,28 +4276,26 @@ let test_call_graph_of_define =
                            [
                              CallTarget.create_regular
                                ~is_static_method:true
-                               (Target.Regular.Method
-                                  {
-                                    class_name = "builtins.object";
-                                    method_name = "__new__";
-                                    kind = Normal;
-                                  });
+                               (InterproceduralTest.resolve_method_regular_exn
+                                  ~pyrefly_api
+                                  ~class_name:!&"builtins.object"
+                                  ~method_name:"__new__"
+                                  ());
                            ]
                          ~init_targets:
                            [
                              CallTarget.create_regular
                                ~implicit_receiver:true
                                ~receiver_class:"test.A"
-                               (Target.Regular.Method
-                                  {
-                                    class_name = "builtins.object";
-                                    method_name = "__init__";
-                                    kind = Normal;
-                                  });
+                               (InterproceduralTest.resolve_method_regular_exn
+                                  ~pyrefly_api
+                                  ~class_name:!&"builtins.object"
+                                  ~method_name:"__init__"
+                                  ());
                            ]
                          ();
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4132,7 +4305,7 @@ let test_call_graph_of_define =
         return str(e) + "hello"
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:9-3:15",
                  ExpressionCallees.from_call
@@ -4141,23 +4314,21 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.str";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.str"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "3:9-3:15|artificial-call|str-call-to-dunder-method",
@@ -4168,12 +4339,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.Exception"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.BaseException";
-                                 method_name = "__str__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.BaseException"
+                               ~method_name:"__str__"
+                               ());
                         ]
                       ()) );
                ( "3:9-3:25|artificial-call|binary",
@@ -4184,15 +4354,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.str"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.str";
-                                 method_name = "__add__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.str"
+                               ~method_name:"__add__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4212,7 +4381,7 @@ let test_call_graph_of_define =
          bar()
   |}
            ~define_name:"test.baz"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "9:4-9:9",
                  ExpressionCallees.from_call
@@ -4221,7 +4390,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:0
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "10:4-10:9",
@@ -4231,7 +4402,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:1
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "11:4-11:9",
@@ -4241,7 +4414,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:0
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
                ( "12:4-12:9",
@@ -4251,7 +4426,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:2
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "13:4-13:9",
@@ -4261,10 +4438,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:1
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4277,7 +4456,7 @@ let test_call_graph_of_define =
          foo(foo(), foo(foo()))
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:4-6:26",
                  ExpressionCallees.from_call
@@ -4286,7 +4465,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:0
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "6:8-6:13",
@@ -4296,7 +4477,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:1
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "6:15-6:25",
@@ -4306,7 +4489,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:2
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "6:19-6:24",
@@ -4316,10 +4501,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:3
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4348,7 +4535,7 @@ let test_call_graph_of_define =
               x.foo()
   |}
            ~define_name:"test.test"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:4-15:11",
                  ExpressionCallees.from_call
@@ -4357,8 +4544,11 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               { class_name = "test.A"; method_name = "foo"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"foo"
+                               ());
                         ]
                       ()) );
                ( "16:21-16:22|identifier|C",
@@ -4370,24 +4560,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -4398,7 +4586,9 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.bool)
-                            (Target.Regular.Function { name = "builtins.isinstance"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.isinstance");
                         ]
                       ()) );
                ( "17:8-17:15",
@@ -4410,8 +4600,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~index:1
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.A"; method_name = "foo"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"foo"
+                               ());
                         ]
                       ()) );
                ( "19:8-19:15",
@@ -4423,8 +4616,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~index:2
                             ~receiver_class:"test.B"
-                            (Target.Regular.Method
-                               { class_name = "test.A"; method_name = "foo"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"foo"
+                               ());
                         ]
                       ()) );
                ( "21:21-21:22|identifier|B",
@@ -4436,24 +4632,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.B"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -4465,7 +4659,9 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~index:1
                             ~return_type:(Some ReturnType.bool)
-                            (Target.Regular.Function { name = "builtins.isinstance"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"builtins.isinstance");
                         ]
                       ()) );
                ( "22:8-22:15",
@@ -4477,11 +4673,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~index:3
                             ~receiver_class:"test.B"
-                            (Target.Regular.Method
-                               { class_name = "test.A"; method_name = "foo"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"foo"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Test the return type when using type variables. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -4494,7 +4693,7 @@ let test_call_graph_of_define =
          return l.__iter__().__next__()
       |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:9-5:21",
                  ExpressionCallees.from_call
@@ -4505,12 +4704,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.unknown)
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "5:9-5:32",
@@ -4522,15 +4720,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"typing.Iterator"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4542,7 +4739,7 @@ let test_call_graph_of_define =
          return l[0]
       |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:9-5:13|artificial-call|subscript-get-item",
                  ExpressionCallees.from_call
@@ -4552,15 +4749,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__getitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__getitem__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4583,7 +4779,7 @@ let test_call_graph_of_define =
          return foo(0)
       |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "16:9-16:15",
                  ExpressionCallees.from_call
@@ -4592,10 +4788,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4612,7 +4810,7 @@ let test_call_graph_of_define =
          return foo(0)
       |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:9-10:15",
                  ExpressionCallees.from_call
@@ -4621,10 +4819,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* Nested defines. *)
       labeled_test_case __FUNCTION__ __LINE__
@@ -4641,7 +4841,7 @@ let test_call_graph_of_define =
          return bar
       |}
            ~define_name:"test.foo.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:11-7:17",
                  ExpressionCallees.from_call
@@ -4650,10 +4850,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4672,7 +4874,7 @@ let test_call_graph_of_define =
            return None
       |}
            ~define_name:"test.foo.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:13-8:19",
                  ExpressionCallees.from_call
@@ -4681,10 +4883,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4710,7 +4914,7 @@ let test_call_graph_of_define =
            child.query(1)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "18:4-18:17",
                  ExpressionCallees.from_call
@@ -4720,12 +4924,10 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Base"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.Base";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Base"
+                               ~method_name:"query");
                         ]
                       ()) );
                ( "19:4-19:18",
@@ -4737,15 +4939,13 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~index:1
                             ~receiver_class:"test.Child"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.Base";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.Base"
+                               ~method_name:"query");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4775,7 +4975,7 @@ let test_call_graph_of_define =
            child.query(1)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "22:4-22:17",
                  ExpressionCallees.from_call
@@ -4785,12 +4985,10 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.BaseA"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.BaseA";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.BaseA"
+                               ~method_name:"query");
                         ]
                       ()) );
                ( "23:4-23:18",
@@ -4802,15 +5000,13 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~index:1
                             ~receiver_class:"test.Child"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.BaseA";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.BaseA"
+                               ~method_name:"query");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -4835,7 +5031,7 @@ let test_call_graph_of_define =
           functools.partial(cls.h, arg)
       |}
            ~define_name:"test.C.g"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:4-15:14",
                  ExpressionCallees.from_call
@@ -4846,8 +5042,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~is_class_method:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
                ( "15:4-15:7|identifier|cls",
@@ -4859,24 +5058,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -4889,24 +5086,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -4922,8 +5117,11 @@ let test_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~is_class_method:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    { class_name = "test.C"; method_name = "f"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.C"
+                                    ~method_name:"f"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -4934,23 +5132,21 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "functools.partial";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"functools.partial"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~shim_target:
                         (Some
@@ -4962,8 +5158,11 @@ let test_call_graph_of_define =
                                    ~is_class_method:true
                                    ~index:1
                                    ~receiver_class:"test.C"
-                                   (Target.Regular.Method
-                                      { class_name = "test.C"; method_name = "f"; kind = Normal });
+                                   (InterproceduralTest.resolve_method_regular_exn
+                                      ~pyrefly_api
+                                      ~class_name:!&"test.C"
+                                      ~method_name:"f"
+                                      ());
                                ];
                              decorated_targets = [];
                              argument_mapping =
@@ -4990,8 +5189,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~is_class_method:true
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               { class_name = "test.C"; method_name = "h"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"h"
+                               ());
                         ]
                       ()) );
                ( "17:4-17:7|identifier|cls",
@@ -5003,24 +5205,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -5033,24 +5233,22 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ~init_targets:
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -5066,8 +5264,11 @@ let test_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~is_class_method:true
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    { class_name = "test.C"; method_name = "h"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.C"
+                                    ~method_name:"h"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -5079,24 +5280,22 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~is_static_method:true
                             ~index:1
-                            (Target.Regular.Method
-                               {
-                                 class_name = "functools.partial";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"functools.partial"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:1
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~shim_target:
                         (Some
@@ -5108,8 +5307,11 @@ let test_call_graph_of_define =
                                    ~is_class_method:true
                                    ~index:1
                                    ~receiver_class:"test.C"
-                                   (Target.Regular.Method
-                                      { class_name = "test.C"; method_name = "h"; kind = Normal });
+                                   (InterproceduralTest.resolve_method_regular_exn
+                                      ~pyrefly_api
+                                      ~class_name:!&"test.C"
+                                      ~method_name:"h"
+                                      ());
                                ];
                              decorated_targets = [];
                              argument_mapping =
@@ -5127,7 +5329,7 @@ let test_call_graph_of_define =
                                };
                            })
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5159,7 +5361,7 @@ let test_call_graph_of_define =
           child_d.query(1)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "22:4-22:17",
                  ExpressionCallees.from_call
@@ -5169,12 +5371,10 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.A";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"query");
                         ]
                       ()) );
                ( "23:4-23:20",
@@ -5186,12 +5386,10 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~index:1
                             ~receiver_class:"test.B"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.A";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"query");
                         ]
                       ()) );
                ( "24:4-24:20",
@@ -5203,12 +5401,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.C";
-                                 method_name = "query";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.C"
+                               ~method_name:"query"
+                               ());
                         ]
                       ()) );
                ( "25:4-25:20",
@@ -5220,15 +5417,14 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~receiver_class:"test.D"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.D";
-                                 method_name = "query";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.D"
+                               ~method_name:"query"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5251,7 +5447,7 @@ let test_call_graph_of_define =
           base.query(arg)
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "16:4-16:19",
                  ExpressionCallees.from_call
@@ -5261,15 +5457,13 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.A";
-                                 method_name = "query";
-                                 kind = Decorated;
-                               });
+                            (InterproceduralTest.resolve_method_regular_decorated_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"query");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5280,7 +5474,7 @@ let test_call_graph_of_define =
            pass
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "3:17-3:18|artificial-call|for-iter",
                  ExpressionCallees.from_call
@@ -5295,7 +5489,7 @@ let test_call_graph_of_define =
                         (CallGraph.Unresolved.True
                            CallGraph.Unresolved.UnresolvedMagicDunderAttrDueToNoBase)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5321,7 +5515,7 @@ let test_call_graph_of_define =
          x = (x async for x in l2)  # Generator comprehension
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:24-10:26|artificial-call|generator-iter",
                  ExpressionCallees.from_call
@@ -5368,7 +5562,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.g"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.g");
                         ]
                       ()) );
                ( "13:18-13:25",
@@ -5379,8 +5575,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               { class_name = "test.A"; method_name = "f"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.A"
+                               ~method_name:"f"
+                               ());
                         ]
                       ()) );
                ( "13:18-13:25|artificial-call|generator-iter",
@@ -5474,7 +5673,7 @@ let test_call_graph_of_define =
                         (CallGraph.Unresolved.True
                            CallGraph.Unresolved.UnresolvedMagicDunderAttrDueToNoBase)
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5488,7 +5687,7 @@ let test_call_graph_of_define =
          ([x async for x in l], x.foo())
       |}
            ~define_name:"test.f"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:21-7:22|artificial-call|generator-iter",
                  ExpressionCallees.from_call
@@ -5511,15 +5710,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.B"
-                            (Target.Regular.Method
-                               {
-                                 Target.Method.class_name = "test.B";
-                                 method_name = "foo";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"test.B"
+                               ~method_name:"foo"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5542,7 +5740,7 @@ let test_call_graph_of_define =
         pass
     |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "12:2-12:8",
                  ExpressionCallees.from_call
@@ -5550,7 +5748,9 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                         ]
                       ()) );
                ( "13:2-13:8",
@@ -5560,10 +5760,12 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~index:1
-                            (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.baz");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5578,7 +5780,7 @@ let test_call_graph_of_define =
         return x.bar
     |}
            ~define_name:"test.foo"
-           ~expected:[]
+           ~expected:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5599,7 +5801,7 @@ let test_call_graph_of_define =
           self.B.get("")
      |}
            ~define_name:"test.A.self_readonly"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "13:4-13:10",
                  ExpressionCallees.from_attribute_access
@@ -5617,11 +5819,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"typing.MutableMapping"
-                            (Target.Regular.Method
-                               { class_name = "typing.Mapping"; method_name = "get"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Mapping"
+                               ~method_name:"get"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5640,7 +5845,7 @@ let test_call_graph_of_define =
           self.B.get("")
     |}
            ~define_name:"test.A.self_untyped"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "11:4-11:10",
                  ExpressionCallees.from_attribute_access
@@ -5658,11 +5863,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"typing.MutableMapping"
-                            (Target.Regular.Method
-                               { class_name = "typing.Mapping"; method_name = "get"; kind = Normal });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Mapping"
+                               ~method_name:"get"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5673,7 +5881,7 @@ let test_call_graph_of_define =
         x = "str"
       |}
            ~define_name:"test.foo"
-           ~expected:[]
+           ~expected:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5686,7 +5894,7 @@ let test_call_graph_of_define =
           x = "str"
       |}
            ~define_name:"test.outer.inner"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "6:4-6:5|identifier|x",
                  ExpressionCallees.from_identifier
@@ -5697,7 +5905,7 @@ let test_call_graph_of_define =
                             { name = "x"; defining_function = Reference.create "test.outer" };
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5709,7 +5917,7 @@ let test_call_graph_of_define =
           y = x
       |}
            ~define_name:"test.outer.inner"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "5:8-5:9|identifier|x",
                  ExpressionCallees.from_identifier
@@ -5720,7 +5928,7 @@ let test_call_graph_of_define =
                             { name = "x"; defining_function = Reference.create "test.outer" };
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5730,7 +5938,7 @@ let test_call_graph_of_define =
      def bar(): ...
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:9-3:12|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -5740,11 +5948,13 @@ let test_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5754,7 +5964,7 @@ let test_call_graph_of_define =
      def bar(): ...
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:8-3:11|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -5764,11 +5974,13 @@ let test_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5780,7 +5992,7 @@ let test_call_graph_of_define =
        return c.m
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:9-5:12",
                  ExpressionCallees.from_attribute_access
@@ -5795,12 +6007,15 @@ let test_call_graph_of_define =
                              CallTarget.create_regular
                                ~implicit_receiver:true
                                ~receiver_class:"test.C"
-                               (Target.Regular.Method
-                                  { class_name = "test.C"; method_name = "m"; kind = Normal });
+                               (InterproceduralTest.resolve_method_regular_exn
+                                  ~pyrefly_api
+                                  ~class_name:!&"test.C"
+                                  ~method_name:"m"
+                                  ());
                            ]
                          ();
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5810,7 +6025,7 @@ let test_call_graph_of_define =
        return inner
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "3:2-3:18",
                  ExpressionCallees.from_define
@@ -5818,7 +6033,9 @@ let test_call_graph_of_define =
                       ~define_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo.inner"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.inner");
                         ]
                       ()) );
                ( "4:9-4:14|identifier|inner",
@@ -5829,11 +6046,13 @@ let test_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.foo.inner"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo.inner");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5847,7 +6066,7 @@ let test_call_graph_of_define =
          bar(after_code)
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:20-6:35|artificial-call|for-iter",
                  ExpressionCallees.from_call
@@ -5857,12 +6076,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "6:20-6:35|artificial-call|for-next",
@@ -5873,12 +6091,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
                ( "7:4-7:19",
@@ -5887,10 +6104,12 @@ let test_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5922,7 +6141,7 @@ let test_call_graph_of_define =
         return foo
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "25:2-25:12",
                  ExpressionCallees.from_return
@@ -5930,15 +6149,21 @@ let test_call_graph_of_define =
                      ReturnShimCallees.call_targets =
                        [
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee_1"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee_1"
+                              ());
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee_2"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee_2"
+                              ());
                        ];
                      arguments = [ReturnShimCallees.ReturnExpression];
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5960,7 +6185,7 @@ let test_call_graph_of_define =
         return foo
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:2-15:12",
                  ExpressionCallees.from_return
@@ -5968,12 +6193,15 @@ let test_call_graph_of_define =
                      ReturnShimCallees.call_targets =
                        [
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee"
+                              ());
                        ];
                      arguments = [ReturnShimCallees.ReturnExpression];
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -5995,7 +6223,7 @@ let test_call_graph_of_define =
         return [foo]
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:2-15:14",
                  ExpressionCallees.from_return
@@ -6003,12 +6231,15 @@ let test_call_graph_of_define =
                      ReturnShimCallees.call_targets =
                        [
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee"
+                              ());
                        ];
                      arguments = [ReturnShimCallees.ReturnExpressionElement];
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6030,7 +6261,7 @@ let test_call_graph_of_define =
         return [foo]
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:2-15:14",
                  ExpressionCallees.from_return
@@ -6038,12 +6269,15 @@ let test_call_graph_of_define =
                      ReturnShimCallees.call_targets =
                        [
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee"
+                              ());
                        ];
                      arguments = [ReturnShimCallees.ReturnExpressionElement];
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6065,7 +6299,7 @@ let test_call_graph_of_define =
         return {foo}
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:2-15:14",
                  ExpressionCallees.from_return
@@ -6073,12 +6307,15 @@ let test_call_graph_of_define =
                      ReturnShimCallees.call_targets =
                        [
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee"
+                              ());
                        ];
                      arguments = [ReturnShimCallees.ReturnExpressionElement];
                    } );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6100,7 +6337,7 @@ let test_call_graph_of_define =
         return Foo()  # Test co-existence of return callees and expression callees
     |}
            ~define_name:"test.caller"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "15:2-15:14",
                  ExpressionCallees.from_return
@@ -6108,8 +6345,11 @@ let test_call_graph_of_define =
                      ReturnShimCallees.call_targets =
                        [
                          CallTarget.create_regular
-                           (Target.Regular.Method
-                              { class_name = "test.Foo"; method_name = "callee"; kind = Normal });
+                           (InterproceduralTest.resolve_method_regular_exn
+                              ~pyrefly_api
+                              ~class_name:!&"test.Foo"
+                              ~method_name:"callee"
+                              ());
                        ];
                      arguments = [ReturnShimCallees.ReturnExpression];
                    } );
@@ -6120,27 +6360,25 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.Foo"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       (* `for x[0] in y` is desugared into `x[0] = y.__iter__().__next__()`, then `x.__setitem__(0,
          y.__iter__().__next__())`. This exercises the combination of SubscriptSetItem nested inside
@@ -6155,7 +6393,7 @@ let test_call_graph_of_define =
            pass
       |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "4:14-4:15|artificial-call|for-iter",
                  ExpressionCallees.from_call
@@ -6165,12 +6403,11 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "4:14-4:15|artificial-call|for-next",
@@ -6182,12 +6419,11 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
                ( "4:6-4:15|artificial-call|for-assign>subscript-set-item",
@@ -6198,15 +6434,14 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
     ]
 
@@ -6249,7 +6484,7 @@ let test_call_graph_of_define_foo_and_bar =
       @@ assert_call_graph_of_define
            ~source
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "21:6-21:9",
                  ExpressionCallees.from_call
@@ -6258,24 +6493,22 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "22:6-22:9",
@@ -6286,12 +6519,11 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~index:1
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
@@ -6299,12 +6531,11 @@ let test_call_graph_of_define_foo_and_bar =
                             ~implicit_receiver:true
                             ~index:1
                             ~receiver_class:"test.B"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "23:6-23:9",
@@ -6315,12 +6546,11 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~index:2
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
@@ -6328,12 +6558,11 @@ let test_call_graph_of_define_foo_and_bar =
                             ~implicit_receiver:true
                             ~index:2
                             ~receiver_class:"test.C"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "24:6-24:9",
@@ -6344,12 +6573,11 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~index:3
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
@@ -6357,12 +6585,11 @@ let test_call_graph_of_define_foo_and_bar =
                             ~implicit_receiver:true
                             ~index:3
                             ~receiver_class:"test.D"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "25:12-25:13|format-string-stringify",
@@ -6372,8 +6599,11 @@ let test_call_graph_of_define_foo_and_bar =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"test.A"
-                          (Target.Regular.Method
-                             { class_name = "test.A"; method_name = "__str__"; kind = Normal });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"test.A"
+                             ~method_name:"__str__"
+                             ());
                       ]) );
                ( "25:20-25:21|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -6382,8 +6612,11 @@ let test_call_graph_of_define_foo_and_bar =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"test.B"
-                          (Target.Regular.Method
-                             { class_name = "test.B"; method_name = "__repr__"; kind = Normal });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"test.B"
+                             ~method_name:"__repr__"
+                             ());
                       ]) );
                ( "25:28-25:29|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -6392,8 +6625,11 @@ let test_call_graph_of_define_foo_and_bar =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"test.C"
-                          (Target.Regular.Method
-                             { class_name = "test.C"; method_name = "__str__"; kind = Normal });
+                          (InterproceduralTest.resolve_method_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"test.C"
+                             ~method_name:"__str__"
+                             ());
                       ]) );
                ( "25:31-25:32|format-string-stringify",
                  ExpressionCallees.from_format_string_stringify
@@ -6402,30 +6638,28 @@ let test_call_graph_of_define_foo_and_bar =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~receiver_class:"builtins.object"
-                          (Target.Regular.Override
-                             {
-                               class_name = "builtins.object";
-                               method_name = "__repr__";
-                               kind = Normal;
-                             });
+                          (InterproceduralTest.resolve_override_regular_exn
+                             ~pyrefly_api
+                             ~class_name:!&"builtins.object"
+                             ~method_name:"__repr__");
                       ]) );
                ( "25:9-25:34|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
            ~source
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun _pyrefly_api ->
              [
                ( "28:9-28:15|format-string-artificial",
                  ExpressionCallees.from_format_string_artificial
                    (FormatStringArtificialCallees.from_f_string_targets
                       [CallTarget.create Target.ArtificialTargets.format_string]) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6439,7 +6673,7 @@ let test_call_graph_of_define_foo_and_bar =
        foo(bar)
   |}
            ~define_name:"test.baz"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "7:2-7:10",
                  ExpressionCallees.from_call
@@ -6447,7 +6681,9 @@ let test_call_graph_of_define_foo_and_bar =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -6457,7 +6693,9 @@ let test_call_graph_of_define_foo_and_bar =
                                call_targets =
                                  [
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -6471,11 +6709,13 @@ let test_call_graph_of_define_foo_and_bar =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6500,7 +6740,7 @@ let test_call_graph_of_define_foo_and_bar =
          return identity(foo2)
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "16:11-16:25",
                  ExpressionCallees.from_call
@@ -6508,7 +6748,9 @@ let test_call_graph_of_define_foo_and_bar =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.identity"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.identity");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -6519,7 +6761,9 @@ let test_call_graph_of_define_foo_and_bar =
                                  [
                                    CallTarget.create_regular
                                      ~return_type:(Some ReturnType.integer)
-                                     (Target.Regular.Function { name = "test.foo1"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.foo1");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -6534,7 +6778,9 @@ let test_call_graph_of_define_foo_and_bar =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo1"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo1");
                              ]
                            ())
                       ()) );
@@ -6545,7 +6791,9 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~index:1
-                            (Target.Regular.Function { name = "test.identity"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.identity");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -6556,8 +6804,9 @@ let test_call_graph_of_define_foo_and_bar =
                                  [
                                    CallTarget.create_regular
                                      ~return_type:(Some ReturnType.integer)
-                                     (Target.Regular.Function
-                                        { name = "test.foo2"; kind = Decorated });
+                                     (InterproceduralTest.resolve_function_regular_decorated_exn
+                                        ~pyrefly_api
+                                        !&"test.foo2");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -6572,11 +6821,13 @@ let test_call_graph_of_define_foo_and_bar =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo2"; kind = Decorated });
+                                 (InterproceduralTest.resolve_function_regular_decorated_exn
+                                    ~pyrefly_api
+                                    !&"test.foo2");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6597,7 +6848,7 @@ let test_call_graph_of_define_foo_and_bar =
        return C(0)  # Redirect `__init__` and `__new__`
   |}
            ~define_name:"test.foo"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "14:9-14:13",
                  ExpressionCallees.from_call
@@ -6607,27 +6858,25 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~is_static_method:true
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6643,7 +6892,7 @@ let test_call_graph_of_define_foo_and_bar =
        foo(a)
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:6-8:9",
                  ExpressionCallees.from_call
@@ -6652,24 +6901,22 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "9:2-9:8",
@@ -6678,7 +6925,9 @@ let test_call_graph_of_define_foo_and_bar =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -6691,12 +6940,11 @@ let test_call_graph_of_define_foo_and_bar =
                                      ~implicit_receiver:true
                                      ~implicit_dunder_call:true
                                      ~receiver_class:"test.A"
-                                     (Target.Regular.Method
-                                        {
-                                          class_name = "test.A";
-                                          method_name = "__call__";
-                                          kind = Normal;
-                                        });
+                                     (InterproceduralTest.resolve_method_regular_exn
+                                        ~pyrefly_api
+                                        ~class_name:!&"test.A"
+                                        ~method_name:"__call__"
+                                        ());
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -6713,16 +6961,15 @@ let test_call_graph_of_define_foo_and_bar =
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "test.A";
-                                      method_name = "__call__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"__call__"
+                                    ());
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       (* Same test as above, but should NOT lead to higher order parameter since
        * the callee has a body and is annotated. *)
@@ -6740,7 +6987,7 @@ let test_call_graph_of_define_foo_and_bar =
        foo(a)
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "8:6-8:9",
                  ExpressionCallees.from_call
@@ -6749,24 +6996,22 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "9:2-9:8",
@@ -6775,7 +7020,9 @@ let test_call_graph_of_define_foo_and_bar =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "9:6-9:7|identifier|a",
@@ -6789,16 +7036,15 @@ let test_call_graph_of_define_foo_and_bar =
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "test.A";
-                                      method_name = "__call__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"__call__"
+                                    ());
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6815,7 +7061,7 @@ let test_call_graph_of_define_foo_and_bar =
        foo(a)
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "10:2-10:8",
                  ExpressionCallees.from_call
@@ -6823,7 +7069,9 @@ let test_call_graph_of_define_foo_and_bar =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "10:6-10:7|identifier|a",
@@ -6837,12 +7085,11 @@ let test_call_graph_of_define_foo_and_bar =
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "test.A";
-                                      method_name = "__call__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"__call__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -6853,27 +7100,25 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
@@ -6893,7 +7138,7 @@ let test_call_graph_of_define_foo_and_bar =
        foo(a)
   |}
            ~define_name:"test.bar"
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
                ( "12:6-12:9",
                  ExpressionCallees.from_call
@@ -6902,24 +7147,22 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ~init_targets:
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ()) );
                ( "13:2-13:8",
@@ -6928,7 +7171,9 @@ let test_call_graph_of_define_foo_and_bar =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "13:6-13:7|identifier|a",
@@ -6942,16 +7187,14 @@ let test_call_graph_of_define_foo_and_bar =
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Override
-                                    {
-                                      class_name = "test.A";
-                                      method_name = "__call__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_override_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"__call__");
                              ]
                            ())
                       ()) );
-             ]
+             ])
            ();
     ]
 
@@ -6969,7 +7212,7 @@ let test_higher_order_call_graph_of_define =
        pass
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:8-3:11|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -6979,12 +7222,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -6995,7 +7240,7 @@ let test_higher_order_call_graph_of_define =
        pass
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:8-3:11|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -7005,16 +7250,18 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
-                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
-             ]
+                 (InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar");
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7025,7 +7272,7 @@ let test_higher_order_call_graph_of_define =
        pass
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:9-3:12|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -7035,16 +7282,18 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
-                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
-             ]
+                 (InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar");
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7056,7 +7305,7 @@ let test_higher_order_call_graph_of_define =
        pass
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:15-3:18|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -7066,16 +7315,18 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
-                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
-             ]
+                 (InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar");
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7089,7 +7340,7 @@ let test_higher_order_call_graph_of_define =
        pass
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:2-3:15",
                  ExpressionCallees.from_call
@@ -7099,14 +7350,20 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create
                             (create_parameterized_target
                                ~regular:
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal })
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar")
                                ~parameters:
                                  [
                                    ( create_positional_parameter 0 "x",
-                                     Target.Regular.Function { name = "test.foo"; kind = Normal }
+                                     InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.foo"
                                      |> Target.from_regular );
                                    ( create_positional_parameter 1 "y",
-                                     Target.Regular.Function { name = "test.baz"; kind = Normal }
+                                     InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.baz"
                                      |> Target.from_regular );
                                  ]);
                         ]
@@ -7119,7 +7376,9 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
@@ -7131,12 +7390,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7151,7 +7412,7 @@ let test_higher_order_call_graph_of_define =
        bar(1, 2)
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "7:2-7:13",
                  ExpressionCallees.from_call
@@ -7161,11 +7422,15 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create
                             (create_parameterized_target
                                ~regular:
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal })
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar")
                                ~parameters:
                                  [
                                    ( create_positional_parameter 0 "x",
-                                     Target.Regular.Function { name = "test.baz"; kind = Normal }
+                                     InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.baz"
                                      |> Target.from_regular );
                                  ]);
                         ]
@@ -7178,7 +7443,9 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
@@ -7188,11 +7455,13 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7208,7 +7477,7 @@ let test_higher_order_call_graph_of_define =
        _test_sink(bar)
   |}
            ~define_name:"test.baz"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "8:2-8:10",
                  ExpressionCallees.from_call
@@ -7216,7 +7485,9 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -7226,7 +7497,9 @@ let test_higher_order_call_graph_of_define =
                                call_targets =
                                  [
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -7240,7 +7513,9 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
@@ -7250,7 +7525,9 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "pysa._test_sink"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"pysa._test_sink");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -7261,7 +7538,9 @@ let test_higher_order_call_graph_of_define =
                                  [
                                    CallTarget.create_regular
                                      ~index:1
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -7275,12 +7554,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7299,7 +7580,7 @@ let test_higher_order_call_graph_of_define =
         foo(baz, 0)
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "12:3-12:14",
                  ExpressionCallees.from_call
@@ -7307,7 +7588,9 @@ let test_higher_order_call_graph_of_define =
                       ~decorated_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Decorated });
+                            (InterproceduralTest.resolve_function_regular_decorated_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ()) );
                ( "12:7-12:10|identifier|baz",
@@ -7318,12 +7601,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7337,7 +7622,7 @@ let test_higher_order_call_graph_of_define =
        bar(y=baz, x=0)
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "7:2-7:17",
                  ExpressionCallees.from_call
@@ -7347,11 +7632,15 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create
                             (create_parameterized_target
                                ~regular:
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal })
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar")
                                ~parameters:
                                  [
                                    ( create_positional_parameter 1 "y",
-                                     Target.Regular.Function { name = "test.baz"; kind = Normal }
+                                     InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.baz"
                                      |> Target.from_regular );
                                  ]);
                         ]
@@ -7364,12 +7653,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7381,7 +7672,7 @@ let test_higher_order_call_graph_of_define =
        return g
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "5:2-5:6",
                  ExpressionCallees.from_call
@@ -7389,24 +7680,26 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.bar");
                         ]
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
-                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
-             ]
-           ~initial_state:
-             (CallGraphBuilder.HigherOrderCallGraph.State.of_list
-                [
-                  ( AccessPath.Root.Variable "g",
-                    Target.Regular.Function { name = "test.bar"; kind = Normal }
-                    |> Target.from_regular
-                    |> CallTarget.create
-                    |> CallTarget.Set.singleton );
-                ])
+                 (InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar");
+             ])
+           ~initial_state:(fun pyrefly_api ->
+             CallGraphBuilder.HigherOrderCallGraph.State.of_list
+               [
+                 ( AccessPath.Root.Variable "g",
+                   InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar"
+                   |> Target.from_regular
+                   |> CallTarget.create
+                   |> CallTarget.Set.singleton );
+               ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7420,7 +7713,7 @@ let test_higher_order_call_graph_of_define =
        return bar(baz)
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "7:9-7:17",
                  ExpressionCallees.from_call
@@ -7430,11 +7723,15 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create
                             (create_parameterized_target
                                ~regular:
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal })
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar")
                                ~parameters:
                                  [
                                    ( create_positional_parameter 0 "x",
-                                     Target.Regular.Function { name = "test.baz"; kind = Normal }
+                                     InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.baz"
                                      |> Target.from_regular );
                                  ]);
                         ]
@@ -7447,12 +7744,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7475,7 +7774,7 @@ let test_higher_order_call_graph_of_define =
          return a.baz
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "12:11-12:12|identifier|A",
                  ExpressionCallees.from_identifier
@@ -7488,24 +7787,22 @@ let test_higher_order_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__init__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__init__"
+                                    ());
                              ]
                            ~new_targets:
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.unknown)
                                  ~is_static_method:true
-                                 (Target.Regular.Method
-                                    {
-                                      class_name = "builtins.object";
-                                      method_name = "__new__";
-                                      kind = Normal;
-                                    });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"builtins.object"
+                                    ~method_name:"__new__"
+                                    ());
                              ]
                            ())
                       ()) );
@@ -7521,8 +7818,11 @@ let test_higher_order_call_graph_of_define =
                                  ~return_type:(Some ReturnType.unknown)
                                  ~receiver_class:"test.A"
                                  ~is_class_method:true
-                                 (Target.Regular.Method
-                                    { class_name = "test.A"; method_name = "bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"bar"
+                                    ());
                              ]
                            ())
                       ~is_attribute:false
@@ -7536,24 +7836,22 @@ let test_higher_order_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.unknown)
                             ~receiver_class:"test.A"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__init__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__init__"
+                               ());
                         ]
                       ~new_targets:
                         [
                           CallTarget.create_regular
                             ~return_type:(Some ReturnType.unknown)
                             ~is_static_method:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.object";
-                                 method_name = "__new__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.object"
+                               ~method_name:"__new__"
+                               ());
                         ]
                       ()) );
                ( "14:11-14:18",
@@ -7567,8 +7865,11 @@ let test_higher_order_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Method
-                                    { class_name = "test.A"; method_name = "baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"baz"
+                                    ());
                              ]
                            ())
                       ~is_attribute:false
@@ -7584,29 +7885,38 @@ let test_higher_order_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
                                  ~receiver_class:"test.A"
-                                 (Target.Regular.Method
-                                    { class_name = "test.A"; method_name = "baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.A"
+                                    ~method_name:"baz"
+                                    ());
                              ]
                            ())
                       ~is_attribute:false
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
                  ~implicit_receiver:true
                  ~return_type:(Some ReturnType.unknown)
                  ~receiver_class:"test.A"
                  ~is_class_method:true
-                 (Target.Regular.Method
-                    { class_name = "test.A"; method_name = "bar"; kind = Normal });
+                 (InterproceduralTest.resolve_method_regular_exn
+                    ~pyrefly_api
+                    ~class_name:!&"test.A"
+                    ~method_name:"bar"
+                    ());
                CallTarget.create_regular
                  ~implicit_receiver:true
                  ~return_type:(Some ReturnType.unknown)
                  ~receiver_class:"test.A"
-                 (Target.Regular.Method
-                    { class_name = "test.A"; method_name = "baz"; kind = Normal });
-             ]
+                 (InterproceduralTest.resolve_method_regular_exn
+                    ~pyrefly_api
+                    ~class_name:!&"test.A"
+                    ~method_name:"baz"
+                    ());
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7619,7 +7929,7 @@ let test_higher_order_call_graph_of_define =
        return c.foo
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "6:9-6:14",
                  ExpressionCallees.from_attribute_access
@@ -7632,22 +7942,28 @@ let test_higher_order_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.integer)
                                  ~receiver_class:"test.C"
-                                 (Target.Regular.Method
-                                    { class_name = "test.C"; method_name = "foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_method_regular_exn
+                                    ~pyrefly_api
+                                    ~class_name:!&"test.C"
+                                    ~method_name:"foo"
+                                    ());
                              ]
                            ())
                       ~is_attribute:false
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
                  ~implicit_receiver:true
                  ~return_type:(Some ReturnType.integer)
                  ~receiver_class:"test.C"
-                 (Target.Regular.Method
-                    { class_name = "test.C"; method_name = "foo"; kind = Normal });
-             ]
+                 (InterproceduralTest.resolve_method_regular_exn
+                    ~pyrefly_api
+                    ~class_name:!&"test.C"
+                    ~method_name:"foo"
+                    ());
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7660,7 +7976,7 @@ let test_higher_order_call_graph_of_define =
        return x
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "5:6-5:9|identifier|foo",
                  ExpressionCallees.from_identifier
@@ -7671,7 +7987,9 @@ let test_higher_order_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
@@ -7684,17 +8002,19 @@ let test_higher_order_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:
+             ])
+           ~expected_returned_callables:(fun pyrefly_api ->
              [
                CallTarget.create_regular
                  ~return_type:(Some ReturnType.integer)
-                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
-             ]
+                 (InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo");
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7710,7 +8030,7 @@ let test_higher_order_call_graph_of_define =
        return c.f
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "8:8-8:11|identifier|foo",
                  ExpressionCallees.from_identifier
@@ -7721,12 +8041,14 @@ let test_higher_order_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7740,7 +8062,7 @@ let test_higher_order_call_graph_of_define =
        return l[0]
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "6:2-6:12|artificial-call|subscript-set-item",
                  ExpressionCallees.from_call
@@ -7750,12 +8072,11 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~receiver_class:"builtins.list"
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
                ( "6:9-6:12|identifier|foo",
@@ -7767,7 +8088,9 @@ let test_higher_order_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
@@ -7779,16 +8102,15 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~receiver_class:"builtins.list"
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__getitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__getitem__"
+                               ());
                         ]
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7802,7 +8124,7 @@ let test_higher_order_call_graph_of_define =
        return l['key']
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "6:2-6:16|artificial-call|subscript-set-item",
                  ExpressionCallees.from_call
@@ -7812,12 +8134,11 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~receiver_class:"builtins.list"
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__setitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__setitem__"
+                               ());
                         ]
                       ()) );
                ( "6:13-6:16|identifier|foo",
@@ -7829,7 +8150,9 @@ let test_higher_order_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
@@ -7841,16 +8164,15 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~receiver_class:"builtins.list"
                             ~implicit_receiver:true
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__getitem__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__getitem__"
+                               ());
                         ]
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7864,7 +8186,7 @@ let test_higher_order_call_graph_of_define =
        return x
   |}
            ~define_name:"test.bar"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "5:6-5:9|identifier|foo",
                  ExpressionCallees.from_identifier
@@ -7875,12 +8197,14 @@ let test_higher_order_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~return_type:(Some ReturnType.integer)
-                                 (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.foo");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7896,7 +8220,7 @@ let test_higher_order_call_graph_of_define =
        return foo(f1=bar, f2=baz)  # Different `formal_path`s under same root `kwarg`
   |}
            ~define_name:"test.main"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "9:9-9:28",
                  ExpressionCallees.from_call
@@ -7904,7 +8228,9 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -7914,7 +8240,9 @@ let test_higher_order_call_graph_of_define =
                                call_targets =
                                  [
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -7923,7 +8251,9 @@ let test_higher_order_call_graph_of_define =
                                call_targets =
                                  [
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.baz");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -7937,7 +8267,9 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
@@ -7949,12 +8281,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -7967,7 +8301,7 @@ let test_higher_order_call_graph_of_define =
          dummy_trace()
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:11-3:17|artificial-call|for-iter",
                  ExpressionCallees.from_call
@@ -7977,12 +8311,11 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "3:11-3:17|artificial-call|for-next",
@@ -7994,12 +8327,11 @@ let test_higher_order_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
                ( "4:4-5:24",
@@ -8008,8 +8340,9 @@ let test_higher_order_call_graph_of_define =
                       ~define_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function
-                               { name = "test.foo.dummy_trace"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.dummy_trace");
                         ]
                       ()) );
                ( "6:4-6:17",
@@ -8018,12 +8351,13 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function
-                               { name = "test.foo.dummy_trace"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.dummy_trace");
                         ]
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -8039,7 +8373,7 @@ let test_higher_order_call_graph_of_define =
          baz()
   |}
            ~define_name:"test.foo"
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "3:11-3:17|artificial-call|for-iter",
                  ExpressionCallees.from_call
@@ -8049,12 +8383,11 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~receiver_class:"builtins.list"
-                            (Target.Regular.Method
-                               {
-                                 class_name = "builtins.list";
-                                 method_name = "__iter__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
                         ]
                       ()) );
                ( "3:11-3:17|artificial-call|for-next",
@@ -8066,12 +8399,11 @@ let test_higher_order_call_graph_of_define =
                             ~implicit_receiver:true
                             ~receiver_class:"typing.Iterator"
                             ~return_type:(Some ReturnType.integer)
-                            (Target.Regular.Method
-                               {
-                                 class_name = "typing.Iterator";
-                                 method_name = "__next__";
-                                 kind = Normal;
-                               });
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
                         ]
                       ()) );
                ( "4:4-5:16",
@@ -8080,7 +8412,9 @@ let test_higher_order_call_graph_of_define =
                       ~define_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.bar");
                         ]
                       ()) );
                ( "6:4-7:16",
@@ -8089,7 +8423,9 @@ let test_higher_order_call_graph_of_define =
                       ~define_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.baz");
                         ]
                       ()) );
                ( "8:4-8:9",
@@ -8098,7 +8434,9 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo.bar"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.bar");
                         ]
                       ()) );
                ( "9:4-9:9",
@@ -8107,11 +8445,13 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo.baz"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo.baz");
                         ]
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -8131,7 +8471,7 @@ let test_higher_order_call_graph_of_define =
   |}
            ~define_name:"test.main"
            ~maximum_parameterized_targets_at_call_site:1
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "9:6-9:9|identifier|bar",
                  ExpressionCallees.from_identifier
@@ -8141,7 +8481,9 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
@@ -8153,7 +8495,9 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
@@ -8165,9 +8509,13 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.baz");
                              ]
                            ())
                       ()) );
@@ -8177,7 +8525,9 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -8187,16 +8537,20 @@ let test_higher_order_call_graph_of_define =
                                call_targets =
                                  [
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.baz"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.baz");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
                            ])
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -8210,10 +8564,13 @@ let test_higher_order_call_graph_of_define =
        foo(bar)  # Test keeping higher order parameters
   |}
            ~define_name:"test.main"
-           ~called_when_parameter:
-             ([Target.Regular.Function { name = "test.bar"; kind = Normal } |> Target.from_regular]
+           ~called_when_parameter:(fun pyrefly_api ->
+             [
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar"
+               |> Target.from_regular;
+             ]
              |> Target.HashSet.of_list)
-           ~expected_call_graph:
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "7:2-7:10",
                  ExpressionCallees.from_call
@@ -8221,7 +8578,9 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
@@ -8231,7 +8590,9 @@ let test_higher_order_call_graph_of_define =
                                call_targets =
                                  [
                                    CallTarget.create_regular
-                                     (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                     (InterproceduralTest.resolve_function_regular_exn
+                                        ~pyrefly_api
+                                        !&"test.bar");
                                  ];
                                unresolved = CallGraph.Unresolved.False;
                              };
@@ -8245,12 +8606,14 @@ let test_higher_order_call_graph_of_define =
                            ~call_targets:
                              [
                                CallTarget.create_regular
-                                 (Target.Regular.Function { name = "test.bar"; kind = Normal });
+                                 (InterproceduralTest.resolve_function_regular_exn
+                                    ~pyrefly_api
+                                    !&"test.bar");
                              ]
                            ())
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_higher_order_call_graph_of_define
@@ -8266,16 +8629,16 @@ let test_higher_order_call_graph_of_define =
        baz(bar)
   |}
            ~define_name:"test.baz"
-           ~callable:
-             (create_parameterized_target
-                ~regular:(Target.Regular.Function { name = "test.baz"; kind = Normal })
-                ~parameters:
-                  [
-                    ( create_positional_parameter 0 "f",
-                      Target.Regular.Function { name = "test.bar"; kind = Normal }
-                      |> Target.from_regular );
-                  ])
-           ~expected_call_graph:
+           ~callable:(fun pyrefly_api ->
+             create_parameterized_target
+               ~regular:(InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.baz")
+               ~parameters:
+                 [
+                   ( create_positional_parameter 0 "f",
+                     InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.bar"
+                     |> Target.from_regular );
+                 ])
+           ~expected_call_graph:(fun pyrefly_api ->
              [
                ( "7:2-7:8",
                  ExpressionCallees.from_call
@@ -8283,14 +8646,16 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            (Target.Regular.Function { name = "test.foo"; kind = Normal });
+                            (InterproceduralTest.resolve_function_regular_exn
+                               ~pyrefly_api
+                               !&"test.foo");
                         ]
                       ~higher_order_parameters:
                         (HigherOrderParameterMap.from_list
                            [ (* TODO(T223511074): Expect `bar` here. *) ])
                       ()) );
-             ]
-           ~expected_returned_callables:[]
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
            ();
     ]
 
@@ -8304,6 +8669,7 @@ let assert_resolve_decorator_callees ~source ~expected () context =
       ~source
       ()
   in
+  let expected = expected pyrefly_api in
   let static_analysis_configuration =
     Configuration.StaticAnalysis.create
       ~maximum_target_depth:Configuration.StaticAnalysis.default_maximum_target_depth
@@ -8457,15 +8823,19 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.decorator"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.decorator2"; kind = Normal }, None;
-               ( Target.Regular.Function { name = "test.foo"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.decorator",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.decorator2",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo",
                  Some
                    ( "decorator2(decorator(foo))",
-                     Target.Regular.Function { name = "test.foo"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.foo",
                      "test.foo.@decorated",
                      [
                        ( "12:0-13:10|identifier|foo",
@@ -8476,8 +8846,9 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.foo"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.foo");
                                      ]
                                    ())
                               ()) );
@@ -8487,8 +8858,9 @@ let test_resolve_decorator_callees =
                               ~call_targets:
                                 [
                                   CallTarget.create_regular
-                                    (Target.Regular.Function
-                                       { name = "test.decorator2"; kind = Normal });
+                                    (InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.decorator2");
                                 ]
                               ()) );
                        ( "11:1-11:10|artificial-call|for-decorated-target",
@@ -8497,12 +8869,13 @@ let test_resolve_decorator_callees =
                               ~call_targets:
                                 [
                                   CallTarget.create_regular
-                                    (Target.Regular.Function
-                                       { name = "test.decorator"; kind = Normal });
+                                    (InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.decorator");
                                 ]
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8515,11 +8888,11 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.foo"; kind = Normal }, None;
-             ]
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo", None;
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8533,14 +8906,19 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.decorator_factory"; kind = Normal }, None;
-               ( Target.Regular.Function { name = "test.foo"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.decorator_factory",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo",
                  Some
                    ( "decorator_factory(1, 2)(foo)",
-                     Target.Regular.Function { name = "test.foo"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.foo",
                      "test.foo.@decorated",
                      [
                        ( "7:0-8:10|identifier|foo",
@@ -8551,8 +8929,9 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.foo"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.foo");
                                      ]
                                    ())
                               ()) );
@@ -8562,8 +8941,9 @@ let test_resolve_decorator_callees =
                               ~call_targets:
                                 [
                                   CallTarget.create_regular
-                                    (Target.Regular.Function
-                                       { name = "test.decorator_factory"; kind = Normal });
+                                    (InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.decorator_factory");
                                 ]
                               ()) );
                        ( "6:1-6:24|artificial-call|for-decorated-target",
@@ -8572,7 +8952,7 @@ let test_resolve_decorator_callees =
                               ~unresolved:(CallGraph.Unresolved.True UnexpectedCalleeExpression)
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8588,14 +8968,19 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.decorator_factory"; kind = Normal }, None;
-               ( Target.Regular.Function { name = "test.foo"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.decorator_factory",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo",
                  Some
                    ( "decorator_factory(1, bar)(foo)",
-                     Target.Regular.Function { name = "test.foo"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.foo",
                      "test.foo.@decorated",
                      [
                        ( "9:0-10:10|identifier|foo",
@@ -8606,8 +8991,9 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.foo"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.foo");
                                      ]
                                    ())
                               ()) );
@@ -8617,8 +9003,9 @@ let test_resolve_decorator_callees =
                               ~call_targets:
                                 [
                                   CallTarget.create_regular
-                                    (Target.Regular.Function
-                                       { name = "test.decorator_factory"; kind = Normal });
+                                    (InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.decorator_factory");
                                 ]
                               ~higher_order_parameters:
                                 (HigherOrderParameterMap.from_list
@@ -8628,8 +9015,9 @@ let test_resolve_decorator_callees =
                                        call_targets =
                                          [
                                            CallTarget.create_regular
-                                             (Target.Regular.Function
-                                                { name = "test.bar"; kind = Normal });
+                                             (InterproceduralTest.resolve_function_regular_exn
+                                                ~pyrefly_api
+                                                !&"test.bar");
                                          ];
                                        unresolved = CallGraph.Unresolved.False;
                                      };
@@ -8648,13 +9036,14 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.bar"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.bar");
                                      ]
                                    ())
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8669,22 +9058,31 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               ( Target.Regular.Function
-                   { name = "test.ClassDecorator.$class_toplevel"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.ClassDecorator.$class_toplevel",
                  None );
-               ( Target.Regular.Method
-                   { class_name = "test.ClassDecorator"; method_name = "__call__"; kind = Normal },
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~pyrefly_api
+                   ~class_name:!&"test.ClassDecorator"
+                   ~method_name:"__call__"
+                   (),
                  None );
-               ( Target.Regular.Method
-                   { class_name = "test.ClassDecorator"; method_name = "__init__"; kind = Normal },
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~pyrefly_api
+                   ~class_name:!&"test.ClassDecorator"
+                   ~method_name:"__init__"
+                   (),
                  None );
-               ( Target.Regular.Function { name = "test.foo"; kind = Normal },
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo",
                  Some
                    ( "ClassDecorator(foo)",
-                     Target.Regular.Function { name = "test.foo"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.foo",
                      "test.foo.@decorated",
                      [
                        ( "8:0-9:10|identifier|foo",
@@ -8695,8 +9093,9 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.foo"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.foo");
                                      ]
                                    ())
                               ()) );
@@ -8709,28 +9108,26 @@ let test_resolve_decorator_callees =
                                     ~implicit_receiver:true
                                     ~return_type:(Some ReturnType.unknown)
                                     ~receiver_class:"test.ClassDecorator"
-                                    (Target.Regular.Method
-                                       {
-                                         class_name = "test.ClassDecorator";
-                                         method_name = "__init__";
-                                         kind = Normal;
-                                       });
+                                    (InterproceduralTest.resolve_method_regular_exn
+                                       ~pyrefly_api
+                                       ~class_name:!&"test.ClassDecorator"
+                                       ~method_name:"__init__"
+                                       ());
                                 ]
                               ~new_targets:
                                 [
                                   CallTarget.create_regular
                                     ~return_type:(Some ReturnType.unknown)
                                     ~is_static_method:true
-                                    (Target.Regular.Method
-                                       {
-                                         class_name = "builtins.object";
-                                         method_name = "__new__";
-                                         kind = Normal;
-                                       });
+                                    (InterproceduralTest.resolve_method_regular_exn
+                                       ~pyrefly_api
+                                       ~class_name:!&"builtins.object"
+                                       ~method_name:"__new__"
+                                       ());
                                 ]
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8746,17 +9143,25 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.A.$class_toplevel"; kind = Normal }, None;
-               ( Target.Regular.Method
-                   { class_name = "test.A"; method_name = "decorator"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.A.$class_toplevel",
                  None );
-               ( Target.Regular.Function { name = "test.foo"; kind = Normal },
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~pyrefly_api
+                   ~class_name:!&"test.A"
+                   ~method_name:"decorator"
+                   (),
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo",
                  Some
                    ( "A.decorator(foo)",
-                     Target.Regular.Function { name = "test.foo"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.foo",
                      "test.foo.@decorated",
                      [
                        ( "9:0-10:10|identifier|foo",
@@ -8767,8 +9172,9 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.foo"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.foo");
                                      ]
                                    ())
                               ()) );
@@ -8782,12 +9188,11 @@ let test_resolve_decorator_callees =
                                        CallTarget.create_regular
                                          ~return_type:(Some ReturnType.unknown)
                                          ~is_static_method:true
-                                         (Target.Regular.Method
-                                            {
-                                              class_name = "builtins.object";
-                                              method_name = "__new__";
-                                              kind = Normal;
-                                            });
+                                         (InterproceduralTest.resolve_method_regular_exn
+                                            ~pyrefly_api
+                                            ~class_name:!&"builtins.object"
+                                            ~method_name:"__new__"
+                                            ());
                                      ]
                                    ~init_targets:
                                      [
@@ -8795,12 +9200,11 @@ let test_resolve_decorator_callees =
                                          ~implicit_receiver:true
                                          ~return_type:(Some ReturnType.unknown)
                                          ~receiver_class:"test.A"
-                                         (Target.Regular.Method
-                                            {
-                                              class_name = "builtins.object";
-                                              method_name = "__init__";
-                                              kind = Normal;
-                                            });
+                                         (InterproceduralTest.resolve_method_regular_exn
+                                            ~pyrefly_api
+                                            ~class_name:!&"builtins.object"
+                                            ~method_name:"__init__"
+                                            ());
                                      ]
                                    ())
                               ()) );
@@ -8813,16 +9217,15 @@ let test_resolve_decorator_callees =
                                     ~receiver_class:"test.A"
                                     ~implicit_receiver:true
                                     ~is_class_method:true
-                                    (Target.Regular.Method
-                                       {
-                                         class_name = "test.A";
-                                         method_name = "decorator";
-                                         kind = Normal;
-                                       });
+                                    (InterproceduralTest.resolve_method_regular_exn
+                                       ~pyrefly_api
+                                       ~class_name:!&"test.A"
+                                       ~method_name:"decorator"
+                                       ());
                                 ]
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8838,18 +9241,30 @@ let test_resolve_decorator_callees =
        def foo(self):
          return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.A.$class_toplevel"; kind = Normal }, None;
-               ( Target.Regular.Method
-                   { class_name = "test.A"; method_name = "decorator"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.A.$class_toplevel",
                  None );
-               ( Target.Regular.Method { class_name = "test.A"; method_name = "foo"; kind = Normal },
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~pyrefly_api
+                   ~class_name:!&"test.A"
+                   ~method_name:"decorator"
+                   (),
+                 None );
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~pyrefly_api
+                   ~class_name:!&"test.A"
+                   ~method_name:"foo"
+                   (),
                  Some
                    ( "decorator(foo)",
-                     Target.Regular.Method
-                       { class_name = "test.A"; method_name = "foo"; kind = Decorated },
+                     InterproceduralTest.resolve_method_regular_decorated_exn
+                       ~pyrefly_api
+                       ~class_name:!&"test.A"
+                       ~method_name:"foo",
                      "test.A.foo.@decorated",
                      [
                        ( "8:3-8:12|artificial-call|for-decorated-target",
@@ -8859,12 +9274,11 @@ let test_resolve_decorator_callees =
                                 [
                                   CallTarget.create_regular
                                     ~implicit_receiver:true
-                                    (Target.Regular.Method
-                                       {
-                                         class_name = "test.A";
-                                         method_name = "decorator";
-                                         kind = Normal;
-                                       });
+                                    (InterproceduralTest.resolve_method_regular_exn
+                                       ~pyrefly_api
+                                       ~class_name:!&"test.A"
+                                       ~method_name:"decorator"
+                                       ());
                                 ]
                               ()) );
                        ( "9:2-10:12|identifier|foo",
@@ -8875,17 +9289,16 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Method
-                                            {
-                                              class_name = "test.A";
-                                              method_name = "foo";
-                                              kind = Normal;
-                                            });
+                                         (InterproceduralTest.resolve_method_regular_exn
+                                            ~pyrefly_api
+                                            ~class_name:!&"test.A"
+                                            ~method_name:"foo"
+                                            ());
                                      ]
                                    ())
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8903,15 +9316,23 @@ let test_resolve_decorator_callees =
      def foo():
        return 0
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.A.$class_toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.B.$class_toplevel"; kind = Normal }, None;
-               ( Target.Regular.Function { name = "test.foo"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.A.$class_toplevel",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.B.$class_toplevel",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.foo",
                  Some
                    ( "a_or_b.decorator(foo)",
-                     Target.Regular.Function { name = "test.foo"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.foo",
                      "test.foo.@decorated",
                      [
                        ( "11:0-12:10|identifier|foo",
@@ -8922,8 +9343,9 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.foo"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.foo");
                                      ]
                                    ())
                               ()) );
@@ -8934,24 +9356,22 @@ let test_resolve_decorator_callees =
                                 [
                                   CallTarget.create_regular
                                     ~is_static_method:true
-                                    (Target.Regular.Method
-                                       {
-                                         class_name = "test.A";
-                                         method_name = "decorator";
-                                         kind = Normal;
-                                       });
+                                    (InterproceduralTest.resolve_method_regular_exn
+                                       ~pyrefly_api
+                                       ~class_name:!&"test.A"
+                                       ~method_name:"decorator"
+                                       ());
                                   CallTarget.create_regular
                                     ~is_static_method:true
-                                    (Target.Regular.Method
-                                       {
-                                         class_name = "test.B";
-                                         method_name = "decorator";
-                                         kind = Normal;
-                                       });
+                                    (InterproceduralTest.resolve_method_regular_exn
+                                       ~pyrefly_api
+                                       ~class_name:!&"test.B"
+                                       ~method_name:"decorator"
+                                       ());
                                 ]
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8965,22 +9385,27 @@ let test_resolve_decorator_callees =
        def my_attr(self, value):
            self._my_attr = value
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               ( Target.Regular.Function { name = "test.MyClass.$class_toplevel"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.MyClass.$class_toplevel",
                  None );
-               ( Target.Regular.Method
-                   { class_name = "test.MyClass"; method_name = "my_attr"; kind = Normal },
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~pyrefly_api
+                   ~class_name:!&"test.MyClass"
+                   ~method_name:"my_attr"
+                   (),
                  None );
-               ( Target.Regular.Method
-                   {
-                     class_name = "test.MyClass";
-                     method_name = "my_attr@setter";
-                     kind = PropertySetter;
-                   },
+               ( InterproceduralTest.resolve_method_regular_exn
+                   ~is_property_setter:true
+                   ~pyrefly_api
+                   ~class_name:!&"test.MyClass"
+                   ~method_name:"my_attr"
+                   (),
                  None );
-             ]
+             ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_resolve_decorator_callees
@@ -8995,16 +9420,22 @@ let test_resolve_decorator_callees =
        def inner(x):
          return
   |}
-           ~expected:
+           ~expected:(fun pyrefly_api ->
              [
-               Target.Regular.Function { name = "test.$toplevel"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.decorator"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.decorator.inner"; kind = Normal }, None;
-               Target.Regular.Function { name = "test.main"; kind = Normal }, None;
-               ( Target.Regular.Function { name = "test.main.inner"; kind = Normal },
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.$toplevel", None;
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.decorator",
+                 None );
+               ( InterproceduralTest.resolve_function_regular_exn
+                   ~pyrefly_api
+                   !&"test.decorator.inner",
+                 None );
+               InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.main", None;
+               ( InterproceduralTest.resolve_function_regular_exn ~pyrefly_api !&"test.main.inner",
                  Some
                    ( "decorator(inner)",
-                     Target.Regular.Function { name = "test.main.inner"; kind = Decorated },
+                     InterproceduralTest.resolve_function_regular_decorated_exn
+                       ~pyrefly_api
+                       !&"test.main.inner",
                      "test.main.inner.@decorated",
                      [
                        ( "7:3-7:12|artificial-call|for-decorated-target",
@@ -9013,8 +9444,9 @@ let test_resolve_decorator_callees =
                               ~call_targets:
                                 [
                                   CallTarget.create_regular
-                                    (Target.Regular.Function
-                                       { name = "test.decorator"; kind = Normal });
+                                    (InterproceduralTest.resolve_function_regular_exn
+                                       ~pyrefly_api
+                                       !&"test.decorator");
                                 ]
                               ()) );
                        ( "8:2-9:10|identifier|inner",
@@ -9025,13 +9457,14 @@ let test_resolve_decorator_callees =
                                    ~call_targets:
                                      [
                                        CallTarget.create_regular
-                                         (Target.Regular.Function
-                                            { name = "test.main.inner"; kind = Normal });
+                                         (InterproceduralTest.resolve_function_regular_exn
+                                            ~pyrefly_api
+                                            !&"test.main.inner");
                                      ]
                                    ())
                               ()) );
                      ] ) );
-             ]
+             ])
            ();
     ]
 

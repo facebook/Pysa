@@ -328,3 +328,91 @@ end = struct
 
   let configuration_of { project; _ } = ScratchPyreflyProject.configuration_of project
 end
+
+let resolve_function_target_exn ~pyrefly_api reference =
+  match Interprocedural.PyreflyApi.ReadOnly.resolve_function_target pyrefly_api reference with
+  | Some target -> target
+  | None ->
+      Format.asprintf
+        "expected function target `%a` did not resolve to a real callable"
+        Ast.Reference.pp
+        reference
+      |> failwith
+
+
+let resolve_method_target_exn ?(is_property_setter = false) ~pyrefly_api ~class_name ~method_name ()
+  =
+  match
+    Interprocedural.PyreflyApi.ReadOnly.resolve_method_target
+      pyrefly_api
+      ~class_name
+      ~method_name
+      ~is_property_setter
+  with
+  | Some target -> target
+  | None ->
+      Format.asprintf
+        "expected method target `%a.%s` did not resolve to a real callable"
+        Ast.Reference.pp
+        class_name
+        method_name
+      |> failwith
+
+
+let resolve_override_target_exn ~pyrefly_api ~class_name ~method_name =
+  resolve_method_target_exn ~pyrefly_api ~class_name ~method_name ()
+  |> Target.get_regular
+  |> Target.Regular.get_corresponding_override_exn
+  |> Target.from_regular
+
+
+let resolve_method_target_from_reference_exn ~pyrefly_api reference =
+  let class_name =
+    Ast.Reference.prefix reference
+    |> Option.value_exn ~message:"expected a fully qualified method name (class.method)"
+  in
+  let method_name = Ast.Reference.last reference in
+  resolve_method_target_exn ~pyrefly_api ~class_name ~method_name ~is_property_setter:false ()
+
+
+let resolve_override_target_from_reference_exn ~pyrefly_api reference =
+  resolve_method_target_from_reference_exn ~pyrefly_api reference
+  |> Target.get_regular
+  |> Target.Regular.get_corresponding_override_exn
+  |> Target.from_regular
+
+
+let resolve_define_name_target_exn ~pyrefly_api reference =
+  Interprocedural.PyreflyApi.ReadOnly.target_from_define_name pyrefly_api ~override:false reference
+
+
+let resolve_function_regular_exn ~pyrefly_api reference =
+  resolve_function_target_exn ~pyrefly_api reference |> Target.get_regular
+
+
+let resolve_function_regular_decorated_exn ~pyrefly_api reference =
+  resolve_function_regular_exn ~pyrefly_api reference |> Target.Regular.set_kind Target.Decorated
+
+
+let resolve_method_regular_exn
+    ?(is_property_setter = false)
+    ~pyrefly_api
+    ~class_name
+    ~method_name
+    ()
+  =
+  resolve_method_target_exn ~is_property_setter ~pyrefly_api ~class_name ~method_name ()
+  |> Target.get_regular
+
+
+let resolve_method_regular_decorated_exn ~pyrefly_api ~class_name ~method_name =
+  resolve_method_regular_exn ~pyrefly_api ~class_name ~method_name ()
+  |> Target.Regular.set_kind Target.Decorated
+
+
+let resolve_define_name_regular_exn ~pyrefly_api reference =
+  resolve_define_name_target_exn ~pyrefly_api reference |> Target.get_regular
+
+
+let resolve_override_regular_exn ~pyrefly_api ~class_name ~method_name =
+  resolve_override_target_exn ~pyrefly_api ~class_name ~method_name |> Target.get_regular

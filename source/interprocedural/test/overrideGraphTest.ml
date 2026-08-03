@@ -25,16 +25,17 @@ let setup ?(other_sources = []) ~context ~handle source =
 
 let test_method_overrides context =
   let assert_method_overrides ?(other_sources = []) source ~expected =
-    let expected =
-      let create_callables (member, overriding_types) =
-        Target.create_method_from_reference !&member, List.map overriding_types ~f:Reference.create
-      in
-      List.map expected ~f:create_callables
-    in
     let qualifier_name = "test" in
     let handle = Format.asprintf "%s.py" qualifier_name in
     let qualifier = Ast.Reference.create qualifier_name in
     let pyrefly_api = setup ~other_sources ~context ~handle source in
+    let expected =
+      let create_callables (member, overriding_types) =
+        ( InterproceduralTest.resolve_method_target_from_reference_exn ~pyrefly_api !&member,
+          List.map overriding_types ~f:Reference.create )
+      in
+      List.map expected ~f:create_callables
+    in
     let overrides_map =
       OverrideGraph.Heap.from_qualifier
         ~pyrefly_api

@@ -88,20 +88,21 @@ let create_call_graph ?(other_sources = []) ~context source_text =
   let () = CallGraph.SharedMemory.cleanup define_call_graphs in
   let () = OverrideGraph.SharedMemory.cleanup override_graph_shared_memory in
   let () = Interprocedural.CallablesSharedMemory.ReadWrite.cleanup callables_to_definitions_map in
-  whole_program_call_graph
+  whole_program_call_graph, pyrefly_api
 
 
-let create_callable = function
-  | `Function name -> !&name |> Target.create_function
-  | `Method name -> !&name |> Target.create_method_from_reference
-  | `Override name -> !&name |> Target.create_override_from_reference
+let create_callable pyrefly_api = function
+  | `Function name -> InterproceduralTest.resolve_function_target_exn ~pyrefly_api !&name
+  | `Method name -> InterproceduralTest.resolve_method_target_from_reference_exn ~pyrefly_api !&name
+  | `Override name ->
+      InterproceduralTest.resolve_override_target_from_reference_exn ~pyrefly_api !&name
 
 
-let compare_dependency_graph call_graph ~expected =
+let compare_dependency_graph pyrefly_api call_graph ~expected =
   let expected =
     let map_callee_callers (callee, callers) =
-      ( create_callable callee,
-        List.map callers ~f:create_callable |> List.sort ~compare:Target.compare )
+      ( create_callable pyrefly_api callee,
+        List.map callers ~f:(create_callable pyrefly_api) |> List.sort ~compare:Target.compare )
     in
     List.map expected ~f:map_callee_callers
   in
@@ -116,24 +117,26 @@ let compare_dependency_graph call_graph ~expected =
 
 
 let assert_call_graph ?other_sources ~context source ~expected =
+  let call_graph, pyrefly_api = create_call_graph ?other_sources ~context source in
   let graph =
-    create_call_graph ?other_sources ~context source
+    call_graph
     |> DependencyGraph.Reversed.from_call_graph
     |> DependencyGraph.Reversed.to_target_graph
     |> TargetGraph.to_alist ~sorted:true
   in
-  compare_dependency_graph graph ~expected
+  compare_dependency_graph pyrefly_api graph ~expected
 
 
 let assert_reverse_call_graph ~context source ~expected =
+  let call_graph, pyrefly_api = create_call_graph ~context source in
   let graph =
-    create_call_graph ~context source
+    call_graph
     |> DependencyGraph.Reversed.from_call_graph
     |> DependencyGraph.Reversed.reverse
     |> DependencyGraph.to_target_graph
     |> TargetGraph.to_alist ~sorted:true
   in
-  compare_dependency_graph graph ~expected
+  compare_dependency_graph pyrefly_api graph ~expected
 
 
 let test_construction context =
@@ -507,6 +510,10 @@ let test_type_collection context =
     ~expected:[4, 0, "$local_0$a.foo.(...).foo.(...)", "test2.A.foo"]
 
 
+(* Unlike the other tests in this file, this one operates on purely synthetic targets ("a.foo",
+   "external.bar", ...) with no pyrefly backend, so its targets cannot be resolved through
+   `PyreflyApi.ReadOnly`. Once callables are represented by packed ids, this test will need to
+   construct targets from synthetic ids directly rather than from name strings. *)
 let test_prune_callables _ =
   let assert_pruned
       ~callgraph
