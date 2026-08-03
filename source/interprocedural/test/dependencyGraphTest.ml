@@ -537,8 +537,16 @@ let test_prune_callables _ =
     in
     let overrides =
       List.map overrides ~f:(fun (key, values) ->
+          let method_name = Reference.last (Reference.create key) in
           ( Target.create_method_from_reference (Reference.create key),
-            List.map values ~f:(fun value -> Reference.create value) ))
+            List.map values ~f:(fun overriding_class ->
+                match
+                  Reference.create ~prefix:(Reference.create overriding_class) method_name
+                  |> Target.create_override_from_reference
+                  |> Target.as_regular_exn
+                with
+                | Target.Regular.Override method_ -> method_
+                | _ -> failwith "expected an override target") ))
       |> OverrideGraph.Heap.of_alist_exn
     in
     let project_callables =

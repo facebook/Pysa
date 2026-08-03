@@ -261,7 +261,7 @@ module ReadOnly : sig
     scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
     overrides_exist:(Target.t -> bool) ->
-    get_overriding_types:(Target.t -> Ast.Reference.t list option) ->
+    get_overriding_targets:(Target.t -> Target.Method.t list option) ->
     global_is_string_literal:(Ast.Reference.t -> bool) ->
     store_shared_memory:bool ->
     attribute_targets:Target.Set.t ->

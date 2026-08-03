@@ -613,18 +613,13 @@ module Make (Analysis : ANALYSIS) = struct
     let timer = Timer.start () in
     let overrides =
       override_graph
-      |> OverrideGraph.SharedMemory.ReadOnly.get_overriding_types
+      |> OverrideGraph.SharedMemory.ReadOnly.get_override_targets
            ~member:
              (* In the override graph, keys can only be `Target.Regular.Method` and hence not
                 `Target.Parameterized`. *)
              (Target.get_corresponding_method_exn ~must_be_regular:false callable)
       |> Option.value ~default:[]
-      |> List.map ~f:(fun at_type ->
-             callable
-             |> Target.as_regular_exn
-                (* TODO(T204630385): Handle `Target.Parameterized` with `Override`. *)
-             |> Target.Regular.create_derived_override_exn ~at_type
-             |> Target.from_regular)
+      |> List.map ~f:(fun method_ -> Target.from_regular (Target.Regular.Override method_))
     in
     let new_model =
       let lookup override =

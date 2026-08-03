@@ -52,8 +52,6 @@ module Regular : sig
 
   val function_name : t -> string option
 
-  val create_derived_override_exn : at_type:Reference.t -> t -> t
-
   val get_corresponding_method_exn : t -> t
 
   val get_corresponding_override_exn : t -> t

@@ -257,11 +257,6 @@ module Regular = struct
     match define_name regular with
     | Some name -> name
     | None -> Format.asprintf "Unexpected: %a" pp_pretty_with_kind regular |> failwith
-
-
-  let create_derived_override_exn ~at_type = function
-    | Override { method_name; kind; _ } -> Override (Method.create ~kind at_type method_name)
-    | _ -> failwith "unexpected"
 end
 
 module ParameterMap = Data_structures.SerializableMap.Make (AccessPath.Root)

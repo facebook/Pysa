@@ -3499,7 +3499,7 @@ module ReadOnly = struct
          _;
        } as api)
       ~overrides_exist
-      ~get_overriding_types
+      ~get_overriding_targets
       ~global_is_string_literal
       ~attribute_targets
       ~find_missing_flows
@@ -3555,20 +3555,16 @@ module ReadOnly = struct
               (* Receiver type matches declaring type *)
               [get_actual_target target]
           | Some receiver_class -> (
-              let overriding_types = get_overriding_types target in
-              match overriding_types with
+              match get_overriding_targets target with
               | None -> [target]
-              | Some overriding_types ->
+              | Some overriding_targets ->
                   let override_targets =
-                    overriding_types
-                    |> List.filter ~f:(fun class_name ->
-                           is_subclass api ~parent:receiver_class ~child:(Reference.show class_name))
-                    |> List.map ~f:(fun class_name ->
+                    overriding_targets
+                    |> List.filter ~f:(fun { Target.Method.class_name; _ } ->
+                           is_subclass api ~parent:receiver_class ~child:class_name)
+                    |> List.map ~f:(fun override_method ->
                            get_actual_target
-                             (Target.create_method
-                                ~kind:target_method.kind
-                                class_name
-                                target_method.method_name))
+                             (Target.from_regular (Target.Regular.Method override_method)))
                   in
                   target :: override_targets))
       | PyreflyTarget.FormatString -> [Target.ArtificialTargets.format_string]
@@ -3812,7 +3808,7 @@ module ReadOnly = struct
       ~scheduler
       ~scheduler_policies
       ~overrides_exist
-      ~get_overriding_types
+      ~get_overriding_targets
       ~global_is_string_literal
       ~store_shared_memory
       ~attribute_targets
@@ -3928,7 +3924,7 @@ module ReadOnly = struct
             instantiate_call_graph
               api
               ~overrides_exist
-              ~get_overriding_types
+              ~get_overriding_targets
               ~global_is_string_literal
               ~attribute_targets
               ~find_missing_flows

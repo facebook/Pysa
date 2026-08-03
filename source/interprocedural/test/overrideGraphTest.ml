@@ -31,8 +31,18 @@ let test_method_overrides context =
     let pyrefly_api = setup ~other_sources ~context ~handle source in
     let expected =
       let create_callables (member, overriding_types) =
+        let method_name = Reference.last !&member in
         ( InterproceduralTest.resolve_method_target_from_reference_exn ~pyrefly_api !&member,
-          List.map overriding_types ~f:Reference.create )
+          overriding_types
+          |> List.map ~f:(fun overriding_class ->
+                 match
+                   Reference.create ~prefix:!&overriding_class method_name
+                   |> InterproceduralTest.resolve_method_target_from_reference_exn ~pyrefly_api
+                   |> Target.as_regular_exn
+                 with
+                 | Target.Regular.Method method_ -> method_
+                 | _ -> failwith "expected a method target")
+          |> List.dedup_and_sort ~compare:Target.Method.compare )
       in
       List.map expected ~f:create_callables
     in

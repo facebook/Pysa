@@ -2824,10 +2824,10 @@ let build_whole_program_call_graph
         OverrideGraph.SharedMemory.ReadOnly.overrides_exist override_graph target
     | None -> false
   in
-  let get_overriding_types target =
+  let get_overriding_targets target =
     match override_graph with
     | Some override_graph ->
-        OverrideGraph.SharedMemory.ReadOnly.get_overriding_types override_graph ~member:target
+        OverrideGraph.SharedMemory.ReadOnly.get_override_targets override_graph ~member:target
     | None -> None
   in
   let global_is_string_literal global =
@@ -2839,7 +2839,7 @@ let build_whole_program_call_graph
       ~scheduler
       ~scheduler_policies
       ~overrides_exist
-      ~get_overriding_types
+      ~get_overriding_targets
       ~global_is_string_literal
       ~store_shared_memory
       ~attribute_targets

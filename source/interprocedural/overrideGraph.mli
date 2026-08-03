@@ -7,15 +7,16 @@
 
 open Ast
 
-(** Override graph in the ocaml heap, storing a mapping from a method to classes overriding it. *)
+(** Override graph in the ocaml heap, mapping each member method to the list of its overriding
+    methods (`Target.Method.t`), which consumers wrap into `Override` targets at use. *)
 module Heap : sig
   type t
 
   val empty : t
 
-  val of_alist_exn : (Target.t * Reference.t list) list -> t
+  val of_alist_exn : (Target.t * Target.Method.t list) list -> t
 
-  val fold : t -> init:'a -> f:(member:Target.t -> subtypes:Reference.t list -> 'a -> 'a) -> 'a
+  val fold : t -> init:'a -> f:(member:Target.t -> overrides:Target.Method.t list -> 'a -> 'a) -> 'a
 
   val equal : t -> t -> bool
 
@@ -42,7 +43,8 @@ module Heap : sig
     cap_overrides_result
 end
 
-(** Override graph in the shared memory, a mapping from a method to classes directly overriding it. *)
+(** Override graph in the shared memory, mapping each member method to the list of its overriding
+    methods (`Target.Method.t`). *)
 module SharedMemory : sig
   type t
 
@@ -64,7 +66,7 @@ module SharedMemory : sig
   module ReadOnly : sig
     type t
 
-    val get_overriding_types : t -> member:Target.t -> Reference.t list option
+    val get_override_targets : t -> member:Target.t -> Target.Method.t list option
 
     val overrides_exist : t -> Target.t -> bool
 

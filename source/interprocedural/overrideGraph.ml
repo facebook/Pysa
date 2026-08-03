@@ -5,7 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* OverrideGraph: represents a mapping from a method to classes overriding it.
+(* OverrideGraph: represents a mapping from a method to the methods overriding it.
  *
  * This can be used as a traditional ocaml value using the `Heap` module, and
  * stored in shared memory using the `SharedMemory` module.
@@ -15,28 +15,30 @@ open Core
 open Pyre
 open Ast
 
-(** Override graph in the ocaml heap, storing a mapping from a method to classes overriding it. *)
+(** Override graph in the ocaml heap, mapping each member method to the list of its overriding
+    methods (`Target.Method.t`), resolved to real callables at build time. Consumers wrap each
+    stored method into an `Override` target at the use site. *)
 module Heap = struct
-  type t = Reference.t list Target.Map.Tree.t
+  type t = Target.Method.t list Target.Map.Tree.t
 
   let empty = Target.Map.Tree.empty
 
   let of_alist_exn = Target.Map.Tree.of_alist_exn
 
   let fold graph ~init ~f =
-    Target.Map.Tree.fold graph ~init ~f:(fun ~key:member ~data:subtypes -> f ~member ~subtypes)
+    Target.Map.Tree.fold graph ~init ~f:(fun ~key:member ~data:overrides -> f ~member ~overrides)
 
 
-  let equal left right = Target.Map.Tree.equal (List.equal Reference.equal) left right
+  let equal left right = Target.Map.Tree.equal (List.equal Target.Method.equal) left right
 
   let pp formatter overrides =
-    let pp_pair formatter (member, subtypes) =
+    let pp_pair formatter (member, overrides) =
       Format.fprintf
         formatter
         "@,%a -> %s"
         Target.pp_internal
         member
-        (List.map ~f:Reference.show subtypes |> String.concat ~sep:", ")
+        (List.map ~f:Target.Method.show overrides |> String.concat ~sep:", ")
     in
     let pp_pairs formatter = List.iter ~f:(pp_pair formatter) in
     Format.fprintf formatter "{@[<v 2>%a@]@,}" pp_pairs (Target.Map.Tree.to_alist overrides)
@@ -45,11 +47,12 @@ module Heap = struct
   let show = Format.asprintf "%a" pp
 
   module OverridingRelation = struct
-    (* Represent a relation where `base_callable` is overridden by a method with the same name in
-       `overriding_class`. *)
+    (* Represent a relation where `base_callable` is overridden by `override_method`, the resolved
+       method (`Target.Method.t`) of a real method with the same name defined in an overriding
+       subclass. Consumers wrap it into an `Override` target. *)
     type t = {
       base_callable: Target.t;
-      overriding_class: Reference.t;
+      override_method: Target.Method.t;
     }
 
     let from_method_reference ~pyrefly_api method_reference =
@@ -66,24 +69,37 @@ module Heap = struct
       in
       base_callable
       >>= fun base_callable ->
+      let override_method =
+        match
+          PyreflyApi.ReadOnly.Target.target_from_method_reference method_reference
+          |> Target.as_regular_exn
+        with
+        | Target.Regular.Method method_ -> method_
+        | regular ->
+            Format.asprintf
+              "expected `target_from_method_reference` to yield a method, got `%a`"
+              Target.Regular.pp
+              regular
+            |> failwith
+      in
       Some
         {
           base_callable = PyreflyApi.ReadOnly.Target.target_from_method_reference base_callable;
-          overriding_class = Target.MethodReference.class_name method_reference;
+          override_method;
         }
   end
 
   let from_overriding_relations relations =
-    let accumulate map { OverridingRelation.base_callable; overriding_class } =
-      let update_types = function
-        | Some types -> overriding_class :: types
-        | None -> [overriding_class]
+    let accumulate map { OverridingRelation.base_callable; override_method } =
+      let update_overrides = function
+        | Some overrides -> override_method :: overrides
+        | None -> [override_method]
       in
-      Target.Map.Tree.update map base_callable ~f:update_types
+      Target.Map.Tree.update map base_callable ~f:update_overrides
     in
     relations
     |> List.fold ~init:Target.Map.Tree.empty ~f:accumulate
-    |> Target.Map.Tree.map ~f:(List.dedup_and_sort ~compare:Reference.compare)
+    |> Target.Map.Tree.map ~f:(List.dedup_and_sort ~compare:Target.Method.compare)
 
 
   let skip_overrides ~to_skip overrides =
@@ -116,7 +132,7 @@ module Heap = struct
     (* Keep the information of whether we're skipping overrides in a ref that we accumulate while we
        filter the map. *)
     let skipped_overrides = ref [] in
-    let keep_override_edge ~key:member ~data:subtypes =
+    let keep_override_edge ~key:member ~data:overriding_methods =
       if Target.Set.mem member analyze_all_overrides_targets then
         let () =
           Log.info
@@ -125,7 +141,7 @@ module Heap = struct
         in
         true
       else
-        let number_of_overrides = List.length subtypes in
+        let number_of_overrides = List.length overriding_methods in
         match maximum_overrides with
         | Some cap ->
             if number_of_overrides < cap then
@@ -152,19 +168,20 @@ module Heap = struct
     { overrides; skipped_overrides = !skipped_overrides }
 end
 
-(** Override graph in the shared memory, a mapping from a method to classes directly overriding it. *)
+(** Override graph in the shared memory, mapping each member method to the list of its overriding
+    methods (`Target.Method.t`). *)
 module SharedMemory = struct
   module T =
     SaveLoadSharedMemory.MakeKeyValue
       (Target.SharedMemoryKey)
       (struct
-        type t = Reference.t list
+        type t = Target.Method.t list
 
         let prefix = Hack_parallel.Std.Prefix.make ()
 
         let handle_prefix = Hack_parallel.Std.Prefix.make ()
 
-        let description = "overriding types"
+        let description = "override methods"
       end)
 
   type t = T.t
@@ -185,7 +202,7 @@ module SharedMemory = struct
   module ReadOnly = struct
     type t = T.ReadOnly.t
 
-    let get_overriding_types handle ~member = T.ReadOnly.get handle ~cache:true member
+    let get_override_targets handle ~member = T.ReadOnly.get handle ~cache:true member
 
     let overrides_exist handle member = T.ReadOnly.mem handle member
 
@@ -194,13 +211,6 @@ module SharedMemory = struct
         if not (Target.is_override target) then
           target :: expanded
         else
-          let make_override at_type =
-            target
-            |> Target.as_regular_exn
-               (* TODO(T204630385): Handle `Target.Parameterized` with `Override`. *)
-            |> Target.Regular.create_derived_override_exn ~at_type
-            |> Target.from_regular
-          in
           let corresponding_method =
             (* In the override graph, keys can only be `Target.Regular.Method` and hence not
                `Target.Parameterized`. *)
@@ -208,9 +218,9 @@ module SharedMemory = struct
           in
           let overrides =
             handle
-            |> get_overriding_types ~member:corresponding_method
+            |> get_override_targets ~member:corresponding_method
             |> Option.value ~default:[]
-            |> List.map ~f:make_override
+            |> List.map ~f:(fun method_ -> Target.from_regular (Target.Regular.Override method_))
           in
           corresponding_method :: List.fold overrides ~f:expand_and_gather ~init:expanded
       in
@@ -277,7 +287,7 @@ let build_whole_program_overrides
     match static_analysis_configuration.Configuration.StaticAnalysis.save_results_to with
     | Some directory ->
         Log.info "Writing the override graph to `%s`" (PyrePath.absolute directory);
-        let to_json_lines (member, subtypes) =
+        let to_json_lines (member, overrides) =
           [
             {
               NewlineDelimitedJson.Line.kind = NewlineDelimitedJson.Kind.OverrideGraph;
@@ -287,8 +297,12 @@ let build_whole_program_overrides
                     ( "callable",
                       `String (PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api member) );
                     ( "overrides",
-                      `List (List.map subtypes ~f:(fun subtype -> `String (Reference.show subtype)))
-                    );
+                      `List
+                        (List.map overrides ~f:(fun method_ ->
+                             Target.Regular.Method method_
+                             |> Target.from_regular
+                             |> PyreflyApi.ReadOnly.Target.external_name ~pyrefly_api
+                             |> fun s -> `String s)) );
                   ];
             };
           ]
