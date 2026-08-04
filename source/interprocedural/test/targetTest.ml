@@ -34,10 +34,10 @@ let test_get_module_and_definition context =
     let actual =
       target pyrefly_api
       |> CallablesSharedMemory.get_signature_and_definition_for_test ~pyrefly_api
-      >>= fun ({ CallablesSharedMemory.CallableSignature.qualifier; _ }, define) ->
+      >>= fun ({ CallablesSharedMemory.CallableSignature.module_id; _ }, define) ->
       PyreflyApi.AstResult.to_option define
       >>| (fun { Node.value = { Statement.Define.body; _ }; _ } -> body)
-      >>| fun define -> qualifier, define
+      >>| fun define -> PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id, define
     in
     let equal (first_qualifier, first_body) (second_qualifier, second_body) =
       Reference.equal first_qualifier second_qualifier
@@ -65,9 +65,12 @@ let test_get_module_and_definition context =
         self._foo = value
   |}
     ~target:(fun pyrefly_api ->
+      let class_id =
+        PyreflyApi.ReadOnly.class_id_from_name pyrefly_api (Reference.create "test.C")
+      in
       PyreflyApi.ReadOnly.Target.resolve_method_target
         pyrefly_api
-        ~class_name:(Reference.create "test.C")
+        ~class_id
         ~method_name:"foo"
         ~is_property_setter:true
       |> Option.value_exn ~message:"expected test.C.foo@setter to resolve")

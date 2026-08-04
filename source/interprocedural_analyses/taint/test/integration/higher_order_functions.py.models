@@ -740,7 +740,7 @@
               ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 8, "upper": 11 } ],
+            "receiver_interval": [ { "lower": 6, "upper": 9 } ],
             "is_self_call": false
           }
         ]
@@ -2424,7 +2424,7 @@
               }
             ],
             "origin": { "line": 152, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 8, "upper": 11 } ],
+            "caller_interval": [ { "lower": 6, "upper": 9 } ],
             "is_self_call": false
           }
         ]
@@ -2453,7 +2453,7 @@
               }
             ],
             "origin": { "line": 172, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "is_self_call": false
           }
         ]
@@ -2482,7 +2482,7 @@
               }
             ],
             "origin": { "line": 260, "start": 19, "end": 22 },
-            "caller_interval": [ { "lower": 12, "upper": 13 } ],
+            "caller_interval": [ { "lower": 10, "upper": 11 } ],
             "is_self_call": false,
             "call_site": "260:8-260:23"
           }
@@ -2510,7 +2510,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 8, "upper": 11 } ],
+            "caller_interval": [ { "lower": 6, "upper": 9 } ],
             "is_self_call": false
           },
           {
@@ -2524,7 +2524,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "is_self_call": false
           }
         ]
@@ -2551,7 +2551,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 7, "upper": 8 } ],
             "is_self_call": false
           }
         ]

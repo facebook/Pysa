@@ -9,15 +9,18 @@ open Ast
 
 type t
 
-(** Traverse the AST to find all callables (functions and methods). *)
+(** Traverse the AST to find all callables (functions and methods) in a module. *)
+val from_module : pyrefly_api:PyreflyApi.ReadOnly.t -> module_id:PyreflyTypes.ModuleId.t -> t
+
+(** Convenience wrapper around `from_module`, keyed on a module qualifier. *)
 val from_qualifier : pyrefly_api:PyreflyApi.ReadOnly.t -> qualifier:Reference.t -> t
 
-val from_qualifiers
+val from_modules
   :  scheduler:Scheduler.t ->
   scheduler_policy:Scheduler.Policy.t ->
   pyrefly_api:PyreflyApi.ReadOnly.t ->
   configuration:Configuration.Analysis.t ->
-  qualifiers:Reference.t list ->
+  module_ids:PyreflyTypes.ModuleId.t list ->
   t
 
 (* Return all callables:

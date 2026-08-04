@@ -17,14 +17,14 @@ module Decorators = struct
   type t = {
     decorators: Expression.t list;
     define_location: Location.t;
-    module_qualifier: Reference.t;
+    module_id: PyreflyTypes.ModuleId.t;
   }
 end
 
 module DecoratedDefineBody = struct
   type t = {
     decorated_callable: Target.t;
-    module_qualifier: Reference.t;
+    module_id: PyreflyTypes.ModuleId.t;
     define_name: Reference.t;
     return_expression: Expression.t;
     original_function_name: Name.t;
@@ -109,10 +109,15 @@ let should_keep_decorator_pyrefly ~pyrefly_api ~callable decorator =
       | Ast.Expression.Expression.Name _ -> (* Regular decorator, such as `@foo` *) decorator
       | _ -> decorator
     in
+    let { PyreflyTypes.DisplayApi.callable_define_name; _ } =
+      PyreflyApi.ReadOnly.display_api pyrefly_api
+    in
     PyreflyApi.ReadOnly.get_callable_decorator_callees
       pyrefly_api
-      (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
+      (Target.undecorated_callable_id_exn callable)
       (Node.location callee)
+    (* Render the decorator callee ids as their define names for the name-based checks below. *)
+    >>| List.map ~f:callable_define_name
   in
   let drop_suffix ~suffix reference =
     match List.rev (Reference.as_list reference) with
@@ -161,7 +166,7 @@ let collect_decorators ~pyrefly_api ~callables_to_definitions_map callable =
       {
         CallablesSharedMemory.CallableSignature.decorators = AstResult.Some decorators;
         location = AstResult.Some define_location;
-        qualifier;
+        module_id;
         _;
       } ->
       let decorators =
@@ -170,12 +175,7 @@ let collect_decorators ~pyrefly_api ~callables_to_definitions_map callable =
       if List.is_empty decorators then
         None
       else
-        Some
-          {
-            Decorators.decorators = List.rev decorators;
-            define_location;
-            module_qualifier = qualifier;
-          }
+        Some { Decorators.decorators = List.rev decorators; define_location; module_id }
   | _ -> None
 
 
@@ -378,7 +378,7 @@ module SharedMemory = struct
     callable
     |> Option.some_if (PyreflyApi.ReadOnly.Target.is_normal pyrefly_api callable)
     >>= ReadOnly.get decorators
-    >>| fun { decorators; define_location; module_qualifier } ->
+    >>| fun { decorators; define_location; module_id } ->
     let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
     let original_function_name_location = define_location in
     let original_function_name = Ast.Expression.Name.Identifier (Reference.last define_name) in
@@ -394,7 +394,7 @@ module SharedMemory = struct
     in
     {
       DecoratedDefineBody.decorated_callable;
-      module_qualifier;
+      module_id;
       define_name;
       return_expression;
       original_function_name;
@@ -434,6 +434,7 @@ module SharedMemory = struct
     decorators
     |> targets_with_decorators
     |> List.map ~f:(fun callable ->
+           let callable_id = Target.callable_id_exn callable in
            let define =
              Option.value_exn
                (decorated_callable_define ~pyrefly_api read_only_decorators callable)
@@ -443,8 +444,8 @@ module SharedMemory = struct
            let decorated_callable = Target.to_decorated callable in
            let signature =
              {
-               CallablesSharedMemory.CallableSignature.qualifier =
-                 PyreflyTypes.artificial_decorator_define_module;
+               CallablesSharedMemory.CallableSignature.module_id =
+                 PyreflyTypes.CallableId.module_id callable_id;
                define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable;
                location = AstResult.Some Location.any;
                parameters = AstResult.Some [];

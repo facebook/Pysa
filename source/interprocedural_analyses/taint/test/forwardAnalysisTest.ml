@@ -43,7 +43,7 @@ let assert_taint ?models ?models_source ~context source expect =
     let { ModelParseResult.models; errors; _ } =
       ModelParser.parse
         ~pyrefly_api
-        ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+        ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
         ~source:models
         ~taint_configuration:TaintConfiguration.Heap.default
         ~source_sink_filter:None
@@ -104,7 +104,7 @@ let assert_taint ?models ?models_source ~context source expect =
         ~class_interval_graph:(ClassIntervalSetGraph.SharedMemory.create ())
         ~global_constants:
           (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-        ~qualifier
+        ~module_id:(PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
         ~callable
         ~define
         ~cfg
@@ -118,7 +118,7 @@ let assert_taint ?models ?models_source ~context source expect =
   in
   let callable_and_defines =
     let add_define callable =
-      let { Interprocedural.CallablesSharedMemory.DefineAndQualifier.define; _ } =
+      let { Interprocedural.CallablesSharedMemory.DefineAndModule.define; _ } =
         Interprocedural.CallablesSharedMemory.ReadOnly.get_define
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
           callable
@@ -156,7 +156,7 @@ let test_no_model context =
       |}
       [outcome ~kind:`Function "does_not_exist"]
   in
-  assert_raises (Failure "unexpected: missing callable metadata: `does_not_exist`") assert_no_model
+  assert_raises (Failure "unexpected: missing callable id: `does_not_exist`") assert_no_model
 
 
 let test_simple_source context =

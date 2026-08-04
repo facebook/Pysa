@@ -625,7 +625,7 @@
               }
             ],
             "origin": { "line": 93, "start": 39, "end": 53 },
-            "receiver_interval": [ { "lower": 14, "upper": 15 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 9 } ],
             "is_self_call": false,
             "call_site": "93:4-93:64"
           }

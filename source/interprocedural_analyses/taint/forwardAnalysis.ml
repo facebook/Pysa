@@ -45,6 +45,8 @@ module PyreflyApi = Interprocedural.PyreflyApi
 module PyrePysaLogic = Analysis.PyrePysaLogic
 
 module type FUNCTION_CONTEXT = sig
+  val module_id : PyreflyTypes.ModuleId.t
+
   val qualifier : Reference.t
 
   val define_name : Reference.t
@@ -197,18 +199,23 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       then
         log
           "Sources flowing into sinks at `%a`@,With sources: %a@,With sinks: %a"
-          Location.WithModule.pp
+          Location.pp
           location
           ForwardState.Tree.pp
           source_tree
           BackwardState.Tree.pp
           sink_tree
     in
-    Issue.Candidates.check_flow candidates ~location ~sink_handle ~source_tree ~sink_tree
+    Issue.Candidates.check_flow
+      candidates
+      ~module_id:FunctionContext.module_id
+      ~location
+      ~sink_handle
+      ~source_tree
+      ~sink_tree
 
 
   let check_flow_to_global ~location ~source_tree global_model =
-    let location = Location.with_module ~module_reference:FunctionContext.qualifier location in
     let check { SinkTreeWithHandle.sink_tree; handle; _ } =
       check_flow ~location ~sink_handle:handle ~source_tree ~sink_tree
     in
@@ -221,6 +228,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       candidates
       ~triggered_sinks_for_call
       ~sink_handle
+      ~module_id:FunctionContext.module_id
       ~location
       ~source_tree
       ~sink_tree
@@ -269,9 +277,6 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
         && (not (List.is_empty literal_string_sinks))
         && not (ForwardTaint.is_bottom taint)
       then
-        let value_location_with_module =
-          Location.with_module ~module_reference:FunctionContext.qualifier location
-        in
         List.iter literal_string_sinks ~f:(fun { TaintConfiguration.sink_kind; pattern } ->
             if Re2.matches pattern value then
               let sink_tree =
@@ -290,7 +295,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
                 |> BackwardState.Tree.create_leaf
               in
               check_flow
-                ~location:value_location_with_module
+                ~location
                 ~sink_handle:(IssueHandle.Sink.LiteralStringSink sink_kind)
                 ~source_tree:(ForwardState.Tree.create_leaf taint)
                 ~sink_tree)
@@ -325,7 +330,6 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           source_tree
           BackwardState.Tree.pp
           string_combine_partial_sink_tree;
-      let location = Location.with_module ~module_reference:FunctionContext.qualifier location in
       let sink_handle =
         IssueHandle.Sink.StringFormat
           { callee = IssueHandle.CanonicalCallee.Target target; index; parameter_index }
@@ -700,16 +704,17 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       let () =
         track_apply_call_step CheckIssuesForArgument (fun () ->
             List.iter sink_trees ~f:(fun { SinkTreeWithHandle.sink_tree; handle; _ } ->
-                let location =
-                  Location.with_module ~module_reference:FunctionContext.qualifier argument_location
-                in
                 (* Check for issues. *)
-                check_flow ~location ~sink_handle:handle ~source_tree:argument_taint ~sink_tree;
+                check_flow
+                  ~location:argument_location
+                  ~sink_handle:handle
+                  ~source_tree:argument_taint
+                  ~sink_tree;
                 (* Check for issues for combined source rules. *)
                 check_triggered_flows
                   ~triggered_sinks_for_call
                   ~sink_handle:handle
-                  ~location
+                  ~location:argument_location
                   ~source_tree:argument_taint
                   ~sink_tree;
                 ()))
@@ -3142,7 +3147,6 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
   and analyze_condition ~(pyrefly_in_context : PyreflyApi.InContext.t) expression state =
     let { Node.location; _ } = expression in
     let call_site = CallSite.create location in
-    let location = Location.with_module ~module_reference:FunctionContext.qualifier location in
     let taint, state =
       analyze_expression ~pyrefly_in_context ~state ~is_result_used:true ~expression
     in
@@ -3155,7 +3159,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
                |> BackwardTaint.apply_call
                     ~pyrefly_in_context
                     ~call_site
-                    ~location:(Location.strip_module location)
+                    ~location
                     ~callee:Target.ArtificialTargets.condition
                     ~arguments:[]
                     ~port:
@@ -3228,8 +3232,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       |> Option.value ~default:state
     in
     check_flow
-      ~location:
-        (Location.with_module ~module_reference:FunctionContext.qualifier statement_location)
+      ~location:statement_location
       ~sink_handle:IssueHandle.Sink.Return
       ~source_tree:taint
       ~sink_tree:
@@ -3414,13 +3417,13 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           "AugmentedAssign nodes should always be rewritten by `CallGraph.preprocess_statement`"
 
 
-  let create ~existing_model ~qualifier ~parameters ~define_name ~define_location =
+  let create ~existing_model ~parameters ~define_name ~define_location =
     (* Use primed sources to populate initial state of parameters *)
     let parameter_sources = existing_model.Model.parameter_sources.parameter_sources in
     let pyrefly_in_context =
       PyreflyApi.InContext.create_at_function_scope
         pyrefly_api
-        ~module_qualifier:qualifier
+        ~callable_id:(Target.callable_id_exn FunctionContext.callable)
         ~define_name
         ~call_graph:FunctionContext.call_graph_of_define
     in
@@ -3506,7 +3509,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
         let pyrefly_in_context =
           PyreflyApi.InContext.create_at_statement_scope
             pyrefly_api
-            ~module_qualifier:FunctionContext.qualifier
+            ~callable_id:(Target.callable_id_exn FunctionContext.callable)
             ~define_name:FunctionContext.define_name
             ~call_graph:FunctionContext.call_graph_of_define
             ~statement_key
@@ -3535,10 +3538,13 @@ let extract_source_model
   =
   let { Statement.Define.signature = { parameters; _ }; _ } = define in
   let return_annotations =
-    PyreflyApi.ReadOnly.get_callable_return_annotations
-      pyrefly_api
-      ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
-      ~define
+    if not (Target.is_decorated callable) then
+      PyreflyApi.ReadOnly.get_callable_return_annotations
+        pyrefly_api
+        ~callable_id:(Target.callable_id_exn callable)
+        ~define
+    else
+      []
   in
   let normalized_parameters = AccessPath.normalize_parameters parameters in
   let simplify tree =
@@ -3635,7 +3641,7 @@ let run
     ~pyrefly_api
     ~class_interval_graph
     ~global_constants
-    ~qualifier
+    ~module_id
     ~callable
     ~define
     ~cfg
@@ -3652,7 +3658,10 @@ let run
     define
   in
   let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
+  let qualifier = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
   let module FunctionContext = struct
+    let module_id = module_id
+
     let qualifier = qualifier
 
     let define_name = define_name
@@ -3687,7 +3696,7 @@ let run
       Interprocedural.ClassIntervalSetGraph.SharedMemory.of_definition
         class_interval_graph
         pyrefly_api
-        define_name
+        (Target.callable_id_exn callable)
 
 
     let string_combine_partial_sink_tree = string_combine_partial_sink_tree
@@ -3710,12 +3719,7 @@ let run
   let initial =
     TaintProfiler.track_duration ~profiler ~name:"Forward analysis - initial state" ~f:(fun () ->
         let normalized_parameters = AccessPath.normalize_parameters parameters in
-        State.create
-          ~existing_model
-          ~qualifier
-          ~parameters:normalized_parameters
-          ~define_name
-          ~define_location)
+        State.create ~existing_model ~parameters:normalized_parameters ~define_name ~define_location)
   in
   let () = State.log "Processing CFG:@.%a" PyrePysaLogic.Cfg.pp cfg in
   let exit_state =

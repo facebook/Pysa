@@ -11,7 +11,7 @@ val fetch_and_externalize
   :  pyrefly_api:PyreflyApi.ReadOnly.t ->
   taint_configuration:TaintConfiguration.Heap.t ->
   fixpoint_state:TaintFixpoint.State.ReadOnly.t ->
-  resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) ->
   resolve_callable_location:(Target.t -> Ast.Location.WithModule.t option) ->
   override_graph:OverrideGraph.SharedMemory.ReadOnly.t ->
   dump_override_models:bool ->
@@ -23,7 +23,7 @@ val produce_errors
   :  pyrefly_api:PyreflyApi.ReadOnly.t ->
   scheduler:Scheduler.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
-  resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) ->
   taint_configuration:TaintConfiguration.SharedMemory.t ->
   callables:Target.Set.t ->
   fixpoint_step_logger:StepLogger.t ->
@@ -37,7 +37,7 @@ val save_results_to_directory
   result_directory:PyrePath.t ->
   output_format:Configuration.TaintOutputFormat.t ->
   local_root:PyrePath.t ->
-  resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) ->
   resolve_callable_location:(Target.t -> Ast.Location.WithModule.t option) ->
   override_graph:OverrideGraph.SharedMemory.ReadOnly.t ->
   skipped_overrides:Target.t list ->

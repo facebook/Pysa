@@ -24,8 +24,7 @@ let assert_class_models ~context ?user_models ~source ~expected () =
         let { ModelParseResult.models; errors; _ } =
           ModelParser.parse
             ~pyrefly_api
-            ~path_of_qualifier:
-              (PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+            ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
             ~source:(Test.trim_extra_indentation user_models)
             ~taint_configuration:TaintConfiguration.Heap.default
             ~source_sink_filter:None

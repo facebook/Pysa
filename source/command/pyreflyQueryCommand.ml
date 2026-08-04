@@ -31,28 +31,28 @@ let run_pyrefly_query ~pyrefly_results ~query ~configuration ~repository_root ~s
   | Result.Error message -> Server.Query.Response.Error message
   | Result.Ok (ModelQuery { path; query_name }) ->
       let pyrefly_api = create_pyrefly_api () in
-      let path_of_qualifier =
-        Interprocedural.PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
+      let path_of_module =
+        Interprocedural.PyreflyApi.ReadOnly.repository_relative_path_of_module
           ~repository_root:(Option.value repository_root ~default:configuration.local_root)
           pyrefly_api
       in
       Server.Query.process_model_query
         ~pyrefly_api
-        ~path_of_qualifier
+        ~path_of_module
         ~scheduler
         ~configuration
         ~path
         ~query_name
   | Result.Ok (ValidateTaintModels { path; verify_dsl }) ->
       let pyrefly_api = create_pyrefly_api () in
-      let path_of_qualifier =
-        Interprocedural.PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
+      let path_of_module =
+        Interprocedural.PyreflyApi.ReadOnly.repository_relative_path_of_module
           ~repository_root:(Option.value repository_root ~default:configuration.local_root)
           pyrefly_api
       in
       Server.Query.process_validate_taint_models
         ~pyrefly_api
-        ~path_of_qualifier
+        ~path_of_module
         ~scheduler
         ~configuration
         ~path

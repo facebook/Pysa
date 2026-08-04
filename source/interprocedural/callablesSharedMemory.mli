@@ -16,9 +16,9 @@ val get_signature_and_definition_for_test
   Target.t ->
   (CallableSignature.t * Define.t Node.t AstResult.t) option
 
-module DefineAndQualifier : sig
+module DefineAndModule : sig
   type t = {
-    qualifier: Reference.t;
+    module_id: PyreflyTypes.ModuleId.t;
     define: Define.t Node.t;
   }
 end
@@ -39,7 +39,7 @@ module ReadOnly : sig
 
   val read_only : ReadWrite.t -> t
 
-  val get_define : t -> Target.t -> DefineAndQualifier.t AstResult.t
+  val get_define : t -> Target.t -> DefineAndModule.t AstResult.t
 
   val get_location : t -> Target.t -> Ast.Location.WithModule.t AstResult.t
 
@@ -47,7 +47,7 @@ module ReadOnly : sig
 
   val get_signature : t -> Target.t -> CallableSignature.t option
 
-  val get_qualifier : t -> Target.t -> Reference.t option
+  val get_module : t -> Target.t -> PyreflyTypes.ModuleId.t option
 
   val get_method_kind : t -> Target.t -> bool * bool
 

@@ -321,7 +321,8 @@ let treat_tito_return_as_self_update ~pyrefly_api target =
       | "__setitem__" ->
           true
       | _ -> false)
-      || PyreflyApi.ReadOnly.Target.is_property_setter pyrefly_api target
+      || (not (Target.is_decorated target))
+         && PyreflyApi.ReadOnly.Target.is_property_setter pyrefly_api target
   | Target.Regular.Function _
   | Target.Regular.Object _ ->
       false

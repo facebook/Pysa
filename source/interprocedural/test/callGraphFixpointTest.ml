@@ -13,6 +13,11 @@ open CallGraph
 open CallGraphBuilder
 open CallGraphTestHelper
 
+let class_id_exn pyrefly_api class_name =
+  PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api (Ast.Reference.create class_name)
+  |> Option.value_exn ~message:(Format.sprintf "unknown class `%s`" class_name)
+
+
 let function_regular pyrefly_api name =
   InterproceduralTest.resolve_function_regular_exn ~pyrefly_api (Ast.Reference.create name)
 
@@ -802,7 +807,7 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~implicit_receiver:true
-                                       ~receiver_class:"test.C"
+                                       ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                        (method_regular
                                           pyrefly_api
                                           ~class_name:"builtins.object"
@@ -905,7 +910,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
-                                  ~receiver_class:"test.A"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                   (override_regular
                                      pyrefly_api
                                      ~class_name:"test.A"
@@ -1253,7 +1258,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create
                                   ~implicit_receiver:true
-                                  ~receiver_class:"test.classproperty"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.classproperty")
                                   (create_parameterized_target_with_values
                                      ~regular:
                                        (method_regular
@@ -1516,7 +1521,7 @@ let test_higher_order_call_graph_fixpoint =
                                    [
                                      CallTarget.create_regular
                                        ~implicit_receiver:true
-                                       ~receiver_class:"test.A"
+                                       ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                        (method_regular
                                           pyrefly_api
                                           ~class_name:"builtins.object"
@@ -1564,7 +1569,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
-                                  ~receiver_class:"test.A"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                   (method_regular
                                      pyrefly_api
                                      ~class_name:"test.A"
@@ -1627,7 +1632,7 @@ let test_higher_order_call_graph_fixpoint =
                                 CallTarget.create
                                   ~implicit_receiver:true
                                   ~implicit_dunder_call:true
-                                  ~receiver_class:"test.Base"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.Base")
                                   (create_parameterized_target
                                      ~regular:
                                        (method_regular
@@ -1687,7 +1692,7 @@ let test_higher_order_call_graph_fixpoint =
                                 CallTarget.create
                                   ~implicit_receiver:true
                                   ~implicit_dunder_call:true
-                                  ~receiver_class:"test.Subclass"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.Subclass")
                                   (create_parameterized_target
                                      ~regular:
                                        (method_regular
@@ -1768,7 +1773,7 @@ let test_higher_order_call_graph_fixpoint =
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
                                   ~implicit_dunder_call:true
-                                  ~receiver_class:"test.Subclass"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.Subclass")
                                   (method_regular
                                      pyrefly_api
                                      ~class_name:"test.Base"
@@ -1875,7 +1880,7 @@ let test_higher_order_call_graph_fixpoint =
                               [
                                 CallTarget.create_regular
                                   ~implicit_receiver:true
-                                  ~receiver_class:"test.A"
+                                  ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                   ~return_type:(Some ReturnType.integer)
                                   (method_regular
                                      pyrefly_api

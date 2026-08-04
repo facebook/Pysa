@@ -10,10 +10,10 @@ open Core
 open Interprocedural
 
 let define_target pyrefly_api name =
-  PyreflyApi.ReadOnly.Target.target_from_define_name
+  PyreflyApi.ReadOnly.Target.target_from_callable_id
     pyrefly_api
     ~override:false
-    (Ast.Reference.create name)
+    (PyreflyApi.ReadOnly.Target.callable_id_from_name_exn pyrefly_api (Ast.Reference.create name))
 
 
 let test_callables context =

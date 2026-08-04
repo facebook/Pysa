@@ -281,7 +281,7 @@
               "resolves_to": [ "context_manager.SinkOnEnter.__enter__" ],
               "port": "formal(self, position=0)[value]"
             },
-            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
+            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
             "is_self_call": false
           }
         ]
@@ -323,7 +323,7 @@
               "resolves_to": [ "context_manager.SourceOnEnter.__enter__" ],
               "port": "formal(self, position=0)[value]"
             },
-            "receiver_interval": [ { "lower": 4, "upper": 5 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]
@@ -396,7 +396,7 @@
               "resolves_to": [ "context_manager.SourceOnEnter.__enter__" ],
               "port": "result[value]"
             },
-            "receiver_interval": [ { "lower": 4, "upper": 5 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]
@@ -737,7 +737,7 @@
               }
             ],
             "origin": { "line": 66, "start": 19, "end": 29 },
-            "caller_interval": [ { "lower": 2, "upper": 3 } ],
+            "caller_interval": [ { "lower": 6, "upper": 7 } ],
             "is_self_call": false,
             "call_site": "66:8-66:30"
           }
@@ -802,7 +802,7 @@
               }
             ],
             "origin": { "line": 16, "start": 21, "end": 35 },
-            "caller_interval": [ { "lower": 4, "upper": 5 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]
@@ -821,7 +821,7 @@
               }
             ],
             "origin": { "line": 16, "start": 21, "end": 35 },
-            "caller_interval": [ { "lower": 4, "upper": 5 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]
@@ -880,7 +880,7 @@
               }
             ],
             "origin": { "line": 50, "start": 21, "end": 35 },
-            "caller_interval": [ { "lower": 6, "upper": 7 } ],
+            "caller_interval": [ { "lower": 4, "upper": 5 } ],
             "is_self_call": false
           }
         ]

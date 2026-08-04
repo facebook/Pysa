@@ -829,49 +829,45 @@ module PyrePysaApi = struct
         {
           PyreflyType.string = "None";
           scalar_properties = ScalarTypeProperties.none;
-          class_names = None;
+          classes = None;
         }
     | Type.Any ->
         {
           PyreflyType.string = "Any";
           scalar_properties = ScalarTypeProperties.none;
-          class_names = None;
+          classes = None;
         }
     | Type.Primitive "int" ->
         {
           PyreflyType.string = "int";
           scalar_properties = ScalarTypeProperties.integer;
-          class_names =
+          classes =
             Some
-              (PyreflyType.ClassNamesFromType.from_class
-                 (class_id ~module_id:116 ~local_class_id:5));
+              (PyreflyTypes.ClassesFromType.from_class (class_id ~module_id:116 ~local_class_id:5));
         }
     | Type.Primitive "str" ->
         {
           PyreflyType.string = "str";
           scalar_properties = ScalarTypeProperties.none;
-          class_names =
+          classes =
             Some
-              (PyreflyType.ClassNamesFromType.from_class
-                 (class_id ~module_id:116 ~local_class_id:10));
+              (PyreflyTypes.ClassesFromType.from_class (class_id ~module_id:116 ~local_class_id:10));
         }
     | Type.Primitive "test.Foo" ->
         {
           PyreflyType.string = "test.Foo";
           scalar_properties = ScalarTypeProperties.none;
-          class_names =
+          classes =
             Some
-              (PyreflyType.ClassNamesFromType.from_class
-                 (class_id ~module_id:1000 ~local_class_id:0));
+              (PyreflyTypes.ClassesFromType.from_class (class_id ~module_id:1000 ~local_class_id:0));
         }
     | Type.Primitive "test.Bar" ->
         {
           PyreflyType.string = "test.Bar";
           scalar_properties = ScalarTypeProperties.none;
-          class_names =
+          classes =
             Some
-              (PyreflyType.ClassNamesFromType.from_class
-                 (class_id ~module_id:1000 ~local_class_id:1));
+              (PyreflyTypes.ClassesFromType.from_class (class_id ~module_id:1000 ~local_class_id:1));
         }
     | annotation ->
         (* Fallback used only for expectations that are discarded under Pyrefly (e.g. cases with
@@ -879,7 +875,7 @@ module PyrePysaApi = struct
         {
           PyreflyType.string = Format.asprintf "%a" Type.pp annotation;
           scalar_properties = ScalarTypeProperties.none;
-          class_names = None;
+          classes = None;
         }
 
 
@@ -944,9 +940,27 @@ module PyrePysaApi = struct
         is_property_getter = false;
         is_property_setter = false;
         is_method;
-        module_qualifier = None;
         location = None;
       }
+    in
+    let create_module_global ?(module_id = 1000) name =
+      Global.ModuleGlobal
+        {
+          name = Reference.create name;
+          module_id = PyreflyTypes.ModuleId.from_int module_id;
+          location = None;
+        }
+    in
+    let create_class ?(module_id = 1000) ?(local_class_id = 0) class_name =
+      Global.Class { class_id = class_id ~module_id ~local_class_id; class_name; location = None }
+    in
+    let create_class_attribute ?(module_id = 1000) ?(local_class_id = 0) name =
+      Global.ClassAttribute
+        {
+          class_id = class_id ~module_id ~local_class_id;
+          name = Reference.create name;
+          location = None;
+        }
     in
     (* Most common cases. *)
     assert_resolve
@@ -988,10 +1002,7 @@ module PyrePysaApi = struct
         );
       ]
       "test.foo"
-      ~expect:
-        (Some
-           (Global.ModuleGlobal
-              { name = Reference.create "test.foo"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_module_global "test.foo"));
     assert_resolve
       ~context
       [
@@ -1025,8 +1036,7 @@ module PyrePysaApi = struct
         pass
     |}]
       "test.Foo"
-      ~expect:
-        (Some (Global.Class { class_name = "test.Foo"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_class ~local_class_id:0 "test.Foo"));
     assert_resolve
       ~context
       ["test.py", {|
@@ -1035,9 +1045,7 @@ module PyrePysaApi = struct
           pass
     |}]
       "test.Foo.Bar"
-      ~expect:
-        (Some
-           (Global.Class { class_name = "test.Foo.Bar"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_class ~local_class_id:1 "test.Foo.Bar"));
     assert_resolve
       ~context
       ["test.py", {|
@@ -1045,7 +1053,7 @@ module PyrePysaApi = struct
         return None
     |}]
       "test"
-      ~expect:(Some (Global.Module { qualifier = Reference.create "test" }));
+      ~expect:(Some (Global.Module { module_id = PyreflyTypes.ModuleId.from_int 1000 }));
     assert_resolve
       ~context
       ["test.py", {|
@@ -1053,20 +1061,14 @@ module PyrePysaApi = struct
         x: int = 1
     |}]
       "test.Foo.x"
-      ~expect:
-        (Some
-           (Global.ClassAttribute
-              { name = Reference.create "test.Foo.x"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_class_attribute ~local_class_id:0 "test.Foo.x"));
     assert_resolve
       ~context
       ["test.py", {|
       x: int = 1
     |}]
       "test.x"
-      ~expect:
-        (Some
-           (Global.ModuleGlobal
-              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_module_global "test.x"));
     assert_resolve
       ~context
       ["test.py", {|
@@ -1074,10 +1076,7 @@ module PyrePysaApi = struct
       x: Any = 1
     |}]
       "test.x"
-      ~expect:
-        (Some
-           (Global.ModuleGlobal
-              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_module_global "test.x"));
     assert_resolve
       ~context
       [
@@ -1091,10 +1090,7 @@ module PyrePysaApi = struct
         );
       ]
       "test.x"
-      ~expect:
-        (Some
-           (Global.ModuleGlobal
-              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_module_global "test.x"));
 
     (* Symbol is not found. *)
     assert_resolve
@@ -1317,20 +1313,14 @@ module PyrePysaApi = struct
         |} );
       ]
       "test.foo"
-      ~expect:
-        (Some
-           (Global.ModuleGlobal
-              { name = Reference.create "test.foo"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_module_global "test.foo"));
     assert_resolve
       ~context
       ["test.pyi", {|
       x: int = 1
     |}]
       "test.x"
-      ~expect:
-        (Some
-           (Global.ModuleGlobal
-              { name = Reference.create "test.x"; module_qualifier = None; location = None }));
+      ~expect:(Some (create_module_global "test.x"));
 
     (* Deeply nested code, where outer packages are not importable *)
     assert_resolve

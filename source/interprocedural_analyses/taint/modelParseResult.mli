@@ -430,15 +430,13 @@ module CallableDecorator : sig
 
   val create_for_callable
     :  pyrefly_api:PyreflyApi.ReadOnly.t ->
-    callables_to_definitions_map:Interprocedural.CallablesSharedMemory.ReadOnly.t ->
-    qualifier:Ast.Reference.t ->
     target:Target.t ->
     Ast.Statement.Decorator.t ->
     t
 
   val create_for_class
     :  pyrefly_api:PyreflyApi.ReadOnly.t ->
-    class_name:string ->
+    class_id:PyreflyTypes.ClassId.t ->
     Ast.Statement.Decorator.t ->
     t
 
@@ -508,7 +506,9 @@ module Modelable : sig
 
   val resolved_original_decorators : t -> CallableDecorator.t list
 
-  val class_name : t -> string option
+  val class_id : t -> PyreflyTypes.ClassId.t option
+
+  val class_name : t -> Ast.Reference.t option
 
   val is_instance_method : t -> bool
 

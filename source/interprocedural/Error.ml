@@ -28,6 +28,8 @@ let create ~location ~kind ~define_name = { location; kind; define_name }
 
 let code { kind = { code; _ }; _ } = code
 
+let location { location; _ } = location
+
 module Instantiated = struct
   type t = {
     line: int;

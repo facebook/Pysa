@@ -11,7 +11,7 @@ open Expression
 module DecoratedDefineBody : sig
   type t = {
     decorated_callable: Target.t;
-    module_qualifier: Reference.t;
+    module_id: PyreflyTypes.ModuleId.t;
     define_name: Reference.t;
     return_expression: Expression.t;
     original_function_name: Name.t;

@@ -248,19 +248,16 @@ let preprocess_special_calls
   | _ -> None
 
 
-let shim_for_call ~pyrefly_api ~callables_to_definitions_map ~callees ~nested_callees ~arguments =
+let shim_for_call ~pyrefly_api ~callees ~nested_callees ~arguments =
   let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   match shim_special_calls ~display_api ~callees ~arguments with
   | Some identified_callee -> Some identified_callee
   | None ->
-      let callable_exists name =
-        CallablesSharedMemory.ReadOnly.callable_from_reference callables_to_definitions_map name
-        |> Option.is_some
-      in
       SpecialCallResolution.shim_calls
         ~display_api
         ~class_mro:(PyreflyApi.ReadOnly.class_mro pyrefly_api)
-        ~callable_exists
+        ~class_id_from_name_opt:(PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api)
+        ~callable_id_from_name_opt:(PyreflyApi.ReadOnly.Target.callable_id_from_name pyrefly_api)
         ~callees
         ~nested_callees
         ~arguments
@@ -674,8 +671,6 @@ module HigherOrderCallGraph = struct
     val get_callee_model : Target.t -> t option
 
     val debug : bool
-
-    val module_qualifier : Reference.t
 
     val define : Ast.Statement.Define.t Node.t
 
@@ -1256,13 +1251,13 @@ module HigherOrderCallGraph = struct
            similar to the `filter_implicit_dunder_calls` logic in the pyrefly call graph building.
            We check both call_targets and init_targets since constructor calls use init_targets. *)
         let pyrefly_api = Context.pyrefly_api in
-        let any_parameter_annotation_has_class callable_class signatures =
+        let any_parameter_annotation_has_class callable_class_id signatures =
           let annotation_has_class annotation =
-            let { PyreflyApi.ClassNamesFromType.classes; is_exhaustive = _ } =
-              PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api annotation
+            let { PyreflyTypes.ClassesFromType.classes; is_exhaustive = _ } =
+              PyreflyApi.ReadOnly.Type.get_classes pyrefly_api annotation
             in
             let allow_modifier = function
-              | PyreflyApi.TypeModifier.Optional
+              | PyreflyTypes.TypeModifier.Optional
               | ReadOnly
               | Awaitable
               | Coroutine ->
@@ -1272,13 +1267,13 @@ module HigherOrderCallGraph = struct
               | TypeVariableConstraint ->
                   false
             in
-            List.exists classes ~f:(fun { PyreflyApi.ClassWithModifiers.class_name; modifiers } ->
-                (not (PyreflyApi.ReadOnly.is_object_class pyrefly_api class_name))
+            List.exists classes ~f:(fun { PyreflyTypes.ClassWithModifiers.class_id; modifiers } ->
+                (not (PyreflyApi.ReadOnly.is_object_class_id pyrefly_api class_id))
                 && List.for_all modifiers ~f:allow_modifier
                 && PyreflyApi.ReadOnly.is_subclass
                      pyrefly_api
-                     ~parent:class_name
-                     ~child:callable_class)
+                     ~parent:class_id
+                     ~child:callable_class_id)
           in
           let parameter_has_class parameter =
             PyreflyApi.ModelQueries.FunctionParameter.annotation parameter
@@ -1310,22 +1305,25 @@ module HigherOrderCallGraph = struct
               when String.equal
                      (PyreflyApi.ReadOnly.Target.method_name_exn pyrefly_api target)
                      "__call__" ->
-                let callable_class = PyreflyApi.ReadOnly.Target.class_name_exn pyrefly_api target in
-                not (any_parameter_annotation_has_class callable_class signatures)
+                let callable_class_id =
+                  PyreflyApi.ReadOnly.Target.class_id_exn pyrefly_api target
+                in
+                not (any_parameter_annotation_has_class callable_class_id signatures)
             | _ -> true
         in
         let filter_for_callee_targets callee_targets argument_callees =
           match callee_targets with
           | [{ CallTarget.target = callee; _ }] when not (Target.is_object callee) ->
-              let define_name =
+              let method_target =
                 callee
                 |> Target.get_regular
                 |> Target.Regular.override_to_method
                 |> Target.from_regular
-                |> PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api
               in
               let signatures =
-                PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name
+                PyreflyApi.ReadOnly.get_undecorated_signatures
+                  pyrefly_api
+                  (Target.undecorated_callable_id_exn method_target)
               in
               List.map argument_callees ~f:(fun call_target_set ->
                   CallTarget.Set.transform
@@ -2070,7 +2068,7 @@ module HigherOrderCallGraph = struct
           let pyrefly_in_context =
             PyreflyApi.InContext.create_at_statement_scope
               Context.pyrefly_api
-              ~module_qualifier:Context.module_qualifier
+              ~callable_id:(Target.callable_id_exn Context.callable)
               ~define_name:Context.define_name
               ~call_graph:Context.input_define_call_graph
               ~statement_key
@@ -2089,7 +2087,6 @@ let higher_order_call_graph_of_define
     ~skip_analysis_targets
     ~called_when_parameter
     ~skip_inlining_higher_order_functions
-    ~qualifier
     ~callable
     ~define
     ~initial_state
@@ -2113,8 +2110,6 @@ let higher_order_call_graph_of_define
         ~define:(Node.value define)
         ~callable
 
-
-    let module_qualifier = qualifier
 
     let define = define
 
@@ -2154,10 +2149,11 @@ let higher_order_call_graph_of_define
   (* Handle parameters. *)
   let initial_state =
     let pyrefly_in_context =
+      let define_name = PyreflyApi.ReadOnly.Target.define_name_exn Context.pyrefly_api callable in
       PyreflyApi.InContext.create_at_function_scope
         pyrefly_api
-        ~module_qualifier:qualifier
-        ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn Context.pyrefly_api callable)
+        ~callable_id:(Target.callable_id_exn callable)
+        ~define_name
         ~call_graph:Context.input_define_call_graph
     in
     List.fold
@@ -2267,7 +2263,7 @@ let build_whole_program_call_graph
       =
       PyreflyApi.ReadOnly.Target.get_callable_metadata
         pyrefly_api
-        (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api original_callable)
+        (Target.callable_id_exn original_callable)
     in
     DefineCallGraph.set_identifier_callees
       ~error_if_new:false
@@ -2293,9 +2289,9 @@ let build_whole_program_call_graph
     match define_and_qualifier with
     | Some
         {
-          CallablesSharedMemory.DefineAndQualifier.define =
+          CallablesSharedMemory.DefineAndModule.define =
             { Node.location = define_location; value = define };
-          qualifier = _;
+          module_id = _;
         } ->
         let allow_modifier = function
           | PyreflyApi.TypeModifier.Optional
@@ -2322,21 +2318,29 @@ let build_whole_program_call_graph
           let targets =
             PyreflyApi.ReadOnly.get_type_of_expression
               pyrefly_api
-              ~define_name:(PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable)
+              ~callable_id:(Target.undecorated_callable_id_exn callable)
               ~location:(Ast.Node.location base)
-            >>| PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api
-            >>| (fun { PyreflyApi.ClassNamesFromType.classes; _ } -> classes)
-            >>| List.map ~f:(fun { PyreflyApi.ClassWithModifiers.modifiers; class_name } ->
-                    let parents =
-                      class_name :: PyreflyApi.ReadOnly.class_mro pyrefly_api class_name
-                    in
+            >>| PyreflyApi.ReadOnly.Type.get_classes pyrefly_api
+            >>| (fun { PyreflyTypes.ClassesFromType.classes; _ } -> classes)
+            >>| List.map ~f:(fun { PyreflyTypes.ClassWithModifiers.modifiers; class_id } ->
+                    let parents = class_id :: PyreflyApi.ReadOnly.class_mro pyrefly_api class_id in
                     if is_class_instance modifiers then
                       List.map
-                        ~f:(fun class_name -> Format.sprintf "%s.%s" class_name attribute)
+                        ~f:(fun class_id ->
+                          Format.asprintf
+                            "%a.%s"
+                            Reference.pp
+                            (PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id)
+                            attribute)
                         parents
                     else if is_class_type modifiers then
                       List.map
-                        ~f:(fun class_name -> Format.sprintf "%s.__class__.%s" class_name attribute)
+                        ~f:(fun class_id ->
+                          Format.asprintf
+                            "%a.__class__.%s"
+                            Reference.pp
+                            (PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id)
+                            attribute)
                         parents
                     else
                       [])
@@ -2425,7 +2429,6 @@ let build_whole_program_call_graph
           in
           shim_for_call
             ~pyrefly_api
-            ~callables_to_definitions_map
             ~callees:(fetch_special_call_targets original_call_callees)
             ~nested_callees
             ~arguments
@@ -2481,9 +2484,11 @@ let build_whole_program_call_graph
           match shim_callee, shim_target_callee, nested_callees with
           | _, Shims.ShimArgumentMapping.Target.StaticMethod { class_name; method_name }, _ ->
               (* Only add a shim target if the method actually exists on the class. *)
+              PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api class_name
+              >>= fun class_id ->
               PyreflyApi.ReadOnly.Target.resolve_method_target
                 pyrefly_api
-                ~class_name
+                ~class_id
                 ~method_name
                 ~is_property_setter:false
               >>| fun target -> set_shim_target ~call_targets:[CallTarget.create target] call_graph
@@ -2513,12 +2518,10 @@ let build_whole_program_call_graph
                               on the made-up call `x.new_attribute(...)`. Here we fetch callees on
                               `x.y` and then replace `y` with `new_attribute`, dropping the target
                               if no such method exists on the class. *)
-                           let class_name =
-                             PyreflyApi.ReadOnly.Target.class_name_exn pyrefly_api method_target
-                           in
                            PyreflyApi.ReadOnly.Target.resolve_method_target
                              pyrefly_api
-                             ~class_name:(Reference.create class_name)
+                             ~class_id:
+                               (PyreflyApi.ReadOnly.Target.class_id_exn pyrefly_api method_target)
                              ~method_name:attribute
                              ~is_property_setter:false
                        | _ -> None)
@@ -2798,7 +2801,7 @@ let build_whole_program_call_graph
     let debug, define_and_qualifier =
       match CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map callable with
       | AstResult.Some
-          ({ CallablesSharedMemory.DefineAndQualifier.define = { Node.value = define; _ }; _ } as
+          ({ CallablesSharedMemory.DefineAndModule.define = { Node.value = define; _ }; _ } as
           define_and_qualifier) ->
           let debug = PysaDump.should_dump_call_graph ~pyrefly_api ~define ~callable in
           debug, Some define_and_qualifier
@@ -2880,7 +2883,7 @@ let build_whole_program_call_graph
       ~display_api
       ~scheduler
       ~static_analysis_configuration
-      ~resolve_qualifier:(CallablesSharedMemory.ReadOnly.get_qualifier callables_to_definitions_map)
+      ~resolve_module:(CallablesSharedMemory.ReadOnly.get_module callables_to_definitions_map)
       ~resolve_module_path
       ~get_call_graph:(fun callable ->
         CallGraph.SharedMemory.ReadOnly.get define_call_graphs_read_only ~cache:false ~callable)

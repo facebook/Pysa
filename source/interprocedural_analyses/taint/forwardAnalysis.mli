@@ -15,7 +15,7 @@ val run
   pyrefly_api:Interprocedural.PyreflyApi.ReadOnly.t ->
   class_interval_graph:Interprocedural.ClassIntervalSetGraph.SharedMemory.t ->
   global_constants:Interprocedural.GlobalConstants.SharedMemory.ReadOnly.t ->
-  qualifier:Reference.t ->
+  module_id:PyreflyTypes.ModuleId.t ->
   callable:Target.t ->
   define:Define.t Node.t ->
   cfg:Analysis.PyrePysaLogic.Cfg.t ->

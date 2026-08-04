@@ -90,26 +90,23 @@ let assert_invalid_model
             ["TestA", ["TestB"]; "TestB", ["TestA"]; "TestC", ["TestD"]; "TestD", ["TestC"]];
       }
   in
-  let path_of_qualifier qualifier =
+  let path_of_module module_id =
     (* Use repository-relative paths (like production) so two source files mapping to the same
        module name (e.g. a/foo.py and b/foo.py) render distinguishably. For files outside the
        repository root (e.g. typeshed/external stubs under a separate root, which come back as an
        absolute path), fall back to the search-path-relative path so rendering stays
        deterministic. *)
     match
-      PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
-        ~repository_root
-        pyrefly_api
-        qualifier
+      PyreflyApi.ReadOnly.repository_relative_path_of_module ~repository_root pyrefly_api module_id
     with
     | Some path when not (Filename.is_absolute path) -> Some path
-    | _ -> PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api qualifier
+    | _ -> PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api module_id
   in
   let error_message =
     let path = path >>| PyrePath.create_absolute in
     ModelParser.parse
       ~pyrefly_api
-      ~path_of_qualifier
+      ~path_of_module
       ~taint_configuration
       ~source_sink_filter:None
       ?path

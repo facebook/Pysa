@@ -118,7 +118,7 @@ module CallGraphAnalysis = struct
          their initial call graphs below, when analyzing them in the next iteration. *)
       { AnalyzeDefineResult.result = (); model = empty_model; additional_dependencies = [] }
     else
-      let { CallablesSharedMemory.DefineAndQualifier.qualifier; define } =
+      let { CallablesSharedMemory.DefineAndModule.define; _ } =
         callable
         |> Target.strip_parameters
         |> CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
@@ -157,7 +157,6 @@ module CallGraphAnalysis = struct
               ~skip_analysis_targets
               ~called_when_parameter
               ~skip_inlining_higher_order_functions
-              ~qualifier
               ~callable
               ~define
               ~initial_state:
@@ -543,7 +542,7 @@ let compute
       ~display_api
       ~scheduler
       ~static_analysis_configuration
-      ~resolve_qualifier:(CallablesSharedMemory.ReadOnly.get_qualifier callables_to_definitions_map)
+      ~resolve_module:(CallablesSharedMemory.ReadOnly.get_module callables_to_definitions_map)
       ~resolve_module_path
       ~get_call_graph:
         (get_model_from_readonly_state

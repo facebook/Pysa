@@ -126,7 +126,7 @@ let set_up_environment
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.parse
       ~pyrefly_api
-      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+      ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
       ~source
       ~taint_configuration
       ~source_sink_filter:(Some taint_configuration.source_sink_filter)
@@ -260,7 +260,7 @@ let assert_invalid_model ?path ?source ?(sources = []) ~context ~model_source ~e
     let path = path >>| PyrePath.create_absolute in
     ModelParser.parse
       ~pyrefly_api
-      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+      ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
       ~taint_configuration
       ~source_sink_filter:None
       ?path

@@ -42,7 +42,7 @@ module CallTarget : sig
     (* The return type of the call expression, or `None` for object targets. *)
     return_type: ReturnType.t option;
     (* The class of the receiver object at this call site, if any. *)
-    receiver_class: string option; (* True if calling a class method. *)
+    receiver_class: PyreflyTypes.ClassId.t option; (* True if calling a class method. *)
     is_class_method: bool;
     (* True if calling a static method. *)
     is_static_method: bool;
@@ -58,7 +58,7 @@ module CallTarget : sig
     ?implicit_dunder_call:bool ->
     ?index:int ->
     ?return_type:ReturnType.t option ->
-    ?receiver_class:string ->
+    ?receiver_class:PyreflyTypes.ClassId.t ->
     ?is_class_method:bool ->
     ?is_static_method:bool ->
     Target.t ->
@@ -70,7 +70,7 @@ module CallTarget : sig
     ?implicit_dunder_call:bool ->
     ?index:int ->
     ?return_type:ReturnType.t option ->
-    ?receiver_class:string ->
+    ?receiver_class:PyreflyTypes.ClassId.t ->
     ?is_class_method:bool ->
     ?is_static_method:bool ->
     Target.Regular.t ->
@@ -649,7 +649,7 @@ module DefineCallGraph : sig
     t
 
   val map_receiver_class
-    :  f:(string -> string) ->
+    :  f:(PyreflyTypes.ClassId.t -> PyreflyTypes.ClassId.t) ->
     map_call_if:(CallCallees.t -> bool) ->
     map_return_if:(ReturnShimCallees.t -> bool) ->
     t ->
@@ -675,8 +675,8 @@ module DefineCallGraph : sig
     :  display_api:PyreflyTypes.DisplayApi.t ->
     scheduler:Scheduler.t ->
     static_analysis_configuration:Configuration.StaticAnalysis.t ->
-    resolve_qualifier:(Target.t -> Ast.Reference.t option) ->
-    resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) option ->
+    resolve_module:(Target.t -> PyreflyTypes.ModuleId.t option) ->
+    resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) option ->
     get_call_graph:(Target.t -> t option) ->
     json_kind:NewlineDelimitedJson.Kind.t ->
     filename_prefix:string ->
@@ -762,8 +762,8 @@ end) : sig
     :  display_api:PyreflyTypes.DisplayApi.t ->
     scheduler:Scheduler.t ->
     static_analysis_configuration:Configuration.StaticAnalysis.t ->
-    resolve_qualifier:(Target.t -> Ast.Reference.t option) ->
-    resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) option ->
+    resolve_module:(Target.t -> PyreflyTypes.ModuleId.t option) ->
+    resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) option ->
     get_call_graph:(Target.t -> CallGraph.t option) ->
     json_kind:NewlineDelimitedJson.Kind.t ->
     filename_prefix:string ->

@@ -26,17 +26,23 @@ class Foo:
   let pyrefly_in_context =
     Interprocedural.PyreflyApi.InContext.create_at_function_scope
       pyrefly_api
-      ~module_qualifier:!&"test"
-      ~define_name:!&"test.__toplevel__"
+      ~callable_id:
+        (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+           pyrefly_api
+           !&"test.$toplevel")
+      ~define_name:!&"test.$toplevel"
       ~call_graph:Interprocedural.CallGraph.DefineCallGraph.empty
   in
   let taint =
     ForwardTaint.singleton CallInfo.declaration (Sources.NamedSource "UserControlled") Frame.initial
   in
   let callee =
+    let class_id =
+      Interprocedural.PyreflyApi.ReadOnly.class_id_from_name pyrefly_api !&"test.Foo"
+    in
     Interprocedural.PyreflyApi.ReadOnly.Target.resolve_method_target
       pyrefly_api
-      ~class_name:(Reference.create "test.Foo")
+      ~class_id
       ~method_name:"bar"
       ~is_property_setter:false
     |> Option.value_exn ~message:"expected test.Foo.bar to resolve"

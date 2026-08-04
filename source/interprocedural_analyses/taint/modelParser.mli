@@ -11,7 +11,7 @@ val get_model_sources : paths:PyrePath.t list -> (PyrePath.t * string) list
 
 val parse
   :  pyrefly_api:Interprocedural.PyreflyApi.ReadOnly.t ->
-  path_of_qualifier:(Ast.Reference.t -> string option) ->
+  path_of_module:(PyreflyTypes.ModuleId.t -> string option) ->
   ?path:PyrePath.t ->
   source:string ->
   taint_configuration:TaintConfiguration.Heap.t ->

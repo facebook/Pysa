@@ -8,6 +8,7 @@
 module CamlUnix = Unix
 open Core
 open Analysis
+open Pyre
 
 (* Synthetic callable and class ids for tests that build `Target`s without a Pyrefly backend.
 
@@ -415,9 +416,11 @@ let resolve_function_target_exn ~pyrefly_api reference =
 let resolve_method_target_exn ?(is_property_setter = false) ~pyrefly_api ~class_name ~method_name ()
   =
   match
+    Interprocedural.PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api class_name
+    >>= fun class_id ->
     Interprocedural.PyreflyApi.ReadOnly.Target.resolve_method_target
       pyrefly_api
-      ~class_name
+      ~class_id
       ~method_name
       ~is_property_setter
   with
@@ -455,10 +458,10 @@ let resolve_override_target_from_reference_exn ~pyrefly_api reference =
 
 
 let resolve_define_name_target_exn ~pyrefly_api reference =
-  Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+  Interprocedural.PyreflyApi.ReadOnly.Target.target_from_callable_id
     pyrefly_api
     ~override:false
-    reference
+    (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn pyrefly_api reference)
 
 
 let resolve_function_regular_exn ~pyrefly_api reference =

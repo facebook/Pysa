@@ -547,40 +547,34 @@ module SanitizedCallArgumentSet = Set.Make (struct
   let compare = sanitized_location_insensitive_compare
 end)
 
-let find_children ~class_hierarchy_graph ~is_transitive ~includes_self class_name =
-  let rec find_children_transitive ~class_hierarchy_graph to_process result =
+let find_children ~pyrefly_api:_ ~class_hierarchy_graph ~is_transitive ~includes_self class_id =
+  let rec find_children_transitive to_process result =
     match to_process with
     | [] -> result
-    | class_name :: rest ->
-        let child_name_set =
-          ClassHierarchyGraph.SharedMemory.get ~class_name class_hierarchy_graph
-        in
-        let new_children = ClassHierarchyGraph.ClassNameSet.elements child_name_set in
+    | class_id :: rest ->
+        let child_id_set = ClassHierarchyGraph.SharedMemory.get ~class_id class_hierarchy_graph in
+        let new_children = ClassHierarchyGraph.ClassIdSet.elements child_id_set in
         let result =
-          List.fold ~f:(Fn.flip ClassHierarchyGraph.ClassNameSet.add) ~init:result new_children
+          List.fold ~f:(Fn.flip ClassHierarchyGraph.ClassIdSet.add) ~init:result new_children
         in
-        find_children_transitive ~class_hierarchy_graph (List.rev_append new_children rest) result
+        find_children_transitive (List.rev_append new_children rest) result
   in
-  let child_name_set =
+  let child_id_set =
     if is_transitive then
-      match ClassHierarchyGraph.SharedMemory.get_transitive ~class_name class_hierarchy_graph with
-      | Some child_name_set -> child_name_set
+      match ClassHierarchyGraph.SharedMemory.get_transitive ~class_id class_hierarchy_graph with
+      | Some child_id_set -> child_id_set
       (* cache miss, recalculate *)
-      | None ->
-          find_children_transitive
-            ~class_hierarchy_graph
-            [class_name]
-            ClassHierarchyGraph.ClassNameSet.empty
+      | None -> find_children_transitive [class_id] ClassHierarchyGraph.ClassIdSet.empty
     else
-      ClassHierarchyGraph.SharedMemory.get ~class_name class_hierarchy_graph
+      ClassHierarchyGraph.SharedMemory.get ~class_id class_hierarchy_graph
   in
-  let child_name_set =
+  let child_id_set =
     if includes_self then
-      ClassHierarchyGraph.ClassNameSet.add class_name child_name_set
+      ClassHierarchyGraph.ClassIdSet.add class_id child_id_set
     else
-      child_name_set
+      child_id_set
   in
-  child_name_set
+  child_id_set
 
 
 let matches_name_constraint ~name_captures ~name_constraint name =
@@ -705,20 +699,27 @@ let matches_annotation_constraint
         | PyreflyApi.TypeModifier.Type ->
             false
       in
-      TypeAnnotation.inferred_type annotation
-      >>| PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api
-      >>| (function
+      PyreflyApi.add_builtins_prefix (Reference.create class_name)
+      |> PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api
+      >>= (fun class_id ->
+            TypeAnnotation.inferred_type annotation
+            >>| PyreflyApi.ReadOnly.Type.get_classes pyrefly_api
+            >>| function
             | {
-                PyreflyApi.ClassNamesFromType.classes =
-                  [{ class_name = extracted_class_name; modifiers }];
+                PyreflyTypes.ClassesFromType.classes =
+                  [{ class_id = extracted_class_id; modifiers }];
                 is_exhaustive = true;
               }
               when List.for_all ~f:allow_modifier modifiers ->
-                let class_name =
-                  Reference.show (PyreflyApi.add_builtins_prefix (Reference.create class_name))
+                let children =
+                  find_children
+                    ~pyrefly_api
+                    ~class_hierarchy_graph
+                    ~is_transitive
+                    ~includes_self
+                    class_id
                 in
-                find_children ~class_hierarchy_graph ~is_transitive ~includes_self class_name
-                |> ClassHierarchyGraph.ClassNameSet.mem extracted_class_name
+                ClassHierarchyGraph.ClassIdSet.mem extracted_class_id children
             | _ -> false)
       |> Option.value ~default:false
 
@@ -784,8 +785,8 @@ let rec parameter_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_c
              ~parameter)
 
 
-let class_matches_decorator_constraint ~name_captures ~pyrefly_api ~decorator_constraint class_name =
-  PyreflyApi.ReadOnly.get_class_decorators_opt pyrefly_api class_name
+let class_matches_decorator_constraint ~name_captures ~pyrefly_api ~decorator_constraint class_id =
+  PyreflyApi.ReadOnly.get_class_decorators_opt pyrefly_api class_id
   |> PyreflyApi.AstResult.to_option
   >>| (fun decorators ->
         List.exists decorators ~f:(fun decorator ->
@@ -794,41 +795,40 @@ let class_matches_decorator_constraint ~name_captures ~pyrefly_api ~decorator_co
                   matches_decorator_constraint
                     ~pyrefly_api
                     ~name_captures
-                    ~decorator:
-                      (CallableDecorator.create_for_class ~pyrefly_api ~class_name decorator)
+                    ~decorator:(CallableDecorator.create_for_class ~pyrefly_api ~class_id decorator)
                     decorator_constraint)
             |> Option.value ~default:false))
   |> Option.value ~default:false
 
 
-let find_parents ~pyrefly_api ~is_transitive ~includes_self class_name =
+let find_parents ~pyrefly_api ~is_transitive ~includes_self class_id =
   let parents =
     if is_transitive then
-      PyreflyApi.ReadOnly.class_mro pyrefly_api class_name
+      PyreflyApi.ReadOnly.class_mro pyrefly_api class_id
     else
-      PyreflyApi.ReadOnly.class_immediate_parents pyrefly_api class_name
+      PyreflyApi.ReadOnly.class_immediate_parents pyrefly_api class_id
   in
-  let parents =
-    if includes_self then
-      class_name :: parents
-    else
-      parents
-  in
-  parents
+  if includes_self then
+    class_id :: parents
+  else
+    parents
 
 
 let find_base_methods ~pyrefly_api ~callables_to_definitions_map target =
   let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
-  let class_name = Target.class_name_exn ~display_api target in
+  let class_id = PyreflyApi.ReadOnly.Target.class_id_exn pyrefly_api target in
+  let is_property_setter = PyreflyApi.ReadOnly.Target.is_property_setter pyrefly_api target in
   let method_name = Target.method_name_exn ~display_api target in
-  let find_instance_method parent_class =
-    let define_name = Reference.create ~prefix:(Reference.create parent_class) method_name in
-    match PyreflyApi.ReadOnly.Target.get_callable_metadata_opt pyrefly_api define_name with
+  let find_instance_method parent_class_id =
+    match
+      PyreflyApi.ReadOnly.Target.resolve_method_target
+        pyrefly_api
+        ~class_id:parent_class_id
+        ~method_name
+        ~is_property_setter
+    with
     | None -> None
-    | Some _ -> (
-        let base_method =
-          PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false define_name
-        in
+    | Some base_method -> (
         match
           CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map base_method
         with
@@ -841,55 +841,71 @@ let find_base_methods ~pyrefly_api ~callables_to_definitions_map target =
             Some base_method
         | _ -> None)
   in
-  find_parents ~pyrefly_api ~is_transitive:true ~includes_self:false class_name
+  find_parents ~pyrefly_api ~is_transitive:true ~includes_self:false class_id
   |> List.filter_map ~f:find_instance_method
 
 
-let rec class_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_captures ~name = function
+let rec class_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_captures ~class_id
+  = function
   | ModelQuery.ClassConstraint.AnyOf constraints ->
       List.exists
         constraints
-        ~f:(class_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_captures ~name)
+        ~f:(class_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_captures ~class_id)
   | ModelQuery.ClassConstraint.AllOf constraints ->
       List.for_all
         constraints
-        ~f:(class_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_captures ~name)
+        ~f:(class_matches_constraint ~pyrefly_api ~class_hierarchy_graph ~name_captures ~class_id)
   | ModelQuery.ClassConstraint.Not class_constraint ->
       not
         (class_matches_constraint
            ~pyrefly_api
-           ~name
+           ~class_id
            ~class_hierarchy_graph
            ~name_captures
            class_constraint)
   | ModelQuery.ClassConstraint.NameConstraint name_constraint ->
-      let name = name |> Reference.create |> PyreflyApi.target_symbolic_name |> Reference.last in
+      let name =
+        class_id
+        |> PyreflyApi.ReadOnly.class_name_from_id pyrefly_api
+        |> PyreflyApi.target_symbolic_name
+        |> Reference.last
+      in
       matches_name_constraint ~name_captures ~name_constraint name
   | ModelQuery.ClassConstraint.FullyQualifiedNameConstraint name_constraint ->
-      let name = name |> Reference.create |> PyreflyApi.target_symbolic_name |> Reference.show in
+      let name =
+        class_id
+        |> PyreflyApi.ReadOnly.class_name_from_id pyrefly_api
+        |> PyreflyApi.target_symbolic_name
+        |> Reference.show
+      in
       matches_name_constraint ~name_captures ~name_constraint name
   | ModelQuery.ClassConstraint.Extends { class_name; is_transitive; includes_self } ->
-      find_children ~class_hierarchy_graph ~is_transitive ~includes_self class_name
-      |> ClassHierarchyGraph.ClassNameSet.mem name
+      let children =
+        PyreflyApi.add_builtins_prefix (Reference.create class_name)
+        |> PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api
+        >>| find_children ~pyrefly_api ~class_hierarchy_graph ~is_transitive ~includes_self
+        |> Option.value ~default:ClassHierarchyGraph.ClassIdSet.empty
+      in
+      ClassHierarchyGraph.ClassIdSet.mem class_id children
   | ModelQuery.ClassConstraint.DecoratorConstraint decorator_constraint ->
-      class_matches_decorator_constraint ~name_captures ~pyrefly_api ~decorator_constraint name
+      class_matches_decorator_constraint ~name_captures ~pyrefly_api ~decorator_constraint class_id
   | ModelQuery.ClassConstraint.AnyChildConstraint { class_constraint; is_transitive; includes_self }
     ->
-      find_children ~class_hierarchy_graph ~is_transitive ~includes_self name
-      |> ClassHierarchyGraph.ClassNameSet.exists (fun name ->
+      find_children ~pyrefly_api ~class_hierarchy_graph ~is_transitive ~includes_self class_id
+      |> ClassHierarchyGraph.ClassIdSet.exists (fun class_id ->
              class_matches_constraint
                ~pyrefly_api
-               ~name
+               ~class_id
                ~class_hierarchy_graph
                ~name_captures
                class_constraint)
   | ModelQuery.ClassConstraint.AnyParentConstraint
       { class_constraint; is_transitive; includes_self } ->
-      find_parents ~pyrefly_api ~is_transitive ~includes_self name
-      |> List.exists ~f:(fun name ->
+      find_parents ~pyrefly_api ~is_transitive ~includes_self class_id
+      |> List.exists ~f:(fun class_id ->
              class_matches_constraint
                ~pyrefly_api
-               ~name
+               ~class_id
                ~class_hierarchy_graph
                ~name_captures
                class_constraint)
@@ -999,13 +1015,13 @@ let rec matches_constraint
                ~decorator
                decorator_constraint)
   | ModelQuery.Constraint.ClassConstraint class_constraint ->
-      Modelable.class_name value
-      >>| (fun name ->
+      Modelable.class_id value
+      >>| (fun class_id ->
             class_matches_constraint
               ~pyrefly_api
               ~class_hierarchy_graph
               ~name_captures
-              ~name
+              ~class_id
               class_constraint)
       |> Option.value ~default:false
 
@@ -1946,13 +1962,13 @@ end)
 module AttributeQueryExecutor = struct
   let get_attributes ~scheduler ~pyrefly_api =
     let () = Log.info "Fetching all attributes..." in
-    let get_class_attributes class_name =
-      let class_name_reference = Reference.create class_name in
+    let get_class_attributes class_id =
+      let class_name_reference = PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id in
       PyreflyApi.ReadOnly.get_class_attributes
         pyrefly_api
         ~include_generated_attributes:false
         ~only_simple_assignments:true
-        class_name
+        class_id
       |> Option.value ~default:[]
       |> List.map ~f:(fun attribute_name ->
              Target.create_object (Reference.create ~prefix:class_name_reference attribute_name))
@@ -2026,6 +2042,9 @@ module GlobalVariableQueryExecutor = struct
   let get_globals ~scheduler ~pyrefly_api =
     let () = Log.info "Fetching all globals..." in
     PyreflyApi.ReadOnly.all_global_variables pyrefly_api ~scheduler
+    |> List.map ~f:(fun (module_id, name) ->
+           let qualifier = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
+           Reference.create ~prefix:qualifier name)
     |> List.map ~f:Target.create_object
 
 
@@ -2094,8 +2113,14 @@ let generate_models_from_queries
         List.filter ~f:(ModelParseResult.ModelQuery.should_keep ~source_sink_filter) queries
     | None -> queries
   in
+  (* The class hierarchy graph is keyed on class ids; resolve the `extends` class names (dropping
+     any unknown to pyrefly, which have no children anyway). *)
   let extends_to_classnames =
     ModelParseResult.ModelQuery.extract_extends_from_model_queries queries
+    |> List.filter_map ~f:(fun class_name ->
+           PyreflyApi.ReadOnly.class_id_from_name_opt
+             pyrefly_api
+             (PyreflyApi.add_builtins_prefix (Reference.create class_name)))
   in
   let class_hierarchy_graph =
     ClassHierarchyGraph.SharedMemory.from_heap

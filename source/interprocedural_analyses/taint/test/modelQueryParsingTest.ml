@@ -40,7 +40,7 @@ let set_up_environment ?source ~context ~model_source ~validate () =
   let ({ ModelParseResult.errors; _ } as parse_result) =
     ModelParser.parse
       ~pyrefly_api
-      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+      ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
       ~source
       ~taint_configuration
       ~source_sink_filter:(Some taint_configuration.source_sink_filter)

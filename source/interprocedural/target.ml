@@ -359,6 +359,47 @@ let get_regular = function
       regular
 
 
+(* Return the callable id carried by a target. `Function`, `Method` and `Override` all carry one (an
+   override wraps the callable id of the method it overrides); `Object` targets have none. Returns
+   the id as-is, without stripping the `@decorated` tag - that is the caller's responsibility. *)
+let callable_id target =
+  match get_regular target with
+  | Regular.Function callable_id
+  | Regular.Method callable_id
+  | Regular.Override callable_id ->
+      Some callable_id
+  | Regular.Object _ -> None
+
+
+let callable_id_exn target =
+  match callable_id target with
+  | Some callable_id -> callable_id
+  | None -> Format.asprintf "expected a callable target, got %a" pp target |> failwith
+
+
+let module_id target =
+  match get_regular target with
+  | Regular.Function callable_id
+  | Regular.Method callable_id
+  | Regular.Override callable_id ->
+      Some (CallableId.module_id callable_id)
+  | Regular.Object _ -> None
+
+
+let module_id_exn target =
+  match module_id target with
+  | Some module_id -> module_id
+  | None -> Format.asprintf "expected a callable target, got %a" pp target |> failwith
+
+
+let undecorated_callable_id_exn target =
+  let callable_id = callable_id_exn target in
+  if CallableId.is_decorated callable_id then
+    CallableId.to_undecorated callable_id
+  else
+    callable_id
+
+
 (* Decode a `Method`/`Override`'s class name (the prefix of its define name) via the display api.
    `None` for functions and objects. *)
 let class_name ~display_api:{ DisplayApi.callable_define_name; _ } target =

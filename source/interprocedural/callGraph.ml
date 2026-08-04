@@ -113,7 +113,7 @@ module CallTarget = struct
       (* The return type of the call expression, or `None` for object targets. *)
       return_type: ReturnType.t option;
       (* The class of the receiver object at this call site, if any. *)
-      receiver_class: string option;
+      receiver_class: PyreflyTypes.ClassId.t option;
       (* True if calling a class method. *)
       is_class_method: bool;
       (* True if calling a static method. *)
@@ -235,7 +235,7 @@ module CallTarget = struct
 
 
   let to_json
-      ~display_api
+      ~display_api:({ PyreflyTypes.DisplayApi.class_name = class_name_from_id; _ } as display_api)
       {
         target;
         implicit_receiver;
@@ -251,7 +251,8 @@ module CallTarget = struct
     |> JsonHelper.add_flag_if "implicit_receiver" (`Bool true) implicit_receiver
     |> JsonHelper.add_flag_if "implicit_dunder_call" (`Bool true) implicit_dunder_call
     |> JsonHelper.add_optional "return_type" return_type ReturnType.to_json
-    |> JsonHelper.add_optional "receiver_class" receiver_class (fun name -> `String name)
+    |> JsonHelper.add_optional "receiver_class" receiver_class (fun class_id ->
+           `String (class_name_from_id class_id |> Reference.show))
     |> JsonHelper.add_flag_if "is_class_method" (`Bool true) is_class_method
     |> JsonHelper.add_flag_if "is_static_method" (`Bool true) is_static_method
     |> fun bindings -> `Assoc (List.rev bindings)
@@ -880,13 +881,19 @@ module CallCallees = struct
    * instance, `__iter__` is not defined on `Mapping`, but is defined in the parent class
    * `Iterable`. *)
 
-  let is_method_of_class ~display_api ~is_class_name callees =
+  let is_method_of_class
+      ~display_api:({ PyreflyTypes.DisplayApi.class_name = class_name_from_id; _ } as display_api)
+      ~is_class_name
+      callees
+    =
     let is_call_target { CallTarget.target; receiver_class; _ } =
       match Target.get_regular target with
       | Target.Regular.Method _
       | Target.Regular.Override _ ->
           (match receiver_class with
-          | Some receiver_class when is_class_name receiver_class -> true
+          | Some receiver_class
+            when is_class_name (class_name_from_id receiver_class |> Reference.show) ->
+              true
           | _ -> false)
           || is_class_name (Target.class_name_exn ~display_api target)
       | _ -> false
@@ -1688,13 +1695,13 @@ module MakeSaveCallGraph (CallGraph : sig
   val to_json_alist : display_api:PyreflyTypes.DisplayApi.t -> t -> (string * Yojson.Safe.t) list
 end) =
 struct
-  let filename_and_path ~display_api ~resolve_qualifier ~resolve_module_path callable
+  let filename_and_path ~display_api ~resolve_module ~resolve_module_path callable
       : (string * Yojson.Safe.t) list
     =
     let bindings = ["callable", `String (Target.external_name ~display_api callable)] in
     let resolve_module_path = Option.value ~default:(fun _ -> None) resolve_module_path in
     callable
-    |> resolve_qualifier
+    |> resolve_module
     >>= resolve_module_path
     >>| (function
           | { RepositoryPath.filename = Some filename; _ } ->
@@ -1715,7 +1722,7 @@ struct
           configuration = { local_root; _ };
           _;
         }
-      ~resolve_qualifier
+      ~resolve_module
       ~resolve_module_path
       ~get_call_graph
       ~json_kind
@@ -1730,7 +1737,7 @@ struct
               NewlineDelimitedJson.Line.kind = json_kind;
               data =
                 `Assoc
-                  (filename_and_path ~display_api ~resolve_qualifier ~resolve_module_path callable
+                  (filename_and_path ~display_api ~resolve_module ~resolve_module_path callable
                   @ CallGraph.to_json_alist ~display_api call_graph);
             };
           ]

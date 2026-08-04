@@ -45,8 +45,8 @@ module HigherOrderCallGraph : sig
     :  display_api:PyreflyTypes.DisplayApi.t ->
     scheduler:Scheduler.t ->
     static_analysis_configuration:Configuration.StaticAnalysis.t ->
-    resolve_qualifier:(Target.t -> Reference.t option) ->
-    resolve_module_path:(Reference.t -> RepositoryPath.t option) option ->
+    resolve_module:(Target.t -> PyreflyTypes.ModuleId.t option) ->
+    resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) option ->
     get_call_graph:(Target.t -> t option) ->
     json_kind:NewlineDelimitedJson.Kind.t ->
     filename_prefix:string ->
@@ -87,7 +87,6 @@ val higher_order_call_graph_of_define
   skip_analysis_targets:Target.HashSet.t ->
   called_when_parameter:Target.HashSet.t ->
   skip_inlining_higher_order_functions:Target.HashSet.t ->
-  qualifier:Reference.t ->
   callable:Target.t ->
   define:Ast.Statement.Define.t Node.t ->
   initial_state:HigherOrderCallGraph.State.t ->
@@ -106,7 +105,7 @@ val build_whole_program_call_graph
   :  scheduler:Scheduler.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
   pyrefly_api:PyreflyApi.ReadOnly.t ->
-  resolve_module_path:(Reference.t -> RepositoryPath.t option) option ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) option ->
   callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
   callables_to_decorators_map:CallableToDecoratorsMap.SharedMemory.ReadOnly.t ->
   global_constants:GlobalConstants.SharedMemory.ReadOnly.t ->

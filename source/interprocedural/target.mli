@@ -169,6 +169,23 @@ val get_regular : t -> Regular.t
 (* Return `Regular.t`, but throw if called on `Parameterized`. *)
 val as_regular_exn : t -> Regular.t
 
+(* Return the callable id carried by a `Function`, `Method` or `Override` target (an override wraps
+   the callable id of the method it overrides). `None` for `Object` targets. The id is returned
+   as-is, without stripping the `@decorated` tag. *)
+val callable_id : t -> PyreflyTypes.CallableId.t option
+
+(* Like `callable_id`, but raises on `Object` targets. *)
+val callable_id_exn : t -> PyreflyTypes.CallableId.t
+
+val module_id : t -> PyreflyTypes.ModuleId.t option
+
+val module_id_exn : t -> PyreflyTypes.ModuleId.t
+
+(* Like `callable_id_exn`, but strips the `@decorated` tag, yielding an id suitable for the id-keyed
+   shared memories (metadata, signatures, captures, type-of-expressions, ...), which are all keyed
+   by undecorated ids. Raises on `Object` targets. *)
+val undecorated_callable_id_exn : t -> PyreflyTypes.CallableId.t
+
 val strip_parameters : t -> t
 
 val collect_nested_regular_targets : t -> Regular.t list

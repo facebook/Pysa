@@ -15,12 +15,26 @@ module Heap : sig
 
   val empty : t
 
+  val from_module
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
+    PyreflyTypes.ModuleId.t ->
+    t
+
+  (* Convenience wrapper used by tests, which naturally have a module qualifier in hand. *)
   val from_qualifier
     :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-    Ast.Reference.t ->
+    Reference.t ->
     t
 
+  val from_modules
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
+    module_ids:PyreflyTypes.ModuleId.t list ->
+    t
+
+  (* Convenience wrapper used by tests, which naturally have a module qualifier in hand. *)
   val from_qualifiers
     :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
@@ -35,12 +49,12 @@ module SharedMemory : sig
 
   val from_heap : Heap.t -> t
 
-  val from_qualifiers
+  val from_modules
     :  scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
     pyrefly_api:PyreflyApi.ReadOnly.t ->
     callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
-    qualifiers:Reference.t list ->
+    module_ids:PyreflyTypes.ModuleId.t list ->
     t
 
   module ReadOnly : sig

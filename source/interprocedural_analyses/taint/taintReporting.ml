@@ -483,7 +483,8 @@ let produce_errors
       fixpoint_step_logger
   in
   let filename_lookup qualifier =
-    resolve_module_path qualifier >>= fun { RepositoryPath.filename; _ } -> filename
+    resolve_module_path (PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
+    >>= fun { RepositoryPath.filename; _ } -> filename
   in
   let error_to_json error =
     error

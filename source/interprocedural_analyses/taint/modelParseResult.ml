@@ -840,13 +840,7 @@ module CallableDecorator = struct
     callees: Reference.t list Lazy.t;
   }
 
-  let create_for_callable
-      ~pyrefly_api
-      ~callables_to_definitions_map:_
-      ~qualifier:_
-      ~target
-      statement
-    =
+  let create_for_callable ~pyrefly_api ~target statement =
     let get_callees statement =
       let ({ Node.value = expression; _ } as decorator_expression) =
         Statement.Decorator.to_expression statement
@@ -859,18 +853,23 @@ module CallableDecorator = struct
             (* Regular decorator, such as `@foo` *) decorator_expression
         | _ -> decorator_expression
       in
+      let { PyreflyTypes.DisplayApi.callable_define_name; _ } =
+        PyreflyApi.ReadOnly.display_api pyrefly_api
+      in
       PyreflyApi.ReadOnly.get_callable_decorator_callees
         pyrefly_api
-        (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target)
+        (Target.callable_id_exn target)
         (Node.location callee)
       |> Option.value ~default:[]
+      (* Render the decorator callee ids as their define names for the name-based checks below. *)
+      |> List.map ~f:callable_define_name
       |> List.map ~f:PyreflyApi.target_symbolic_name
     in
     let callees = lazy (get_callees statement) in
     { statement; callees }
 
 
-  let create_for_class ~pyrefly_api ~class_name statement =
+  let create_for_class ~pyrefly_api ~class_id statement =
     let get_callees statement =
       let ({ Node.value = expression; _ } as decorator_expression) =
         Statement.Decorator.to_expression statement
@@ -881,8 +880,13 @@ module CallableDecorator = struct
         | Expression.Expression.Name _ -> decorator_expression
         | _ -> decorator_expression
       in
-      PyreflyApi.ReadOnly.get_class_decorator_callees pyrefly_api class_name (Node.location callee)
+      let { PyreflyTypes.DisplayApi.callable_define_name; _ } =
+        PyreflyApi.ReadOnly.display_api pyrefly_api
+      in
+      PyreflyApi.ReadOnly.get_class_decorator_callees pyrefly_api class_id (Node.location callee)
       |> Option.value ~default:[]
+      (* Render the decorator callee ids as their define names for the name-based checks below. *)
+      |> List.map ~f:callable_define_name
       |> List.map ~f:PyreflyApi.target_symbolic_name
     in
     let callees = lazy (get_callees statement) in
@@ -982,7 +986,8 @@ module Modelable = struct
     | Callable of {
         target: Target.t;
         target_name: Reference.t Lazy.t;
-        class_name: string option Lazy.t;
+        class_id: PyreflyTypes.ClassId.t option Lazy.t;
+        class_name: Reference.t option Lazy.t;
         function_name: string option Lazy.t;
         method_name: string option Lazy.t;
         (* The syntactic definition of the function, including the AST for each parameters. *)
@@ -994,6 +999,8 @@ module Modelable = struct
       }
     | Attribute of {
         target_name: Reference.t;
+        class_id: PyreflyTypes.ClassId.t;
+        class_name: Reference.t;
         type_annotation: TypeAnnotation.t Lazy.t;
       }
     | Global of {
@@ -1003,7 +1010,10 @@ module Modelable = struct
 
   let create_callable ~pyrefly_api ~callables_to_definitions_map target =
     let target_name = lazy (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target) in
-    let class_name = lazy (PyreflyApi.ReadOnly.Target.class_name pyrefly_api target) in
+    let class_id = lazy (PyreflyApi.ReadOnly.Target.class_id pyrefly_api target) in
+    let class_name =
+      lazy (PyreflyApi.ReadOnly.Target.class_name pyrefly_api target >>| Reference.create)
+    in
     let function_name = lazy (PyreflyApi.ReadOnly.Target.function_name pyrefly_api target) in
     let method_name = lazy (PyreflyApi.ReadOnly.Target.method_name pyrefly_api target) in
     let define_signature =
@@ -1019,15 +1029,13 @@ module Modelable = struct
     in
     let undecorated_signatures =
       lazy
-        (PyreflyApi.ReadOnly.get_undecorated_signatures
-           pyrefly_api
-           (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target))
+        (PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api (Target.callable_id_exn target))
     in
     let decorators =
       lazy
         (define_signature
         |> Lazy.force
-        |> (fun { CallablesSharedMemory.CallableSignature.define_name; decorators; qualifier; _ } ->
+        |> (fun { CallablesSharedMemory.CallableSignature.define_name; decorators; _ } ->
              PyreflyApi.AstResult.to_option decorators
              >>| (fun decorators ->
                    PyrePysaLogic.DecoratorPreprocessing
@@ -1035,25 +1043,17 @@ module Modelable = struct
                      ~define_name
                      ~decorators)
              >>| List.filter_map ~f:Statement.Decorator.from_expression
-             >>| List.map
-                   ~f:
-                     (CallableDecorator.create_for_callable
-                        ~pyrefly_api
-                        ~callables_to_definitions_map
-                        ~qualifier
-                        ~target))
+             >>| List.map ~f:(CallableDecorator.create_for_callable ~pyrefly_api ~target))
         |> Option.value ~default:[])
     in
     let captures =
-      lazy
-        (PyreflyApi.ReadOnly.get_callable_captures
-           pyrefly_api
-           (PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target))
+      lazy (PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.callable_id_exn target))
     in
     Callable
       {
         target;
         target_name;
+        class_id;
         class_name;
         function_name;
         method_name;
@@ -1066,21 +1066,20 @@ module Modelable = struct
 
   let create_attribute ~pyrefly_api target =
     let target_name = Target.object_name target in
+    let class_name = Reference.prefix target_name |> Option.value_exn ~message:"unexpected" in
+    let class_id = PyreflyApi.ReadOnly.class_id_from_name pyrefly_api class_name in
     let type_annotation =
       lazy
         ((* TODO(T225700656): Add API to get class name from attribute name *)
-         let class_name =
-           Reference.prefix target_name >>| Reference.show |> Option.value ~default:""
-         in
          let attribute = Reference.last target_name in
          let inferred_type =
-           PyreflyApi.ReadOnly.get_class_attribute_inferred_type pyrefly_api ~class_name ~attribute
+           PyreflyApi.ReadOnly.get_class_attribute_inferred_type pyrefly_api ~class_id ~attribute
            |> Option.some
          in
          let explicit_annotation =
            PyreflyApi.ReadOnly.get_class_attribute_explicit_annotation
              pyrefly_api
-             ~class_name
+             ~class_id
              ~attribute
            |> function
            | Some annotation -> TypeAnnotation.ExplicitAnnotation.Found annotation
@@ -1088,7 +1087,7 @@ module Modelable = struct
          in
          TypeAnnotation.create ~inferred_type ~explicit_annotation)
     in
-    Attribute { target_name; type_annotation }
+    Attribute { target_name; class_name; class_id; type_annotation }
 
 
   let create_global ~pyrefly_api target =
@@ -1097,8 +1096,11 @@ module Modelable = struct
       lazy
         (let qualifier = Option.value_exn (Reference.prefix target_name) in
          let name = Reference.last target_name in
+         let module_id = PyreflyApi.ReadOnly.module_id_of_qualifier_opt pyrefly_api qualifier in
          let inferred_type =
-           PyreflyApi.ReadOnly.get_global_inferred_type pyrefly_api ~qualifier ~name
+           module_id
+           >>= fun module_id ->
+           PyreflyApi.ReadOnly.get_global_inferred_type pyrefly_api ~module_id ~name
          in
          TypeAnnotation.create
            ~inferred_type
@@ -1199,11 +1201,15 @@ module Modelable = struct
         false
 
 
+  let class_id = function
+    | Callable { class_id; _ } -> Lazy.force class_id
+    | Attribute { class_id; _ } -> Some class_id
+    | Global _ -> failwith "unexpected use of a class constraint on a global"
+
+
   let class_name = function
     | Callable { class_name; _ } -> Lazy.force class_name
-    | Attribute { target_name; _ } ->
-        (* TODO(T225700656): Add API to get class name from attribute name *)
-        Reference.prefix target_name >>| Reference.show
+    | Attribute { class_name; _ } -> Some class_name
     | Global _ -> failwith "unexpected use of a class constraint on a global"
 
 
@@ -1242,7 +1248,7 @@ module Modelable = struct
       match modelable with
       | Callable { class_name; _ } -> (
           match Lazy.force class_name with
-          | Some class_name -> Reference.create class_name |> Reference.last |> Result.return
+          | Some class_name -> class_name |> Reference.last |> Result.return
           | None -> error)
       | _ -> error
     in

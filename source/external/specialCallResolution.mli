@@ -11,24 +11,24 @@ module CallTarget : sig
   type t =
     | Regular of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
     | Init of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
     | New of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
     | Property of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
 
   val target : t -> Target.t
 
-  val receiver_class : t -> string option
+  val receiver_class : t -> PyreflyTypes.ClassId.t option
 end
 
 module NestedCallees : sig
@@ -42,8 +42,9 @@ end
 
 val shim_calls
   :  display_api:PyreflyTypes.DisplayApi.t ->
-  class_mro:(string -> string list) ->
-  callable_exists:(Reference.t -> bool) ->
+  class_mro:(PyreflyTypes.ClassId.t -> PyreflyTypes.ClassId.t list) ->
+  class_id_from_name_opt:(Reference.t -> PyreflyTypes.ClassId.t option) ->
+  callable_id_from_name_opt:(Reference.t -> PyreflyTypes.CallableId.t option) ->
   callees:CallTarget.t list ->
   nested_callees:NestedCallees.t ->
   arguments:Expression.Call.Argument.t list ->

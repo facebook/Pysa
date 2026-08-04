@@ -11,19 +11,19 @@ module CallTarget = struct
   type t =
     | Regular of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
     | Init of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
     | New of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
     | Property of {
         target: Target.t;
-        receiver_class: string option;
+        receiver_class: PyreflyTypes.ClassId.t option;
       }
 
   let target = function
@@ -52,7 +52,8 @@ end
 let shim_calls
     ~display_api:_
     ~class_mro:_
-    ~callable_exists:_
+    ~class_id_from_name_opt:_
+    ~callable_id_from_name_opt:_
     ~callees:_
     ~nested_callees:_
     ~arguments:_

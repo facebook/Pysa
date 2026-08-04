@@ -527,7 +527,7 @@ let parse_request query =
 
 let parse_model_queries
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~scheduler
     ~taint_configuration
     ~all_sys_infos
@@ -544,7 +544,7 @@ let parse_model_queries
   let parse_model_source (path, source) =
     Taint.ModelParser.parse
       ~pyrefly_api
-      ~path_of_qualifier
+      ~path_of_module
       ~path
       ~source
       ~taint_configuration
@@ -585,7 +585,7 @@ let parse_model_queries
 
 
 let setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model_queries =
-  let qualifiers = Interprocedural.PyreflyApi.ReadOnly.explicit_qualifiers pyrefly_api in
+  let module_ids = Interprocedural.PyreflyApi.ReadOnly.explicit_modules pyrefly_api in
   let initial_callables =
     let step_logger =
       Taint.StepLogger.start
@@ -594,7 +594,7 @@ let setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model
         ()
     in
     let initial_callables =
-      Interprocedural.FetchCallables.from_qualifiers
+      Interprocedural.FetchCallables.from_modules
         ~scheduler
         ~scheduler_policy:
           (Scheduler.Policy.fixed_chunk_count
@@ -604,7 +604,7 @@ let setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model
              ())
         ~configuration
         ~pyrefly_api
-        ~qualifiers
+        ~module_ids
     in
     Taint.StepLogger.finish step_logger;
     initial_callables
@@ -617,11 +617,11 @@ let setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model
         ()
     in
     let class_hierarchy_graph =
-      Interprocedural.ClassHierarchyGraph.Heap.from_qualifiers
+      Interprocedural.ClassHierarchyGraph.Heap.from_modules
         ~scheduler
         ~scheduler_policies:Configuration.SchedulerPolicies.empty
         ~pyrefly_api
-        ~qualifiers
+        ~module_ids
     in
     Taint.StepLogger.finish step_logger;
     class_hierarchy_graph
@@ -657,7 +657,7 @@ let setup_and_execute_model_queries ~pyrefly_api ~scheduler ~configuration model
 
 let process_model_query
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~scheduler
     ~configuration:({ Configuration.Analysis.taint_model_paths; _ } as configuration)
     ~path
@@ -691,7 +691,7 @@ let process_model_query
             in
             parse_model_queries
               ~pyrefly_api
-              ~path_of_qualifier
+              ~path_of_module
               ~scheduler
               ~taint_configuration
               ~all_sys_infos
@@ -778,7 +778,7 @@ let process_model_query
 
 let process_validate_taint_models
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~scheduler
     ~configuration
     ~path
@@ -813,7 +813,7 @@ let process_validate_taint_models
     let all_sys_infos = Interprocedural.PyreflyApi.ReadOnly.all_sys_infos pyrefly_api in
     parse_model_queries
       ~pyrefly_api
-      ~path_of_qualifier
+      ~path_of_module
       ~scheduler
       ~taint_configuration
       ~all_sys_infos

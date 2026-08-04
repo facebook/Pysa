@@ -54,13 +54,13 @@ let location_to_json
   ]
 
 
-let module_path_to_json ~resolve_module_path module_reference : (string * Yojson.Safe.t) list =
+let module_path_to_json ~resolve_module_path module_id : (string * Yojson.Safe.t) list =
   match resolve_module_path with
   | Some resolve_module_path -> (
       (* SAPP expects filenames to be relative to the repository root.
        * When the file is outside the repository, uses `*` as the filename
        * and add the full path under the `path` key for debugging purposes. *)
-      match resolve_module_path module_reference with
+      match resolve_module_path module_id with
       | Some { RepositoryPath.filename = Some filename; _ } -> ["filename", `String filename]
       | Some { RepositoryPath.filename = None; path } ->
           ["filename", `String "*"; "path", `String (PyrePath.absolute path)]

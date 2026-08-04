@@ -1048,19 +1048,21 @@ let rec parse_annotations
   parse_annotation (Node.value annotation)
 
 
-let get_class_attributes ~pyrefly_api = function
-  | "object" -> Some []
-  | class_name ->
-      PyreflyApi.ReadOnly.get_class_attributes
-        pyrefly_api
-        ~include_generated_attributes:false
-        ~only_simple_assignments:true
-        class_name
+let get_class_attributes ~pyrefly_api class_id =
+  if PyreflyApi.ReadOnly.is_object_class_id pyrefly_api class_id then
+    Some []
+  else
+    PyreflyApi.ReadOnly.get_class_attributes
+      pyrefly_api
+      ~include_generated_attributes:false
+      ~only_simple_assignments:true
+      class_id
 
 
-let get_class_attributes_transitive ~pyrefly_api class_name =
-  let successors = PyreflyApi.ReadOnly.class_mro pyrefly_api class_name in
-  class_name :: successors |> List.filter_map ~f:(get_class_attributes ~pyrefly_api) |> List.concat
+let get_class_attributes_transitive ~pyrefly_api class_id =
+  class_id :: PyreflyApi.ReadOnly.class_mro pyrefly_api class_id
+  |> List.filter_map ~f:(get_class_attributes ~pyrefly_api)
+  |> List.concat
 
 
 let paths_for_source_or_sink ~pyrefly_api ~kind ~root ~root_annotations ~features =
@@ -1079,11 +1081,11 @@ let paths_for_source_or_sink ~pyrefly_api ~kind ~root ~root_annotations ~feature
     in
     let attributes =
       root_annotations
-      |> List.map ~f:(PyreflyApi.ReadOnly.Type.get_class_names pyrefly_api)
-      |> List.map ~f:(fun { PyreflyApi.ClassNamesFromType.classes; _ } -> classes)
+      |> List.map ~f:(PyreflyApi.ReadOnly.Type.get_classes pyrefly_api)
+      |> List.map ~f:(fun { PyreflyTypes.ClassesFromType.classes; _ } -> classes)
       |> List.concat
-      |> List.filter_map ~f:(fun { PyreflyApi.ClassWithModifiers.modifiers; class_name } ->
-             if List.for_all ~f:allow_modifier modifiers then Some class_name else None)
+      |> List.filter_map ~f:(fun { PyreflyApi.ClassWithModifiers.modifiers; class_id } ->
+             if List.for_all ~f:allow_modifier modifiers then Some class_id else None)
       |> List.concat_map ~f:(get_class_attributes_transitive ~pyrefly_api)
       |> List.filter ~f:(Fn.non Ast.Expression.is_dunder_attribute)
       |> List.dedup_and_sort ~compare:Identifier.compare
@@ -3112,11 +3114,15 @@ let parse_return_taint
 module CallableName = struct
   type t =
     | UserProvided of Reference.t
-    | Resolved of Reference.t
+    | Resolved of PyreflyTypes.CallableId.t
 
-  let reference = function
+  let user_friendly_name ~pyrefly_api = function
     | UserProvided name -> name
-    | Resolved name -> name
+    | Resolved callable_id ->
+        let { PyreflyTypes.DisplayApi.callable_define_name; _ } =
+          PyreflyApi.ReadOnly.display_api pyrefly_api
+        in
+        callable_define_name callable_id |> PyreflyApi.target_symbolic_name
 end
 
 module ParsedStatement : sig
@@ -3169,12 +3175,12 @@ module ParsedStatement : sig
     Reference.t ->
     parsed_signature
 
-  val create_parsed_signature_for_define
+  val create_parsed_signature_for_callable
     :  parameters:Ast.Expression.Parameter.t list ->
     return_annotation:Ast.Expression.t option ->
     decorators:Ast.Expression.t list ->
     location:Location.t ->
-    define_name:Reference.t ->
+    callable_id:PyreflyTypes.CallableId.t ->
     define_decorators:Expression.t list ->
     parsed_signature
 
@@ -3286,17 +3292,17 @@ end = struct
     }
 
 
-  let create_parsed_signature_for_define
+  let create_parsed_signature_for_callable
       ~parameters
       ~return_annotation
       ~decorators
       ~location
-      ~define_name
+      ~callable_id
       ~define_decorators
     =
     let taint_decorators, _ = partition_taint_decorators decorators in
     {
-      callable_name = Resolved define_name;
+      callable_name = Resolved callable_id;
       parameters;
       taint_decorators;
       define_decorators;
@@ -3600,36 +3606,41 @@ let parse_decorator_annotations
   top_level_decorators |> List.map ~f:parse_decorator_annotation |> all >>| List.concat
 
 
-let is_property_getter_setter ~decorators ~callable_name =
-  let define_signature =
-    {
-      (* The name is only used when checking for a `@x.setter` decorator. *)
-      Define.Signature.name = CallableName.reference callable_name;
-      parameters = [];
-      decorators;
-      return_annotation = None;
-      async = false;
-      generator = false;
-      parent = NestingContext.create_toplevel ();
-      legacy_parent = None;
-      type_params = [];
-    }
-  in
-  let is_property_getter =
-    Set.exists
-      PyreflyApi.ModelQueries.property_decorators
-      ~f:(Define.Signature.has_decorator define_signature)
-  in
-  let is_property_setter = Define.Signature.is_property_setter define_signature in
-  is_property_getter, is_property_setter
+let is_property_getter_setter ~pyrefly_api ~decorators ~callable_name =
+  match callable_name with
+  | CallableName.Resolved callable_id ->
+      let { PyreflyApi.CallableMetadata.is_property_getter; is_property_setter; _ } =
+        PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api callable_id
+      in
+      is_property_getter, is_property_setter
+  | CallableName.UserProvided name ->
+      let define_signature =
+        {
+          (* The name is only used when checking for a `@x.setter` decorator. *)
+          Define.Signature.name;
+          parameters = [];
+          decorators;
+          return_annotation = None;
+          async = false;
+          generator = false;
+          parent = NestingContext.create_toplevel ();
+          legacy_parent = None;
+          type_params = [];
+        }
+      in
+      let is_property_getter =
+        Set.exists
+          PyreflyApi.ModelQueries.property_decorators
+          ~f:(Define.Signature.has_decorator define_signature)
+      in
+      let is_property_setter = Define.Signature.is_property_setter define_signature in
+      is_property_getter, is_property_setter
 
 
-let source_location_of_global ~path_of_qualifier global =
-  let module_qualifier = PyreflyApi.ModelQueries.Global.module_qualifier global in
+let source_location_of_global ~path_of_module global =
+  let module_id = PyreflyApi.ModelQueries.Global.module_id global in
   let location = PyreflyApi.ModelQueries.Global.location global in
-  module_qualifier
-  >>= path_of_qualifier
-  >>| fun path -> { ModelVerificationError.SourceLocation.path; location }
+  path_of_module module_id >>| fun path -> { ModelVerificationError.SourceLocation.path; location }
 
 
 module MatchedModel = struct
@@ -3687,7 +3698,7 @@ let aggregate_model_definition_errors
 
 let create_models_from_signature
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~path
     ~taint_configuration
     ~source_sink_filter
@@ -3707,17 +3718,19 @@ let create_models_from_signature
   let make_verification_error kind = { ModelVerificationError.kind; path; location } in
   (* Make sure we know about what we model. *)
   let is_property_getter, is_property_setter =
-    is_property_getter_setter ~decorators:define_decorators ~callable_name
+    is_property_getter_setter ~pyrefly_api ~decorators:define_decorators ~callable_name
   in
   let callables, resolution_errors, bare_module_name =
     match callable_name with
-    | CallableName.Resolved define_name ->
+    | CallableName.Resolved callable_id ->
         (* The name is already resolved (e.g., from class_method_signatures). Skip resolution and
            look up the function metadata directly. *)
         let resolved_function =
-          Interprocedural.PyreflyApi.ReadOnly.get_model_parser_function_info pyrefly_api define_name
+          PyreflyApi.ReadOnly.get_model_parser_function_info pyrefly_api callable_id
         in
-        [resolved_function], [], resolved_function.Function.module_qualifier
+        let module_id = PyreflyTypes.CallableId.module_id callable_id in
+        let qualifier = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
+        [resolved_function], [], Some qualifier
     | CallableName.UserProvided user_provided_callable_name -> (
         let resolution_result =
           PyreflyApi.ModelQueries.resolve_user_qualified_name
@@ -3743,8 +3756,8 @@ let create_models_from_signature
             let globals, unresolved_errors =
               List.partition_map results ~f:(function
                   | ModuleResolutionResult.Resolved global -> First global
-                  | ModuleResolutionResult.Unresolved { module_qualifier; module_name; suffix } ->
-                      let module_path = path_of_qualifier module_qualifier in
+                  | ModuleResolutionResult.Unresolved { module_id; module_name; suffix } ->
+                      let module_path = path_of_module module_id in
                       Second
                         (make_verification_error
                            (MissingSymbol
@@ -3763,10 +3776,10 @@ let create_models_from_signature
                            (ModelingClassAsDefine
                               {
                                 name = Reference.show user_provided_callable_name;
-                                class_location = source_location_of_global ~path_of_qualifier global;
+                                class_location = source_location_of_global ~path_of_module global;
                               }))
-                  | Global.Module { qualifier } ->
-                      let module_path = path_of_qualifier qualifier in
+                  | Global.Module { module_id } ->
+                      let module_path = path_of_module module_id in
                       Second
                         (make_verification_error
                            (ModelingModuleAsDefine
@@ -3778,19 +3791,18 @@ let create_models_from_signature
                               {
                                 name = Reference.show user_provided_callable_name;
                                 attribute_location =
-                                  source_location_of_global ~path_of_qualifier global;
+                                  source_location_of_global ~path_of_module global;
                               })))
             in
             callables, unresolved_errors @ classify_errors, bare_module_name)
   in
   let build_model_for_callable
-      ({ Function.define_name; module_qualifier; location = callable_location; _ } as callable)
+      ({ Function.callable_id; location = callable_location; _ } as callable)
     =
     let model_verification_error kind = Error (make_verification_error kind) in
     let define_location =
       lazy
-        (module_qualifier
-        >>= path_of_qualifier
+        (path_of_module (PyreflyTypes.CallableId.module_id callable_id)
         >>| fun path -> { ModelVerificationError.SourceLocation.path; location = callable_location }
         )
     in
@@ -3842,7 +3854,8 @@ let create_models_from_signature
               ModelVerificationError.kind =
                 IncompatibleModelError
                   {
-                    name = Reference.show (CallableName.reference callable_name);
+                    name =
+                      Reference.show (CallableName.user_friendly_name ~pyrefly_api callable_name);
                     callable_signatures =
                       (let { Function.undecorated_signatures; _ } = callable in
                        Option.value_exn undecorated_signatures);
@@ -3911,7 +3924,7 @@ let create_models_from_signature
       in
       let parse_annotation ~generation_if_source taint_annotation =
         let captured_variables =
-          PyreflyApi.ReadOnly.get_callable_captures pyrefly_api define_name
+          PyreflyApi.ReadOnly.get_callable_captures pyrefly_api callable_id
         in
         taint_annotation
         |> parse_annotations
@@ -3985,7 +3998,7 @@ let create_models_from_signature
       ~is_property_getter
       ~is_property_setter
       ~decorators:define_decorators
-      ~friendly_name:(CallableName.reference callable_name)
+      ~friendly_name:(CallableName.user_friendly_name ~pyrefly_api callable_name)
     >>= fun () ->
     normalized_model_parameters
     >>= fun normalized_model_parameters ->
@@ -3993,7 +4006,7 @@ let create_models_from_signature
       ~path
       ~location
       ~normalized_model_parameters
-      ~friendly_name:(CallableName.reference callable_name)
+      ~friendly_name:(CallableName.user_friendly_name ~pyrefly_api callable_name)
       ~imported_name
       ~define_location
       callable_undecorated_signatures
@@ -4060,7 +4073,8 @@ let create_models_from_signature
         (add_taint_annotation_to_model
            ~path
            ~location
-           ~friendly_name:(Reference.show (CallableName.reference callable_name))
+           ~friendly_name:
+             (Reference.show (CallableName.user_friendly_name ~pyrefly_api callable_name))
            ~pyrefly_api
            ~callable_undecorated_signatures
            ~source_sink_filter)
@@ -4072,7 +4086,7 @@ let create_models_from_signature
   let errors =
     aggregate_model_definition_errors
       ~make_verification_error
-      ~user_provided_name:(CallableName.reference callable_name)
+      ~user_provided_name:(CallableName.user_friendly_name ~pyrefly_api callable_name)
       ~module_name:bare_module_name
       ~models
       ~errors:(resolution_errors @ build_errors)
@@ -4083,7 +4097,7 @@ let create_models_from_signature
 
 let create_models_from_attribute
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~path
     ~taint_configuration
     ~source_sink_filter
@@ -4116,7 +4130,7 @@ let create_models_from_attribute
         let resolved_attributes, unresolved_errors =
           List.partition_map results ~f:(function
               | ModuleResolutionResult.Resolved global -> First global
-              | ModuleResolutionResult.Unresolved { module_qualifier; module_name; suffix } -> (
+              | ModuleResolutionResult.Unresolved { module_id; module_name; suffix } -> (
                   (* Secondary class check — does the class part exist? *)
                   let class_name =
                     user_provided_attribute_name
@@ -4139,15 +4153,16 @@ let create_models_from_attribute
                     | ResolutionResult.ModuleFound { results; _ } ->
                         List.filter results ~f:(function
                             | ModuleResolutionResult.Resolved global ->
-                                PyreflyApi.ModelQueries.Global.module_qualifier global
-                                |> Option.exists ~f:(Reference.equal module_qualifier)
-                            | ModuleResolutionResult.Unresolved { module_qualifier = qualifier; _ }
-                              ->
-                                Reference.equal qualifier module_qualifier)
+                                PyreflyTypes.ModuleId.equal
+                                  (PyreflyApi.ModelQueries.Global.module_id global)
+                                  module_id
+                            | ModuleResolutionResult.Unresolved
+                                { module_id = unresolved_module_id; _ } ->
+                                PyreflyTypes.ModuleId.equal unresolved_module_id module_id)
                   in
                   match results_for_qualifier with
                   | ModuleResolutionResult.Resolved (Global.Class _ as global) :: _ ->
-                      let class_location = source_location_of_global ~path_of_qualifier global in
+                      let class_location = source_location_of_global ~path_of_module global in
                       Second
                         (make_verification_error
                            (MissingAttribute
@@ -4157,7 +4172,7 @@ let create_models_from_attribute
                                 attribute_name = Reference.last user_provided_attribute_name;
                               }))
                   | _ ->
-                      let module_path = path_of_qualifier module_qualifier in
+                      let module_path = path_of_module module_id in
                       Second
                         (make_verification_error
                            (MissingSymbol
@@ -4170,17 +4185,17 @@ let create_models_from_attribute
         let resolved_attributes, classify_errors =
           List.partition_map resolved_attributes ~f:(function
               | (Global.ClassAttribute { name; _ } | Global.ModuleGlobal { name; _ }) as global ->
-                  First (name, lazy (source_location_of_global ~path_of_qualifier global))
+                  First (name, lazy (source_location_of_global ~path_of_module global))
               | Global.Class _ as global ->
                   Second
                     (make_verification_error
                        (ModelingClassAsAttribute
                           {
                             name = Reference.show user_provided_attribute_name;
-                            class_location = source_location_of_global ~path_of_qualifier global;
+                            class_location = source_location_of_global ~path_of_module global;
                           }))
-              | Global.Module { qualifier } ->
-                  let module_path = path_of_qualifier qualifier in
+              | Global.Module { module_id } ->
+                  let module_path = path_of_module module_id in
                   Second
                     (make_verification_error
                        (ModelingModuleAsAttribute
@@ -4191,7 +4206,7 @@ let create_models_from_attribute
                        (ModelingCallableAsAttribute
                           {
                             name = Reference.show user_provided_attribute_name;
-                            callable_location = source_location_of_global ~path_of_qualifier global;
+                            callable_location = source_location_of_global ~path_of_module global;
                           })))
         in
         resolved_attributes, unresolved_errors @ classify_errors, bare_module_name
@@ -4253,7 +4268,7 @@ let create_models_from_attribute
 
 let create_models_from_class
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~path
     ~taint_configuration
     ~source_sink_filter
@@ -4293,8 +4308,8 @@ let create_models_from_class
         let globals, unresolved_errors =
           List.partition_map results ~f:(function
               | ModuleResolutionResult.Resolved global -> First global
-              | ModuleResolutionResult.Unresolved { module_qualifier; module_name; suffix = _ } ->
-                  let module_path = path_of_qualifier module_qualifier in
+              | ModuleResolutionResult.Unresolved { module_id; module_name; suffix = _ } ->
+                  let module_path = path_of_module module_id in
                   Second
                     (make_verification_error
                        (ModelVerificationError.MissingClass
@@ -4306,17 +4321,17 @@ let create_models_from_class
         in
         let classes, classify_errors =
           List.partition_map globals ~f:(function
-              | Global.Class { class_name; _ } -> First class_name
+              | Global.Class { class_id; _ } -> First class_id
               | Global.Function _ as global ->
                   Second
                     (make_verification_error
                        (ModelVerificationError.ModelingCallableAsClass
                           {
                             name = Reference.show user_provided_class_name;
-                            callable_location = source_location_of_global ~path_of_qualifier global;
+                            callable_location = source_location_of_global ~path_of_module global;
                           }))
-              | Global.Module { qualifier } ->
-                  let module_path = path_of_qualifier qualifier in
+              | Global.Module { module_id } ->
+                  let module_path = path_of_module module_id in
                   Second
                     (make_verification_error
                        (ModelVerificationError.ModelingModuleAsClass
@@ -4327,20 +4342,16 @@ let create_models_from_class
                        (ModelVerificationError.ModelingAttributeAsClass
                           {
                             name = Reference.show user_provided_class_name;
-                            attribute_location = source_location_of_global ~path_of_qualifier global;
+                            attribute_location = source_location_of_global ~path_of_module global;
                           })))
         in
         classes, unresolved_errors @ classify_errors
   in
-  let create_models_for_class resolved_class_name =
-    match
-      resolved_class_name
-      |> Reference.create
-      |> PyreflyApi.ModelQueries.class_method_signatures pyrefly_api
-    with
+  let create_models_for_class resolved_class_id =
+    match PyreflyApi.ModelQueries.class_method_signatures pyrefly_api resolved_class_id with
     | Some method_signatures ->
         let create_model_for_method = function
-          | ( raw_method_name,
+          | ( method_id,
               Some
                 {
                   Define.Signature.parameters = method_parameters;
@@ -4365,16 +4376,16 @@ let create_models_from_class
                   in
                   List.map method_parameters ~f:sink_parameter
                 in
-                ParsedStatement.create_parsed_signature_for_define
+                ParsedStatement.create_parsed_signature_for_callable
                   ~parameters
                   ~return_annotation:source_annotation
                   ~decorators:(List.map ~f:Decorator.to_expression decorators)
                   ~location
-                  ~define_name:raw_method_name
+                  ~callable_id:method_id
                   ~define_decorators
                 |> create_models_from_signature
                      ~pyrefly_api
-                     ~path_of_qualifier
+                     ~path_of_module
                      ~path
                      ~taint_configuration
                      ~source_sink_filter
@@ -4431,7 +4442,7 @@ let is_obscure ~callables_to_definitions_map call_target =
 
 let parse_expected_models
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~taint_configuration
     ~source_sink_filter
     ~callables_to_definitions_map
@@ -4441,7 +4452,7 @@ let parse_expected_models
       let models, verification_errors =
         create_models_from_signature
           ~pyrefly_api
-          ~path_of_qualifier
+          ~path_of_module
           ~path:None
           ~taint_configuration
           ~source_sink_filter
@@ -4543,7 +4554,7 @@ let mangle_private_variable name =
 
 let rec parse_statement
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~path
     ~taint_configuration
     ~source_sink_filter
@@ -4790,7 +4801,7 @@ let rec parse_statement
                   ~f:
                     (parse_statement
                        ~pyrefly_api
-                       ~path_of_qualifier
+                       ~path_of_module
                        ~path
                        ~taint_configuration
                        ~source_sink_filter
@@ -4847,7 +4858,7 @@ let rec parse_statement
                 | Ok parsed_signatures ->
                     parse_expected_models
                       ~pyrefly_api
-                      ~path_of_qualifier
+                      ~path_of_module
                       ~taint_configuration
                       ~source_sink_filter
                       ~callables_to_definitions_map
@@ -4919,7 +4930,7 @@ let rec parse_statement
                      ~f:
                        (parse_statement
                           ~pyrefly_api
-                          ~path_of_qualifier
+                          ~path_of_module
                           ~path
                           ~taint_configuration
                           ~source_sink_filter
@@ -4952,7 +4963,7 @@ let verify_no_duplicate_model_query_names ~path statements =
 
 let create
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~path
     ~taint_configuration
     ~source_sink_filter
@@ -4970,7 +4981,7 @@ let create
                ~f:
                  (parse_statement
                     ~pyrefly_api
-                    ~path_of_qualifier
+                    ~path_of_module
                     ~path
                     ~taint_configuration
                     ~source_sink_filter
@@ -4992,7 +5003,7 @@ let create
     | ParsedSignature parsed_signature ->
         create_models_from_signature
           ~pyrefly_api
-          ~path_of_qualifier
+          ~path_of_module
           ~path
           ~taint_configuration
           ~source_sink_filter
@@ -5002,7 +5013,7 @@ let create
     | ParsedAttribute parsed_attribute ->
         create_models_from_attribute
           ~pyrefly_api
-          ~path_of_qualifier
+          ~path_of_module
           ~path
           ~taint_configuration
           ~source_sink_filter
@@ -5011,7 +5022,7 @@ let create
     | ParsedClass parsed_class ->
         create_models_from_class
           ~pyrefly_api
-          ~path_of_qualifier
+          ~path_of_module
           ~path
           ~taint_configuration
           ~source_sink_filter
@@ -5099,7 +5110,7 @@ let decorator_actions_from_modes model_modes =
 
 let parse
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ?path
     ~source
     ~taint_configuration
@@ -5111,7 +5122,7 @@ let parse
   let new_models_and_queries, errors =
     create
       ~pyrefly_api
-      ~path_of_qualifier
+      ~path_of_module
       ~path
       ~taint_configuration
       ~source_sink_filter
@@ -5141,9 +5152,11 @@ let create_callable_model_from_annotations
     annotations
   =
   let target = Modelable.target modelable in
-  let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api target in
   let callable_undecorated_signatures =
-    Some (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures pyrefly_api define_name)
+    Some
+      (Interprocedural.PyreflyApi.ReadOnly.get_undecorated_signatures
+         pyrefly_api
+         (Target.callable_id_exn target))
   in
   let default_model = if is_obscure then Model.obscure_model else Model.empty_model in
   let annotations =

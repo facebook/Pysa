@@ -7,12 +7,12 @@
 
 open Ast
 
-type class_name = string
+type class_id = PyreflyTypes.ClassId.t
 
-module ClassNameSet : Stdlib.Set.S with type elt = class_name
+module ClassIdSet : Stdlib.Set.S with type elt = class_id
 
-module ClassNameMap : sig
-  include Stdlib.Map.S with type key = class_name
+module ClassIdMap : sig
+  include Stdlib.Map.S with type key = class_id
 
   val show : pp_value:(Format.formatter -> 'a -> unit) -> 'a t -> string
 end
@@ -24,21 +24,33 @@ module Heap : sig
   val empty : t
 
   (* Return the immediate children *)
-  val children : t -> class_name -> ClassNameSet.t
+  val children : t -> class_id -> ClassIdSet.t
 
   (* Add an edge in the graph *)
-  val add : t -> parent:class_name -> child:class_name -> t
+  val add : t -> parent:class_id -> child:class_id -> t
 
   val show : t -> string
 
+  (* Traverse a module to collect the class hierarchy edges it contributes. *)
+  val from_module : pyrefly_api:PyreflyApi.ReadOnly.t -> module_id:PyreflyTypes.ModuleId.t -> t
+
+  (* Convenience wrapper around `from_module`, keyed on a module qualifier. *)
   val from_qualifier : pyrefly_api:PyreflyApi.ReadOnly.t -> qualifier:Reference.t -> t
 
-  val create : roots:class_name list -> edges:(class_name * class_name list) list -> t
+  val create : roots:class_id list -> edges:(class_id * class_id list) list -> t
 
-  val roots : t -> ClassNameSet.t
+  val roots : t -> ClassIdSet.t
 
   val join : t -> t -> t
 
+  val from_modules
+    :  scheduler:Scheduler.t ->
+    scheduler_policies:Configuration.SchedulerPolicies.t ->
+    pyrefly_api:PyreflyApi.ReadOnly.t ->
+    module_ids:PyreflyTypes.ModuleId.t list ->
+    t
+
+  (* Convenience wrapper around `from_modules`, keyed on module qualifiers. *)
   val from_qualifiers
     :  scheduler:Scheduler.t ->
     scheduler_policies:Configuration.SchedulerPolicies.t ->
@@ -47,14 +59,14 @@ module Heap : sig
     t
 end
 
-(** Mapping from a class name to the set of its direct children, stored in shared memory. *)
+(** Mapping from a class id to the set of its direct children, stored in shared memory. *)
 module SharedMemory : sig
   type t
 
-  val from_heap : store_transitive_children_for:class_name list -> Heap.t -> t
+  val from_heap : store_transitive_children_for:class_id list -> Heap.t -> t
 
-  val get : t -> class_name:class_name -> ClassNameSet.t
+  val get : t -> class_id:class_id -> ClassIdSet.t
 
   (* Returns the set of transitive children, or `None` if we did not pre-compute it. *)
-  val get_transitive : t -> class_name:class_name -> ClassNameSet.t option
+  val get_transitive : t -> class_id:class_id -> ClassIdSet.t option
 end

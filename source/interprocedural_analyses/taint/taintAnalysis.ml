@@ -123,12 +123,12 @@ let parse_model_modes
 
 
 let resolve_module_path
-    ~absolute_source_path_of_qualifier
+    ~absolute_source_path_of_module
     ~static_analysis_configuration:
       { Configuration.StaticAnalysis.configuration = { local_root; _ }; repository_root; _ }
-    qualifier
+    module_id
   =
-  match absolute_source_path_of_qualifier qualifier with
+  match absolute_source_path_of_module module_id with
   | None -> None
   | Some path ->
       let root = Option.value repository_root ~default:local_root in
@@ -156,7 +156,7 @@ let create_pyre_read_write_api_and_perform_type_analysis
 let parse_models_and_queries_from_sources
     ~scheduler
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~taint_configuration
     ~source_sink_filter
     ~callables_to_definitions_map
@@ -168,7 +168,7 @@ let parse_models_and_queries_from_sources
     List.fold sources ~init:ModelParseResult.empty ~f:(fun state (path, source) ->
         ModelParser.parse
           ~pyrefly_api
-          ~path_of_qualifier
+          ~path_of_module
           ~path
           ~source
           ~taint_configuration
@@ -196,7 +196,7 @@ let parse_models_and_queries_from_sources
 let parse_models_and_queries_from_configuration
     ~scheduler
     ~pyrefly_api
-    ~path_of_qualifier
+    ~path_of_module
     ~static_analysis_configuration:
       { Configuration.StaticAnalysis.verify_models; group_missing_module_errors; configuration; _ }
     ~taint_configuration
@@ -209,7 +209,7 @@ let parse_models_and_queries_from_configuration
     |> parse_models_and_queries_from_sources
          ~scheduler
          ~pyrefly_api
-         ~path_of_qualifier
+         ~path_of_module
          ~taint_configuration
          ~source_sink_filter
          ~callables_to_definitions_map
@@ -262,8 +262,8 @@ let initialize_models
   let step_logger =
     StepLogger.start ~start_message:"Parsing taint models" ~end_message:"Parsed taint models" ()
   in
-  let path_of_qualifier =
-    PyreflyApi.ReadOnly.repository_relative_path_of_qualifier
+  let path_of_module =
+    PyreflyApi.ReadOnly.repository_relative_path_of_module
       ~repository_root:(Option.value repository_root ~default:local_root)
       pyrefly_api
   in
@@ -271,7 +271,7 @@ let initialize_models
     parse_models_and_queries_from_configuration
       ~scheduler
       ~pyrefly_api
-      ~path_of_qualifier
+      ~path_of_module
       ~static_analysis_configuration
       ~taint_configuration:taint_configuration_shared_memory
       ~source_sink_filter:taint_configuration.source_sink_filter
@@ -378,7 +378,6 @@ let compact_ocaml_heap ~name =
 let compute_coverage
     ~scheduler
     ~scheduler_policies
-    ~callables_to_definitions_map
     ~resolve_module_path
     ~callables_to_analyze
     ~all_callables
@@ -395,7 +394,6 @@ let compute_coverage
     FileCoverage.from_callables
       ~scheduler
       ~scheduler_policies
-      ~callables_to_definitions_map
       ~resolve_module_path
       ~callables:callables_to_analyze
   in
@@ -501,7 +499,7 @@ let run_taint_analysis
     TaintConfiguration.SharedMemory.from_heap taint_configuration
   in
 
-  let qualifiers = PyreflyApi.ReadOnly.explicit_qualifiers pyrefly_api in
+  let module_ids = PyreflyApi.ReadOnly.explicit_modules pyrefly_api in
 
   let class_hierarchy_graph =
     let step_logger =
@@ -511,11 +509,11 @@ let run_taint_analysis
         ()
     in
     let class_hierarchy_graph =
-      Interprocedural.ClassHierarchyGraph.Heap.from_qualifiers
+      Interprocedural.ClassHierarchyGraph.Heap.from_modules
         ~scheduler
         ~scheduler_policies
         ~pyrefly_api
-        ~qualifiers
+        ~module_ids
     in
     let () = StepLogger.finish step_logger in
     class_hierarchy_graph
@@ -547,7 +545,7 @@ let run_taint_analysis
         ()
     in
     let initial_callables =
-      Interprocedural.FetchCallables.from_qualifiers
+      Interprocedural.FetchCallables.from_modules
         ~scheduler
         ~scheduler_policy:
           (Scheduler.Policy.from_configuration_or_default
@@ -561,7 +559,7 @@ let run_taint_analysis
                   ()))
         ~configuration
         ~pyrefly_api
-        ~qualifiers
+        ~module_ids
     in
     let () =
       StepLogger.finish
@@ -618,7 +616,7 @@ let run_taint_analysis
       ~skip_overrides_targets
       ~maximum_overrides
       ~analyze_all_overrides_targets
-      ~qualifiers
+      ~module_ids
   in
   let override_graph_shared_memory_read_only =
     Interprocedural.OverrideGraph.SharedMemory.read_only override_graph_shared_memory
@@ -632,20 +630,20 @@ let run_taint_analysis
       ()
   in
   let global_constants =
-    Interprocedural.GlobalConstants.SharedMemory.from_qualifiers
+    Interprocedural.GlobalConstants.SharedMemory.from_modules
       ~scheduler
       ~scheduler_policies
       ~pyrefly_api
       ~callables_to_definitions_map:
         (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
-      ~qualifiers
+      ~module_ids
   in
   let () = StepLogger.finish step_logger in
 
   let resolve_module_path =
     resolve_module_path
-      ~absolute_source_path_of_qualifier:
-        (PyreflyApi.ReadOnly.absolute_source_path_of_qualifier pyrefly_api)
+      ~absolute_source_path_of_module:
+        (PyreflyApi.ReadOnly.absolute_source_path_of_module pyrefly_api)
       ~static_analysis_configuration
   in
 
@@ -913,8 +911,6 @@ let run_taint_analysis
       compute_coverage
         ~scheduler
         ~scheduler_policies
-        ~callables_to_definitions_map:
-          (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
         ~resolve_module_path
         ~callables_to_analyze
         ~all_callables

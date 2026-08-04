@@ -23,16 +23,17 @@ module Flow : sig
   val join : t -> t -> t
 end
 
-module LocationSet : Stdlib.Set.S with type elt = Location.WithModule.t
+module LocationSet : Stdlib.Set.S with type elt = Location.t
 
 type t = {
   flow: Flow.t;
   handle: IssueHandle.t;
+  module_id: PyreflyTypes.ModuleId.t;
   locations: LocationSet.t;
   define_location: Location.t;
 }
 
-val canonical_location : t -> Location.WithModule.t
+val canonical_location : t -> Location.t
 
 val join : t -> t -> t
 
@@ -46,7 +47,7 @@ val to_json
     path:AccessPath.Path.t ->
     callee:Target.t ->
     bool) ->
-  resolve_module_path:(Reference.t -> RepositoryPath.t option) ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) ->
   t ->
   Yojson.Safe.t
 
@@ -97,7 +98,8 @@ module Candidates : sig
    * issue `candidates`. *)
   val check_flow
     :  t ->
-    location:Location.WithModule.t ->
+    module_id:PyreflyTypes.ModuleId.t ->
+    location:Location.t ->
     sink_handle:IssueHandle.Sink.t ->
     source_tree:ForwardState.Tree.t ->
     sink_tree:BackwardState.Tree.t ->
@@ -111,7 +113,8 @@ module Candidates : sig
     :  t ->
     taint_configuration:TaintConfiguration.Heap.t ->
     triggered_sinks_for_call:TriggeredSinkForCall.t ->
-    location:Location.WithModule.t ->
+    module_id:PyreflyTypes.ModuleId.t ->
+    location:Location.t ->
     sink_handle:IssueHandle.Sink.t ->
     source_tree:ForwardState.Tree.t ->
     sink_tree:BackwardState.Tree.t ->

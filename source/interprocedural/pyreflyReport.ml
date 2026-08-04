@@ -98,13 +98,6 @@ module GlobalClassId = struct
     { module_id; local_class_id }
 end
 
-module GlobalClassIdSharedMemoryKey = struct
-  type t = GlobalClassId.t [@@deriving compare]
-
-  let to_string { GlobalClassId.module_id; local_class_id } =
-    Format.sprintf "%d|%d" (ModuleId.to_int module_id) (LocalClassId.to_int local_class_id)
-end
-
 (* Unique identifier for a callable (function or method) *)
 module GlobalCallableId = struct
   type t = {
@@ -470,7 +463,7 @@ module ModuleDefinitionsFile = struct
                 {
                   PyreflyType.string = "None";
                   scalar_properties = ScalarTypeProperties.none;
-                  class_names = None;
+                  classes = None;
                 };
             };
           ];
@@ -504,7 +497,7 @@ module ModuleDefinitionsFile = struct
                 {
                   PyreflyType.string = "None";
                   scalar_properties = ScalarTypeProperties.none;
-                  class_names = None;
+                  classes = None;
                 };
             };
           ];

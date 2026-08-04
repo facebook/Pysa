@@ -132,7 +132,7 @@ let read_class_with_modifiers reader =
     |> List.filter_map ~f:read_type_modifier
   in
   {
-    PyreflyTypeRep.ClassWithModifiers.class_id = PyreflyReport.GlobalClassId.to_class_id class_ref;
+    PyreflyTypes.ClassWithModifiers.class_id = PyreflyReport.GlobalClassId.to_class_id class_ref;
     modifiers;
   }
 
@@ -142,7 +142,7 @@ let read_class_names_from_type reader =
     CapnpReader.ClassNamesFromType.classes_get_list reader |> List.map ~f:read_class_with_modifiers
   in
   let is_exhaustive = CapnpReader.ClassNamesFromType.is_exhaustive_get reader in
-  { PyreflyTypeRep.ClassNamesFromType.classes; is_exhaustive }
+  { PyreflyTypes.ClassesFromType.classes; is_exhaustive }
 
 
 let read_pysa_type reader =
@@ -153,14 +153,14 @@ let read_pysa_type reader =
     else
       ScalarTypeProperties.none
   in
-  let class_names =
+  let classes =
     read_optional_field
       reader
       CapnpReader.PysaType.has_class_names
       CapnpReader.PysaType.class_names_get
       read_class_names_from_type
   in
-  { PyreflyTypeRep.string; scalar_properties; class_names }
+  { PyreflyTypeRep.string; scalar_properties; classes }
 
 
 let read_scope_parent reader =

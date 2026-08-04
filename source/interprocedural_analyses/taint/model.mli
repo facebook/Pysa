@@ -188,7 +188,7 @@ val to_json
     path:AccessPath.Path.t ->
     callee:Target.t ->
     bool) ->
-  resolve_module_path:(Ast.Reference.t -> RepositoryPath.t option) option ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> RepositoryPath.t option) option ->
   resolve_callable_location:(Target.t -> Ast.Location.WithModule.t option) option ->
   export_leaf_names:ExportLeafNames.t ->
   Target.t ->

@@ -28,6 +28,13 @@ module Heap : sig
 
   val show : t -> string
 
+  val from_module
+    :  pyrefly_api:PyreflyApi.ReadOnly.t ->
+    skip_overrides_targets:Reference.SerializableSet.t ->
+    PyreflyTypes.ModuleId.t ->
+    t
+
+  (* Convenience wrapper around `from_module`, keyed on a module qualifier. *)
   val from_qualifier
     :  pyrefly_api:PyreflyApi.ReadOnly.t ->
     skip_overrides_targets:Reference.SerializableSet.t ->
@@ -98,5 +105,5 @@ val build_whole_program_overrides
   skip_overrides_targets:Reference.SerializableSet.t ->
   maximum_overrides:int option ->
   analyze_all_overrides_targets:Target.Set.t ->
-  qualifiers:Reference.t list ->
+  module_ids:PyreflyTypes.ModuleId.t list ->
   whole_program_overrides

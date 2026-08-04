@@ -44,7 +44,7 @@
               }
             ],
             "origin": { "line": 56, "start": 14, "end": 28 },
-            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 9 } ],
             "is_self_call": false,
             "call_site": "56:4-56:29"
           }
@@ -106,7 +106,7 @@
               }
             ],
             "origin": { "line": 44, "start": 14, "end": 28 },
-            "receiver_interval": [ { "lower": 4, "upper": 5 } ],
+            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
             "is_self_call": false,
             "call_site": "44:4-44:29"
           }
@@ -151,7 +151,7 @@
               }
             ],
             "origin": { "line": 31, "start": 8, "end": 19 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 4, "upper": 5 } ],
             "is_self_call": false
           }
         ]
@@ -213,7 +213,7 @@
               }
             ],
             "origin": { "line": 18, "start": 8, "end": 19 },
-            "receiver_interval": [ { "lower": 8, "upper": 9 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]

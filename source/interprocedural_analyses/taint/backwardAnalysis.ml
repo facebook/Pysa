@@ -3002,7 +3002,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
         let pyrefly_in_context =
           PyreflyApi.InContext.create_at_statement_scope
             pyrefly_api
-            ~module_qualifier:FunctionContext.qualifier
+            ~callable_id:(Target.callable_id_exn FunctionContext.callable)
             ~define_name:FunctionContext.define_name
             ~call_graph:FunctionContext.call_graph_of_define
             ~statement_key
@@ -3029,16 +3029,20 @@ end
 
 let get_normalized_parameters
     ~pyrefly_api
-    ~define_name
+    ~callable_id
     ~entry_state_roots
     { Statement.Define.signature = { parameters; _ }; _ }
   =
   let normalized_parameters =
-    parameters
-    |> AccessPath.normalize_parameters
-    |> PyreflyApi.ReadOnly.get_callable_parameter_annotations pyrefly_api ~define_name
-    |> List.map ~f:(fun ({ AccessPath.NormalizedParameter.root; qualified_name; _ }, annotations) ->
-           root, AccessPath.Root.Variable qualified_name, annotations)
+    if not (PyreflyTypes.CallableId.is_decorated callable_id) then
+      parameters
+      |> AccessPath.normalize_parameters
+      |> PyreflyApi.ReadOnly.get_callable_parameter_annotations pyrefly_api ~callable_id
+      |> List.map
+           ~f:(fun ({ AccessPath.NormalizedParameter.root; qualified_name; _ }, annotations) ->
+             root, AccessPath.Root.Variable qualified_name, annotations)
+    else
+      []
   in
   let captures =
     entry_state_roots
@@ -3302,7 +3306,7 @@ let run
     ~pyrefly_api
     ~class_interval_graph
     ~global_constants
-    ~qualifier
+    ~module_id
     ~callable
     ~define
     ~cfg
@@ -3314,6 +3318,7 @@ let run
   =
   let timer = Timer.start () in
   let define_name = PyreflyApi.ReadOnly.Target.define_name_exn pyrefly_api callable in
+  let qualifier = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
   let module FunctionContext = struct
     let qualifier = qualifier
 
@@ -3349,7 +3354,7 @@ let run
       Interprocedural.ClassIntervalSetGraph.SharedMemory.of_definition
         class_interval_graph
         pyrefly_api
-        define_name
+        (Target.callable_id_exn callable)
 
 
     let string_combine_partial_sink_tree = string_combine_partial_sink_tree
@@ -3359,7 +3364,12 @@ let run
   let module Fixpoint = PyrePysaLogic.Fixpoint.Make (State) in
   let initial = State.{ taint = initial_taint } in
   let () = State.log "Backward analysis of callable: `%a`" Target.pp_pretty callable in
-  let captures = PyreflyApi.ReadOnly.get_callable_captures pyrefly_api define_name in
+  let captures =
+    if not (Target.is_decorated callable) then
+      PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.callable_id_exn callable)
+    else
+      []
+  in
   let entry_state =
     (* TODO(T156333229): hide side effect work behind feature flag *)
     match define.value.signature.parameters, captures with
@@ -3389,7 +3399,7 @@ let run
   let normalized_parameters =
     get_normalized_parameters
       ~pyrefly_api
-      ~define_name
+      ~callable_id:(Target.callable_id_exn callable)
       ~entry_state_roots:
         (entry_state
         >>| (fun { State.taint } -> BackwardState.roots taint)

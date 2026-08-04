@@ -543,14 +543,22 @@ module ViaFeature = struct
     let object_target = Reference.create object_target in
     let feature =
       let pyrefly_api = Interprocedural.PyreflyApi.InContext.pyrefly_api pyrefly_in_context in
-      Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
-        pyrefly_api
-        ~class_name:(Reference.prefix object_target |> Option.value_exn |> Reference.show)
-        ~attribute:(Reference.last object_target)
-      |> PyreflyApi.PyreflyType.weaken_literals
-      |> PyreflyApi.PyreflyType.show_fully_qualified
+      (* TODO(T278961928): Don't fabricate a class id from a reference. *)
+      match
+        PyreflyApi.ReadOnly.class_id_from_name_opt
+          pyrefly_api
+          (Reference.prefix object_target |> Option.value_exn)
+      with
+      | Some class_id ->
+          Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
+            pyrefly_api
+            ~class_id
+            ~attribute:(Reference.last object_target)
+          |> PyreflyApi.PyreflyType.weaken_literals
+      | None -> PyreflyApi.PyreflyType.top
     in
-    Breadcrumb.ViaType { value = feature; tag } |> BreadcrumbInterned.intern
+    Breadcrumb.ViaType { value = PyreflyApi.PyreflyType.show_fully_qualified feature; tag }
+    |> BreadcrumbInterned.intern
 
 
   let via_attribute_name_breadcrumb_for_object ?tag ~object_target () =

@@ -5,43 +5,43 @@
  * LICENSE file in the root directory of this source tree.
  *)
 
-(* ClassHierarchyGraph: represents a mapping from a class name to its class
+(* ClassIntervalSetGraph: represents a mapping from a class id to its class
  * interval set.
  *
  * This can be used as a traditional ocaml value using the `Heap` module, and
  * stored in shared memory using the `SharedMemory` module.
  *)
 
-module PyrePysaLogic = Analysis.PyrePysaLogic
 module HackSharedMemory = Hack_parallel.Std.SharedMemory
+module ClassId = PyreflyTypes.ClassId
 open ClassHierarchyGraph
 
 type dfs_state =
   | Grey
   | Black
 
-(** Mapping from a class name to its class interval set, stored in the ocaml heap. *)
+(** Mapping from a class id to its class interval set, stored in the ocaml heap. *)
 module Heap = struct
-  type t = ClassIntervalSet.t ClassHierarchyGraph.ClassNameMap.t
+  type t = ClassIntervalSet.t ClassHierarchyGraph.ClassIdMap.t
 
   let from_class_hierarchy class_hierarchy =
     let roots = ClassHierarchyGraph.Heap.roots class_hierarchy in
     let add_direct_cross_edge ~from_ ~to_ cross_edges =
       let update = function
-        | Some nodes -> Some (ClassNameSet.add to_ nodes)
-        | None -> Some (ClassNameSet.singleton to_)
+        | Some nodes -> Some (ClassIdSet.add to_ nodes)
+        | None -> Some (ClassIdSet.singleton to_)
       in
-      ClassNameMap.update from_ update cross_edges
+      ClassIdMap.update from_ update cross_edges
     in
     let add_indirect_cross_edge ~from_ ~to_ cross_edges =
-      match ClassNameMap.find_opt to_ cross_edges with
+      match ClassIdMap.find_opt to_ cross_edges with
       | None -> cross_edges
       | Some nodes ->
           let update = function
-            | Some original_nodes -> Some (ClassNameSet.union nodes original_nodes)
+            | Some original_nodes -> Some (ClassIdSet.union nodes original_nodes)
             | None -> Some nodes
           in
-          ClassNameMap.update from_ update cross_edges
+          ClassIdMap.update from_ update cross_edges
     in
 
     (* To compute cross edges, the key observation is that, during the DFS, if a node is black, then
@@ -50,10 +50,10 @@ module Heap = struct
     let rec depth_first_search node (intervals, states, cross_edges, time) =
       let time = time + 1 in
       let start = time in
-      let states = ClassNameMap.add node Grey states in
+      let states = ClassIdMap.add node Grey states in
       let intervals, states, cross_edges, time =
         let visit_child child ((intervals, states, cross_edges, time) as accumulator) =
-          match ClassNameMap.find_opt child states with
+          match ClassIdMap.find_opt child states with
           | None ->
               let intervals, states, cross_edges, time = depth_first_search child accumulator in
               (* Now the child is black *)
@@ -62,8 +62,10 @@ module Heap = struct
           | Some Grey ->
               failwith
                 (Format.asprintf
-                   "Found a back edge from %s to %s in the class hierarchy"
+                   "Found a back edge from %a to %a in the class hierarchy"
+                   ClassId.pp
                    node
+                   ClassId.pp
                    child)
           | Some Black ->
               let cross_edges =
@@ -74,27 +76,27 @@ module Heap = struct
               in
               intervals, states, cross_edges, time
         in
-        ClassNameSet.fold
+        ClassIdSet.fold
           visit_child
           (Heap.children class_hierarchy node)
           (intervals, states, cross_edges, time)
       in
       let time = time + 1 in
       let finish = time in
-      let intervals = ClassNameMap.add node (ClassInterval.create start finish) intervals in
-      intervals, ClassNameMap.add node Black states, cross_edges, time
+      let intervals = ClassIdMap.add node (ClassInterval.create start finish) intervals in
+      intervals, ClassIdMap.add node Black states, cross_edges, time
     in
     let intervals, _, cross_edges, _ =
-      ClassNameSet.fold
+      ClassIdSet.fold
         depth_first_search
         roots
-        (ClassNameMap.empty, ClassNameMap.empty, ClassNameMap.empty, 0)
+        (ClassIdMap.empty, ClassIdMap.empty, ClassIdMap.empty, 0)
     in
     let join_intervals_from nodes interval =
-      ClassNameSet.fold
+      ClassIdSet.fold
         (fun node accumulator ->
-          match ClassNameMap.find_opt node intervals with
-          | None -> failwith (Format.asprintf "Node %s should have an interval" node)
+          match ClassIdMap.find_opt node intervals with
+          | None -> failwith (Format.asprintf "Node %a should have an interval" ClassId.pp node)
           | Some child_interval -> child_interval :: accumulator)
         nodes
         [interval]
@@ -102,20 +104,28 @@ module Heap = struct
     in
     let add_interval_with_cross_edges node interval accumulator =
       let interval =
-        match ClassNameMap.find_opt node cross_edges with
+        match ClassIdMap.find_opt node cross_edges with
         | None -> ClassIntervalSet.of_list [interval]
         | Some nodes -> join_intervals_from nodes interval
       in
-      ClassNameMap.add node interval accumulator
+      ClassIdMap.add node interval accumulator
     in
-    ClassNameMap.fold add_interval_with_cross_edges intervals ClassNameMap.empty
+    ClassIdMap.fold add_interval_with_cross_edges intervals ClassIdMap.empty
 end
 
-(** Mapping from a class name to its class interval set, stored in shared memory. *)
+(** Mapping from a class id to its class interval set, stored in shared memory. *)
 module SharedMemory = struct
+  module ClassIdKey = struct
+    type t = ClassId.t
+
+    let to_string class_id = ClassId.to_int class_id |> Int.to_string
+
+    let compare = ClassId.compare
+  end
+
   module Internal =
     HackSharedMemory.FirstClass.WithCache.Make
-      (PyrePysaLogic.SharedMemoryKeys.StringKey)
+      (ClassIdKey)
       (struct
         type t = ClassIntervalSet.t
 
@@ -128,43 +138,37 @@ module SharedMemory = struct
 
   let create = Internal.create
 
-  let add handle ~class_name ~interval = Internal.add handle class_name interval
+  let add handle ~class_id ~interval = Internal.add handle class_id interval
 
-  let get handle ~class_name = Internal.get handle class_name
+  let get handle ~class_id = Internal.get handle class_id
 
   let from_heap intervals =
     let handle = create () in
-    let () =
-      ClassNameMap.iter (fun class_name interval -> add handle ~class_name ~interval) intervals
-    in
+    let () = ClassIdMap.iter (fun class_id interval -> add handle ~class_id ~interval) intervals in
     handle
 
 
-  let of_class handle class_name =
-    get handle ~class_name |> Option.value ~default:ClassIntervalSet.top
+  (* Resolve a class id to its interval, or `top` if the class has no recorded interval. *)
+  let of_class handle class_id = get handle ~class_id |> Option.value ~default:ClassIntervalSet.top
 
-
-  let of_type handle = function
-    | Some (Type.Primitive class_name) -> of_class handle class_name
-    | _ -> ClassIntervalSet.top
-
-
-  let of_definition handle pyrefly_api define_name =
-    let open Ast in
-    match PyreflyApi.ReadOnly.Target.class_name_of_callable pyrefly_api define_name with
-    | Some class_name
-      when not
-             (PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api define_name)
-               .PyreflyApi.CallableMetadata.is_staticmethod ->
-        (* Note that we also return the interval of the class for class methods, since the same
-           logic applies between instance and class methods. *)
-        of_class handle (Reference.show class_name)
-    | _ -> ClassIntervalSet.top
+  let of_definition handle pyrefly_api callable_id =
+    if not (PyreflyTypes.CallableId.is_decorated callable_id) then
+      match PyreflyApi.ReadOnly.Target.get_method_class_id pyrefly_api callable_id with
+      | Some class_id
+        when not
+               (PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api callable_id)
+                 .PyreflyApi.CallableMetadata.is_staticmethod ->
+          (* Note that we also return the interval of the class for class methods, since the same
+             logic applies between instance and class methods. *)
+          of_class handle class_id
+      | _ -> ClassIntervalSet.top
+    else
+      ClassIntervalSet.top
 
 
   let cleanup handle intervals =
     intervals
-    |> ClassNameMap.bindings
+    |> ClassIdMap.bindings
     |> List.map fst
     |> Internal.KeySet.of_list
     |> Internal.remove_batch handle

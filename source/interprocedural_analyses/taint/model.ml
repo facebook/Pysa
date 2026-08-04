@@ -1187,10 +1187,11 @@ let to_json
   let model_json =
     match resolve_callable_location with
     | Some resolve_callable_location when Target.is_function_or_method callable ->
+        let module_id = Target.module_id_exn callable in
         let location_json =
           resolve_callable_location callable
-          >>| (fun { Ast.Location.WithModule.module_reference; start = { line; _ }; _ } ->
-                Domains.module_path_to_json ~resolve_module_path module_reference
+          >>| (fun { Ast.Location.WithModule.start = { line; _ }; _ } ->
+                Domains.module_path_to_json ~resolve_module_path module_id
                 @ ["callable_line", `Int line])
           |> Option.value ~default:["filename", `String "*"]
         in

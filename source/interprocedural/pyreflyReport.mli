@@ -56,12 +56,6 @@ module GlobalClassId : sig
   val of_class_id : PyreflyTypes.ClassId.t -> t
 end
 
-module GlobalClassIdSharedMemoryKey : sig
-  type t = GlobalClassId.t [@@deriving compare]
-
-  val to_string : t -> string
-end
-
 module GlobalCallableId : sig
   type t = {
     module_id: PyreflyTypes.ModuleId.t;

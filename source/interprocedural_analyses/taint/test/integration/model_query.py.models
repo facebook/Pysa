@@ -1968,7 +1968,7 @@
               }
             ],
             "origin": { "line": 44, "start": 12, "end": 16 },
-            "caller_interval": [ { "lower": 20, "upper": 25 } ],
+            "caller_interval": [ { "lower": 4, "upper": 9 } ],
             "is_self_call": false,
             "call_site": "44:4-45:16"
           }
@@ -2061,7 +2061,7 @@
               }
             ],
             "origin": { "line": 23, "start": 26, "end": 30 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "23:4-24:16"
           }

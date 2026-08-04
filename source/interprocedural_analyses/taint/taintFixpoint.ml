@@ -115,7 +115,7 @@ module Analysis = struct
       ~class_interval_graph
       ~global_constants
       ~get_define_call_graph
-      ~qualifier
+      ~module_id
       ~callable
       ~define
       ~sanitizers
@@ -164,7 +164,7 @@ module Analysis = struct
             ~pyrefly_api
             ~class_interval_graph
             ~global_constants
-            ~qualifier
+            ~module_id
             ~callable
             ~define
             ~cfg
@@ -182,7 +182,7 @@ module Analysis = struct
             ~pyrefly_api
             ~class_interval_graph
             ~global_constants
-            ~qualifier
+            ~module_id
             ~callable
             ~define
             ~cfg
@@ -232,7 +232,7 @@ module Analysis = struct
       ~get_callee_model
     =
     let () = Log.log ~section:`Interprocedural "Analyzing %a" Target.pp_pretty callable in
-    let { Interprocedural.CallablesSharedMemory.DefineAndQualifier.qualifier; define } =
+    let { Interprocedural.CallablesSharedMemory.DefineAndModule.module_id; define } =
       callable
       |> Target.strip_parameters
       |> Interprocedural.CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
@@ -254,7 +254,7 @@ module Analysis = struct
         ~class_interval_graph
         ~global_constants
         ~get_define_call_graph
-        ~qualifier
+        ~module_id
         ~callable
         ~define
         ~sanitizers

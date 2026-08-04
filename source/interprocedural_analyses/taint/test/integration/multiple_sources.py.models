@@ -262,7 +262,7 @@
               }
             ],
             "origin": { "line": 32, "start": 22, "end": 24 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "32:4-32:25"
           }
@@ -512,7 +512,7 @@
               }
             ],
             "origin": { "line": 37, "start": 22, "end": 24 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "37:4-37:25"
           }
@@ -555,7 +555,7 @@
               }
             ],
             "origin": { "line": 134, "start": 22, "end": 24 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "134:4-134:25"
           }
@@ -639,7 +639,7 @@
             ],
             "tito_positions": [ { "line": 42, "start": 13, "end": 15 } ],
             "origin": { "line": 42, "start": 4, "end": 16 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "42:4-42:25"
           }
@@ -2029,7 +2029,7 @@
               }
             ],
             "origin": { "line": 165, "start": 23, "end": 25 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "165:4-165:26"
           },
@@ -2051,7 +2051,7 @@
               }
             ],
             "origin": { "line": 167, "start": 23, "end": 25 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "167:4-167:26"
           }
@@ -2264,7 +2264,7 @@
               }
             ],
             "origin": { "line": 171, "start": 22, "end": 24 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "171:4-171:25"
           }
@@ -2292,7 +2292,7 @@
             ],
             "tito_positions": [ { "line": 171, "start": 13, "end": 15 } ],
             "origin": { "line": 171, "start": 4, "end": 16 },
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "171:4-171:25"
           }
@@ -2741,7 +2741,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 18, "start": 19, "end": 21 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 7 } ],
+              "caller_interval": [ { "lower": 2, "upper": 3 } ],
               "is_self_call": false
             }
           }

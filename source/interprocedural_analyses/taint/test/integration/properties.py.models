@@ -253,7 +253,7 @@
               "port": "formal(value, position=1)",
               "call_site": "97:4-97:17"
             },
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -391,7 +391,7 @@
               "port": "formal(self, position=0)",
               "call_site": "215:15-215:44"
             },
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -427,7 +427,7 @@
               }
             ],
             "origin": { "line": 215, "start": 15, "end": 44 },
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -555,7 +555,7 @@
               "resolves_to": [ "properties.PropertyCallable.attribute" ],
               "port": "result[x]"
             },
-            "receiver_interval": [ { "lower": 18, "upper": 19 } ],
+            "receiver_interval": [ { "lower": 24, "upper": 25 } ],
             "is_self_call": false
           }
         ]
@@ -614,7 +614,7 @@
               "port": "formal(self, position=0)[z]",
               "call_site": "188:11-188:24"
             },
-            "receiver_interval": [ { "lower": 18, "upper": 19 } ],
+            "receiver_interval": [ { "lower": 24, "upper": 25 } ],
             "is_self_call": false
           }
         ]
@@ -668,7 +668,7 @@
               "resolves_to": [ "properties.PropertyCallable.attribute" ],
               "port": "result[x]"
             },
-            "receiver_interval": [ { "lower": 18, "upper": 19 } ],
+            "receiver_interval": [ { "lower": 24, "upper": 25 } ],
             "is_self_call": false
           }
         ]
@@ -693,7 +693,7 @@
               "port": "formal(self, position=0)[x]",
               "call_site": "188:11-188:40"
             },
-            "receiver_interval": [ { "lower": 20, "upper": 21 } ],
+            "receiver_interval": [ { "lower": 22, "upper": 23 } ],
             "is_self_call": false
           }
         ]
@@ -762,7 +762,7 @@
               "port": "formal(y, position=1)",
               "call_site": "188:11-188:40"
             },
-            "receiver_interval": [ { "lower": 20, "upper": 21 } ],
+            "receiver_interval": [ { "lower": 22, "upper": 23 } ],
             "is_self_call": false
           }
         ]
@@ -1448,8 +1448,8 @@
               "resolves_to": [ "properties.OtherDerived.my_property" ],
               "port": "result"
             },
-            "caller_interval": [ { "lower": 6, "upper": 11 } ],
-            "receiver_interval": [ { "lower": 6, "upper": 11 } ],
+            "caller_interval": [ { "lower": 2, "upper": 7 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": false
           }
         ]
@@ -1470,7 +1470,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 31, "start": 19, "end": 24 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 11 } ],
+              "caller_interval": [ { "lower": 2, "upper": 7 } ],
               "is_self_call": false
             }
           }
@@ -1500,7 +1500,7 @@
               }
             ],
             "origin": { "line": 22, "start": 23, "end": 37 },
-            "caller_interval": [ { "lower": 6, "upper": 11 } ],
+            "caller_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": false
           }
         ]
@@ -1521,7 +1521,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 23, "start": 15, "end": 19 } ],
             "origin": { "line": 22, "start": 23, "end": 37 },
-            "caller_interval": [ { "lower": 6, "upper": 11 } ],
+            "caller_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": false
           },
           {
@@ -1537,8 +1537,8 @@
               "resolves_to": [ "properties.OtherDerived.my_property" ],
               "port": "result"
             },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
-            "receiver_interval": [ { "lower": 6, "upper": 11 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": true
           }
         ]
@@ -1567,7 +1567,7 @@
               }
             ],
             "origin": { "line": 26, "start": 25, "end": 39 },
-            "caller_interval": [ { "lower": 6, "upper": 11 } ],
+            "caller_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": false
           }
         ]
@@ -1588,8 +1588,8 @@
               "resolves_to": [ "properties.OtherDerived.my_property" ],
               "port": "result"
             },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
-            "receiver_interval": [ { "lower": 6, "upper": 11 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": true
           }
         ]
@@ -1610,7 +1610,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 27, "start": 15, "end": 19 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 11 } ],
+              "caller_interval": [ { "lower": 2, "upper": 7 } ],
               "is_self_call": false
             }
           }
@@ -1664,7 +1664,7 @@
               }
             ],
             "origin": { "line": 38, "start": 23, "end": 37 },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
+            "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           }
         ]
@@ -1685,7 +1685,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 39, "start": 15, "end": 19 } ],
             "origin": { "line": 38, "start": 23, "end": 37 },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
+            "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           }
         ]
@@ -1714,7 +1714,7 @@
               }
             ],
             "origin": { "line": 42, "start": 25, "end": 39 },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
+            "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           }
         ]
@@ -1735,7 +1735,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 43, "start": 15, "end": 19 } ],
             "tito": {
-              "caller_interval": [ { "lower": 7, "upper": 8 } ],
+              "caller_interval": [ { "lower": 3, "upper": 4 } ],
               "is_self_call": false
             }
           }
@@ -1765,7 +1765,7 @@
               }
             ],
             "origin": { "line": 83, "start": 19, "end": 24 },
-            "caller_interval": [ { "lower": 33, "upper": 36 } ],
+            "caller_interval": [ { "lower": 9, "upper": 12 } ],
             "is_self_call": false,
             "call_site": "83:8-83:25"
           }
@@ -1795,7 +1795,7 @@
               }
             ],
             "origin": { "line": 49, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": false
           }
         ]
@@ -1824,7 +1824,7 @@
               }
             ],
             "origin": { "line": 52, "start": 25, "end": 39 },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": false
           }
         ]
@@ -1845,8 +1845,8 @@
               "resolves_to": [ "properties.OtherDerived.my_property" ],
               "port": "result"
             },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
-            "receiver_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": true
           }
         ]
@@ -1901,7 +1901,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 183, "start": 38, "end": 52 } ],
             "origin": { "line": 183, "start": 38, "end": 52 },
-            "caller_interval": [ { "lower": 18, "upper": 19 } ],
+            "caller_interval": [ { "lower": 24, "upper": 25 } ],
             "is_self_call": false
           }
         ]
@@ -1922,7 +1922,7 @@
               }
             ],
             "origin": { "line": 182, "start": 19, "end": 25 },
-            "caller_interval": [ { "lower": 18, "upper": 19 } ],
+            "caller_interval": [ { "lower": 24, "upper": 25 } ],
             "is_self_call": false,
             "call_site": "182:8-182:26"
           }
@@ -1952,7 +1952,7 @@
               }
             ],
             "origin": { "line": 172, "start": 19, "end": 20 },
-            "caller_interval": [ { "lower": 20, "upper": 21 } ],
+            "caller_interval": [ { "lower": 22, "upper": 23 } ],
             "is_self_call": false,
             "call_site": "172:8-172:21"
           }
@@ -1972,7 +1972,7 @@
               }
             ],
             "origin": { "line": 171, "start": 19, "end": 25 },
-            "caller_interval": [ { "lower": 20, "upper": 21 } ],
+            "caller_interval": [ { "lower": 22, "upper": 23 } ],
             "is_self_call": false,
             "call_site": "171:8-171:26"
           }
@@ -2056,7 +2056,7 @@
               }
             ],
             "origin": { "line": 324, "start": 23, "end": 37 },
-            "caller_interval": [ { "lower": 22, "upper": 23 } ],
+            "caller_interval": [ { "lower": 38, "upper": 39 } ],
             "is_self_call": false
           }
         ]
@@ -2077,7 +2077,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 325, "start": 15, "end": 19 } ],
             "origin": { "line": 324, "start": 23, "end": 37 },
-            "caller_interval": [ { "lower": 22, "upper": 23 } ],
+            "caller_interval": [ { "lower": 38, "upper": 39 } ],
             "is_self_call": false
           }
         ]
@@ -2106,7 +2106,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 149, "start": 17, "end": 18 } ],
             "tito": {
-              "caller_interval": [ { "lower": 24, "upper": 25 } ],
+              "caller_interval": [ { "lower": 20, "upper": 21 } ],
               "is_self_call": false
             }
           }
@@ -2250,7 +2250,7 @@
             ],
             "tito_positions": [ { "line": 284, "start": 32, "end": 46 } ],
             "origin": { "line": 284, "start": 32, "end": 46 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false
           }
         ]
@@ -2275,7 +2275,7 @@
             ],
             "tito_positions": [ { "line": 284, "start": 8, "end": 12 } ],
             "origin": { "line": 285, "start": 19, "end": 23 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false,
             "call_site": "285:8-285:24"
           }
@@ -2308,7 +2308,7 @@
             ],
             "tito_positions": [ { "line": 284, "start": 8, "end": 12 } ],
             "tito": {
-              "caller_interval": [ { "lower": 26, "upper": 27 } ],
+              "caller_interval": [ { "lower": 30, "upper": 31 } ],
               "is_self_call": false
             }
           }
@@ -2347,7 +2347,7 @@
             ],
             "tito_positions": [ { "line": 284, "start": 32, "end": 46 } ],
             "origin": { "line": 284, "start": 32, "end": 46 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false
           }
         ]
@@ -2366,7 +2366,7 @@
               }
             ],
             "origin": { "line": 285, "start": 19, "end": 23 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false,
             "call_site": "285:8-285:24"
           }
@@ -2411,7 +2411,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 274, "start": 27, "end": 41 } ],
             "origin": { "line": 274, "start": 27, "end": 41 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false
           }
         ]
@@ -2434,7 +2434,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 275, "start": 19, "end": 23 } ],
             "origin": { "line": 275, "start": 19, "end": 35 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false,
             "call_site": "275:8-275:36"
           }
@@ -2474,7 +2474,7 @@
               { "line": 275, "start": 19, "end": 23 }
             ],
             "origin": { "line": 274, "start": 27, "end": 41 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false
           }
         ]
@@ -2493,7 +2493,7 @@
               }
             ],
             "origin": { "line": 275, "start": 19, "end": 35 },
-            "caller_interval": [ { "lower": 26, "upper": 27 } ],
+            "caller_interval": [ { "lower": 30, "upper": 31 } ],
             "is_self_call": false,
             "call_site": "275:8-275:36"
           }
@@ -2608,7 +2608,7 @@
               }
             ],
             "origin": { "line": 62, "start": 19, "end": 23 },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false,
             "call_site": "62:8-62:24"
           }
@@ -2640,7 +2640,7 @@
               }
             ],
             "origin": { "line": 66, "start": 20, "end": 24 },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false,
             "call_site": "66:4-67:12"
           }
@@ -2695,8 +2695,8 @@
               }
             ],
             "origin": { "line": 70, "start": 15, "end": 31 },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": true
           }
         ]
@@ -2722,8 +2722,8 @@
               "port": "formal(self, position=0)",
               "call_site": "70:15-70:31"
             },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": true
           }
         ]
@@ -2756,7 +2756,7 @@
             ],
             "tito_positions": [ { "line": 73, "start": 27, "end": 41 } ],
             "origin": { "line": 73, "start": 27, "end": 41 },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false
           },
           {
@@ -2769,8 +2769,8 @@
               "port": "formal(self, position=0)",
               "call_site": "73:8-73:24"
             },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": true
           }
         ]
@@ -2804,7 +2804,7 @@
               }
             ],
             "origin": { "line": 73, "start": 27, "end": 41 },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -2831,8 +2831,8 @@
               "port": "formal(value, position=1)",
               "call_site": "73:8-73:24"
             },
-            "caller_interval": [ { "lower": 33, "upper": 36 } ],
-            "receiver_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 9, "upper": 12 } ],
+            "receiver_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": true
           }
         ]
@@ -2869,7 +2869,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": false
           }
         ]
@@ -2907,7 +2907,7 @@
               }
             ],
             "override_call": { "port": "formal(value, position=1)" },
-            "caller_interval": [ { "lower": 33, "upper": 36 } ],
+            "caller_interval": [ { "lower": 9, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -2934,7 +2934,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 9, "upper": 10 } ],
+            "caller_interval": [ { "lower": 5, "upper": 6 } ],
             "is_self_call": false
           }
         ]
@@ -2963,7 +2963,7 @@
               }
             ],
             "override_call": { "port": "formal(self, position=0)" },
-            "caller_interval": [ { "lower": 32, "upper": 37 } ],
+            "caller_interval": [ { "lower": 8, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -2984,7 +2984,7 @@
               }
             ],
             "override_call": { "port": "formal(value, position=1)" },
-            "caller_interval": [ { "lower": 33, "upper": 36 } ],
+            "caller_interval": [ { "lower": 9, "upper": 12 } ],
             "is_self_call": false
           }
         ]

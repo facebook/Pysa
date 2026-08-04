@@ -13,10 +13,15 @@ open Pyre
 open Data_structures
 open Ast
 module AstResult = PyreflyTypes.AstResult
+module ModuleId = PyreflyTypes.ModuleId
+module CallableId = PyreflyTypes.CallableId
+module ClassId = PyreflyTypes.ClassId
+module LocalClassId = PyreflyTypes.LocalClassId
+module LocalFunctionId = PyreflyTypes.LocalFunctionId
 module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
 module TypeModifier = PyreflyTypes.TypeModifier
 module ClassWithModifiers = PyreflyTypes.ClassWithModifiers
-module ClassNamesFromType = PyreflyTypes.ClassNamesFromType
+module ClassesFromType = PyreflyTypes.ClassesFromType
 module FunctionParameter = PyreflyTypes.ModelQueries.FunctionParameter
 module FunctionParameters = PyreflyTypes.ModelQueries.FunctionParameters
 module FunctionSignature = PyreflyTypes.ModelQueries.FunctionSignature
@@ -59,11 +64,7 @@ exception PyreflyFileFormatError = PyreflyReport.PyreflyFileFormatError
 exception NoSourceFilesToAnalyze
 
 module ModulePath = PyreflyReport.ModulePath
-module ModuleId = PyreflyTypes.ModuleId
-module LocalClassId = PyreflyTypes.LocalClassId
 module GlobalClassId = PyreflyReport.GlobalClassId
-module GlobalClassIdSharedMemoryKey = PyreflyReport.GlobalClassIdSharedMemoryKey
-module LocalFunctionId = PyreflyTypes.LocalFunctionId
 module GlobalCallableId = PyreflyReport.GlobalCallableId
 module PyreflyTarget = PyreflyReport.PyreflyTarget
 module ModuleIdSharedMemoryKey = PyreflyReport.ModuleIdSharedMemoryKey
@@ -113,28 +114,16 @@ module ModuleInfosSharedMemory = struct
 end
 
 (* List of module qualifiers, stored in shared memory. *)
-module QualifiersSharedMemory = struct
-  module Value = struct
-    type t = {
-      module_id: ModuleId.t;
-      module_qualifier: ModuleQualifier.t;
-      has_source: bool;
-      has_info: bool;
-      is_test: bool;
-    }
-  end
+module ModulesSharedMemory =
+  Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
+    (Memory.SingletonKey)
+    (struct
+      type t = ModuleId.t list
 
-  include
-    Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
-      (Memory.SingletonKey)
-      (struct
-        type t = Value.t list
+      let prefix = Hack_parallel.Std.Prefix.make ()
 
-        let prefix = Hack_parallel.Std.Prefix.make ()
-
-        let description = "pyrefly all modules"
-      end)
-end
+      let description = "pyrefly all modules"
+    end)
 
 (* Type of expressions for a given callable, stored in shared memory. *)
 module TypeOfExpressionsSharedMemory = struct
@@ -178,20 +167,10 @@ module FullyQualifiedName : sig
   (* This is marked `unchecked` because it doesn't actually validate that the reference is a valid
      fully qualifide name. *)
   val from_reference_unchecked : Reference.t -> t
-
-  val last : t -> string
-
-  val prefix : t -> t option
-
-  module Map : Map.S with type Key.t = t
 end = struct
-  module T = struct
-    (* Same as ModuleQualifier, it is stored as a reference, but it doesn't really make sense
-       either. *)
-    type t = Reference.t [@@deriving compare, equal, sexp, hash, show]
-  end
-
-  include T
+  (* Same as ModuleQualifier, it is stored as a reference, but it doesn't really make sense
+     either. *)
+  type t = Reference.t [@@deriving compare, equal, sexp, hash, show]
 
   let create ~module_qualifier ~local_name ~add_module_separator =
     let local_name =
@@ -233,19 +212,12 @@ end = struct
   let to_reference = Fn.id
 
   let from_reference_unchecked = Fn.id
-
-  let last = Reference.last
-
-  let prefix = Reference.prefix
-
-  module Map = Map.Make (T)
 end
 
 module TypeshedClass = struct
   type t = {
     sys_info: SysInfo.t;
-    global_class_id: GlobalClassId.t;
-    fully_qualified_name: FullyQualifiedName.t;
+    class_id: ClassId.t;
   }
 end
 
@@ -269,9 +241,7 @@ end
 
 module CallableMetadata = struct
   type t = {
-    (* TODO(T225700656): This should be ModuleQualifier.t, but it is a Reference.t because it is
-       exposed publicly. *)
-    module_qualifier: Reference.t;
+    module_id: ModuleId.t;
     name_location: NameLocation.t;
     is_overload: bool;
     is_staticmethod: bool;
@@ -315,10 +285,10 @@ module CallableMetadataSharedMemory = struct
       local_function_id: LocalFunctionId.t;
       (* This is the original name, without the fully qualified suffixes like `$2` or `@setter`. *)
       name: string;
-      overridden_base_method: GlobalCallableId.t option;
-      defining_class: GlobalClassId.t option;
+      overridden_base_method: CallableId.t option;
+      defining_class: ClassId.t option;
       (* The list of callees for each decorator *)
-      decorator_callees: GlobalCallableId.t list Location.SerializableMap.t;
+      decorator_callees: CallableId.t list Location.SerializableMap.t;
       captured_variables: CapturedVariable.t list;
     }
 
@@ -326,7 +296,7 @@ module CallableMetadataSharedMemory = struct
         { metadata = { parent_is_class; _ }; module_id; local_function_id; _ }
         ~override
       =
-      let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
+      let callable_id = CallableId.encode ~module_id local_function_id in
       if parent_is_class then
         if override then
           Target.create_override callable_id
@@ -368,7 +338,7 @@ module ClassMetadataSharedMemory = struct
       (* For a given class, its resolved MRO (Method Resolution Order). *)
       mro: ModuleDefinitionsFile.ClassMro.t;
       (* The list of callees for each decorator *)
-      decorator_callees: GlobalCallableId.t list Location.SerializableMap.t;
+      decorator_callees: CallableId.t list Location.SerializableMap.t;
     }
     [@@deriving show]
 
@@ -391,7 +361,7 @@ module ModuleCallablesSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
     (ModuleIdSharedMemoryKey)
     (struct
-      type t = FullyQualifiedName.t list
+      type t = CallableId.t list
 
       let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -402,7 +372,7 @@ module ModuleClassesSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
     (ModuleIdSharedMemoryKey)
     (struct
-      type t = FullyQualifiedName.t list
+      type t = ClassId.t list
 
       let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -430,11 +400,11 @@ module ModuleGlobalsSharedMemory =
       let description = "pyrefly global variables in module"
     end)
 
-module ModuleNameToQualifiersSharedMemory =
+module ModuleNameToIdsSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
     (ModuleNameSharedMemoryKey)
     (struct
-      type t = ModuleQualifier.t list
+      type t = ModuleId.t list
 
       let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -473,7 +443,7 @@ module QualifierToModuleIdSharedMemory =
 module ClassIdToQualifiedNameSharedMemory = struct
   include
     Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
-      (GlobalClassIdSharedMemoryKey)
+      (ClassIdSharedMemoryKey)
       (struct
         type t = FullyQualifiedName.t
 
@@ -492,7 +462,7 @@ module FullyQualifiedNameToClassIdSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
     (FullyQualifiedNameSharedMemoryKey)
     (struct
-      type t = PyreflyTypes.ClassId.t
+      type t = ClassId.t
 
       let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -502,7 +472,7 @@ module FullyQualifiedNameToClassIdSharedMemory =
 module CallableIdToQualifiedNameSharedMemory = struct
   include
     Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
-      (GlobalCallableIdSharedMemoryKey)
+      (CallableIdSharedMemoryKey)
       (struct
         type t = FullyQualifiedName.t
 
@@ -523,7 +493,7 @@ module FullyQualifiedNameToCallableIdSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
     (FullyQualifiedNameSharedMemoryKey)
     (struct
-      type t = PyreflyTypes.CallableId.t
+      type t = CallableId.t
 
       let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -556,7 +526,7 @@ module ClassFieldsSharedMemory =
 (* Composite shared-memory key over a `(class id, bare method name)` pair. The bare method name is
    the method name without the fully qualified suffixes like `$2` or `@setter`. *)
 module ClassMethodIndexSharedMemoryKey = struct
-  type t = PyreflyTypes.ClassId.t * string [@@deriving compare]
+  type t = ClassId.t * string [@@deriving compare]
 
   let to_string (class_id, method_name) =
     let class_string = ClassIdSharedMemoryKey.to_string class_id in
@@ -564,15 +534,15 @@ module ClassMethodIndexSharedMemoryKey = struct
     Printf.sprintf "%d:%s|%s" (String.length class_string) class_string method_name
 end
 
-(* Index from a `(class, bare method name)` pair to the fully qualified name(s) of the methods with
-   that bare name defined on that class. The value is a list since overloads and property
-   getter/setter pairs can share the same bare name. Methods are in the reverse order of their
-   definition location (line/column). *)
+(* Index from a `(class, bare method name)` pair to the callable id(s) of the methods with that bare
+   name defined on that class. The value is a list since overloads and property getter/setter pairs
+   can share the same bare name. Methods are in the reverse order of their definition location
+   (line/column). *)
 module ClassMethodIndexSharedMemory =
   Hack_parallel.Std.SharedMemory.FirstClass.NoCache.Make
     (ClassMethodIndexSharedMemoryKey)
     (struct
-      type t = FullyQualifiedName.t list
+      type t = CallableId.t list
 
       let prefix = Hack_parallel.Std.Prefix.make ()
 
@@ -581,7 +551,7 @@ module ClassMethodIndexSharedMemory =
 
 module PysaClassSummary = struct
   type t = {
-    class_name: FullyQualifiedName.t;
+    class_id: ClassId.t;
     metadata: ClassMetadataSharedMemory.Metadata.t;
   }
 end
@@ -636,10 +606,7 @@ let is_stub_like_from_metadata
   let parse_result =
     CallableParseResultSharedMemory.get callable_parse_result_shared_memory callable_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf
-             "missing callable parse result: `%a`"
-             PyreflyTypes.CallableId.pp
-             callable_id)
+           Format.asprintf "missing callable parse result: `%a`" CallableId.pp callable_id)
   in
   match parse_result with
   | AstResult.Some () -> false
@@ -661,7 +628,7 @@ let captures_from_metadata
           defining_function =
             CallableIdToQualifiedNameSharedMemory.get
               callable_id_to_qualified_name_shared_memory
-              outer_function
+              (GlobalCallableId.to_callable_id outer_function)
             |> FullyQualifiedName.to_reference;
         })
 
@@ -743,7 +710,7 @@ module ReadWrite = struct
     pyrefly_directory: PyrePath.t;
     qualifier_to_module_map: Module.t ModuleQualifier.Map.t;
     module_infos_shared_memory: ModuleInfosSharedMemory.t;
-    qualifiers_shared_memory: QualifiersSharedMemory.t;
+    modules_shared_memory: ModulesSharedMemory.t;
     type_of_expressions_shared_memory: TypeOfExpressionsSharedMemory.t option;
     callable_metadata_shared_memory: CallableMetadataSharedMemory.t;
     class_metadata_shared_memory: ClassMetadataSharedMemory.t;
@@ -753,7 +720,7 @@ module ReadWrite = struct
     module_callables_shared_memory: ModuleCallablesSharedMemory.t;
     module_classes_shared_memory: ModuleClassesSharedMemory.t;
     module_globals_shared_memory: ModuleGlobalsSharedMemory.t;
-    module_name_to_qualifiers_shared_memory: ModuleNameToQualifiersSharedMemory.t;
+    module_name_to_ids_shared_memory: ModuleNameToIdsSharedMemory.t;
     module_id_to_qualifier_shared_memory: ModuleIdToQualifierSharedMemory.t;
     qualifier_to_module_id_shared_memory: QualifierToModuleIdSharedMemory.t;
     class_id_to_qualified_name_shared_memory: ClassIdToQualifiedNameSharedMemory.t;
@@ -1042,40 +1009,27 @@ module ReadWrite = struct
 
   (* Build a reverse map from bare module name to list of qualifiers. This is used for resolving
      unprefixed module names (from .pysa files) to their prefixed qualifiers. *)
-  let write_module_name_to_qualifiers_to_shared_memory ~qualifier_to_module_map =
-    let handle = ModuleNameToQualifiersSharedMemory.create () in
+  let write_module_name_to_ids_to_shared_memory ~qualifier_to_module_map =
+    let handle = ModuleNameToIdsSharedMemory.create () in
     let bare_name_to_qualifiers =
-      Map.keys qualifier_to_module_map
-      |> List.map ~f:(fun qualifier ->
+      Map.to_alist qualifier_to_module_map
+      |> List.map ~f:(fun (qualifier, { Module.module_id; _ }) ->
              let bare_name = ModuleQualifier.bare_module_name qualifier in
-             bare_name, qualifier)
+             bare_name, module_id)
       |> ModuleName.Map.of_alist_multi
     in
     Map.iteri bare_name_to_qualifiers ~f:(fun ~key:bare_name ~data:qualifiers ->
-        ModuleNameToQualifiersSharedMemory.write_around handle bare_name qualifiers);
+        ModuleNameToIdsSharedMemory.write_around handle bare_name qualifiers);
     handle
 
 
-  (* Write all module qualifiers into a single shared memory entry, for fast iteration. *)
-  let write_qualifiers_to_shared_memory ~qualifier_to_module_map =
-    let handle = QualifiersSharedMemory.create () in
-    let qualifiers =
-      qualifier_to_module_map
-      |> Map.to_alist
-      |> List.map
-           ~f:(fun
-                ( module_qualifier,
-                  { Module.module_id; absolute_source_path; pyrefly_info_filename; is_test; _ } )
-              ->
-             {
-               QualifiersSharedMemory.Value.module_id;
-               module_qualifier;
-               has_source = Option.is_some absolute_source_path;
-               has_info = Option.is_some pyrefly_info_filename;
-               is_test;
-             })
+  (* Write all module ids into a single shared memory entry, for fast iteration. *)
+  let write_modules_to_shared_memory ~qualifier_to_module_map =
+    let handle = ModulesSharedMemory.create () in
+    let module_ids =
+      qualifier_to_module_map |> Map.data |> List.map ~f:(fun { Module.module_id; _ } -> module_id)
     in
-    let () = QualifiersSharedMemory.add handle Memory.SingletonKey.key qualifiers in
+    let () = ModulesSharedMemory.add handle Memory.SingletonKey.key module_ids in
     handle
 
 
@@ -1090,25 +1044,10 @@ module ReadWrite = struct
       ~module_classes_shared_memory
       ~callable_metadata_shared_memory
       ~class_metadata_shared_memory
-      ~fully_qualified_name_to_callable_id_shared_memory
-      ~fully_qualified_name_to_class_id_shared_memory
+      ~class_id_to_qualified_name_shared_memory
     =
     let timer = Timer.start () in
     let () = Log.info "Parsing source files..." in
-    let callable_id_of_name callable =
-      FullyQualifiedNameToCallableIdSharedMemory.get
-        fully_qualified_name_to_callable_id_shared_memory
-        callable
-      |> assert_shared_memory_key_exists (fun () ->
-             Format.asprintf "missing callable id: `%a`" FullyQualifiedName.pp callable)
-    in
-    let class_id_of_name class_name =
-      FullyQualifiedNameToClassIdSharedMemory.get
-        fully_qualified_name_to_class_id_shared_memory
-        class_name
-      |> assert_shared_memory_key_exists (fun () ->
-             Format.asprintf "missing class id: `%a`" FullyQualifiedName.pp class_name)
-    in
     let callable_ast_shared_memory = CallableAstSharedMemory.create () in
     let callable_define_signature_shared_memory = CallableDefineSignatureSharedMemory.create () in
     let callable_parse_result_shared_memory = CallableParseResultSharedMemory.create () in
@@ -1120,8 +1059,7 @@ module ReadWrite = struct
         configuration
     in
     let store_callable_asts callables define_result =
-      List.iter callables ~f:(fun callable ->
-          let callable_id = callable_id_of_name callable in
+      List.iter callables ~f:(fun callable_id ->
           CallableAstSharedMemory.add callable_ast_shared_memory callable_id define_result;
           let signature_result =
             AstResult.map_node ~f:(fun { Statement.Define.signature; _ } -> signature) define_result
@@ -1137,39 +1075,31 @@ module ReadWrite = struct
             (AstResult.map ~f:(fun _ -> ()) define_result))
     in
     let store_class_decorators classes decorator_result =
-      List.iter classes ~f:(fun class_name ->
-          ClassDecoratorsSharedMemory.add
-            class_decorators_shared_memory
-            (class_id_of_name class_name)
-            decorator_result)
+      List.iter classes ~f:(fun class_id ->
+          ClassDecoratorsSharedMemory.add class_decorators_shared_memory class_id decorator_result)
     in
-    let collect_callable_asts_from_source ~qualifier ~callables ~source =
+    let collect_callable_asts_from_source ~module_id ~callables ~source =
       let callables_with_locations, callables_without_locations =
         List.partition_map
-          ~f:(fun callable ->
+          ~f:(fun callable_id ->
             let {
               CallableMetadataSharedMemory.Value.metadata = { name_location; _ };
               local_function_id;
               _;
             }
               =
-              CallableMetadataSharedMemory.get
-                callable_metadata_shared_memory
-                (callable_id_of_name callable)
+              CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
               |> assert_shared_memory_key_exists (fun () ->
-                     Format.asprintf
-                       "missing callable metadata: `%a`"
-                       FullyQualifiedName.pp
-                       callable)
+                     Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
             in
             match local_function_id, name_location with
             | LocalFunctionId.Function _, NameLocation.DefineName location ->
-                Either.First (location, callable)
-            | LocalFunctionId.ModuleTopLevel, _ -> Either.Second (local_function_id, callable)
+                Either.First (location, callable_id)
+            | LocalFunctionId.ModuleTopLevel, _ -> Either.Second (local_function_id, callable_id)
             | LocalFunctionId.ClassTopLevel _, NameLocation.ClassName location ->
-                Either.First (location, callable)
+                Either.First (location, callable_id)
             | LocalFunctionId.ClassField _, NameLocation.UnknonwnForClassField ->
-                Either.Second (local_function_id, callable)
+                Either.Second (local_function_id, callable_id)
             | _ -> failwith "unreachable")
           callables
       in
@@ -1185,10 +1115,10 @@ module ReadWrite = struct
            } as define)
         =
         if Reference.equal name (Reference.create_from_list [Statement.toplevel_define_name]) then
-          let callable = Map.find_exn id_to_callable LocalFunctionId.ModuleTopLevel in
+          let callable_id = Map.find_exn id_to_callable LocalFunctionId.ModuleTopLevel in
           let id_to_callable = Map.remove id_to_callable LocalFunctionId.ModuleTopLevel in
           let callable_to_define =
-            Map.add_exn callable_to_define ~key:callable ~data:(AstResult.Some define)
+            Map.add_exn callable_to_define ~key:callable_id ~data:(AstResult.Some define)
           in
           location_to_callable, id_to_callable, callable_to_define
         else
@@ -1220,10 +1150,10 @@ module ReadWrite = struct
               (* This definition is not visible by pyrefly. It might be guarded by a `if
                  TYPE_CHECKING` or `if sys.version`. *)
               location_to_callable, id_to_callable, callable_to_define
-          | [(location, callable)] ->
+          | [(location, callable_id)] ->
               let location_to_callable = Map.remove location_to_callable location in
               let callable_to_define =
-                Map.add_exn callable_to_define ~key:callable ~data:(AstResult.Some define)
+                Map.add_exn callable_to_define ~key:callable_id ~data:(AstResult.Some define)
               in
               location_to_callable, id_to_callable, callable_to_define
           | _ ->
@@ -1233,8 +1163,8 @@ module ReadWrite = struct
                 name
                 Location.pp
                 define_location
-                ModuleQualifier.pp
-                qualifier
+                ModuleId.pp
+                module_id
               |> failwith
       in
       (* We create an implicit function containing all statements in the body of each class, called
@@ -1243,29 +1173,29 @@ module ReadWrite = struct
          in the source. Assign `AstResult.Synthesized` for those. *)
       let add_toplevel_define_for_synthesized_class
           (location_to_callable, id_to_callable, callable_to_define)
-          (location, callable)
+          (location, callable_id)
         =
-        if String.equal (FullyQualifiedName.last callable) Statement.class_toplevel_define_name then
-          (* We create an implicit function containing all statements in the body of each class,
-             called the "class top level define". However, some classes are synthesized out of thin
-             air (for instance, `X = namedtuple('X')` creates a class `X`). Those won't have a top
-             level define in the source. Let's create a dummy definition for those. *)
-          let class_name = Option.value_exn (FullyQualifiedName.prefix callable) in
-          let { ClassMetadataSharedMemory.Metadata.is_synthesized; _ } =
-            ClassMetadataSharedMemory.get class_metadata_shared_memory (class_id_of_name class_name)
-            |> Option.value_exn
-                 ~message:"unexpected: class toplevel define on a class that has no metadata info"
-          in
-          if is_synthesized then
-            let location_to_callable = Map.remove location_to_callable location in
-            let callable_to_define =
-              Map.add_exn callable_to_define ~key:callable ~data:AstResult.Synthesized
+        match CallableId.local_function_id callable_id with
+        | LocalFunctionId.ClassTopLevel local_class_id ->
+            (* We create an implicit function containing all statements in the body of each class,
+               called the "class top level define". However, some classes are synthesized out of
+               thin air (for instance, `X = namedtuple('X')` creates a class `X`). Those won't have
+               a top level define in the source. Let's create a dummy definition for those. *)
+            let class_id = ClassId.encode ~module_id local_class_id in
+            let { ClassMetadataSharedMemory.Metadata.is_synthesized; _ } =
+              ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
+              |> Option.value_exn
+                   ~message:"unexpected: class toplevel define on a class that has no metadata info"
             in
-            location_to_callable, id_to_callable, callable_to_define
-          else
-            location_to_callable, id_to_callable, callable_to_define
-        else
-          location_to_callable, id_to_callable, callable_to_define
+            if is_synthesized then
+              let location_to_callable = Map.remove location_to_callable location in
+              let callable_to_define =
+                Map.add_exn callable_to_define ~key:callable_id ~data:AstResult.Synthesized
+              in
+              location_to_callable, id_to_callable, callable_to_define
+            else
+              location_to_callable, id_to_callable, callable_to_define
+        | _ -> location_to_callable, id_to_callable, callable_to_define
       in
       (* Function-like class fields (for instance, the generated `__init__` of dataclasses, or
          function-declared attributes like `foo: Callable[..., int]`) don't have a location. Assign
@@ -1293,7 +1223,7 @@ module ReadWrite = struct
       in
       let location_to_callable, id_to_callable, callable_to_define =
         List.fold
-          ~init:(location_to_callable, id_to_callable, FullyQualifiedName.Map.empty)
+          ~init:(location_to_callable, id_to_callable, CallableId.Map.empty)
           ~f:find_define_callable
           defines
       in
@@ -1310,7 +1240,7 @@ module ReadWrite = struct
           (Map.to_alist id_to_callable)
       in
       if not (Map.is_empty location_to_callable && Map.is_empty id_to_callable) then
-        let id_or_location, callable =
+        let id_or_location, callable_id =
           if not (Map.is_empty location_to_callable) then
             Map.min_elt_exn location_to_callable
             |> fun (location, callable) -> Location.show location, callable
@@ -1320,16 +1250,15 @@ module ReadWrite = struct
         in
         Format.asprintf
           "Could not find AST of function `%a` at `%s` in module `%a`"
-          FullyQualifiedName.pp
-          callable
+          CallableId.pp
+          callable_id
           id_or_location
-          ModuleQualifier.pp
-          qualifier
+          ModuleId.pp
+          module_id
         |> failwith
       else
         Map.iteri
-          ~f:(fun ~key:callable ~data:define_result ->
-            let callable_id = callable_id_of_name callable in
+          ~f:(fun ~key:callable_id ~data:define_result ->
             let define_result = AstResult.map ~f:Preprocessing.drop_nested_body define_result in
             CallableAstSharedMemory.add callable_ast_shared_memory callable_id define_result;
             CallableDefineSignatureSharedMemory.add
@@ -1345,16 +1274,14 @@ module ReadWrite = struct
             ())
           callable_to_define
     in
-    let collect_class_decorators_from_source ~qualifier ~classes ~source =
+    let collect_class_decorators_from_source ~module_id ~classes ~source =
       let location_to_class =
         classes
-        |> List.map ~f:(fun class_name ->
-               ClassMetadataSharedMemory.get
-                 class_metadata_shared_memory
-                 (class_id_of_name class_name)
+        |> List.map ~f:(fun class_id ->
+               ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
                |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
                |> fun { ClassMetadataSharedMemory.Metadata.name_location; _ } ->
-               name_location, class_name)
+               name_location, class_id)
         |> Location.Map.of_alist_exn
       in
       (* For a given `class ..` statement, we need to find the matching definition provided by
@@ -1414,14 +1341,18 @@ module ReadWrite = struct
               name
               Location.pp
               class_statement_location
-              ModuleQualifier.pp
-              qualifier
+              ModuleId.pp
+              module_id
             |> failwith
       in
-      let add_synthesized_class (location_to_class, class_to_statement) (location, class_name) =
+      let add_synthesized_class (location_to_class, class_to_statement) (location, class_id) =
         let { ClassMetadataSharedMemory.Metadata.is_synthesized; _ } =
-          ClassMetadataSharedMemory.get class_metadata_shared_memory (class_id_of_name class_name)
+          ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
           |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
+        in
+        let class_name =
+          ClassIdToQualifiedNameSharedMemory.get class_id_to_qualified_name_shared_memory class_id
+          |> assert_shared_memory_key_exists (fun () -> "missing class name for class id")
         in
         if is_synthesized then
           let class_statement =
@@ -1438,7 +1369,7 @@ module ReadWrite = struct
           in
           let location_to_class = Map.remove location_to_class location in
           let class_to_statement =
-            Map.add_exn class_to_statement ~key:class_name ~data:class_statement
+            Map.add_exn class_to_statement ~key:class_id ~data:class_statement
           in
           location_to_class, class_to_statement
         else
@@ -1447,7 +1378,7 @@ module ReadWrite = struct
       let class_statements = Preprocessing.classes source in
       let remaining_classes, class_to_statement =
         List.fold
-          ~init:(location_to_class, FullyQualifiedName.Map.empty)
+          ~init:(location_to_class, ClassId.Map.empty)
           ~f:find_matching_class_for_ast
           class_statements
       in
@@ -1458,22 +1389,22 @@ module ReadWrite = struct
           (Map.to_alist remaining_classes)
       in
       if not (Map.is_empty remaining_classes) then
-        let location, class_name = Map.min_elt_exn remaining_classes in
+        let location, class_id = Map.min_elt_exn remaining_classes in
         Format.asprintf
           "Could not find AST of class `%a` at location %a in module `%a`"
-          FullyQualifiedName.pp
-          class_name
+          ClassId.pp
+          class_id
           Location.pp
           location
-          ModuleQualifier.pp
-          qualifier
+          ModuleId.pp
+          module_id
         |> failwith
       else
         Map.iteri
-          ~f:(fun ~key:class_name ~data:{ Node.value = { Statement.Class.decorators; _ }; _ } ->
+          ~f:(fun ~key:class_id ~data:{ Node.value = { Statement.Class.decorators; _ }; _ } ->
             ClassDecoratorsSharedMemory.add
               class_decorators_shared_memory
-              (class_id_of_name class_name)
+              class_id
               (AstResult.Some decorators))
           class_to_statement
     in
@@ -1560,8 +1491,8 @@ module ReadWrite = struct
               (* Remove the qualifier created by pyre, it is wrong *)
               let module_path = { module_path with qualifier = Reference.empty } in
               let source = { source with module_path } in
-              let () = collect_callable_asts_from_source ~qualifier ~callables ~source in
-              let () = collect_class_decorators_from_source ~qualifier ~classes ~source in
+              let () = collect_callable_asts_from_source ~module_id ~callables ~source in
+              let () = collect_class_decorators_from_source ~module_id ~classes ~source in
               ()
           | Error { Analysis.Parsing.ParseResult.Error.location; message; _ } ->
               let () =
@@ -2069,13 +2000,14 @@ module ReadWrite = struct
               decorator_callees;
               _;
             } ->
+            let callable_id = CallableId.encode ~module_id local_function_id in
             CallableMetadataSharedMemory.write_around
               callable_metadata_shared_memory
-              (PyreflyTypes.CallableId.encode ~module_id local_function_id)
+              callable_id
               {
                 CallableMetadataSharedMemory.Value.metadata =
                   {
-                    module_qualifier = ModuleQualifier.to_reference module_qualifier;
+                    module_id;
                     name_location;
                     is_overload;
                     is_staticmethod;
@@ -2091,20 +2023,23 @@ module ReadWrite = struct
                 module_id;
                 name;
                 local_function_id;
-                overridden_base_method;
-                defining_class;
-                decorator_callees;
+                overridden_base_method = overridden_base_method >>| GlobalCallableId.to_callable_id;
+                defining_class = defining_class >>| GlobalClassId.to_class_id;
+                decorator_callees =
+                  Ast.Location.SerializableMap.map
+                    (List.map ~f:GlobalCallableId.to_callable_id)
+                    decorator_callees;
                 captured_variables;
               };
             CallableIdToQualifiedNameSharedMemory.write_around
               callable_id_to_qualified_name_shared_memory
-              { GlobalCallableId.module_id; local_function_id }
+              callable_id
               qualified_name;
             FullyQualifiedNameToCallableIdSharedMemory.write_around
               fully_qualified_name_to_callable_id_shared_memory
               qualified_name
-              (PyreflyTypes.CallableId.encode ~module_id local_function_id);
-            qualified_name :: callables, classes
+              callable_id;
+            callable_id :: callables, classes
         | Class
             {
               name = class_name;
@@ -2122,7 +2057,7 @@ module ReadWrite = struct
             } ->
             ClassMetadataSharedMemory.write_around
               class_metadata_shared_memory
-              (PyreflyTypes.ClassId.encode ~module_id local_class_id)
+              (ClassId.encode ~module_id local_class_id)
               {
                 ClassMetadataSharedMemory.Metadata.module_id;
                 module_qualifier;
@@ -2134,7 +2069,10 @@ module ReadWrite = struct
                 is_typed_dict;
                 parents = bases;
                 mro;
-                decorator_callees;
+                decorator_callees =
+                  Ast.Location.SerializableMap.map
+                    (List.map ~f:GlobalCallableId.to_callable_id)
+                    decorator_callees;
               };
             let fields =
               (* When the user declares both `__x` and `_ClassName__x` in a class body, pyrefly
@@ -2171,19 +2109,17 @@ module ReadWrite = struct
                      name, { ClassField.type_; explicit_annotation; location; declaration_kind })
               |> SerializableStringMap.of_alist_exn
             in
-            ClassFieldsSharedMemory.write_around
-              class_fields_shared_memory
-              (PyreflyTypes.ClassId.encode ~module_id local_class_id)
-              fields;
+            let class_id = ClassId.encode ~module_id local_class_id in
+            ClassFieldsSharedMemory.write_around class_fields_shared_memory class_id fields;
             ClassIdToQualifiedNameSharedMemory.write_around
               class_id_to_qualified_name_shared_memory
-              { GlobalClassId.module_id; local_class_id }
+              class_id
               qualified_name;
             FullyQualifiedNameToClassIdSharedMemory.write_around
               fully_qualified_name_to_class_id_shared_memory
               qualified_name
-              (PyreflyTypes.ClassId.encode ~module_id local_class_id);
-            callables, qualified_name :: classes
+              class_id;
+            callables, class_id :: classes
       in
       let callables, classes = List.fold definitions ~init:([], []) ~f:store_definition in
       ModuleCallablesSharedMemory.add module_callables_shared_memory module_id callables;
@@ -2192,14 +2128,19 @@ module ReadWrite = struct
       let () =
         let local_class_ids = Int.Table.create () in
         let methods_by_class_id = Int.Table.create () in
-        List.iter
-          definitions
-          ~f:(fun { DefinitionCollector.QualifiedDefinition.qualified_name; definition; _ } ->
+        List.iter definitions ~f:(fun { DefinitionCollector.QualifiedDefinition.definition; _ } ->
             match definition with
             | Class { local_class_id; _ } ->
                 Hashtbl.set local_class_ids ~key:(LocalClassId.to_int local_class_id) ~data:()
-            | Function { name; defining_class = Some { GlobalClassId.local_class_id; _ }; _ } ->
+            | Function
+                {
+                  name;
+                  defining_class = Some { GlobalClassId.local_class_id; _ };
+                  local_function_id;
+                  _;
+                } ->
                 (* We assume the defining class is in the same module. *)
+                let callable_id = CallableId.encode ~module_id local_function_id in
                 Hashtbl.update
                   methods_by_class_id
                   (LocalClassId.to_int local_class_id)
@@ -2207,21 +2148,19 @@ module ReadWrite = struct
                     existing
                     |> Option.value ~default:SerializableStringMap.empty
                     |> SerializableStringMap.update name (function
-                           | None -> Some [qualified_name]
-                           | Some names -> Some (qualified_name :: names)))
+                           | None -> Some [callable_id]
+                           | Some names -> Some (callable_id :: names)))
             | Function _ -> ());
         Hashtbl.iteri local_class_ids ~f:(fun ~key:local_class_id ~data:() ->
-            let class_id =
-              PyreflyTypes.ClassId.encode ~module_id (LocalClassId.from_int local_class_id)
-            in
+            let class_id = ClassId.encode ~module_id (LocalClassId.from_int local_class_id) in
             Hashtbl.find methods_by_class_id local_class_id
             |> Option.value ~default:SerializableStringMap.empty
             |> SerializableStringMap.to_alist
-            |> List.iter ~f:(fun (method_name, method_names) ->
+            |> List.iter ~f:(fun (method_name, callable_ids) ->
                    ClassMethodIndexSharedMemory.add
                      class_method_index_shared_memory
                      (class_id, method_name)
-                     method_names))
+                     callable_ids))
       in
       let global_variables =
         global_variables
@@ -2279,7 +2218,7 @@ module ReadWrite = struct
             {
               PyreflyType.string = "None";
               scalar_properties = ScalarTypeProperties.none;
-              class_names = None;
+              classes = None;
             };
         }
       in
@@ -2287,7 +2226,7 @@ module ReadWrite = struct
           ~key:local_function_id
           ~data:{ ModuleDefinitionsFile.FunctionDefinition.undecorated_signatures; _ }
         =
-        let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
+        let callable_id = CallableId.encode ~module_id local_function_id in
         let undecorated_signatures =
           List.map ~f:convert_function_signature undecorated_signatures
         in
@@ -2301,7 +2240,7 @@ module ReadWrite = struct
           ~data:{ ModuleDefinitionsFile.ClassDefinition.local_class_id; _ }
         =
         let callable_id =
-          PyreflyTypes.CallableId.encode ~module_id (LocalFunctionId.ClassTopLevel local_class_id)
+          CallableId.encode ~module_id (LocalFunctionId.ClassTopLevel local_class_id)
         in
         CallableUndecoratedSignaturesSharedMemory.add
           callable_undecorated_signatures_shared_memory
@@ -2314,7 +2253,7 @@ module ReadWrite = struct
       let () =
         CallableUndecoratedSignaturesSharedMemory.add
           callable_undecorated_signatures_shared_memory
-          (PyreflyTypes.CallableId.encode ~module_id LocalFunctionId.ModuleTopLevel)
+          (CallableId.encode ~module_id LocalFunctionId.ModuleTopLevel)
           [toplevel_undecorated_signature]
       in
       {
@@ -2376,21 +2315,12 @@ module ReadWrite = struct
       callable_undecorated_signatures_shared_memory )
 
 
-  let make_typeshed_class
-      ~class_id_to_qualified_name_shared_memory
-      ~module_infos_shared_memory
-      ({ GlobalClassId.module_id; _ } as global_class_id)
-    =
-    let fully_qualified_name =
-      ClassIdToQualifiedNameSharedMemory.get_class_name
-        class_id_to_qualified_name_shared_memory
-        global_class_id
-    in
+  let make_typeshed_class ~module_infos_shared_memory class_id =
     let { ModuleInfosSharedMemory.Module.sys_info; _ } =
-      ModuleInfosSharedMemory.get module_infos_shared_memory module_id
+      ModuleInfosSharedMemory.get module_infos_shared_memory (ClassId.module_id class_id)
       |> assert_shared_memory_key_exists (fun () -> "unknown module id")
     in
-    { TypeshedClass.sys_info; global_class_id; fully_qualified_name }
+    { TypeshedClass.sys_info; class_id }
 
 
   let create_from_directory ~scheduler ~scheduler_policies ~configuration pyrefly_directory =
@@ -2405,11 +2335,11 @@ module ReadWrite = struct
       write_module_infos_to_shared_memory ~qualifier_to_module_map
     in
 
-    let module_name_to_qualifiers_shared_memory =
-      write_module_name_to_qualifiers_to_shared_memory ~qualifier_to_module_map
+    let module_name_to_ids_shared_memory =
+      write_module_name_to_ids_to_shared_memory ~qualifier_to_module_map
     in
 
-    let qualifiers_shared_memory = write_qualifiers_to_shared_memory ~qualifier_to_module_map in
+    let modules_shared_memory = write_modules_to_shared_memory ~qualifier_to_module_map in
 
     let ( callable_metadata_shared_memory,
           class_metadata_shared_memory,
@@ -2448,8 +2378,7 @@ module ReadWrite = struct
         ~module_classes_shared_memory
         ~callable_metadata_shared_memory
         ~class_metadata_shared_memory
-        ~fully_qualified_name_to_callable_id_shared_memory
-        ~fully_qualified_name_to_class_id_shared_memory
+        ~class_id_to_qualified_name_shared_memory
     in
 
     let all_sys_infos =
@@ -2460,18 +2389,24 @@ module ReadWrite = struct
       |> SysInfo.Set.elements
     in
 
-    let make_typeshed_class =
-      make_typeshed_class ~class_id_to_qualified_name_shared_memory ~module_infos_shared_memory
+    let make_typeshed_class = make_typeshed_class ~module_infos_shared_memory in
+    let object_classes =
+      object_class_refs |> List.map ~f:GlobalClassId.to_class_id |> List.map ~f:make_typeshed_class
     in
-    let object_classes = List.map object_class_refs ~f:make_typeshed_class in
-    let dict_classes = List.map dict_class_refs ~f:make_typeshed_class in
-    let typing_mapping_classes = List.map typing_mapping_class_refs ~f:make_typeshed_class in
+    let dict_classes =
+      dict_class_refs |> List.map ~f:GlobalClassId.to_class_id |> List.map ~f:make_typeshed_class
+    in
+    let typing_mapping_classes =
+      typing_mapping_class_refs
+      |> List.map ~f:GlobalClassId.to_class_id
+      |> List.map ~f:make_typeshed_class
+    in
 
     {
       pyrefly_directory;
       qualifier_to_module_map;
       module_infos_shared_memory;
-      qualifiers_shared_memory;
+      modules_shared_memory;
       type_of_expressions_shared_memory = None;
       callable_metadata_shared_memory;
       class_metadata_shared_memory;
@@ -2481,7 +2416,7 @@ module ReadWrite = struct
       module_callables_shared_memory;
       module_classes_shared_memory;
       module_globals_shared_memory;
-      module_name_to_qualifiers_shared_memory;
+      module_name_to_ids_shared_memory;
       module_id_to_qualifier_shared_memory;
       qualifier_to_module_id_shared_memory;
       class_id_to_qualified_name_shared_memory;
@@ -2592,7 +2527,7 @@ module ReadWrite = struct
         pyrefly_directory = _;
         qualifier_to_module_map;
         module_infos_shared_memory;
-        qualifiers_shared_memory;
+        modules_shared_memory;
         type_of_expressions_shared_memory = _;
         callable_metadata_shared_memory;
         class_metadata_shared_memory;
@@ -2602,7 +2537,7 @@ module ReadWrite = struct
         module_callables_shared_memory;
         module_classes_shared_memory;
         module_globals_shared_memory;
-        module_name_to_qualifiers_shared_memory;
+        module_name_to_ids_shared_memory;
         module_id_to_qualifier_shared_memory;
         qualifier_to_module_id_shared_memory;
         class_id_to_qualified_name_shared_memory;
@@ -2628,7 +2563,7 @@ module ReadWrite = struct
         ()
     in
     let cleanup_callable ~module_id ~local_function_id callable_name =
-      let callable_id = PyreflyTypes.CallableId.encode ~module_id local_function_id in
+      let callable_id = CallableId.encode ~module_id local_function_id in
       CallableMetadataSharedMemory.remove callable_metadata_shared_memory callable_id;
       CallableAstSharedMemory.remove callable_ast_shared_memory callable_id;
       CallableDefineSignatureSharedMemory.remove callable_define_signature_shared_memory callable_id;
@@ -2638,29 +2573,22 @@ module ReadWrite = struct
         callable_id;
       CallableIdToQualifiedNameSharedMemory.remove
         callable_id_to_qualified_name_shared_memory
-        { GlobalCallableId.module_id; local_function_id };
+        callable_id;
       FullyQualifiedNameToCallableIdSharedMemory.remove
         fully_qualified_name_to_callable_id_shared_memory
         callable_name;
       ()
     in
-    let cleanup_class ~module_id class_name =
-      let class_id =
-        FullyQualifiedNameToClassIdSharedMemory.get
-          fully_qualified_name_to_class_id_shared_memory
-          class_name
-        |> assert_shared_memory_key_exists (fun () -> "missing class id")
-      in
-      let { ClassMetadataSharedMemory.Metadata.local_class_id; _ } =
-        ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
-        |> assert_shared_memory_key_exists (fun () -> "missing class metadata")
+    let cleanup_class class_id =
+      let class_name =
+        ClassIdToQualifiedNameSharedMemory.get_class_name
+          class_id_to_qualified_name_shared_memory
+          class_id
       in
       ClassMetadataSharedMemory.remove class_metadata_shared_memory class_id;
       ClassFieldsSharedMemory.remove class_fields_shared_memory class_id;
       ClassDecoratorsSharedMemory.remove class_decorators_shared_memory class_id;
-      ClassIdToQualifiedNameSharedMemory.remove
-        class_id_to_qualified_name_shared_memory
-        { GlobalClassId.module_id; local_class_id };
+      ClassIdToQualifiedNameSharedMemory.remove class_id_to_qualified_name_shared_memory class_id;
       FullyQualifiedNameToClassIdSharedMemory.remove
         fully_qualified_name_to_class_id_shared_memory
         class_name;
@@ -2684,26 +2612,21 @@ module ReadWrite = struct
           let callables_with_metadata =
             ModuleCallablesSharedMemory.get module_callables_shared_memory module_id
             |> assert_shared_memory_key_exists (fun () -> "missing module callables")
-            |> List.map ~f:(fun callable ->
-                   let callable_id =
-                     FullyQualifiedNameToCallableIdSharedMemory.get
-                       fully_qualified_name_to_callable_id_shared_memory
-                       callable
-                     |> assert_shared_memory_key_exists (fun () ->
-                            Format.asprintf
-                              "missing callable id: `%a`"
-                              FullyQualifiedName.pp
-                              callable)
-                   in
-                   let metadata =
+            |> List.map ~f:(fun callable_id ->
+                   let metadata_value =
                      CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
                      |> assert_shared_memory_key_exists (fun () ->
                             Format.asprintf
                               "missing callable metadata: `%a`"
-                              FullyQualifiedName.pp
-                              callable)
+                              CallableId.pp
+                              callable_id)
                    in
-                   callable, metadata)
+                   let callable =
+                     CallableIdToQualifiedNameSharedMemory.get
+                       callable_id_to_qualified_name_shared_memory
+                       callable_id
+                   in
+                   callable, metadata_value)
           in
           (* Remove the `(class id, bare method name)` entries from
              `ClassMethodIndexSharedMemory` *)
@@ -2711,8 +2634,7 @@ module ReadWrite = struct
             callables_with_metadata
             |> List.filter_map
                  ~f:(fun (_, { CallableMetadataSharedMemory.Value.name; defining_class; _ }) ->
-                   defining_class
-                   >>| fun defining_class -> GlobalClassId.to_class_id defining_class, name)
+                   defining_class >>| fun defining_class -> defining_class, name)
             |> List.dedup_and_sort ~compare:ClassMethodIndexSharedMemoryKey.compare
             |> List.iter ~f:(ClassMethodIndexSharedMemory.remove class_method_index_shared_memory)
           in
@@ -2726,7 +2648,7 @@ module ReadWrite = struct
         if Option.is_some pyrefly_info_filename then
           ModuleClassesSharedMemory.get module_classes_shared_memory module_id
           |> assert_shared_memory_key_exists (fun () -> "missing module classes")
-          |> List.iter ~f:(cleanup_class ~module_id)
+          |> List.iter ~f:cleanup_class
       in
       ModuleCallablesSharedMemory.remove module_callables_shared_memory module_id;
       ModuleClassesSharedMemory.remove module_classes_shared_memory module_id;
@@ -2742,12 +2664,11 @@ module ReadWrite = struct
       ~inputs:
         (Map.data qualifier_to_module_map |> List.map ~f:(fun { Module.module_id; _ } -> module_id))
       ();
-    QualifiersSharedMemory.remove qualifiers_shared_memory Memory.SingletonKey.key;
+    ModulesSharedMemory.remove modules_shared_memory Memory.SingletonKey.key;
     Map.keys qualifier_to_module_map
     |> List.map ~f:ModuleQualifier.bare_module_name
     |> List.dedup_and_sort ~compare:ModuleName.compare
-    |> List.iter
-         ~f:(ModuleNameToQualifiersSharedMemory.remove module_name_to_qualifiers_shared_memory);
+    |> List.iter ~f:(ModuleNameToIdsSharedMemory.remove module_name_to_ids_shared_memory);
     (* TODO(T225700656): Clean up TypeOfExpressionsSharedMemory (this requires storing all locations
        with a type) *)
     Memory.SharedMemory.collect `aggressive;
@@ -2771,7 +2692,7 @@ module ReadOnly = struct
   type t = {
     pyrefly_directory: PyrePath.t;
     module_infos_shared_memory: ModuleInfosSharedMemory.t;
-    qualifiers_shared_memory: QualifiersSharedMemory.t;
+    modules_shared_memory: ModulesSharedMemory.t;
     callable_metadata_shared_memory: CallableMetadataSharedMemory.t;
     class_metadata_shared_memory: ClassMetadataSharedMemory.t;
     class_fields_shared_memory: ClassFieldsSharedMemory.t;
@@ -2780,7 +2701,7 @@ module ReadOnly = struct
     module_callables_shared_memory: ModuleCallablesSharedMemory.t;
     module_classes_shared_memory: ModuleClassesSharedMemory.t;
     module_globals_shared_memory: ModuleGlobalsSharedMemory.t;
-    module_name_to_qualifiers_shared_memory: ModuleNameToQualifiersSharedMemory.t;
+    module_name_to_ids_shared_memory: ModuleNameToIdsSharedMemory.t;
     callable_ast_shared_memory: CallableAstSharedMemory.t;
     callable_define_signature_shared_memory: CallableDefineSignatureSharedMemory.t;
     callable_parse_result_shared_memory: CallableParseResultSharedMemory.t;
@@ -2802,7 +2723,7 @@ module ReadOnly = struct
       {
         ReadWrite.pyrefly_directory;
         module_infos_shared_memory;
-        qualifiers_shared_memory;
+        modules_shared_memory;
         callable_metadata_shared_memory;
         class_metadata_shared_memory;
         class_fields_shared_memory;
@@ -2811,7 +2732,7 @@ module ReadOnly = struct
         module_callables_shared_memory;
         module_classes_shared_memory;
         module_globals_shared_memory;
-        module_name_to_qualifiers_shared_memory;
+        module_name_to_ids_shared_memory;
         callable_ast_shared_memory;
         callable_define_signature_shared_memory;
         callable_parse_result_shared_memory;
@@ -2833,7 +2754,7 @@ module ReadOnly = struct
     {
       pyrefly_directory;
       module_infos_shared_memory;
-      qualifiers_shared_memory;
+      modules_shared_memory;
       callable_metadata_shared_memory;
       class_metadata_shared_memory;
       class_fields_shared_memory;
@@ -2842,7 +2763,7 @@ module ReadOnly = struct
       module_callables_shared_memory;
       module_classes_shared_memory;
       module_globals_shared_memory;
-      module_name_to_qualifiers_shared_memory;
+      module_name_to_ids_shared_memory;
       callable_ast_shared_memory;
       callable_define_signature_shared_memory;
       callable_parse_result_shared_memory;
@@ -2865,16 +2786,10 @@ module ReadOnly = struct
     (* Decorated callables share their undecorated function's qualified name (the `@decorated`
        suffix belongs to the external name, not the define name); only the undecorated id is stored
        in the id->name map, so normalize before the lookup. *)
-    let callable_id =
-      if PyreflyTypes.CallableId.is_decorated callable_id then
-        PyreflyTypes.CallableId.to_undecorated callable_id
-      else
-        callable_id
-    in
-    let module_id, local_function_id = PyreflyTypes.CallableId.decode callable_id in
+    let callable_id = CallableId.strip_decorated callable_id in
     CallableIdToQualifiedNameSharedMemory.get
       callable_id_to_qualified_name_shared_memory
-      { GlobalCallableId.module_id; local_function_id }
+      callable_id
     |> FullyQualifiedName.to_reference
 
 
@@ -2882,7 +2797,7 @@ module ReadOnly = struct
     (* The external (user-facing) name is the define name, with `@decorated` appended to its last
        component for decorated callables. *)
     let define_name = define_name_from_callable_id api callable_id in
-    if PyreflyTypes.CallableId.is_decorated callable_id then
+    if CallableId.is_decorated callable_id then
       Reference.create
         ?prefix:(Reference.prefix define_name)
         (Reference.last define_name ^ "@decorated")
@@ -2891,10 +2806,9 @@ module ReadOnly = struct
 
 
   let class_name_from_class_id { class_id_to_qualified_name_shared_memory; _ } class_id =
-    let module_id, local_class_id = PyreflyTypes.ClassId.decode class_id in
     ClassIdToQualifiedNameSharedMemory.get_class_name
       class_id_to_qualified_name_shared_memory
-      { GlobalClassId.module_id; local_class_id }
+      class_id
     |> FullyQualifiedName.to_reference
 
 
@@ -2910,13 +2824,34 @@ module ReadOnly = struct
   let all_sys_infos { all_sys_infos; _ } = all_sys_infos
 
   (* Resolve a module qualifier to its module id via the forward name->id index. *)
-  let module_id_of_qualifier { qualifier_to_module_id_shared_memory; _ } module_qualifier =
+  let module_id_of_module_qualifier { qualifier_to_module_id_shared_memory; _ } module_qualifier =
     QualifierToModuleIdSharedMemory.get qualifier_to_module_id_shared_memory module_qualifier
     |> assert_shared_memory_key_exists (fun () ->
            Format.asprintf
              "missing module id for qualifier `%a`"
              ModuleQualifier.pp
              module_qualifier)
+
+
+  let module_id_of_qualifier_opt { qualifier_to_module_id_shared_memory; _ } qualifier =
+    QualifierToModuleIdSharedMemory.get
+      qualifier_to_module_id_shared_memory
+      (ModuleQualifier.from_reference_unchecked qualifier)
+
+
+  (* Resolve a module qualifier (as an `Ast.Reference.t`) to its module id. *)
+  let module_id_of_qualifier api qualifier =
+    module_id_of_qualifier_opt api qualifier
+    |> assert_shared_memory_key_exists (fun () ->
+           Format.asprintf "missing module id for qualifier `%a`" Reference.pp qualifier)
+
+
+  (* Materialize a module id back into its module qualifier via the reverse id->qualifier index. *)
+  let module_qualifier_of_id { module_id_to_qualifier_shared_memory; _ } module_id =
+    ModuleIdToQualifierSharedMemory.get_module_qualifier
+      module_id_to_qualifier_shared_memory
+      module_id
+    |> ModuleQualifier.to_reference
 
 
   let resolve_class_id { fully_qualified_name_to_class_id_shared_memory; _ } fully_qualified_name =
@@ -2931,91 +2866,121 @@ module ReadOnly = struct
            Format.asprintf "missing class id: `%a`" FullyQualifiedName.pp fully_qualified_name)
 
 
-  let artifact_path_of_qualifier ({ module_infos_shared_memory; _ } as api) qualifier =
-    if Reference.equal qualifier PyreflyTypes.artificial_decorator_define_module then
-      None
-    else
-      ModuleInfosSharedMemory.get
-        module_infos_shared_memory
-        (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-      |> assert_shared_memory_key_exists (fun () -> "missing module info for qualifier")
-      |> fun { ModuleInfosSharedMemory.Module.absolute_source_path; _ } -> absolute_source_path
+  let artifact_path_of_module { module_infos_shared_memory; _ } module_id =
+    ModuleInfosSharedMemory.get module_infos_shared_memory module_id
+    |> assert_shared_memory_key_exists (fun () -> "missing module info for module id")
+    |> fun { ModuleInfosSharedMemory.Module.absolute_source_path; _ } -> absolute_source_path
 
 
-  let absolute_source_path_of_qualifier api qualifier =
+  let absolute_source_path_of_module api module_id =
     (* TODO(T225700656): We currently return the artifact path, it should be translated back into a
        source path by buck *)
-    artifact_path_of_qualifier api qualifier >>| ArtifactPath.raw >>| PyrePath.absolute
+    artifact_path_of_module api module_id >>| ArtifactPath.raw >>| PyrePath.absolute
 
 
-  let search_path_relative_path_of_qualifier ({ module_infos_shared_memory; _ } as api) qualifier =
-    ModuleInfosSharedMemory.get
-      module_infos_shared_memory
-      (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
+  let search_path_relative_path_of_module { module_infos_shared_memory; _ } module_id =
+    ModuleInfosSharedMemory.get module_infos_shared_memory module_id
     |> assert_shared_memory_key_exists (fun () -> "missing module info for qualifier")
     |> fun { ModuleInfosSharedMemory.Module.relative_source_path; _ } -> relative_source_path
 
 
-  (* Return all qualifiers with source code *)
-  let explicit_qualifiers { qualifiers_shared_memory; _ } =
-    QualifiersSharedMemory.get qualifiers_shared_memory Memory.SingletonKey.key
-    |> assert_shared_memory_key_exists (fun () -> "missing qualifiers with source in shared memory")
-    |> List.filter_map ~f:(fun { QualifiersSharedMemory.Value.module_qualifier; has_source; _ } ->
-           Option.some_if has_source (ModuleQualifier.to_reference module_qualifier))
+  (* Fetch the module info record for a module id. *)
+  let module_info_exn { module_infos_shared_memory; _ } module_id =
+    ModuleInfosSharedMemory.get module_infos_shared_memory module_id
+    |> assert_shared_memory_key_exists (fun () -> "missing module info for module id")
 
 
-  let is_test_qualifier ({ module_infos_shared_memory; _ } as api) qualifier =
-    ModuleInfosSharedMemory.get
-      module_infos_shared_memory
-      (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-    |> assert_shared_memory_key_exists (fun () -> "missing module info for qualifier")
-    |> fun { ModuleInfosSharedMemory.Module.is_test; _ } -> is_test
+  (* Whether the module has source code available. *)
+  let module_has_source api module_id =
+    let { ModuleInfosSharedMemory.Module.absolute_source_path; _ } =
+      module_info_exn api module_id
+    in
+    Option.is_some absolute_source_path
 
 
-  let is_stub_qualifier ({ module_infos_shared_memory; _ } as api) qualifier =
-    ModuleInfosSharedMemory.get
-      module_infos_shared_memory
-      (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-    |> assert_shared_memory_key_exists (fun () -> "missing module info for qualifier")
-    |> fun { ModuleInfosSharedMemory.Module.is_stub; _ } -> is_stub
+  (* Whether the module has pyrefly info available. *)
+  let module_has_info api module_id =
+    let { ModuleInfosSharedMemory.Module.pyrefly_info_filename; _ } =
+      module_info_exn api module_id
+    in
+    Option.is_some pyrefly_info_filename
 
 
-  let is_internal_qualifier ({ module_infos_shared_memory; _ } as api) qualifier =
-    ModuleInfosSharedMemory.get
-      module_infos_shared_memory
-      (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-    |> assert_shared_memory_key_exists (fun () -> "missing module info for qualifier")
-    |> fun { ModuleInfosSharedMemory.Module.is_internal; _ } -> is_internal
+  (* Return all module ids with source code. *)
+  let explicit_modules ({ modules_shared_memory; _ } as api) =
+    ModulesSharedMemory.get modules_shared_memory Memory.SingletonKey.key
+    |> assert_shared_memory_key_exists (fun () -> "missing modules in shared memory")
+    |> List.filter ~f:(module_has_source api)
 
 
-  let get_class_names_for_qualifier
+  let is_test_module api module_id =
+    let { ModuleInfosSharedMemory.Module.is_test; _ } = module_info_exn api module_id in
+    is_test
+
+
+  let is_stub_module api module_id =
+    let { ModuleInfosSharedMemory.Module.is_stub; _ } = module_info_exn api module_id in
+    is_stub
+
+
+  let is_internal_module api module_id =
+    let { ModuleInfosSharedMemory.Module.is_internal; _ } = module_info_exn api module_id in
+    is_internal
+
+
+  (* Materialize a packed class id back into its fully qualified name via the reverse id->name
+     index. *)
+  let fully_qualified_name_of_class_id { class_id_to_qualified_name_shared_memory; _ } class_id =
+    ClassIdToQualifiedNameSharedMemory.get_class_name
+      class_id_to_qualified_name_shared_memory
+      class_id
+
+
+  (* Materialize a packed callable id back into its fully qualified name via the reverse id->name
+     index. *)
+  let fully_qualified_name_of_callable_id
+      { callable_id_to_qualified_name_shared_memory; _ }
+      callable_id
+    =
+    CallableIdToQualifiedNameSharedMemory.get
+      callable_id_to_qualified_name_shared_memory
+      callable_id
+
+
+  let class_name_from_id api class_id =
+    fully_qualified_name_of_class_id api class_id |> FullyQualifiedName.to_reference
+
+
+  let class_id_from_name api name =
+    FullyQualifiedName.from_reference_unchecked name |> resolve_class_id_exn api
+
+
+  (* Resolve a fully qualified class name into its class id, or `None` if the class is unknown. *)
+  let class_id_from_name_opt api name =
+    FullyQualifiedName.from_reference_unchecked name |> resolve_class_id api
+
+
+  let get_class_ids_for_module
       ({ module_classes_shared_memory; _ } as api)
       ~exclude_test_modules
-      qualifier
+      module_id
     =
-    if exclude_test_modules && is_test_qualifier api qualifier then
+    if exclude_test_modules && is_test_module api module_id then
       []
     else
-      ModuleClassesSharedMemory.get
-        module_classes_shared_memory
-        (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-      |> assert_shared_memory_key_exists (fun () -> "missing module classes for qualifier")
-      |> List.map ~f:FullyQualifiedName.to_reference
-
-
-  let all_classes { qualifiers_shared_memory; module_classes_shared_memory; _ } ~scheduler =
-    let module_ids =
-      QualifiersSharedMemory.get qualifiers_shared_memory Memory.SingletonKey.key
-      |> assert_shared_memory_key_exists (fun () ->
-             "missing qualifiers with source in shared memory")
-      |> List.filter_map ~f:(fun { QualifiersSharedMemory.Value.module_id; has_info; _ } ->
-             Option.some_if has_info module_id)
-    in
-    let get_class_names_for_qualifier module_id =
       ModuleClassesSharedMemory.get module_classes_shared_memory module_id
       |> assert_shared_memory_key_exists (fun () -> "missing module classes for module id")
-      |> List.map ~f:FullyQualifiedName.to_reference
-      |> List.map ~f:Reference.show
+
+
+  let all_classes ({ modules_shared_memory; module_classes_shared_memory; _ } as api) ~scheduler =
+    let module_ids =
+      ModulesSharedMemory.get modules_shared_memory Memory.SingletonKey.key
+      |> assert_shared_memory_key_exists (fun () -> "missing modules in shared memory")
+      |> List.filter ~f:(module_has_info api)
+    in
+    let get_class_ids_for_qualifier module_id =
+      ModuleClassesSharedMemory.get module_classes_shared_memory module_id
+      |> assert_shared_memory_key_exists (fun () -> "missing module classes for module id")
     in
     let scheduler_policy =
       Scheduler.Policy.fixed_chunk_count
@@ -3028,37 +2993,26 @@ module ReadOnly = struct
       scheduler
       ~policy:scheduler_policy
       ~initial:[]
-      ~map:(List.concat_map ~f:get_class_names_for_qualifier)
+      ~map:(List.concat_map ~f:get_class_ids_for_qualifier)
       ~reduce:List.append
       ~inputs:module_ids
       ()
 
 
   let all_global_variables
-      {
-        qualifiers_shared_memory;
-        module_globals_shared_memory;
-        module_id_to_qualifier_shared_memory;
-        _;
-      }
+      ({ modules_shared_memory; module_globals_shared_memory; _ } as api)
       ~scheduler
     =
-    let qualifiers =
-      QualifiersSharedMemory.get qualifiers_shared_memory Memory.SingletonKey.key
-      |> assert_shared_memory_key_exists (fun () ->
-             "missing qualifiers with source in shared memory")
-      |> List.filter_map ~f:(fun { QualifiersSharedMemory.Value.module_id; has_info; _ } ->
-             Option.some_if has_info module_id)
+    let module_ids =
+      ModulesSharedMemory.get modules_shared_memory Memory.SingletonKey.key
+      |> assert_shared_memory_key_exists (fun () -> "missing modules in shared memory")
+      |> List.filter ~f:(module_has_info api)
     in
     let get_globals_for_qualifier module_id =
-      let module_qualifier =
-        ModuleIdToQualifierSharedMemory.get module_id_to_qualifier_shared_memory module_id
-        |> assert_shared_memory_key_exists (fun () -> "missing module qualifier for module id")
-      in
       ModuleGlobalsSharedMemory.get module_globals_shared_memory module_id
       |> assert_shared_memory_key_exists (fun () -> "missing module globals for module id")
       |> SerializableStringMap.keys
-      |> List.map ~f:(Reference.create ~prefix:(ModuleQualifier.to_reference module_qualifier))
+      |> List.map ~f:(fun name -> module_id, name)
     in
     let scheduler_policy =
       Scheduler.Policy.fixed_chunk_count
@@ -3073,58 +3027,41 @@ module ReadOnly = struct
       ~initial:[]
       ~map:(List.concat_map ~f:get_globals_for_qualifier)
       ~reduce:List.append
-      ~inputs:qualifiers
+      ~inputs:module_ids
       ()
 
 
-  let get_define_names_for_qualifier
+  let get_callable_ids_for_module
       ({ module_callables_shared_memory; _ } as api)
       ~exclude_test_modules
-      qualifier
+      module_id
     =
-    if exclude_test_modules && is_test_qualifier api qualifier then
+    if exclude_test_modules && is_test_module api module_id then
       []
     else
-      ModuleCallablesSharedMemory.get
-        module_callables_shared_memory
-        (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-      |> assert_shared_memory_key_exists (fun () -> "missing module callables for qualifier")
-      |> List.map ~f:FullyQualifiedName.to_reference
+      ModuleCallablesSharedMemory.get module_callables_shared_memory module_id
+      |> assert_shared_memory_key_exists (fun () -> "missing module callables for module id")
 
 
-  let get_qualifier_top_level_define_name _ qualifier =
-    let module_qualifier = ModuleQualifier.from_reference_unchecked qualifier in
-    FullyQualifiedName.create_module_toplevel ~module_qualifier |> FullyQualifiedName.to_reference
-
-
-  (* Check if a class name is any variant of "object" *)
-  let is_object_class_internal ~object_classes class_name =
-    List.exists object_classes ~f:(fun { TypeshedClass.fully_qualified_name; _ } ->
-        FullyQualifiedName.equal class_name fully_qualified_name)
-
-
-  (* Check if a class name is any variant of "object" *)
-  let is_object_class { object_classes; _ } class_name =
-    is_object_class_internal
-      ~object_classes
-      (FullyQualifiedName.from_reference_unchecked (Reference.create class_name))
+  (* Check if a class id is any variant of "object" *)
+  let is_object_class_id { object_classes; _ } class_id =
+    List.exists object_classes ~f:(fun { TypeshedClass.class_id = global_class_id; _ } ->
+        ClassId.equal class_id global_class_id)
 
 
   (* Get the SysInfo for a class by looking up its module *)
-  let get_sys_info_for_class
+  let get_sys_info_for_class_id
       ({ class_metadata_shared_memory; module_infos_shared_memory; _ } as api)
-      class_name
+      class_id
     =
     let { ClassMetadataSharedMemory.Metadata.module_qualifier; _ } =
-      ClassMetadataSharedMemory.get
-        class_metadata_shared_memory
-        (resolve_class_id_exn api class_name)
+      ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
       |> assert_shared_memory_key_exists (fun () -> "missing class metadata")
     in
     let { ModuleInfosSharedMemory.Module.sys_info; _ } =
       ModuleInfosSharedMemory.get
         module_infos_shared_memory
-        (module_id_of_qualifier api module_qualifier)
+        (module_id_of_module_qualifier api module_qualifier)
       |> assert_shared_memory_key_exists (fun () -> "missing module info")
     in
     sys_info
@@ -3136,98 +3073,55 @@ module ReadOnly = struct
         SysInfo.equal s sys_info)
 
 
-  (* Get the object_class FullyQualifiedName for a class with the same SysInfo *)
-  let get_object_class_for ({ object_classes; _ } as api) class_name =
-    let sys_info = get_sys_info_for_class api class_name in
-    let { TypeshedClass.fully_qualified_name; _ } =
-      find_typeshed_class_by_sys_info object_classes sys_info
-    in
-    fully_qualified_name
+  (* Get the object_class id for a class with the same SysInfo *)
+  let object_class_id_for ({ object_classes; _ } as api) class_id =
+    let sys_info = get_sys_info_for_class_id api class_id in
+    let { TypeshedClass.class_id; _ } = find_typeshed_class_by_sys_info object_classes sys_info in
+    class_id
 
 
-  let class_immediate_parents
-      ({ class_metadata_shared_memory; class_id_to_qualified_name_shared_memory; object_classes; _ }
-      as api)
-      class_name
-    =
-    (* TOOD(T225700656): Update the API to take a reference and return a reference. *)
-    let class_name = FullyQualifiedName.from_reference_unchecked (Reference.create class_name) in
+  let class_immediate_parents ({ class_metadata_shared_memory; _ } as api) class_id =
     let get_parents_from_class_metadata { ClassMetadataSharedMemory.Metadata.parents; _ } =
       match parents with
-      | [] when not (is_object_class_internal ~object_classes class_name) ->
-          let object_class = get_object_class_for api class_name in
-          [object_class]
-      | parents ->
-          List.map
-            ~f:
-              (ClassIdToQualifiedNameSharedMemory.get_class_name
-                 class_id_to_qualified_name_shared_memory)
-            parents
+      | [] when not (is_object_class_id api class_id) -> [object_class_id_for api class_id]
+      | parents -> List.map parents ~f:GlobalClassId.to_class_id
     in
-    ClassMetadataSharedMemory.get class_metadata_shared_memory (resolve_class_id_exn api class_name)
+    ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
     |> get_parents_from_class_metadata
-    |> List.map ~f:FullyQualifiedName.to_reference
-    |> List.map ~f:Reference.show
 
 
-  let class_mro
-      ({ class_metadata_shared_memory; class_id_to_qualified_name_shared_memory; object_classes; _ }
-      as api)
-      class_name
-    =
-    (* TOOD(T225700656): Update the API to take a reference and return a reference. *)
-    let class_name = FullyQualifiedName.from_reference_unchecked (Reference.create class_name) in
+  let class_mro ({ class_metadata_shared_memory; _ } as api) class_id =
     let get_mro_from_class_metadata { ClassMetadataSharedMemory.Metadata.mro; _ } =
       match mro with
-      | _ when is_object_class_internal ~object_classes class_name -> []
+      | _ when is_object_class_id api class_id -> []
       | ModuleDefinitionsFile.ClassMro.Cyclic ->
           (* Failed to resolve the mro because the class hierarchy is cyclic. Fallback to
              [object]. *)
-          [get_object_class_for api class_name]
+          [object_class_id_for api class_id]
       | ModuleDefinitionsFile.ClassMro.Resolved mro ->
-          let mro =
-            List.map
-              ~f:
-                (ClassIdToQualifiedNameSharedMemory.get_class_name
-                   class_id_to_qualified_name_shared_memory)
-              mro
-          in
+          let mro = List.map mro ~f:GlobalClassId.to_class_id in
           (* Pyrefly does not include 'object' in the mro. *)
-          let object_class = get_object_class_for api class_name in
-          mro @ [object_class]
+          mro @ [object_class_id_for api class_id]
     in
-    ClassMetadataSharedMemory.get class_metadata_shared_memory (resolve_class_id_exn api class_name)
+    ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
     |> get_mro_from_class_metadata
-    |> List.map ~f:FullyQualifiedName.to_reference
-    |> List.map ~f:Reference.show
 
 
-  let is_subclass
-      ({ class_metadata_shared_memory; class_id_to_qualified_name_shared_memory; object_classes; _ }
-      as api)
-      ~parent
-      ~child
-    =
-    let parent = FullyQualifiedName.from_reference_unchecked (Reference.create parent) in
-    let child = FullyQualifiedName.from_reference_unchecked (Reference.create child) in
-    if FullyQualifiedName.equal parent child || is_object_class_internal ~object_classes parent then
+  let is_subclass ({ class_metadata_shared_memory; _ } as api) ~parent ~child =
+    if ClassId.equal parent child || is_object_class_id api parent then
       true
     else
       let { ClassMetadataSharedMemory.Metadata.mro; _ } =
-        ClassMetadataSharedMemory.get class_metadata_shared_memory (resolve_class_id_exn api child)
+        ClassMetadataSharedMemory.get class_metadata_shared_memory child
         |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
       in
       match mro with
       | ModuleDefinitionsFile.ClassMro.Cyclic -> false
       | ModuleDefinitionsFile.ClassMro.Resolved mro ->
           List.exists mro ~f:(fun class_id ->
-              FullyQualifiedName.equal
-                parent
-                (ClassIdToQualifiedNameSharedMemory.get_class_name
-                   class_id_to_qualified_name_shared_memory
-                   class_id))
+              ClassId.equal parent (GlobalClassId.to_class_id class_id))
 
 
   let resolve_callable_id
@@ -3245,38 +3139,35 @@ module ReadOnly = struct
            Format.asprintf "missing callable id: `%a`" FullyQualifiedName.pp fully_qualified_name)
 
 
-  let get_callable_metadata_value_opt ({ callable_metadata_shared_memory; _ } as api) define_name =
-    FullyQualifiedName.from_reference_unchecked define_name
-    |> resolve_callable_id api
-    >>= CallableMetadataSharedMemory.get callable_metadata_shared_memory
+  let get_callable_metadata_value_opt { callable_metadata_shared_memory; _ } callable_id =
+    CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
 
 
-  let get_callable_metadata api define_name =
-    get_callable_metadata_value_opt api define_name
+  let get_callable_metadata_value { callable_metadata_shared_memory; _ } callable_id =
+    CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
-    |> fun { CallableMetadataSharedMemory.Value.metadata; _ } -> metadata
+           Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
 
 
-  let get_callable_metadata_opt api define_name =
-    get_callable_metadata_value_opt api define_name
+  let get_callable_metadata_opt api callable_id =
+    get_callable_metadata_value_opt api callable_id
     >>| fun { CallableMetadataSharedMemory.Value.metadata; _ } -> metadata
 
 
-  let class_name_of_callable ({ class_id_to_qualified_name_shared_memory; _ } as api) define_name =
-    let metadata =
-      get_callable_metadata_value_opt api define_name
-      |> assert_shared_memory_key_exists (fun () ->
-             Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
-    in
-    match metadata with
-    | { CallableMetadataSharedMemory.Value.defining_class = Some class_id; _ } ->
-        ClassIdToQualifiedNameSharedMemory.get_class_name
-          class_id_to_qualified_name_shared_memory
-          class_id
-        |> FullyQualifiedName.to_reference
-        |> Option.some
-    | _ -> None
+  let get_callable_metadata api callable_id =
+    get_callable_metadata_value api callable_id
+    |> fun { CallableMetadataSharedMemory.Value.metadata; _ } -> metadata
+
+
+  let get_method_class_id api callable_id =
+    get_callable_metadata_value api callable_id
+    |> fun { CallableMetadataSharedMemory.Value.defining_class; _ } -> defining_class
+
+
+  let get_method_class_name ({ class_id_to_qualified_name_shared_memory; _ } as api) callable_id =
+    get_method_class_id api callable_id
+    >>| ClassIdToQualifiedNameSharedMemory.get_class_name class_id_to_qualified_name_shared_memory
+    >>| FullyQualifiedName.to_reference
 
 
   (* Resolve a `(class, bare method name)` pair to the (last) method definition on that class,
@@ -3284,24 +3175,19 @@ module ReadOnly = struct
      name. `method_name` must be the BARE name (without the fully qualified suffixes like `@setter`
      or `$2`). *)
   let resolve_method_definition
-      ({ class_method_index_shared_memory; callable_metadata_shared_memory; _ } as api)
-      ~class_name
+      { class_method_index_shared_memory; callable_metadata_shared_memory; _ }
+      ~class_id
       ~method_name
       ~is_property_setter
     =
     match
-      FullyQualifiedName.from_reference_unchecked class_name
-      |> resolve_class_id api
-      >>= fun class_id ->
       ClassMethodIndexSharedMemory.get class_method_index_shared_memory (class_id, method_name)
     with
     | None -> None
-    | Some define_names ->
-        define_names
-        |> List.map ~f:(fun define_name ->
-               CallableMetadataSharedMemory.get
-                 callable_metadata_shared_memory
-                 (resolve_callable_id_exn api define_name)
+    | Some callable_ids ->
+        callable_ids
+        |> List.map ~f:(fun callable_id ->
+               CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
                |> assert_shared_memory_key_exists (fun () -> "missing callable metadata"))
         |> List.filter
              ~f:(fun
@@ -3316,44 +3202,37 @@ module ReadOnly = struct
 
   (* Resolve a `(class, bare method name)` pair to the real method target defined on that class, or
      `None` if the class has no method with that bare name. *)
-  let resolve_method_target api ~class_name ~method_name ~is_property_setter =
-    resolve_method_definition api ~class_name ~method_name ~is_property_setter
+  let resolve_method_target api ~class_id ~method_name ~is_property_setter =
+    resolve_method_definition api ~class_id ~method_name ~is_property_setter
     >>| CallableMetadataSharedMemory.Value.create_target ~override:false
 
 
   (* Resolve a function name to its real function target, or `None` if no such function exists. *)
   let resolve_function_target api reference =
-    get_callable_metadata_value_opt api reference
+    resolve_callable_id api (FullyQualifiedName.from_reference_unchecked reference)
+    >>= get_callable_metadata_value_opt api
     >>| CallableMetadataSharedMemory.Value.create_target ~override:false
 
 
-  let is_stub_like_callable_opt ({ callable_parse_result_shared_memory; _ } as api) define_name =
-    get_callable_metadata_opt api define_name
-    >>| fun metadata ->
-    is_stub_like_from_metadata
-      ~metadata
-      ~callable_parse_result_shared_memory
-      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+  let is_stub_like_callable_opt ({ callable_parse_result_shared_memory; _ } as api) callable_id =
+    get_callable_metadata_value_opt api callable_id
+    >>| fun { CallableMetadataSharedMemory.Value.metadata; _ } ->
+    is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory callable_id
 
 
-  let is_stub_like_callable ({ callable_parse_result_shared_memory; _ } as api) define_name =
-    get_callable_metadata_opt api define_name
-    |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
-    |> fun metadata ->
-    is_stub_like_from_metadata
-      ~metadata
-      ~callable_parse_result_shared_memory
-      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+  let is_stub_like_callable ({ callable_parse_result_shared_memory; _ } as api) callable_id =
+    let { CallableMetadataSharedMemory.Value.metadata; _ } =
+      get_callable_metadata_value api callable_id
+    in
+    is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory callable_id
 
 
   let get_overriden_base_method { callable_metadata_shared_memory; _ } method_id =
     CallableMetadataSharedMemory.get callable_metadata_shared_memory method_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" PyreflyTypes.CallableId.pp method_id)
-    |> (fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
-         overridden_base_method)
-    >>| GlobalCallableId.to_callable_id
+           Format.asprintf "missing callable metadata: `%a`" CallableId.pp method_id)
+    |> fun { CallableMetadataSharedMemory.Value.overridden_base_method; _ } ->
+    overridden_base_method
 
 
   let get_callable_captures_opt
@@ -3364,37 +3243,37 @@ module ReadOnly = struct
     >>| captures_from_metadata ~callable_id_to_qualified_name_shared_memory
 
 
-  let get_callable_captures ({ callable_id_to_qualified_name_shared_memory; _ } as api) define_name =
-    get_callable_metadata_value_opt api define_name
+  let get_callable_captures ({ callable_id_to_qualified_name_shared_memory; _ } as api) callable_id =
+    get_callable_metadata_value_opt api callable_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+           Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
     |> captures_from_metadata ~callable_id_to_qualified_name_shared_memory
 
 
   let get_callable_return_annotations
-      ({ callable_undecorated_signatures_shared_memory; _ } as api)
-      ~define_name
+      { callable_undecorated_signatures_shared_memory; _ }
+      ~callable_id
       ~define:_
     =
     CallableUndecoratedSignaturesSharedMemory.get
       callable_undecorated_signatures_shared_memory
-      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+      callable_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+           Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
     |> List.map ~f:(fun { FunctionSignature.return_annotation; _ } -> return_annotation)
 
 
   let get_callable_parameter_annotations
-      ({ callable_undecorated_signatures_shared_memory; _ } as api)
-      ~define_name
+      { callable_undecorated_signatures_shared_memory; _ }
+      ~callable_id
       parameters
     =
     let signatures =
       CallableUndecoratedSignaturesSharedMemory.get
         callable_undecorated_signatures_shared_memory
-        (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+        callable_id
       |> assert_shared_memory_key_exists (fun () ->
-             Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+             Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
     in
     let normalize_root = function
       | AccessPath.Root.PositionalParameter { position; positional_only = true; _ } ->
@@ -3436,69 +3315,36 @@ module ReadOnly = struct
         normalized_parameter, annotations)
 
 
-  let get_callable_decorator_callees
-      ({ callable_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ } as api)
-      define_name
-      location
-    =
-    CallableMetadataSharedMemory.get
-      callable_metadata_shared_memory
-      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+  let get_callable_decorator_callees { callable_metadata_shared_memory; _ } callable_id location =
+    CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+           Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
     |> (fun { CallableMetadataSharedMemory.Value.decorator_callees; _ } -> decorator_callees)
     |> Location.SerializableMap.find_opt location
-    >>| List.map
-          ~f:(CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory)
-    >>| List.map ~f:FullyQualifiedName.to_reference
 
 
-  let get_class_decorator_callees
-      ({ class_metadata_shared_memory; callable_id_to_qualified_name_shared_memory; _ } as api)
-      class_name
-      location
-    =
-    Reference.create class_name
-    |> FullyQualifiedName.from_reference_unchecked
-    |> resolve_class_id_exn api
-    |> ClassMetadataSharedMemory.get class_metadata_shared_memory
+  let get_class_decorator_callees { class_metadata_shared_memory; _ } class_id location =
+    ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing class metadata: `%s`" class_name)
+           Format.asprintf "missing class metadata: `%a`" ClassId.pp class_id)
     |> (fun { ClassMetadataSharedMemory.Metadata.decorator_callees; _ } -> decorator_callees)
     |> Location.SerializableMap.find_opt location
-    >>| List.map
-          ~f:(CallableIdToQualifiedNameSharedMemory.get callable_id_to_qualified_name_shared_memory)
-    >>| List.map ~f:FullyQualifiedName.to_reference
 
 
-  let get_methods_for_qualifier
-      ({ module_callables_shared_memory; callable_metadata_shared_memory; _ } as api)
+  let get_methods_for_module
+      ({ module_callables_shared_memory; _ } as api)
       ~exclude_test_modules
-      qualifier
+      module_id
     =
-    if exclude_test_modules && is_test_qualifier api qualifier then
+    if exclude_test_modules && is_test_module api module_id then
       []
     else
-      let convert_to_method_id callable =
-        callable
-        |> resolve_callable_id_exn api
-        |> CallableMetadataSharedMemory.get callable_metadata_shared_memory
-        |> assert_shared_memory_key_exists (fun () ->
-               Format.asprintf "missing callable metadata: `%a`" FullyQualifiedName.pp callable)
-        |> fun { CallableMetadataSharedMemory.Value.module_id; local_function_id; _ } ->
-        PyreflyTypes.CallableId.encode ~module_id local_function_id
-      in
-      ModuleCallablesSharedMemory.get
-        module_callables_shared_memory
-        (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
-      |> assert_shared_memory_key_exists (fun () -> "missing module callables for qualifier")
-      |> List.map ~f:convert_to_method_id
+      ModuleCallablesSharedMemory.get module_callables_shared_memory module_id
+      |> assert_shared_memory_key_exists (fun () -> "missing module callables for module id")
 
 
-  let get_define_opt ({ callable_ast_shared_memory; _ } as api) define_name =
-    CallableAstSharedMemory.get
-      callable_ast_shared_memory
-      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+  let get_define_opt { callable_ast_shared_memory; _ } callable_id =
+    CallableAstSharedMemory.get callable_ast_shared_memory callable_id
     |> assert_shared_memory_key_exists (fun () -> "missing callable ast")
 
 
@@ -3510,17 +3356,14 @@ module ReadOnly = struct
          callable_id_to_qualified_name_shared_memory;
          _;
        } as api)
-      define_name
+      callable_id
     =
-    FullyQualifiedName.from_reference_unchecked define_name
-    |> resolve_callable_id api
-    >>= fun callable_id ->
     CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
     >>| fun ({ CallableMetadataSharedMemory.Value.metadata; _ } as metadata_value) ->
     let define_signature_result =
       CallableDefineSignatureSharedMemory.get callable_define_signature_shared_memory callable_id
       |> assert_shared_memory_key_exists (fun () ->
-             Format.asprintf "missing callable define signature: `%a`" Reference.pp define_name)
+             Format.asprintf "missing callable define signature: `%a`" CallableId.pp callable_id)
     in
     let method_kind = CallableMetadata.get_method_kind metadata in
     let captures =
@@ -3530,8 +3373,9 @@ module ReadOnly = struct
       is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory callable_id
     in
     let define_signature = AstResult.map ~f:Node.value define_signature_result in
+    let define_name = define_name_from_callable_id api callable_id in
     {
-      PyreflyTypes.CallableSignature.qualifier = metadata.CallableMetadata.module_qualifier;
+      PyreflyTypes.CallableSignature.module_id = CallableId.module_id callable_id;
       location = AstResult.map ~f:Node.location define_signature_result;
       define_name;
       parameters =
@@ -3552,27 +3396,23 @@ module ReadOnly = struct
     }
 
 
-  let get_undecorated_signatures
-      ({ callable_undecorated_signatures_shared_memory; _ } as api)
-      define_name
-    =
+  let get_undecorated_signatures { callable_undecorated_signatures_shared_memory; _ } callable_id =
     CallableUndecoratedSignaturesSharedMemory.get
       callable_undecorated_signatures_shared_memory
-      (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
-    |> assert_shared_memory_key_exists (fun () -> "missing callable undecorated signature")
+      callable_id
+    |> assert_shared_memory_key_exists (fun () ->
+           Format.asprintf "missing callable undecorated signature: %a" CallableId.pp callable_id)
 
 
   let get_model_parser_function_info
       ({ callable_metadata_shared_memory; callable_undecorated_signatures_shared_memory; _ } as api)
-      define_name
+      callable_id
     =
-    let callable_id =
-      resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name)
-    in
     let { CallableMetadataSharedMemory.Value.metadata; _ } =
       CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
       |> assert_shared_memory_key_exists (fun () -> "missing callable metadata")
     in
+    let define_name = define_name_from_callable_id api callable_id in
     let undecorated_signatures =
       CallableUndecoratedSignaturesSharedMemory.get
         callable_undecorated_signatures_shared_memory
@@ -3594,99 +3434,67 @@ module ReadOnly = struct
       is_property_getter = metadata.is_property_getter;
       is_property_setter = metadata.is_property_setter;
       is_method = metadata.parent_is_class;
-      module_qualifier = Some metadata.module_qualifier;
       location;
     }
 
 
-  let get_class_summary ({ class_metadata_shared_memory; _ } as api) class_name =
-    let class_name = FullyQualifiedName.from_reference_unchecked (Reference.create class_name) in
+  let get_class_summary { class_metadata_shared_memory; _ } class_id =
     let metadata =
-      ClassMetadataSharedMemory.get
-        class_metadata_shared_memory
-        (resolve_class_id_exn api class_name)
+      ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
       |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
     in
-    { PysaClassSummary.class_name; metadata }
+    { PysaClassSummary.class_id; metadata }
 
 
-  let get_class_decorators_opt ({ class_decorators_shared_memory; _ } as api) class_name =
-    Reference.create class_name
-    |> FullyQualifiedName.from_reference_unchecked
-    |> resolve_class_id_exn api
-    |> ClassDecoratorsSharedMemory.get class_decorators_shared_memory
+  let get_class_decorators_opt { class_decorators_shared_memory; _ } class_id =
+    ClassDecoratorsSharedMemory.get class_decorators_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () -> "missing callable ast")
 
 
   let get_class_attributes
-      ({ class_fields_shared_memory; _ } as api)
+      { class_fields_shared_memory; _ }
       ~include_generated_attributes:_
       ~only_simple_assignments:_
-      class_name
+      class_id
     =
     (* TODO(T225700656): Support include_generated_attributes and only_simple_assignments
        options. *)
-    Reference.create class_name
-    |> FullyQualifiedName.from_reference_unchecked
-    |> resolve_class_id api
-    >>= ClassFieldsSharedMemory.get class_fields_shared_memory
-    >>| SerializableStringMap.keys
+    ClassFieldsSharedMemory.get class_fields_shared_memory class_id >>| SerializableStringMap.keys
 
 
-  let get_class_attribute_inferred_type
-      ({ class_fields_shared_memory; _ } as api)
-      ~class_name
-      ~attribute
-    =
-    Reference.create class_name
-    |> FullyQualifiedName.from_reference_unchecked
-    |> resolve_class_id_exn api
-    |> ClassFieldsSharedMemory.get class_fields_shared_memory
+  let get_class_attribute_inferred_type { class_fields_shared_memory; _ } ~class_id ~attribute =
+    ClassFieldsSharedMemory.get class_fields_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () -> "missing class fields for class")
     |> SerializableStringMap.find_opt attribute
     |> assert_shared_memory_key_exists (fun () -> "missing class field")
     |> fun { ClassField.type_; _ } -> type_
 
 
-  let get_class_attribute_explicit_annotation
-      ({ class_fields_shared_memory; _ } as api)
-      ~class_name
-      ~attribute
+  let get_class_attribute_explicit_annotation { class_fields_shared_memory; _ } ~class_id ~attribute
     =
-    Reference.create class_name
-    |> FullyQualifiedName.from_reference_unchecked
-    |> resolve_class_id_exn api
-    |> ClassFieldsSharedMemory.get class_fields_shared_memory
+    ClassFieldsSharedMemory.get class_fields_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () -> "missing class fields for class")
     |> SerializableStringMap.find_opt attribute
     |> assert_shared_memory_key_exists (fun () -> "missing class field")
     |> fun { ClassField.explicit_annotation; _ } -> explicit_annotation
 
 
-  let get_global_inferred_type ({ module_globals_shared_memory; _ } as api) ~qualifier ~name =
-    ModuleGlobalsSharedMemory.get
-      module_globals_shared_memory
-      (module_id_of_qualifier api (ModuleQualifier.from_reference_unchecked qualifier))
+  let get_global_inferred_type { module_globals_shared_memory; _ } ~module_id ~name =
+    ModuleGlobalsSharedMemory.get module_globals_shared_memory module_id
     |> assert_shared_memory_key_exists (fun () -> "missing module globals")
     |> SerializableStringMap.find_opt name
     |> assert_shared_memory_key_exists (fun () -> "missing global variable")
     |> fun { GlobalVariable.type_; _ } -> type_
 
 
-  let target_from_define_name api ~override define_name =
-    get_callable_metadata_value_opt api define_name
-    |> assert_shared_memory_key_exists (fun () ->
-           Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+  let target_from_callable_id api ~override callable_id =
+    get_callable_metadata_value api callable_id
     |> CallableMetadataSharedMemory.Value.create_target ~override
 
 
   let instantiate_call_graph
-      ({
-         module_id_to_qualifier_shared_memory;
-         callable_id_to_qualified_name_shared_memory;
-         class_id_to_qualified_name_shared_memory;
-         _;
-       } as api)
+      ({ module_id_to_qualifier_shared_memory; callable_id_to_qualified_name_shared_memory; _ } as
+      api)
       ~overrides_exist
       ~get_overriding_targets
       ~global_is_string_literal
@@ -3697,40 +3505,21 @@ module ReadOnly = struct
     =
     let open ModuleCallGraphs in
     let open CallGraph in
-    let display_api = display_api api in
     let instantiate_target ~receiver_class = function
       | PyreflyTarget.Function callable_id ->
-          let fully_qualified_name =
-            CallableIdToQualifiedNameSharedMemory.get
-              callable_id_to_qualified_name_shared_memory
-              callable_id
-          in
           let target =
-            target_from_define_name
+            target_from_callable_id
               api
               ~override:false
-              (FullyQualifiedName.to_reference fully_qualified_name)
+              (GlobalCallableId.to_callable_id callable_id)
           in
           [target]
       | PyreflyTarget.Overrides callable_id -> (
-          let fully_qualified_name =
-            CallableIdToQualifiedNameSharedMemory.get
-              callable_id_to_qualified_name_shared_memory
-              callable_id
-          in
-          let target =
-            (* TODO(T278961928): Create the target directly from the callable id *)
-            target_from_define_name
-              api
-              ~override:false
-              (FullyQualifiedName.to_reference fully_qualified_name)
-          in
+          let callable_id = GlobalCallableId.to_callable_id callable_id in
+          let target = target_from_callable_id api ~override:false callable_id in
           let declaring_class =
-            (* TODO(T278961928): Get the class id directly from the callable id *)
-            FullyQualifiedName.to_reference fully_qualified_name
-            |> Reference.prefix
-            |> Option.value ~default:Reference.empty
-            |> Reference.show
+            get_method_class_id api callable_id
+            |> Option.value_exn ~message:"could not find declaring class of method"
           in
           let get_actual_target t =
             if overrides_exist t then
@@ -3743,7 +3532,7 @@ module ReadOnly = struct
           in
           match receiver_class with
           | None -> [target]
-          | Some receiver_class when String.equal receiver_class declaring_class ->
+          | Some receiver_class when ClassId.equal receiver_class declaring_class ->
               (* Receiver type matches declaring type *)
               [get_actual_target target]
           | Some receiver_class -> (
@@ -3753,10 +3542,12 @@ module ReadOnly = struct
                   let override_targets =
                     overriding_targets
                     |> List.filter_map ~f:(fun callable_id ->
+                           let class_id =
+                             get_method_class_id api callable_id
+                             |> Option.value_exn ~message:"could not find declaring class of method"
+                           in
                            let override_target = Target.create_method callable_id in
-                           let class_name = Target.class_name_exn ~display_api override_target in
-                           (* TODO(T278961928): use class id instead of class name *)
-                           if is_subclass api ~parent:receiver_class ~child:class_name then
+                           if is_subclass api ~parent:receiver_class ~child:class_id then
                              Some (get_actual_target override_target)
                            else
                              None)
@@ -3775,13 +3566,7 @@ module ReadOnly = struct
           return_type;
         }
       =
-      let receiver_class =
-        receiver_class
-        >>| ClassIdToQualifiedNameSharedMemory.get_class_name
-              class_id_to_qualified_name_shared_memory
-        >>| FullyQualifiedName.to_reference
-        >>| Ast.Reference.show
-      in
+      let receiver_class = receiver_class >>| GlobalClassId.to_class_id in
       let targets = instantiate_target ~receiver_class target in
       List.map
         ~f:(fun target ->
@@ -3820,7 +3605,7 @@ module ReadOnly = struct
           defining_function =
             CallableIdToQualifiedNameSharedMemory.get
               callable_id_to_qualified_name_shared_memory
-              outer_function
+              (GlobalCallableId.to_callable_id outer_function)
             |> FullyQualifiedName.to_reference;
         }
     in
@@ -3998,7 +3783,7 @@ module ReadOnly = struct
          module_infos_shared_memory;
          module_callables_shared_memory;
          module_id_to_qualifier_shared_memory;
-         qualifiers_shared_memory;
+         modules_shared_memory;
          _;
        } as api)
       ~scheduler
@@ -4020,12 +3805,12 @@ module ReadOnly = struct
     =
     let timer = Timer.start () in
     let () = Log.info "Parsing call graphs from pyrefly..." in
-    (* Get all qualifiers with pyrefly info *)
+    (* Get all module ids with pyrefly info that are not test modules *)
     let module_ids =
-      QualifiersSharedMemory.get qualifiers_shared_memory Memory.SingletonKey.key
-      |> assert_shared_memory_key_exists (fun () -> "missing qualifiers in shared memory")
-      |> List.filter_map ~f:(fun { QualifiersSharedMemory.Value.module_id; has_info; is_test; _ } ->
-             Option.some_if (has_info && not is_test) module_id)
+      ModulesSharedMemory.get modules_shared_memory Memory.SingletonKey.key
+      |> assert_shared_memory_key_exists (fun () -> "missing modules in shared memory")
+      |> List.filter ~f:(fun module_id ->
+             module_has_info api module_id && not (is_test_module api module_id))
     in
     let scheduler_policy =
       Scheduler.Policy.from_configuration_or_default
@@ -4060,8 +3845,7 @@ module ReadOnly = struct
       (* Filter to only callables that would be in `definitions`, replicating the logic from
          `FetchCallables.from_qualifier`. *)
       let relevant_callables =
-        List.filter_map module_callables ~f:(fun qualified_name ->
-            let callable_id = resolve_callable_id_exn api qualified_name in
+        List.filter_map module_callables ~f:(fun callable_id ->
             let ({
                    CallableMetadataSharedMemory.Value.metadata =
                      { CallableMetadata.is_toplevel; is_class_toplevel; _ } as metadata;
@@ -4070,10 +3854,7 @@ module ReadOnly = struct
               =
               CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
               |> assert_shared_memory_key_exists (fun () ->
-                     Format.asprintf
-                       "missing callable metadata: `%a`"
-                       FullyQualifiedName.pp
-                       qualified_name)
+                     Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
             in
             if is_stub && (is_toplevel || is_class_toplevel) then
               None
@@ -4247,8 +4028,8 @@ module ReadOnly = struct
 
 
   let get_type_of_expression
-      ({ type_of_expressions_shared_memory; callable_metadata_shared_memory; _ } as api)
-      ~define_name
+      { type_of_expressions_shared_memory; callable_metadata_shared_memory; _ }
+      ~callable_id
       ~location
     =
     match type_of_expressions_shared_memory with
@@ -4257,17 +4038,15 @@ module ReadOnly = struct
           "Using `PyreflyApi.ReadOnly.get_type_of_expression` before calling \
            `parse_type_of_expressions`."
     | Some type_of_expressions_shared_memory ->
-        CallableMetadataSharedMemory.get
-          callable_metadata_shared_memory
-          (resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked define_name))
+        CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
         |> assert_shared_memory_key_exists (fun () ->
-               Format.asprintf "missing callable metadata: `%a`" Reference.pp define_name)
+               Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
         |> fun { CallableMetadataSharedMemory.Value.module_id; local_function_id; _ } ->
         TypeOfExpressionsSharedMemory.get
           type_of_expressions_shared_memory
           { GlobalCallableId.module_id; local_function_id }
         |> assert_shared_memory_key_exists (fun () ->
-               Format.asprintf "missing type of expressions: `%a`" Reference.pp define_name)
+               Format.asprintf "missing type of expressions: `%a`" CallableId.pp callable_id)
         |> fun location_to_type_map ->
         Location.SerializableMap.find_opt location location_to_type_map
 
@@ -4275,50 +4054,30 @@ module ReadOnly = struct
   module Type = struct
     let scalar_properties _ { PyreflyType.scalar_properties; _ } = scalar_properties
 
-    let get_class_names { class_id_to_qualified_name_shared_memory; _ } pysa_type =
+    let get_classes _ pysa_type =
       match pysa_type with
-      | { PyreflyType.class_names = None; _ } -> ClassNamesFromType.not_a_class
-      | { PyreflyType.class_names = Some { classes; is_exhaustive }; _ } ->
-          let get_class_with_modifiers { PyreflyType.ClassWithModifiers.class_id; modifiers } =
-            let class_name =
-              ClassIdToQualifiedNameSharedMemory.get
-                class_id_to_qualified_name_shared_memory
-                (GlobalClassId.of_class_id class_id)
-              |> assert_shared_memory_key_exists (fun () -> "missing class id")
-              |> FullyQualifiedName.to_reference
-              |> Reference.show
-            in
-            { ClassWithModifiers.class_name; modifiers }
-          in
-          {
-            ClassNamesFromType.classes = List.map ~f:get_class_with_modifiers classes;
-            is_exhaustive;
-          }
+      | { PyreflyType.classes = None; _ } -> ClassesFromType.not_a_class
+      | { PyreflyType.classes = Some classes; _ } -> classes
 
 
     let is_dictionary_or_mapping { dict_classes; typing_mapping_classes; _ } pysa_type =
       match pysa_type with
-      | { PyreflyType.class_names = None; _ } -> false
-      | { PyreflyType.class_names = Some { classes; _ }; _ } ->
-          List.exists classes ~f:(fun { PyreflyType.ClassWithModifiers.class_id; modifiers } ->
-              let global_class_id = GlobalClassId.of_class_id class_id in
+      | { PyreflyType.classes = None; _ } -> false
+      | { PyreflyType.classes = Some { classes; _ }; _ } ->
+          List.exists
+            classes
+            ~f:(fun { PyreflyTypes.ClassWithModifiers.class_id = global_class_id; modifiers } ->
               List.for_all modifiers ~f:(TypeModifier.equal TypeModifier.Optional)
-              && (List.exists dict_classes ~f:(fun { TypeshedClass.global_class_id = id; _ } ->
-                      GlobalClassId.equal global_class_id id)
-                 || List.exists
-                      typing_mapping_classes
-                      ~f:(fun { TypeshedClass.global_class_id = id; _ } ->
-                        GlobalClassId.equal global_class_id id)))
+              && (List.exists dict_classes ~f:(fun { TypeshedClass.class_id = id; _ } ->
+                      ClassId.equal global_class_id id)
+                 || List.exists typing_mapping_classes ~f:(fun { TypeshedClass.class_id = id; _ } ->
+                        ClassId.equal global_class_id id)))
   end
 
   module ClassSummary = struct
-    let has_custom_new api { PysaClassSummary.class_name; _ } =
+    let has_custom_new api { PysaClassSummary.class_id; _ } =
       match
-        resolve_method_definition
-          api
-          ~class_name:(FullyQualifiedName.to_reference class_name)
-          ~method_name:"__new__"
-          ~is_property_setter:false
+        resolve_method_definition api ~class_id ~method_name:"__new__" ~is_property_setter:false
       with
       | None -> false
       | Some
@@ -4336,12 +4095,12 @@ module ReadOnly = struct
     let is_typed_dict _ { PysaClassSummary.metadata = { is_typed_dict; _ }; _ } = is_typed_dict
 
     let get_ordered_fields_with_predicate
-        ({ class_fields_shared_memory; _ } as api)
-        { PysaClassSummary.class_name; _ }
+        { class_fields_shared_memory; _ }
+        { PysaClassSummary.class_id; _ }
         ~predicate
       =
       let fields =
-        ClassFieldsSharedMemory.get class_fields_shared_memory (resolve_class_id_exn api class_name)
+        ClassFieldsSharedMemory.get class_fields_shared_memory class_id
         |> assert_shared_memory_key_exists (fun () -> "missing class fields for class")
       in
       let compare_by_location
@@ -4396,9 +4155,10 @@ module ReadOnly = struct
           | _ -> false)
   end
 
-  let named_tuple_attributes api class_name =
-    if class_name |> get_class_summary api |> ClassSummary.is_named_tuple api then
-      let mro = class_name :: class_mro api class_name in
+  let named_tuple_attributes api class_id =
+    let class_summary = get_class_summary api class_id in
+    if ClassSummary.is_named_tuple api class_summary then
+      let mro = class_id :: class_mro api class_id in
       List.find_map
         ~f:(fun parent ->
           let attributes =
@@ -4413,9 +4173,9 @@ module ReadOnly = struct
       None
 
 
-  let repository_relative_path_of_qualifier ~repository_root api qualifier =
+  let repository_relative_path_of_module ~repository_root api module_id =
     let open Core.Option.Monad_infix in
-    absolute_source_path_of_qualifier api qualifier
+    absolute_source_path_of_module api module_id
     >>| fun path ->
     match
       PyrePath.get_relative_to_root ~root:repository_root ~path:(PyrePath.create_absolute path)
@@ -4461,6 +4221,22 @@ module ReadOnly = struct
       | None ->
           Format.asprintf "expected a function or method target, got %a" Target.pp target
           |> failwith
+
+
+    let class_id api target =
+      match Target.get_regular target with
+      | Target.Regular.Method callable_id
+      | Target.Regular.Override callable_id ->
+          get_method_class_id api callable_id
+      | Target.Regular.Function _
+      | Target.Regular.Object _ ->
+          None
+
+
+    let class_id_exn api target =
+      match class_id api target with
+      | Some name -> name
+      | None -> Format.asprintf "expected a method target, got %a" Target.pp target |> failwith
 
 
     (* The class of a method is the prefix of its decoded define name. *)
@@ -4521,9 +4297,7 @@ module ReadOnly = struct
       | Target.Regular.Function callable_id
       | Target.Regular.Method callable_id
       | Target.Regular.Override callable_id ->
-          let { CallableMetadata.is_property_setter; _ } =
-            get_callable_metadata api (define_name_from_callable_id api callable_id)
-          in
+          let { CallableMetadata.is_property_setter; _ } = get_callable_metadata api callable_id in
           is_property_setter
       | Target.Regular.Object _ -> false
 
@@ -4536,11 +4310,13 @@ module ReadOnly = struct
       && not (is_property_setter api target)
 
 
-    let get_callable_metadata = get_callable_metadata
-
     let get_callable_metadata_opt = get_callable_metadata_opt
 
-    let class_name_of_callable = class_name_of_callable
+    let get_callable_metadata = get_callable_metadata
+
+    let get_method_class_id = get_method_class_id
+
+    let get_method_class_name = get_method_class_name
 
     let resolve_method_target = resolve_method_target
 
@@ -4548,7 +4324,14 @@ module ReadOnly = struct
 
     let get_overriden_base_method = get_overriden_base_method
 
-    let target_from_define_name = target_from_define_name
+    let target_from_callable_id = target_from_callable_id
+
+    let callable_id_from_name api name =
+      resolve_callable_id api (FullyQualifiedName.from_reference_unchecked name)
+
+
+    let callable_id_from_name_exn api name =
+      resolve_callable_id_exn api (FullyQualifiedName.from_reference_unchecked name)
   end
 end
 
@@ -4735,7 +4518,7 @@ module ModelQueries = struct
          class_metadata_shared_memory;
          class_fields_shared_memory;
          module_globals_shared_memory;
-         module_name_to_qualifiers_shared_memory;
+         module_name_to_ids_shared_memory;
          module_callables_shared_memory;
          module_classes_shared_memory;
          _;
@@ -4760,12 +4543,10 @@ module ModelQueries = struct
           None
         else
           let module_ids =
-            ModuleNameToQualifiersSharedMemory.get
-              module_name_to_qualifiers_shared_memory
+            ModuleNameToIdsSharedMemory.get
+              module_name_to_ids_shared_memory
               (ModuleName.from_reference_unchecked candidate)
             |> Option.value ~default:[]
-            |> List.map ~f:(fun qualifier ->
-                   qualifier, ReadOnly.module_id_of_qualifier api qualifier)
           in
           if not (List.is_empty module_ids) then
             Some (module_ids, suffix, candidate)
@@ -4780,16 +4561,15 @@ module ModelQueries = struct
     in
     match find_module_qualifiers name with
     | None -> ResolutionResult.BaseModuleNotFound
-    | Some (qualifiers, suffix, module_name) when Reference.is_empty suffix ->
+    | Some (module_ids, suffix, module_name) when Reference.is_empty suffix ->
         ResolutionResult.ModuleFound
           {
             module_name = Some module_name;
             results =
-              List.map qualifiers ~f:(fun (qualifier, _) ->
-                  ModuleResolutionResult.Resolved
-                    (Global.Module { qualifier = ModuleQualifier.to_reference qualifier }));
+              List.map module_ids ~f:(fun module_id ->
+                  ModuleResolutionResult.Resolved (Global.Module { module_id }));
           }
-    | Some (qualifiers, suffix, bare_module_name) ->
+    | Some (module_ids, suffix, bare_module_name) ->
         let local_name_of_fully_qualified_name ~bare_module_name fully_qualified_name =
           let symbolic_name =
             target_symbolic_name (FullyQualifiedName.to_reference fully_qualified_name)
@@ -4798,25 +4578,22 @@ module ModelQueries = struct
         in
         (* For each qualifier, try to find a callable/class/class attribute/global matching the
            suffix. *)
-        let find_matching_callables ~bare_module_name ~suffix ~qualifier:_ ~module_id =
+        let find_matching_callables ~bare_module_name ~suffix ~module_id =
           ModuleCallablesSharedMemory.get module_callables_shared_memory module_id
           |> Option.value ~default:[]
-          |> List.filter_map ~f:(fun fully_qualified_name ->
+          |> List.filter_map ~f:(fun callable_id ->
+                 let fully_qualified_name =
+                   ReadOnly.fully_qualified_name_of_callable_id api callable_id
+                 in
                  let local_part =
                    local_name_of_fully_qualified_name ~bare_module_name fully_qualified_name
                  in
                  if Reference.equal local_part suffix then
                    match
-                     ReadOnly.resolve_callable_id api fully_qualified_name
-                     >>| fun callable_id ->
-                     let metadata_value =
-                       CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
-                       |> assert_shared_memory_key_exists (fun () ->
-                              "missing metadata for callable")
-                     in
-                     callable_id, metadata_value
+                     CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
+                     |> assert_shared_memory_key_exists (fun () -> "missing metadata for callable")
                    with
-                   | Some (callable_id, { CallableMetadataSharedMemory.Value.metadata; _ })
+                   | { CallableMetadataSharedMemory.Value.metadata; _ }
                      when Bool.equal is_property_setter metadata.is_property_setter ->
                        let undecorated_signatures =
                          CallableUndecoratedSignaturesSharedMemory.get
@@ -4843,41 +4620,35 @@ module ModelQueries = struct
                               is_property_getter = metadata.is_property_getter;
                               is_property_setter = metadata.is_property_setter;
                               is_method = metadata.parent_is_class;
-                              module_qualifier = Some metadata.module_qualifier;
                               location;
                             })
                    | _ -> None
                  else
                    None)
         in
-        let find_matching_classes ~bare_module_name ~suffix ~qualifier ~module_id =
+        let find_matching_classes ~bare_module_name ~suffix ~module_id =
           ModuleClassesSharedMemory.get module_classes_shared_memory module_id
           |> Option.value ~default:[]
-          |> List.filter_map ~f:(fun fully_qualified_name ->
-                 let local_part =
-                   local_name_of_fully_qualified_name ~bare_module_name fully_qualified_name
-                 in
+          |> List.filter_map ~f:(fun class_id ->
+                 let class_name = ReadOnly.fully_qualified_name_of_class_id api class_id in
+                 let local_part = local_name_of_fully_qualified_name ~bare_module_name class_name in
                  if Reference.equal local_part suffix then
                    let { ClassMetadataSharedMemory.Metadata.name_location; _ } =
-                     ClassMetadataSharedMemory.get
-                       class_metadata_shared_memory
-                       (ReadOnly.resolve_class_id_exn api fully_qualified_name)
+                     ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
                      |> assert_shared_memory_key_exists (fun () -> "missing class metadata")
                    in
                    Some
                      (Global.Class
                         {
+                          class_id;
                           class_name =
-                            fully_qualified_name
-                            |> FullyQualifiedName.to_reference
-                            |> Reference.show;
-                          module_qualifier = Some (ModuleQualifier.to_reference qualifier);
+                            class_name |> FullyQualifiedName.to_reference |> Reference.show;
                           location = Some name_location;
                         })
                  else
                    None)
         in
-        let find_matching_class_attributes ~bare_module_name ~suffix ~qualifier ~module_id =
+        let find_matching_class_attributes ~bare_module_name ~suffix ~module_id =
           if Reference.length suffix < 2 then
             []
           else
@@ -4885,126 +4656,109 @@ module ModelQueries = struct
             let class_suffix = Reference.prefix suffix |> Option.value ~default:Reference.empty in
             ModuleClassesSharedMemory.get module_classes_shared_memory module_id
             |> Option.value ~default:[]
-            |> List.filter_map ~f:(fun fully_qualified_name ->
+            |> List.filter_map ~f:(fun class_id ->
+                   let class_name = ReadOnly.fully_qualified_name_of_class_id api class_id in
                    let local_part =
-                     local_name_of_fully_qualified_name ~bare_module_name fully_qualified_name
+                     local_name_of_fully_qualified_name ~bare_module_name class_name
                    in
                    if Reference.equal local_part class_suffix then
-                     ReadOnly.resolve_class_id api fully_qualified_name
-                     >>= ClassFieldsSharedMemory.get class_fields_shared_memory
+                     ClassFieldsSharedMemory.get class_fields_shared_memory class_id
                      >>= fun fields ->
                      SerializableStringMap.find_opt attribute_name fields
                      >>| fun { ClassField.location; _ } ->
                      Global.ClassAttribute
                        {
+                         class_id;
                          name =
                            Reference.combine
-                             (FullyQualifiedName.to_reference fully_qualified_name)
+                             (FullyQualifiedName.to_reference class_name)
                              (Reference.create attribute_name);
-                         module_qualifier = Some (ModuleQualifier.to_reference qualifier);
                          location;
                        }
                    else
                      None)
         in
-        let find_matching_module_globals ~bare_module_name:_ ~suffix ~qualifier ~module_id =
+        let find_matching_module_globals ~bare_module_name:_ ~suffix ~module_id =
           if Reference.length suffix <> 1 then
             []
           else
             let global_name = Reference.last suffix in
             ModuleGlobalsSharedMemory.get module_globals_shared_memory module_id
             |> Option.value_map ~default:[] ~f:(fun globals ->
+                   let qualifier = ReadOnly.module_qualifier_of_id api module_id in
                    match SerializableStringMap.find_opt global_name globals with
                    | Some { GlobalVariable.location; _ } ->
                        [
                          Global.ModuleGlobal
                            {
-                             name =
-                               Reference.combine
-                                 (ModuleQualifier.to_reference qualifier)
-                                 (Reference.create global_name);
-                             module_qualifier = Some (ModuleQualifier.to_reference qualifier);
+                             module_id;
+                             name = Reference.combine qualifier (Reference.create global_name);
                              location = Some location;
                            };
                        ]
                    | None -> [])
         in
-        let resolve_in_qualifier ~bare_module_name ~suffix (qualifier, module_id) =
-          let results = find_matching_callables ~bare_module_name ~suffix ~qualifier ~module_id in
+        let resolve_in_qualifier ~bare_module_name ~suffix module_id =
+          let results = find_matching_callables ~bare_module_name ~suffix ~module_id in
           if not (List.is_empty results) then
             List.map results ~f:(fun global -> ModuleResolutionResult.Resolved global)
           else
-            let results = find_matching_classes ~bare_module_name ~suffix ~qualifier ~module_id in
+            let results = find_matching_classes ~bare_module_name ~suffix ~module_id in
             if not (List.is_empty results) then
               List.map results ~f:(fun global -> ModuleResolutionResult.Resolved global)
             else
-              let results =
-                find_matching_class_attributes ~bare_module_name ~suffix ~qualifier ~module_id
-              in
+              let results = find_matching_class_attributes ~bare_module_name ~suffix ~module_id in
               if not (List.is_empty results) then
                 List.map results ~f:(fun global -> ModuleResolutionResult.Resolved global)
               else
-                let results =
-                  find_matching_module_globals ~bare_module_name ~suffix ~qualifier ~module_id
-                in
+                let results = find_matching_module_globals ~bare_module_name ~suffix ~module_id in
                 if not (List.is_empty results) then
                   List.map results ~f:(fun global -> ModuleResolutionResult.Resolved global)
                 else
                   [
                     ModuleResolutionResult.Unresolved
-                      {
-                        module_qualifier = ModuleQualifier.to_reference qualifier;
-                        module_name = bare_module_name;
-                        suffix;
-                      };
+                      { module_id; module_name = bare_module_name; suffix };
                   ]
         in
         ResolutionResult.ModuleFound
           {
             module_name = Some bare_module_name;
-            results = List.concat_map qualifiers ~f:(resolve_in_qualifier ~bare_module_name ~suffix);
+            results = List.concat_map module_ids ~f:(resolve_in_qualifier ~bare_module_name ~suffix);
           }
 
 
   let class_method_signatures
-      ({
-         ReadOnly.class_metadata_shared_memory;
-         module_callables_shared_memory;
-         callable_define_signature_shared_memory;
-         _;
-       } as api)
-      class_name
+      {
+        ReadOnly.class_metadata_shared_memory;
+        module_callables_shared_memory;
+        callable_define_signature_shared_memory;
+        callable_metadata_shared_memory;
+        _;
+      }
+      class_id
     =
-    match
-      FullyQualifiedName.from_reference_unchecked class_name
-      |> ReadOnly.resolve_class_id api
-      >>= ClassMetadataSharedMemory.get class_metadata_shared_memory
-    with
+    match ClassMetadataSharedMemory.get class_metadata_shared_memory class_id with
     | Some { ClassMetadataSharedMemory.Metadata.module_id; _ } ->
-        (* TODO(T225700656): We should check if the callable is a method using the parent_is_class
-           field. *)
-        let is_method_for_class callable_name =
-          Reference.equal
-            (callable_name
-            |> FullyQualifiedName.to_reference
-            |> Reference.prefix
-            |> Option.value ~default:Reference.empty)
-            class_name
-          && not
-               (String.equal
-                  (FullyQualifiedName.last callable_name)
-                  Statement.class_toplevel_define_name)
+        let is_method_for_class callable_id =
+          let defining_class =
+            CallableMetadataSharedMemory.get callable_metadata_shared_memory callable_id
+            |> assert_shared_memory_key_exists (fun () ->
+                   Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
+            |> fun { CallableMetadataSharedMemory.Value.defining_class; _ } -> defining_class
+          in
+          Option.equal ClassId.equal defining_class (Some class_id)
+          && not (CallableId.is_class_top_level callable_id)
         in
-        let add_signature callable_name =
+        let add_signature callable_id =
           let signature =
             CallableDefineSignatureSharedMemory.get
               callable_define_signature_shared_memory
-              (ReadOnly.resolve_callable_id_exn api callable_name)
+              callable_id
             |> assert_shared_memory_key_exists (fun () -> "missing signature for callable")
             |> AstResult.to_option
             >>| Node.value
           in
-          FullyQualifiedName.to_reference callable_name, signature
+          callable_id, signature
         in
         ModuleCallablesSharedMemory.get module_callables_shared_memory module_id
         |> assert_shared_memory_key_exists (fun () -> "missing module callables for qualifier")
@@ -5018,13 +4772,13 @@ module InContext = struct
   type t =
     | FunctionScope of {
         api: ReadOnly.t;
-        module_qualifier: ModuleQualifier.t;
+        callable_id: CallableId.t;
         define_name: Ast.Reference.t;
         call_graph: CallGraph.DefineCallGraph.t;
       }
     | StatementScope of {
         api: ReadOnly.t;
-        module_qualifier: ModuleQualifier.t;
+        callable_id: CallableId.t;
         (* Define name of the function. Note that this might be a decorated target, which is not
            visible by pyrefly. *)
         define_name: Ast.Reference.t;
@@ -5032,31 +4786,25 @@ module InContext = struct
         statement_key: int;
       }
 
-  let create_at_function_scope api ~module_qualifier ~define_name ~call_graph =
-    FunctionScope
-      {
-        api;
-        module_qualifier = ModuleQualifier.from_reference_unchecked module_qualifier;
-        define_name;
-        call_graph;
-      }
+  let create_at_function_scope api ~callable_id ~define_name ~call_graph =
+    FunctionScope { api; callable_id; define_name; call_graph }
 
 
-  let create_at_statement_scope api ~module_qualifier ~define_name ~call_graph ~statement_key =
-    StatementScope
-      {
-        api;
-        module_qualifier = ModuleQualifier.from_reference_unchecked module_qualifier;
-        define_name;
-        statement_key;
-        call_graph;
-      }
+  let create_at_statement_scope api ~callable_id ~define_name ~call_graph ~statement_key =
+    StatementScope { api; callable_id; define_name; statement_key; call_graph }
 
 
   let pyrefly_api = function
     | FunctionScope { api; _ } -> api
     | StatementScope { api; _ } -> api
 
+
+  let callable_id = function
+    | FunctionScope { callable_id; _ } -> callable_id
+    | StatementScope { callable_id; _ } -> callable_id
+
+
+  let undecorated_callable_id context = CallableId.strip_decorated (callable_id context)
 
   let define_name = function
     | FunctionScope { define_name; _ } -> define_name
@@ -5066,36 +4814,6 @@ module InContext = struct
   let call_graph = function
     | FunctionScope { call_graph; _ } -> call_graph
     | StatementScope { call_graph; _ } -> call_graph
-
-
-  let module_qualifier = function
-    | FunctionScope { module_qualifier; _ } -> ModuleQualifier.to_reference module_qualifier
-    | StatementScope { module_qualifier; _ } -> ModuleQualifier.to_reference module_qualifier
-
-
-  let is_global _ ~reference:_ =
-    (* TODO(T225700656): Support is_global *)
-    failwith "unimplemented: PyreflyApi.InContext.is_global"
-
-
-  let resolve_reference _ _ =
-    (* TODO(T225700656): Support resolve_reference *)
-    failwith "unimplemented: PyreflyApi.InContext.resolve_reference"
-
-
-  let resolve_expression_to_type _ _ =
-    (* TODO(T225700656): Support resolve_expression_to_type *)
-    failwith "unimplemented: PyreflyApi.InContext.resolve_expression_to_type"
-
-
-  let resolve_attribute_access _ ~base_type:_ ~attribute:_ =
-    (* TODO(T225700656): Support resolve_attribute_access *)
-    failwith "unimplemented: PyreflyApi.InContext.resolve_attribute_access"
-
-
-  let fallback_attribute _ ?accessed_through_class:_ ?type_for_lookup:_ ~name:_ _ =
-    (* TODO(T225700656): Support fallback_attribute *)
-    failwith "unimplemented: PyreflyApi.InContext.fallback_attribute"
 
 
   let root_of_identifier pyrefly_in_context ~location ~identifier =
@@ -5143,10 +4861,9 @@ module InContext = struct
         (* This is an artificial expression that pyrefly doesn't know about. *)
         PyreflyType.top
     | None ->
-        let define_name = define_name pyrefly_context in
         ReadOnly.get_type_of_expression
           (pyrefly_api pyrefly_context)
-          ~define_name
+          ~callable_id:(undecorated_callable_id pyrefly_context)
           ~location:(Ast.Node.location expression)
         |> Option.value ~default:PyreflyType.top
 end

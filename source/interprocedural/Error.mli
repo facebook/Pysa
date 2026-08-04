@@ -18,6 +18,8 @@ type t [@@deriving sexp, compare]
 
 val code : t -> int
 
+val location : t -> Location.WithModule.t
+
 val create : location:Location.WithModule.t -> kind:kind -> define_name:Ast.Reference.t -> t
 
 module Instantiated : sig

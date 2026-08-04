@@ -68,7 +68,7 @@ let assert_taint ~context source expected =
         ~class_interval_graph:(ClassIntervalSetGraph.SharedMemory.create ())
         ~global_constants:
           (GlobalConstants.SharedMemory.create () |> GlobalConstants.SharedMemory.read_only)
-        ~qualifier
+        ~module_id:(PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
         ~callable
         ~define
         ~cfg
@@ -83,7 +83,7 @@ let assert_taint ~context source expected =
   in
   let callable_and_defines =
     let add_define callable =
-      let { Interprocedural.CallablesSharedMemory.DefineAndQualifier.define; _ } =
+      let { Interprocedural.CallablesSharedMemory.DefineAndModule.define; _ } =
         Interprocedural.CallablesSharedMemory.ReadOnly.get_define
           (Interprocedural.CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
           callable

@@ -14,7 +14,7 @@ module AstResult = PyreflyTypes.AstResult
 module ScalarTypeProperties = PyreflyTypes.ScalarTypeProperties
 module TypeModifier = PyreflyTypes.TypeModifier
 module ClassWithModifiers = PyreflyTypes.ClassWithModifiers
-module ClassNamesFromType = PyreflyTypes.ClassNamesFromType
+module ClassesFromType = PyreflyTypes.ClassesFromType
 
 module SysInfo : sig
   type t = {
@@ -67,7 +67,7 @@ end
 
 module CallableMetadata : sig
   type t = {
-    module_qualifier: Ast.Reference.t;
+    module_id: PyreflyTypes.ModuleId.t;
     name_location: NameLocation.t;
     is_overload: bool;
     is_staticmethod: bool;
@@ -124,124 +124,163 @@ module ReadOnly : sig
 
   val of_read_write_api : ReadWrite.t -> t
 
-  (* Return all qualifiers with source code *)
-  val explicit_qualifiers : t -> Ast.Reference.t list
+  (* Return all module ids with source code *)
+  val explicit_modules : t -> PyreflyTypes.ModuleId.t list
+
+  (* Resolve a module qualifier to its module id. *)
+  val module_id_of_qualifier_opt : t -> Ast.Reference.t -> PyreflyTypes.ModuleId.t option
+
+  (* Resolve a module qualifier to its module id. *)
+  val module_id_of_qualifier : t -> Ast.Reference.t -> PyreflyTypes.ModuleId.t
+
+  (* Materialize a module id back into its module qualifier. *)
+  val module_qualifier_of_id : t -> PyreflyTypes.ModuleId.t -> Ast.Reference.t
 
   val all_sys_infos : t -> SysInfo.t list
 
-  val artifact_path_of_qualifier : t -> Ast.Reference.t -> ArtifactPath.t option
+  val artifact_path_of_module : t -> PyreflyTypes.ModuleId.t -> ArtifactPath.t option
 
-  val absolute_source_path_of_qualifier : t -> Ast.Reference.t -> string option
+  val absolute_source_path_of_module : t -> PyreflyTypes.ModuleId.t -> string option
 
-  val search_path_relative_path_of_qualifier : t -> Ast.Reference.t -> string option
+  val search_path_relative_path_of_module : t -> PyreflyTypes.ModuleId.t -> string option
 
-  val get_class_names_for_qualifier
+  val get_class_ids_for_module
     :  t ->
     exclude_test_modules:bool ->
-    Ast.Reference.t ->
-    Ast.Reference.t list
+    PyreflyTypes.ModuleId.t ->
+    PyreflyTypes.ClassId.t list
 
-  val all_classes : t -> scheduler:Scheduler.t -> string list
+  (* Materialize a class id (as returned by `get_class_ids_for_module`) back into its fully
+     qualified name. *)
+  val class_name_from_id : t -> PyreflyTypes.ClassId.t -> Ast.Reference.t
 
-  val all_global_variables : t -> scheduler:Scheduler.t -> Ast.Reference.t list
+  (* Resolve a fully qualified class name into its class id. Raises if the class is unknown. *)
+  val class_id_from_name : t -> Ast.Reference.t -> PyreflyTypes.ClassId.t
 
-  val get_define_names_for_qualifier
+  (* Resolve a fully qualified class name into its class id, or `None` if the class is unknown. *)
+  val class_id_from_name_opt : t -> Ast.Reference.t -> PyreflyTypes.ClassId.t option
+
+  val all_classes : t -> scheduler:Scheduler.t -> PyreflyTypes.ClassId.t list
+
+  val all_global_variables : t -> scheduler:Scheduler.t -> (PyreflyTypes.ModuleId.t * string) list
+
+  val get_callable_ids_for_module
     :  t ->
     exclude_test_modules:bool ->
-    Ast.Reference.t ->
-    Ast.Reference.t list
+    PyreflyTypes.ModuleId.t ->
+    PyreflyTypes.CallableId.t list
 
-  val get_qualifier_top_level_define_name : t -> Ast.Reference.t -> Ast.Reference.t
+  (* Return the immediate parents of a class, keyed on a class id (as returned by
+     `get_class_ids_for_module`). Parents are class ids too (including the synthesized `object`
+     parent). *)
+  val class_immediate_parents : t -> PyreflyTypes.ClassId.t -> PyreflyTypes.ClassId.t list
 
-  val class_immediate_parents : t -> string -> string list
+  val class_mro : t -> PyreflyTypes.ClassId.t -> PyreflyTypes.ClassId.t list
 
-  val class_mro : t -> string -> string list
+  val is_subclass : t -> parent:PyreflyTypes.ClassId.t -> child:PyreflyTypes.ClassId.t -> bool
 
-  val is_subclass : t -> parent:string -> child:string -> bool
+  val is_object_class_id : t -> PyreflyTypes.ClassId.t -> bool
 
-  val is_object_class : t -> string -> bool
+  (* Whether the callable is stub-like, keyed on a callable id (as returned by
+     `get_callable_ids_for_module`). *)
+  val is_stub_like_callable : t -> PyreflyTypes.CallableId.t -> bool
 
-  val is_stub_like_callable : t -> Ast.Reference.t -> bool
-
-  val is_stub_like_callable_opt : t -> Ast.Reference.t -> bool option
+  val is_stub_like_callable_opt : t -> PyreflyTypes.CallableId.t -> bool option
 
   val get_callable_return_annotations
     :  t ->
-    define_name:Ast.Reference.t ->
+    callable_id:PyreflyTypes.CallableId.t ->
     define:Ast.Statement.Define.t ->
     PyreflyType.t list
 
   val get_callable_parameter_annotations
     :  t ->
-    define_name:Ast.Reference.t ->
+    callable_id:PyreflyTypes.CallableId.t ->
     AccessPath.NormalizedParameter.t list ->
     (AccessPath.NormalizedParameter.t * PyreflyType.t list) list
 
-  val get_callable_captures : t -> Ast.Reference.t -> AccessPath.CapturedVariable.t list
+  val get_callable_captures : t -> PyreflyTypes.CallableId.t -> AccessPath.CapturedVariable.t list
 
-  val get_callable_captures_opt : t -> Ast.Reference.t -> AccessPath.CapturedVariable.t list option
+  val get_callable_captures_opt
+    :  t ->
+    PyreflyTypes.CallableId.t ->
+    AccessPath.CapturedVariable.t list option
 
   val get_callable_decorator_callees
     :  t ->
-    Ast.Reference.t ->
+    PyreflyTypes.CallableId.t ->
     Ast.Location.t ->
-    Ast.Reference.t list option
+    PyreflyTypes.CallableId.t list option
 
-  val get_class_decorator_callees : t -> string -> Ast.Location.t -> Ast.Reference.t list option
+  val get_class_decorator_callees
+    :  t ->
+    PyreflyTypes.ClassId.t ->
+    Ast.Location.t ->
+    PyreflyTypes.CallableId.t list option
 
-  val get_methods_for_qualifier
+  val get_methods_for_module
     :  t ->
     exclude_test_modules:bool ->
-    Ast.Reference.t ->
+    PyreflyTypes.ModuleId.t ->
     PyreflyTypes.CallableId.t list
 
   (* Is this a test module (i.e, unit test code that we shouldn't analyze) *)
-  val is_test_qualifier : t -> Ast.Reference.t -> bool
+  val is_test_module : t -> PyreflyTypes.ModuleId.t -> bool
 
   (* Is this a stub module, i.e a `.pyi` file. *)
-  val is_stub_qualifier : t -> Ast.Reference.t -> bool
+  val is_stub_module : t -> PyreflyTypes.ModuleId.t -> bool
 
   (* Is this an internal module (within the project's source directories). *)
-  val is_internal_qualifier : t -> Ast.Reference.t -> bool
+  val is_internal_module : t -> PyreflyTypes.ModuleId.t -> bool
 
-  (* Return the AST for the given function *)
-  val get_define_opt : t -> Ast.Reference.t -> Ast.Statement.Define.t Ast.Node.t AstResult.t
+  (* Return the AST for the given function, keyed on a callable id (as returned by
+     `get_callable_ids_for_module`). *)
+  val get_define_opt
+    :  t ->
+    PyreflyTypes.CallableId.t ->
+    Ast.Statement.Define.t Ast.Node.t AstResult.t
 
-  val get_callable_signature_opt : t -> Ast.Reference.t -> PyreflyTypes.CallableSignature.t option
+  val get_callable_signature_opt
+    :  t ->
+    PyreflyTypes.CallableId.t ->
+    PyreflyTypes.CallableSignature.t option
 
   val get_undecorated_signatures
     :  t ->
-    Ast.Reference.t ->
+    PyreflyTypes.CallableId.t ->
     PyreflyTypes.ModelQueries.FunctionSignature.t list
 
-  val get_model_parser_function_info : t -> Ast.Reference.t -> PyreflyTypes.ModelQueries.Function.t
+  val get_model_parser_function_info
+    :  t ->
+    PyreflyTypes.CallableId.t ->
+    PyreflyTypes.ModelQueries.Function.t
 
-  val get_class_summary : t -> string -> PysaClassSummary.t
+  val get_class_summary : t -> PyreflyTypes.ClassId.t -> PysaClassSummary.t
 
-  val get_class_decorators_opt : t -> string -> Ast.Expression.t list AstResult.t
+  val get_class_decorators_opt : t -> PyreflyTypes.ClassId.t -> Ast.Expression.t list AstResult.t
 
   val get_class_attributes
     :  t ->
     include_generated_attributes:bool ->
     only_simple_assignments:bool ->
-    string ->
+    PyreflyTypes.ClassId.t ->
     string list option
 
   val get_class_attribute_inferred_type
     :  t ->
-    class_name:string ->
+    class_id:PyreflyTypes.ClassId.t ->
     attribute:string ->
     PyreflyType.t
 
   val get_class_attribute_explicit_annotation
     :  t ->
-    class_name:string ->
+    class_id:PyreflyTypes.ClassId.t ->
     attribute:string ->
     string option
 
   val get_global_inferred_type
     :  t ->
-    qualifier:Ast.Reference.t ->
+    module_id:PyreflyTypes.ModuleId.t ->
     name:string ->
     PyreflyType.t option
 
@@ -267,14 +306,14 @@ module ReadOnly : sig
 
   val get_type_of_expression
     :  t ->
-    define_name:Ast.Reference.t ->
+    callable_id:PyreflyTypes.CallableId.t ->
     location:Ast.Location.t ->
     PyreflyType.t option
 
   module Type : sig
     val scalar_properties : t -> PyreflyType.t -> PyreflyTypes.ScalarTypeProperties.t
 
-    val get_class_names : t -> PyreflyType.t -> PyreflyTypes.ClassNamesFromType.t
+    val get_classes : t -> PyreflyType.t -> PyreflyTypes.ClassesFromType.t
 
     val is_dictionary_or_mapping : t -> PyreflyType.t -> bool
   end
@@ -295,12 +334,12 @@ module ReadOnly : sig
     val named_tuple_attributes : t -> PysaClassSummary.t -> string list
   end
 
-  val named_tuple_attributes : t -> string -> string list option
+  val named_tuple_attributes : t -> PyreflyTypes.ClassId.t -> string list option
 
-  val repository_relative_path_of_qualifier
+  val repository_relative_path_of_module
     :  repository_root:PyrePath.t ->
     t ->
-    Ast.Reference.t ->
+    PyreflyTypes.ModuleId.t ->
     string option
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
@@ -325,6 +364,10 @@ module ReadOnly : sig
 
     val define_name_exn : t -> Target.t -> Ast.Reference.t
 
+    val class_id : t -> Target.t -> PyreflyTypes.ClassId.t option
+
+    val class_id_exn : t -> Target.t -> PyreflyTypes.ClassId.t
+
     val class_name : t -> Target.t -> string option
 
     val class_name_exn : t -> Target.t -> string
@@ -344,20 +387,24 @@ module ReadOnly : sig
        an `Object`. *)
     val is_normal : t -> Target.t -> bool
 
-    val get_callable_metadata : t -> Ast.Reference.t -> CallableMetadata.t
+    val get_callable_metadata_opt : t -> PyreflyTypes.CallableId.t -> CallableMetadata.t option
 
-    val get_callable_metadata_opt : t -> Ast.Reference.t -> CallableMetadata.t option
+    (* Return the metadata of a callable, keyed on a callable id (as returned by
+       `get_callable_ids_for_module`). *)
+    val get_callable_metadata : t -> PyreflyTypes.CallableId.t -> CallableMetadata.t
+
+    val get_method_class_id : t -> PyreflyTypes.CallableId.t -> PyreflyTypes.ClassId.t option
 
     (* Return the fully qualified name of the class that defines this callable, or `None` if the
        callable is not defined within a class. *)
-    val class_name_of_callable : t -> Ast.Reference.t -> Ast.Reference.t option
+    val get_method_class_name : t -> PyreflyTypes.CallableId.t -> Ast.Reference.t option
 
     (* Resolve a `(class, bare method name)` pair to the real method target defined on that class,
        or `None` if the class has no method with that bare name. `method_name` must be the bare name
        (without suffixes like `@setter` or `$2`). *)
     val resolve_method_target
       :  t ->
-      class_name:Ast.Reference.t ->
+      class_id:PyreflyTypes.ClassId.t ->
       method_name:string ->
       is_property_setter:bool ->
       Target.t option
@@ -370,7 +417,14 @@ module ReadOnly : sig
       PyreflyTypes.CallableId.t ->
       PyreflyTypes.CallableId.t option
 
-    val target_from_define_name : t -> override:bool -> Ast.Reference.t -> Target.t
+    (* Build a target from a callable id (as returned by `get_callable_ids_for_module`). *)
+    val target_from_callable_id : t -> override:bool -> PyreflyTypes.CallableId.t -> Target.t
+
+    (* Resolve a define name into its callable id, or `None` if pyrefly does not know about it. *)
+    val callable_id_from_name : t -> Ast.Reference.t -> PyreflyTypes.CallableId.t option
+
+    (* Same as `callable_id_from_name`, but raises if pyrefly does not know about the callable. *)
+    val callable_id_from_name_exn : t -> Ast.Reference.t -> PyreflyTypes.CallableId.t
   end
 end
 
@@ -412,8 +466,8 @@ module ModelQueries : sig
 
   val class_method_signatures
     :  ReadOnly.t ->
-    Ast.Reference.t ->
-    (Ast.Reference.t * Ast.Statement.Define.Signature.t option) list option
+    PyreflyTypes.ClassId.t ->
+    (PyreflyTypes.CallableId.t * Ast.Statement.Define.Signature.t option) list option
 end
 
 module InContext : sig
@@ -421,14 +475,14 @@ module InContext : sig
 
   val create_at_function_scope
     :  ReadOnly.t ->
-    module_qualifier:Ast.Reference.t ->
+    callable_id:PyreflyTypes.CallableId.t ->
     define_name:Ast.Reference.t ->
     call_graph:CallGraph.DefineCallGraph.t ->
     t
 
   val create_at_statement_scope
     :  ReadOnly.t ->
-    module_qualifier:Ast.Reference.t ->
+    callable_id:PyreflyTypes.CallableId.t ->
     define_name:Ast.Reference.t ->
     call_graph:CallGraph.DefineCallGraph.t ->
     statement_key:int ->
@@ -437,26 +491,6 @@ module InContext : sig
   val pyrefly_api : t -> ReadOnly.t
 
   val call_graph : t -> CallGraph.DefineCallGraph.t
-
-  val is_global : t -> reference:Ast.Reference.t -> bool
-
-  val resolve_reference : t -> Ast.Reference.t -> Type.t
-
-  val resolve_expression_to_type : t -> Ast.Expression.t -> Type.t
-
-  val resolve_attribute_access : t -> base_type:Type.t -> attribute:string -> Type.t
-
-  val fallback_attribute
-    :  t ->
-    ?accessed_through_class:bool ->
-    ?type_for_lookup:Type.t option ->
-    name:string ->
-    string ->
-    Analysis.AnnotatedAttribute.instantiated option
-
-  val module_qualifier : t -> Ast.Reference.t
-
-  val define_name : t -> Ast.Reference.t
 
   val root_of_identifier
     :  t ->

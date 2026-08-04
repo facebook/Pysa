@@ -3337,8 +3337,8 @@
               "port": "formal(x, position=1)",
               "call_site": "183:8-183:27"
             },
-            "caller_interval": [ { "lower": 6, "upper": 7 } ],
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": true
           }
         ]
@@ -3372,7 +3372,7 @@
               "port": "formal(**kwargs)",
               "call_site": "192:8-192:22"
             },
-            "caller_interval": [ { "lower": 6, "upper": 7 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]
@@ -3401,7 +3401,7 @@
               }
             ],
             "origin": { "line": 179, "start": 19, "end": 20 },
-            "caller_interval": [ { "lower": 6, "upper": 7 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false,
             "call_site": "179:8-179:21"
           }
@@ -3434,8 +3434,8 @@
               "port": "formal(x, position=1)",
               "call_site": "197:8-197:28"
             },
-            "caller_interval": [ { "lower": 6, "upper": 7 } ],
-            "receiver_interval": [ { "lower": 6, "upper": 7 } ],
+            "caller_interval": [ { "lower": 2, "upper": 3 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]
@@ -3492,7 +3492,7 @@
               }
             ],
             "origin": { "line": 395, "start": 19, "end": 24 },
-            "caller_interval": [ { "lower": 10, "upper": 11 } ],
+            "caller_interval": [ { "lower": 4, "upper": 5 } ],
             "is_self_call": false,
             "call_site": "395:8-395:25"
           }
@@ -3512,7 +3512,7 @@
               }
             ],
             "origin": { "line": 394, "start": 19, "end": 23 },
-            "caller_interval": [ { "lower": 10, "upper": 11 } ],
+            "caller_interval": [ { "lower": 4, "upper": 5 } ],
             "is_self_call": false,
             "call_site": "394:8-394:24"
           }
@@ -3537,7 +3537,7 @@
               { "line": 396, "start": 42, "end": 53 }
             ],
             "tito": {
-              "caller_interval": [ { "lower": 10, "upper": 11 } ],
+              "caller_interval": [ { "lower": 4, "upper": 5 } ],
               "is_self_call": false
             }
           }
@@ -3560,7 +3560,7 @@
               { "line": 396, "start": 29, "end": 53 }
             ],
             "tito": {
-              "caller_interval": [ { "lower": 10, "upper": 11 } ],
+              "caller_interval": [ { "lower": 4, "upper": 5 } ],
               "is_self_call": false
             }
           }

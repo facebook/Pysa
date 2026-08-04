@@ -11,24 +11,44 @@ open Interprocedural
 open ClassHierarchyGraph
 
 let test_class_intervals _ =
+  (* The class hierarchy graph is keyed on class ids. These tests use class names as opaque node
+     identifiers, so we assign a distinct synthetic class id per name (deterministically within a
+     test), and route both the input graph and the expected intervals through the same mapping so
+     the graph structure is preserved. *)
+  let cid =
+    let table = String.Table.create () in
+    let next = ref 0 in
+    fun name ->
+      Hashtbl.find_or_add table name ~default:(fun () ->
+          let id = !next in
+          incr next;
+          PyreflyTypes.ClassId.encode
+            ~module_id:(PyreflyTypes.ModuleId.from_int 0)
+            (PyreflyTypes.LocalClassId.from_int id))
+  in
+  let create ~roots ~edges =
+    ClassHierarchyGraph.Heap.create
+      ~roots:(List.map roots ~f:cid)
+      ~edges:(List.map edges ~f:(fun (parent, children) -> cid parent, List.map children ~f:cid))
+  in
   let create_map list =
-    List.fold list ~init:ClassNameMap.empty ~f:(fun accumulator (class_name, intervals) ->
+    List.fold list ~init:ClassIdMap.empty ~f:(fun accumulator (class_name, intervals) ->
         let intervals =
           List.map intervals ~f:(function lower, upper -> ClassInterval.create lower upper)
         in
-        ClassNameMap.add class_name (ClassIntervalSet.of_list intervals) accumulator)
+        ClassIdMap.add (cid class_name) (ClassIntervalSet.of_list intervals) accumulator)
   in
   let assert_class_intervals ~class_hierarchy_graph ~expected =
     let intervals = ClassIntervalSetGraph.Heap.from_class_hierarchy class_hierarchy_graph in
     assert_equal
       expected
       intervals
-      ~printer:(ClassNameMap.show ~pp_value:ClassIntervalSet.pp)
-      ~cmp:(ClassNameMap.equal ClassIntervalSet.equal)
+      ~printer:(ClassIdMap.show ~pp_value:ClassIntervalSet.pp)
+      ~cmp:(ClassIdMap.equal ClassIntervalSet.equal)
   in
   assert_class_intervals
     ~class_hierarchy_graph:
-      (ClassHierarchyGraph.Heap.create
+      (create
          ~roots:["object"]
          ~edges:
            [
@@ -49,7 +69,7 @@ let test_class_intervals _ =
          ]);
   assert_class_intervals
     ~class_hierarchy_graph:
-      (ClassHierarchyGraph.Heap.create
+      (create
          ~roots:["object"; "type"]
          ~edges:
            [
@@ -66,7 +86,7 @@ let test_class_intervals _ =
          ]);
   assert_class_intervals
     ~class_hierarchy_graph:
-      (ClassHierarchyGraph.Heap.create
+      (create
          ~roots:["object"]
          ~edges:
            [
@@ -91,7 +111,7 @@ let test_class_intervals _ =
          ]);
   assert_class_intervals
     ~class_hierarchy_graph:
-      (ClassHierarchyGraph.Heap.create
+      (create
          ~roots:["test.A"]
          ~edges:
            [
@@ -112,7 +132,7 @@ let test_class_intervals _ =
          ]);
   assert_class_intervals
     ~class_hierarchy_graph:
-      (ClassHierarchyGraph.Heap.create
+      (create
          ~roots:["test.A"; "test.E"; "test.G"]
          ~edges:
            [

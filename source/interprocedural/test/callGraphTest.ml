@@ -13,6 +13,11 @@ open Interprocedural
 open CallGraph
 open Shims
 
+let class_id_exn pyrefly_api class_name =
+  PyreflyApi.ReadOnly.class_id_from_name_opt pyrefly_api (Reference.create class_name)
+  |> Option.value_exn ~message:(Format.sprintf "unknown class `%s`" class_name)
+
+
 let compute_define_call_graph
     ~callable
     ~module_name
@@ -93,10 +98,12 @@ let assert_call_graph_of_define
       ()
   in
   let callable =
-    Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+    Interprocedural.PyreflyApi.ReadOnly.Target.target_from_callable_id
       pyrefly_api
       ~override:false
-      (Reference.create define_name)
+      (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+         pyrefly_api
+         (Reference.create define_name))
   in
   let expected = DefineCallGraphForTest.from_expected (expected pyrefly_api) in
   let actual, callables_to_definitions_map =
@@ -172,10 +179,12 @@ let assert_higher_order_call_graph_of_define
     match callable with
     | Some callable -> callable pyrefly_api
     | None ->
-        Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+        Interprocedural.PyreflyApi.ReadOnly.Target.target_from_callable_id
           pyrefly_api
           ~override:false
-          (Reference.create define_name)
+          (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+             pyrefly_api
+             (Reference.create define_name))
   in
   let maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth in
   let define_call_graph, callables_to_definitions_map =
@@ -188,7 +197,7 @@ let assert_higher_order_call_graph_of_define
       ~maximum_target_depth
       ()
   in
-  let { CallablesSharedMemory.DefineAndQualifier.define; _ } =
+  let { CallablesSharedMemory.DefineAndModule.define; _ } =
     callable
     |> Target.strip_parameters
     |> CallablesSharedMemory.ReadOnly.get_define
@@ -206,7 +215,6 @@ let assert_higher_order_call_graph_of_define
       ~called_when_parameter
       ~skip_inlining_higher_order_functions:(Target.HashSet.create ())
       ~callable
-      ~qualifier:module_name
       ~define
       ~initial_state
       ~get_callee_model:(fun _ -> None)
@@ -234,7 +242,7 @@ let class_identifier_without_constructors pyrefly_api class_name =
                 CallTarget.create_regular
                   ~implicit_receiver:true
                   ~return_type:(Some ReturnType.unknown)
-                  ~receiver_class:class_name
+                  ~receiver_class:(class_id_exn pyrefly_api class_name)
                   (InterproceduralTest.resolve_method_regular_exn
                      ~pyrefly_api
                      ~class_name:!&"builtins.object"
@@ -305,7 +313,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -420,7 +428,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -458,7 +466,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_override_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -494,7 +502,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create
                             ~implicit_receiver:true
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -502,7 +510,7 @@ let test_call_graph_of_define =
                                ());
                           CallTarget.create
                             ~implicit_receiver:true
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.E"
@@ -532,7 +540,7 @@ let test_call_graph_of_define =
                           CallTarget.create
                             ~implicit_receiver:true
                             ~implicit_dunder_call:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -596,7 +604,7 @@ let test_call_graph_of_define =
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
                                  ~return_type:(Some ReturnType.unknown)
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_target_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.C"
@@ -613,7 +621,7 @@ let test_call_graph_of_define =
                           CallTarget.create
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -645,7 +653,7 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~implicit_dunder_call:true
                             ~return_type:(Some ReturnType.bool)
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_target_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -684,7 +692,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -801,7 +809,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.B"
@@ -874,7 +882,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~is_property_setter:true
                                ~pyrefly_api
@@ -892,7 +900,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -935,7 +943,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -985,7 +993,7 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1003,7 +1011,7 @@ let test_call_graph_of_define =
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
                             ~index:1
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1058,7 +1066,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.B"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.B")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -1074,7 +1082,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             ~is_class_method:true
                             (* `test.B` defines `foo` twice (two conditional `@classmethod`
                                branches), so the bare-name method resolver is ambiguous; resolve by
@@ -1113,7 +1121,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_override_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -1139,7 +1147,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
-                            ~receiver_class:"builtins.int"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.int")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.int"
@@ -1166,7 +1174,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
-                            ~receiver_class:"builtins.int"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.int")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.int"
@@ -1182,7 +1190,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.bool)
-                            ~receiver_class:"builtins.int"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.int")
                             ~index:1
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -1224,7 +1232,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1373,7 +1381,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.super"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.super")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.super"
@@ -1389,7 +1397,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1469,7 +1477,7 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1487,7 +1495,7 @@ let test_call_graph_of_define =
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
                             ~is_class_method:true
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.D"
@@ -1504,7 +1512,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~is_class_method:true
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1694,7 +1702,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Permission"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Permission")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Enum"
@@ -1802,7 +1810,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Builder"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Builder")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Builder"
@@ -1817,7 +1825,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Builder"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Builder")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Builder"
@@ -1832,7 +1840,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Builder"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Builder")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Builder"
@@ -1896,7 +1904,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -1980,7 +1988,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -1995,7 +2003,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -2010,7 +2018,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -2025,7 +2033,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Iterator"
@@ -2122,7 +2130,7 @@ let test_call_graph_of_define =
                        [
                          CallTarget.create_regular
                            ~implicit_receiver:true
-                           ~receiver_class:"test.C"
+                           ~receiver_class:(class_id_exn pyrefly_api "test.C")
                            (InterproceduralTest.resolve_method_regular_exn
                               ~pyrefly_api
                               ~class_name:!&"test.C"
@@ -2140,7 +2148,7 @@ let test_call_graph_of_define =
                        [
                          CallTarget.create_regular
                            ~implicit_receiver:true
-                           ~receiver_class:"test.C"
+                           ~receiver_class:(class_id_exn pyrefly_api "test.C")
                            (InterproceduralTest.resolve_method_regular_exn
                               ~is_property_setter:true
                               ~pyrefly_api
@@ -2177,7 +2185,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -2204,7 +2212,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -2377,7 +2385,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.dict"
@@ -2393,7 +2401,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~is_class_method:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -2444,7 +2452,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.dict"
@@ -2471,7 +2479,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             ~index:1
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -2511,7 +2519,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.dict"
@@ -2526,7 +2534,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             ~index:2
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -2542,7 +2550,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             ~index:3
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -2558,7 +2566,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.dict"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.dict")
                             ~index:4
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -2668,7 +2676,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.str"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.str")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.str"
@@ -2682,7 +2690,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -2714,7 +2722,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -2822,7 +2830,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.Exception"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.Exception")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.BaseException"
@@ -2859,7 +2867,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -2874,7 +2882,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Iterator"
@@ -2892,7 +2900,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.Foo"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.Foo"
@@ -2926,7 +2934,7 @@ let test_call_graph_of_define =
                                !&"test.baz");
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Foo"
@@ -2979,7 +2987,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -2994,7 +3002,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -3009,7 +3017,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Iterator"
@@ -3036,7 +3044,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.Foo"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -3137,7 +3145,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Foo"
@@ -3218,7 +3226,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Foo"
@@ -3283,7 +3291,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Foo"
@@ -3330,7 +3338,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~is_class_method:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Foo"
@@ -3356,7 +3364,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.Foo"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -3428,7 +3436,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.Foo"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -3477,7 +3485,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~is_class_method:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Foo"
@@ -3503,7 +3511,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.Foo"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -3617,7 +3625,7 @@ let test_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
-                                 ~receiver_class:"test.CallableClass"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.CallableClass")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.CallableClass"
@@ -3646,7 +3654,7 @@ let test_call_graph_of_define =
                                    CallTarget.create_regular
                                      ~implicit_receiver:true
                                      ~implicit_dunder_call:true
-                                     ~receiver_class:"test.CallableClass"
+                                     ~receiver_class:(class_id_exn pyrefly_api "test.CallableClass")
                                      (InterproceduralTest.resolve_method_regular_exn
                                         ~pyrefly_api
                                         ~class_name:!&"test.CallableClass"
@@ -3862,7 +3870,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.int"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.int")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.int"
@@ -3875,7 +3883,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.float"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.float")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.float"
@@ -3888,7 +3896,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.str"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.str")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.str"
@@ -3901,7 +3909,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.object"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.object")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.object"
@@ -3915,7 +3923,7 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~index:1
-                          ~receiver_class:"builtins.int"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.int")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.int"
@@ -3942,7 +3950,7 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~index:1
-                          ~receiver_class:"builtins.float"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.float")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.float"
@@ -4006,7 +4014,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.object"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.object")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.object"
@@ -4034,7 +4042,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.object"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.object")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.object"
@@ -4048,7 +4056,7 @@ let test_call_graph_of_define =
                         CallTarget.create_regular
                           ~implicit_receiver:true
                           ~index:1
-                          ~receiver_class:"builtins.object"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.object")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.object"
@@ -4107,7 +4115,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -4152,7 +4160,7 @@ let test_call_graph_of_define =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.Exception"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.Exception")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.BaseException"
@@ -4180,7 +4188,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.type"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.type")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.type"
@@ -4286,7 +4294,7 @@ let test_call_graph_of_define =
                            [
                              CallTarget.create_regular
                                ~implicit_receiver:true
-                               ~receiver_class:"test.A"
+                               ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                (InterproceduralTest.resolve_method_regular_exn
                                   ~pyrefly_api
                                   ~class_name:!&"builtins.object"
@@ -4338,7 +4346,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.Exception"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.Exception")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.BaseException"
@@ -4353,7 +4361,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.str"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.str")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.str"
@@ -4570,7 +4578,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -4599,7 +4607,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:1
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -4615,7 +4623,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:2
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -4642,7 +4650,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.B"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.B")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -4672,7 +4680,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:3
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -4703,7 +4711,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.unknown)
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -4719,7 +4727,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Iterator"
@@ -4748,7 +4756,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -4923,7 +4931,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Base"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Base")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Base"
@@ -4938,7 +4946,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:1
-                            ~receiver_class:"test.Child"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Child")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.Base"
@@ -4984,7 +4992,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.BaseA"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.BaseA")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.BaseA"
@@ -4999,7 +5007,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:1
-                            ~receiver_class:"test.Child"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Child")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.BaseA"
@@ -5041,7 +5049,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~is_class_method:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -5068,7 +5076,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -5096,7 +5104,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -5116,7 +5124,7 @@ let test_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~is_class_method:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.C"
@@ -5157,7 +5165,7 @@ let test_call_graph_of_define =
                                    ~implicit_receiver:true
                                    ~is_class_method:true
                                    ~index:1
-                                   ~receiver_class:"test.C"
+                                   ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                    (InterproceduralTest.resolve_method_regular_exn
                                       ~pyrefly_api
                                       ~class_name:!&"test.C"
@@ -5188,7 +5196,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~is_class_method:true
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -5215,7 +5223,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -5243,7 +5251,7 @@ let test_call_graph_of_define =
                              [
                                CallTarget.create_regular
                                  ~implicit_receiver:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -5263,7 +5271,7 @@ let test_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~is_class_method:true
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.C"
@@ -5306,7 +5314,7 @@ let test_call_graph_of_define =
                                    ~implicit_receiver:true
                                    ~is_class_method:true
                                    ~index:1
-                                   ~receiver_class:"test.C"
+                                   ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                    (InterproceduralTest.resolve_method_regular_exn
                                       ~pyrefly_api
                                       ~class_name:!&"test.C"
@@ -5370,7 +5378,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -5385,7 +5393,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:1
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -5400,7 +5408,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.C"
@@ -5416,7 +5424,7 @@ let test_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.integer)
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.D"
@@ -5456,7 +5464,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_decorated_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -5574,7 +5582,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.A"
@@ -5709,7 +5717,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"test.B"
@@ -5818,7 +5826,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.MutableMapping"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.MutableMapping")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Mapping"
@@ -5862,7 +5870,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.MutableMapping"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.MutableMapping")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Mapping"
@@ -6006,7 +6014,7 @@ let test_call_graph_of_define =
                            [
                              CallTarget.create_regular
                                ~implicit_receiver:true
-                               ~receiver_class:"test.C"
+                               ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                (InterproceduralTest.resolve_method_regular_exn
                                   ~pyrefly_api
                                   ~class_name:!&"test.C"
@@ -6075,7 +6083,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -6090,7 +6098,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"typing.Iterator"
@@ -6370,7 +6378,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.Foo"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.Foo")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -6402,7 +6410,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -6417,7 +6425,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             ~return_type:(Some ReturnType.integer)
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -6433,7 +6441,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -6503,7 +6511,7 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -6530,7 +6538,7 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:1
-                            ~receiver_class:"test.B"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.B")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -6557,7 +6565,7 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:2
-                            ~receiver_class:"test.C"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.C")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -6584,7 +6592,7 @@ let test_call_graph_of_define_foo_and_bar =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~index:3
-                            ~receiver_class:"test.D"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.D")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -6598,7 +6606,7 @@ let test_call_graph_of_define_foo_and_bar =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"test.A"
+                          ~receiver_class:(class_id_exn pyrefly_api "test.A")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"test.A"
@@ -6611,7 +6619,7 @@ let test_call_graph_of_define_foo_and_bar =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"test.B"
+                          ~receiver_class:(class_id_exn pyrefly_api "test.B")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"test.B"
@@ -6624,7 +6632,7 @@ let test_call_graph_of_define_foo_and_bar =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"test.C"
+                          ~receiver_class:(class_id_exn pyrefly_api "test.C")
                           (InterproceduralTest.resolve_method_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"test.C"
@@ -6637,7 +6645,7 @@ let test_call_graph_of_define_foo_and_bar =
                       [
                         CallTarget.create_regular
                           ~implicit_receiver:true
-                          ~receiver_class:"builtins.object"
+                          ~receiver_class:(class_id_exn pyrefly_api "builtins.object")
                           (InterproceduralTest.resolve_override_regular_exn
                              ~pyrefly_api
                              ~class_name:!&"builtins.object"
@@ -6911,7 +6919,7 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -6939,7 +6947,7 @@ let test_call_graph_of_define_foo_and_bar =
                                    CallTarget.create_regular
                                      ~implicit_receiver:true
                                      ~implicit_dunder_call:true
-                                     ~receiver_class:"test.A"
+                                     ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                      (InterproceduralTest.resolve_method_regular_exn
                                         ~pyrefly_api
                                         ~class_name:!&"test.A"
@@ -6960,7 +6968,7 @@ let test_call_graph_of_define_foo_and_bar =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.A"
@@ -7006,7 +7014,7 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -7035,7 +7043,7 @@ let test_call_graph_of_define_foo_and_bar =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.A"
@@ -7084,7 +7092,7 @@ let test_call_graph_of_define_foo_and_bar =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.A"
@@ -7110,7 +7118,7 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -7157,7 +7165,7 @@ let test_call_graph_of_define_foo_and_bar =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -7186,7 +7194,7 @@ let test_call_graph_of_define_foo_and_bar =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~implicit_dunder_call:true
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_override_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.A"
@@ -7786,7 +7794,7 @@ let test_higher_order_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"builtins.object"
@@ -7816,7 +7824,7 @@ let test_higher_order_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  ~is_class_method:true
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
@@ -7835,7 +7843,7 @@ let test_higher_order_call_graph_of_define =
                           CallTarget.create_regular
                             ~implicit_receiver:true
                             ~return_type:(Some ReturnType.unknown)
-                            ~receiver_class:"test.A"
+                            ~receiver_class:(class_id_exn pyrefly_api "test.A")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.object"
@@ -7864,7 +7872,7 @@ let test_higher_order_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.A"
@@ -7884,7 +7892,7 @@ let test_higher_order_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.unknown)
-                                 ~receiver_class:"test.A"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.A"
@@ -7900,7 +7908,7 @@ let test_higher_order_call_graph_of_define =
                CallTarget.create_regular
                  ~implicit_receiver:true
                  ~return_type:(Some ReturnType.unknown)
-                 ~receiver_class:"test.A"
+                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                  ~is_class_method:true
                  (InterproceduralTest.resolve_method_regular_exn
                     ~pyrefly_api
@@ -7910,7 +7918,7 @@ let test_higher_order_call_graph_of_define =
                CallTarget.create_regular
                  ~implicit_receiver:true
                  ~return_type:(Some ReturnType.unknown)
-                 ~receiver_class:"test.A"
+                 ~receiver_class:(class_id_exn pyrefly_api "test.A")
                  (InterproceduralTest.resolve_method_regular_exn
                     ~pyrefly_api
                     ~class_name:!&"test.A"
@@ -7941,7 +7949,7 @@ let test_higher_order_call_graph_of_define =
                                CallTarget.create_regular
                                  ~implicit_receiver:true
                                  ~return_type:(Some ReturnType.integer)
-                                 ~receiver_class:"test.C"
+                                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                                  (InterproceduralTest.resolve_method_regular_exn
                                     ~pyrefly_api
                                     ~class_name:!&"test.C"
@@ -7957,7 +7965,7 @@ let test_higher_order_call_graph_of_define =
                CallTarget.create_regular
                  ~implicit_receiver:true
                  ~return_type:(Some ReturnType.integer)
-                 ~receiver_class:"test.C"
+                 ~receiver_class:(class_id_exn pyrefly_api "test.C")
                  (InterproceduralTest.resolve_method_regular_exn
                     ~pyrefly_api
                     ~class_name:!&"test.C"
@@ -8070,7 +8078,7 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             ~implicit_receiver:true
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -8100,7 +8108,7 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             ~implicit_receiver:true
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -8132,7 +8140,7 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             ~implicit_receiver:true
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -8162,7 +8170,7 @@ let test_higher_order_call_graph_of_define =
                       ~call_targets:
                         [
                           CallTarget.create_regular
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             ~implicit_receiver:true
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -8310,7 +8318,7 @@ let test_higher_order_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -8325,7 +8333,7 @@ let test_higher_order_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             ~return_type:(Some ReturnType.integer)
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -8382,7 +8390,7 @@ let test_higher_order_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"builtins.list"
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
                                ~class_name:!&"builtins.list"
@@ -8397,7 +8405,7 @@ let test_higher_order_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~implicit_receiver:true
-                            ~receiver_class:"typing.Iterator"
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
                             ~return_type:(Some ReturnType.integer)
                             (InterproceduralTest.resolve_method_regular_exn
                                ~pyrefly_api
@@ -9108,7 +9116,7 @@ let test_resolve_decorator_callees =
                                   CallTarget.create_regular
                                     ~implicit_receiver:true
                                     ~return_type:(Some ReturnType.unknown)
-                                    ~receiver_class:"test.ClassDecorator"
+                                    ~receiver_class:(class_id_exn pyrefly_api "test.ClassDecorator")
                                     (InterproceduralTest.resolve_method_regular_exn
                                        ~pyrefly_api
                                        ~class_name:!&"test.ClassDecorator"
@@ -9200,7 +9208,7 @@ let test_resolve_decorator_callees =
                                        CallTarget.create_regular
                                          ~implicit_receiver:true
                                          ~return_type:(Some ReturnType.unknown)
-                                         ~receiver_class:"test.A"
+                                         ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                          (InterproceduralTest.resolve_method_regular_exn
                                             ~pyrefly_api
                                             ~class_name:!&"builtins.object"
@@ -9215,7 +9223,7 @@ let test_resolve_decorator_callees =
                               ~call_targets:
                                 [
                                   CallTarget.create_regular
-                                    ~receiver_class:"test.A"
+                                    ~receiver_class:(class_id_exn pyrefly_api "test.A")
                                     ~implicit_receiver:true
                                     ~is_class_method:true
                                     (InterproceduralTest.resolve_method_regular_exn

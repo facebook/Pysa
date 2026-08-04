@@ -7,10 +7,6 @@
 
 (* PyreflyTypes contains type definitions used by the Pyrefly Pysa backend. *)
 
-(* Fake module containing all implicit "decorated" targets, which are functions that inline
-   decorators. *)
-val artificial_decorator_define_module : Ast.Reference.t
-
 module FormatError : sig
   type t =
     | UnexpectedJsonType of {
@@ -113,6 +109,8 @@ module ClassId : sig
   val module_id : t -> ModuleId.t
 
   val local_class_id : t -> LocalClassId.t
+
+  module Map : Core.Map.S with type Key.t = t
 end
 
 (* Identifier that uniquely identifies a callable across the whole project, packing the module id
@@ -131,6 +129,8 @@ module CallableId : sig
 
   val local_function_id : t -> LocalFunctionId.t
 
+  val is_class_top_level : t -> bool
+
   (* Whether the callable is the decorated variant of a function (`FunctionDecoratedTarget`). *)
   val is_decorated : t -> bool
 
@@ -139,6 +139,10 @@ module CallableId : sig
 
   (* Return the undecorated variant of a `FunctionDecoratedTarget` callable *)
   val to_undecorated : t -> t
+
+  val strip_decorated : t -> t
+
+  module Map : Core.Map.S with type Key.t = t
 end
 
 (* Pure id->reference closures used to render target names.
@@ -203,25 +207,27 @@ end
 
 module ClassWithModifiers : sig
   type t = {
-    class_name: string;
+    class_id: ClassId.t;
     modifiers: TypeModifier.t list;
   }
+  [@@deriving equal, compare, show]
 
-  val from_class_name : string -> t
+  val from_class : ClassId.t -> t
 
   val prepend_modifier : modifier:TypeModifier.t -> t -> t
 end
 
 (* Result of extracting class names from a type. *)
-module ClassNamesFromType : sig
+module ClassesFromType : sig
   type t = {
     classes: ClassWithModifiers.t list;
     is_exhaustive: bool;
         (* Is there an element (after stripping) that isn't a class name? For instance:
            get_class_name(Union[A, Callable[...])) = { class_names = [A], is_exhaustive = false } *)
   }
+  [@@deriving equal, compare, show]
 
-  val from_class_name : string -> t
+  val from_class : ClassId.t -> t
 
   val not_a_class : t
 
@@ -231,30 +237,10 @@ module ClassNamesFromType : sig
 end
 
 module PyreflyType : sig
-  module ClassWithModifiers : sig
-    type t = {
-      class_id: ClassId.t;
-      modifiers: TypeModifier.t list;
-    }
-    [@@deriving equal, compare, show]
-
-    val from_class : ClassId.t -> t
-  end
-
-  module ClassNamesFromType : sig
-    type t = {
-      classes: ClassWithModifiers.t list;
-      is_exhaustive: bool;
-    }
-    [@@deriving equal, compare, show]
-
-    val from_class : ClassId.t -> t
-  end
-
   type t = {
     string: string;
     scalar_properties: ScalarTypeProperties.t;
-    class_names: ClassNamesFromType.t option;
+    classes: ClassesFromType.t option;
   }
   [@@deriving equal, compare, show]
 
@@ -298,7 +284,7 @@ end
 
 module CallableSignature : sig
   type t = {
-    qualifier: Ast.Reference.t;
+    module_id: ModuleId.t;
     define_name: Ast.Reference.t;
     location: Ast.Location.t AstResult.t;
     parameters: Ast.Expression.Parameter.t list AstResult.t;
@@ -378,7 +364,6 @@ module ModelQueries : sig
       is_property_getter: bool;
       is_property_setter: bool;
       is_method: bool;
-      module_qualifier: Ast.Reference.t option;
       location: Ast.Location.t option;
     }
     [@@deriving show]
@@ -387,23 +372,23 @@ module ModelQueries : sig
   module Global : sig
     type t =
       | Class of {
+          class_id: ClassId.t;
           class_name: string;
-          module_qualifier: Ast.Reference.t option;
           location: Ast.Location.t option;
         }
-      | Module of { qualifier: Ast.Reference.t }
+      | Module of { module_id: ModuleId.t }
       (* function or method *)
       | Function of Function.t
       (* non-callable class attribute. *)
       | ClassAttribute of {
+          class_id: ClassId.t;
           name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
           location: Ast.Location.t option;
         }
       (* non-callable module global variable. *)
       | ModuleGlobal of {
           name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
+          module_id: ModuleId.t;
           location: Ast.Location.t option;
         }
     [@@deriving show]
@@ -414,7 +399,7 @@ module ModelQueries : sig
 
     val strip_location_and_module : t -> t
 
-    val module_qualifier : t -> Ast.Reference.t option
+    val module_id : t -> ModuleId.t
 
     val location : t -> Ast.Location.t option
   end
@@ -425,7 +410,7 @@ module ModelQueries : sig
       | Resolved of Global.t
       (* Module exists but symbol not found within it *)
       | Unresolved of {
-          module_qualifier: Ast.Reference.t;
+          module_id: ModuleId.t;
           module_name: Ast.Reference.t; (* Bare module name *)
           suffix: Ast.Reference.t; (* Unresolved part of the name *)
         }

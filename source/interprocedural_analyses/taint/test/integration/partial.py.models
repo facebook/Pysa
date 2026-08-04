@@ -24,7 +24,7 @@
             ],
             "tito_positions": [ { "line": 142, "start": 19, "end": 23 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 7 } ],
+              "caller_interval": [ { "lower": 8, "upper": 9 } ],
               "is_self_call": false
             }
           }
@@ -48,7 +48,7 @@
             ],
             "tito_positions": [ { "line": 142, "start": 40, "end": 48 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 7 } ],
+              "caller_interval": [ { "lower": 8, "upper": 9 } ],
               "is_self_call": false
             }
           }
@@ -71,7 +71,7 @@
             ],
             "tito_positions": [ { "line": 142, "start": 40, "end": 48 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 7 } ],
+              "caller_interval": [ { "lower": 8, "upper": 9 } ],
               "is_self_call": false
             }
           }
@@ -94,7 +94,7 @@
             ],
             "tito_positions": [ { "line": 142, "start": 33, "end": 38 } ],
             "tito": {
-              "caller_interval": [ { "lower": 6, "upper": 7 } ],
+              "caller_interval": [ { "lower": 8, "upper": 9 } ],
               "is_self_call": false
             }
           }
@@ -1376,7 +1376,7 @@
             ],
             "tito_positions": [ { "line": 116, "start": 57, "end": 65 } ],
             "tito": {
-              "caller_interval": [ { "lower": 10, "upper": 11 } ],
+              "caller_interval": [ { "lower": 4, "upper": 5 } ],
               "is_self_call": false
             }
           }

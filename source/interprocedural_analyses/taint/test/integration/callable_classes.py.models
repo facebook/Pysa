@@ -23,7 +23,7 @@
             ],
             "local_features": [ { "always-via-value": "b" } ],
             "origin": { "line": 32, "start": 11, "end": 17 },
-            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
+            "receiver_interval": [ { "lower": 4, "upper": 5 } ],
             "is_self_call": false
           }
         ]
@@ -55,7 +55,7 @@
             ],
             "local_features": [ { "always-via-value": "a" } ],
             "origin": { "line": 20, "start": 11, "end": 17 },
-            "receiver_interval": [ { "lower": 4, "upper": 5 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 3 } ],
             "is_self_call": false
           }
         ]

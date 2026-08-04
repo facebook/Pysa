@@ -17,18 +17,18 @@ module File = struct
   include T
   module Set = SerializableSet.Make (T)
 
-  let from_callable ~callables_to_definitions_map ~resolve_module_path callable =
-    Option.some_if (Target.is_function_or_method callable) callable
-    >>| Interprocedural.CallablesSharedMemory.ReadOnly.get_location callables_to_definitions_map
-    >>= Interprocedural.PyreflyTypes.AstResult.to_option
-    >>| (fun { Ast.Location.WithModule.module_reference; _ } -> module_reference)
-    >>= resolve_module_path
-    >>= function
-    | { Interprocedural.RepositoryPath.filename = Some filename; _ } ->
-        (* Omitting absolute paths, since they are less useful than relative paths, which are
-           machine independent. *)
-        Some { name = filename }
-    | _ -> None
+  let from_callable ~resolve_module_path callable =
+    if Target.is_function_or_method callable then
+      let module_id = Target.module_id_exn callable in
+      resolve_module_path module_id
+      >>= function
+      | { Interprocedural.RepositoryPath.filename = Some filename; _ } ->
+          (* Omitting absolute paths, since they are less useful than relative paths, which are
+             machine independent. *)
+          Some { name = filename }
+      | _ -> None
+    else
+      None
 end
 
 type t = { (* Any file that contains a callable that is analyzed. *)
@@ -43,13 +43,7 @@ let union { files = files_left } { files = files_right } =
 
 
 (* Add the files that contain any of the given callables. *)
-let from_callables
-    ~scheduler
-    ~scheduler_policies
-    ~callables_to_definitions_map
-    ~resolve_module_path
-    ~callables
-  =
+let from_callables ~scheduler ~scheduler_policies ~resolve_module_path ~callables =
   let scheduler_policy =
     Scheduler.Policy.from_configuration_or_default
       scheduler_policies
@@ -68,8 +62,7 @@ let from_callables
     ~map:(fun callables ->
       let files =
         callables
-        |> List.filter_map
-             ~f:(File.from_callable ~callables_to_definitions_map ~resolve_module_path)
+        |> List.filter_map ~f:(File.from_callable ~resolve_module_path)
         |> File.Set.of_list
       in
       { files })

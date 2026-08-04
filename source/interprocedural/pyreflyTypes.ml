@@ -9,10 +9,6 @@
 
 open Core
 
-(* Fake module containing all implicit "decorated" targets, which are functions that inline
-   decorators. *)
-let artificial_decorator_define_module = Ast.Reference.create "artificial_decorator_defines"
-
 module FormatError = struct
   type t =
     | UnexpectedJsonType of {
@@ -211,6 +207,8 @@ module ClassId : sig
   val module_id : t -> ModuleId.t
 
   val local_class_id : t -> LocalClassId.t
+
+  module Map : Map.S with type Key.t = t
 end = struct
   type t = int [@@deriving sexp, hash]
 
@@ -254,6 +252,16 @@ end = struct
 
 
   let show = Format.asprintf "%a" pp
+
+  module Map = Map.Make (struct
+    type nonrec t = t
+
+    let compare = compare
+
+    let t_of_sexp = t_of_sexp
+
+    let sexp_of_t = sexp_of_t
+  end)
 end
 
 (* Identifier that uniquely identifies a callable across the whole project, packing the module id
@@ -272,11 +280,17 @@ module CallableId : sig
 
   val local_function_id : t -> LocalFunctionId.t
 
+  val is_class_top_level : t -> bool
+
   val is_decorated : t -> bool
 
   val to_decorated : t -> t
 
   val to_undecorated : t -> t
+
+  val strip_decorated : t -> t
+
+  module Map : Map.S with type Key.t = t
 end = struct
   type t = int [@@deriving sexp, hash]
 
@@ -364,6 +378,10 @@ end = struct
 
   let decode value = module_id value, local_function_id value
 
+  let is_class_top_level value =
+    Int.equal ((value lsr tag_shift) land mask tag_bits) class_top_level_tag
+
+
   let is_decorated value =
     Int.equal ((value lsr tag_shift) land mask tag_bits) function_decorated_target_tag
 
@@ -392,6 +410,13 @@ end = struct
         |> failwith
 
 
+  let strip_decorated value =
+    match local_function_id value with
+    | LocalFunctionId.FunctionDecoratedTarget func_def_index ->
+        encode ~module_id:(module_id value) (LocalFunctionId.Function func_def_index)
+    | _ -> value
+
+
   let compare left right =
     match Int.compare (module_id_as_int left) (module_id_as_int right) with
     | 0 -> Int.compare left right
@@ -411,6 +436,16 @@ end = struct
 
 
   let show = Format.asprintf "%a" pp
+
+  module Map = Map.Make (struct
+    type nonrec t = t
+
+    let compare = compare
+
+    let t_of_sexp = t_of_sexp
+
+    let sexp_of_t = sexp_of_t
+  end)
 end
 
 module DisplayApi = struct
@@ -539,27 +574,29 @@ end
 
 module ClassWithModifiers = struct
   type t = {
-    class_name: string;
+    class_id: ClassId.t;
     modifiers: TypeModifier.t list;
   }
+  [@@deriving equal, compare, show]
 
-  let from_class_name class_name = { class_name; modifiers = [] }
+  let from_class class_id = { class_id; modifiers = [] }
 
-  let prepend_modifier ~modifier { class_name; modifiers } =
-    { class_name; modifiers = modifier :: modifiers }
+  let prepend_modifier ~modifier { class_id; modifiers } =
+    { class_id; modifiers = modifier :: modifiers }
 end
 
 (* Result of extracting class names from a type. *)
-module ClassNamesFromType = struct
+module ClassesFromType = struct
   type t = {
     classes: ClassWithModifiers.t list;
     is_exhaustive: bool;
         (* Is there an element (after stripping) that isn't a class name? For instance:
-           get_class_name(Union[A, Callable[...])) = { class_names = [A], is_exhaustive = false } *)
+           get_class_name(Union[A, Callable[...])) = { classes = [A], is_exhaustive = false } *)
   }
+  [@@deriving equal, compare, show]
 
-  let from_class_name class_name =
-    { classes = [ClassWithModifiers.from_class_name class_name]; is_exhaustive = true }
+  let from_class class_id =
+    { classes = [ClassWithModifiers.from_class class_id]; is_exhaustive = true }
 
 
   let not_a_class = { classes = []; is_exhaustive = false }
@@ -576,37 +613,14 @@ module ClassNamesFromType = struct
 end
 
 module PyreflyType = struct
-  module ClassWithModifiers = struct
-    type t = {
-      class_id: ClassId.t;
-      modifiers: TypeModifier.t list;
-    }
-    [@@deriving equal, compare, show]
-
-    let from_class class_id = { class_id; modifiers = [] }
-  end
-
-  module ClassNamesFromType = struct
-    type t = {
-      classes: ClassWithModifiers.t list;
-      is_exhaustive: bool;
-    }
-    [@@deriving equal, compare, show]
-
-    let from_class class_id =
-      { classes = [ClassWithModifiers.from_class class_id]; is_exhaustive = true }
-  end
-
   type t = {
     string: string;
     scalar_properties: ScalarTypeProperties.t;
-    class_names: ClassNamesFromType.t option;
+    classes: ClassesFromType.t option;
   }
   [@@deriving equal, compare, show]
 
-  let top =
-    { string = "unknown"; scalar_properties = ScalarTypeProperties.none; class_names = None }
-
+  let top = { string = "unknown"; scalar_properties = ScalarTypeProperties.none; classes = None }
 
   (* Pretty print the type, usually meant for the user *)
   let pp_concise formatter { string; _ } =
@@ -677,7 +691,7 @@ end
 
 module CallableSignature = struct
   type t = {
-    qualifier: Ast.Reference.t;
+    module_id: ModuleId.t;
     define_name: Ast.Reference.t;
     location: Ast.Location.t AstResult.t;
     parameters: Ast.Expression.Parameter.t list AstResult.t;
@@ -789,7 +803,6 @@ module ModelQueries = struct
       is_property_getter: bool;
       is_property_setter: bool;
       is_method: bool;
-      module_qualifier: Ast.Reference.t option;
       location: Ast.Location.t option;
     }
     [@@deriving show]
@@ -798,23 +811,23 @@ module ModelQueries = struct
   module Global = struct
     type t =
       | Class of {
+          class_id: ClassId.t;
           class_name: string;
-          module_qualifier: Ast.Reference.t option;
           location: Ast.Location.t option;
         }
-      | Module of { qualifier: Ast.Reference.t }
+      | Module of { module_id: ModuleId.t }
       (* function or method *)
       | Function of Function.t
       (* non-callable class attribute. *)
       | ClassAttribute of {
+          class_id: ClassId.t;
           name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
           location: Ast.Location.t option;
         }
       (* non-callable module global variable. *)
       | ModuleGlobal of {
           name: Ast.Reference.t;
-          module_qualifier: Ast.Reference.t option;
+          module_id: ModuleId.t;
           location: Ast.Location.t option;
         }
     [@@deriving show]
@@ -830,20 +843,19 @@ module ModelQueries = struct
 
 
     let strip_location_and_module = function
-      | Class { class_name; _ } -> Class { class_name; module_qualifier = None; location = None }
-      | Module { qualifier } -> Module { qualifier }
-      | Function f -> Function { f with module_qualifier = None; location = None }
-      | ClassAttribute { name; _ } ->
-          ClassAttribute { name; module_qualifier = None; location = None }
-      | ModuleGlobal { name; _ } -> ModuleGlobal { name; module_qualifier = None; location = None }
+      | Class c -> Class { c with location = None }
+      | Module m -> Module m
+      | Function f -> Function { f with location = None }
+      | ClassAttribute ca -> ClassAttribute { ca with location = None }
+      | ModuleGlobal mg -> ModuleGlobal { mg with location = None }
 
 
-    let module_qualifier = function
-      | Class { module_qualifier; _ } -> module_qualifier
-      | Module { qualifier } -> Some qualifier
-      | Function { module_qualifier; _ } -> module_qualifier
-      | ClassAttribute { module_qualifier; _ } -> module_qualifier
-      | ModuleGlobal { module_qualifier; _ } -> module_qualifier
+    let module_id = function
+      | Class { class_id; _ } -> ClassId.module_id class_id
+      | Module { module_id; _ } -> module_id
+      | Function { callable_id; _ } -> CallableId.module_id callable_id
+      | ClassAttribute { class_id; _ } -> ClassId.module_id class_id
+      | ModuleGlobal { module_id; _ } -> module_id
 
 
     let location = function
@@ -860,7 +872,7 @@ module ModelQueries = struct
       | Resolved of Global.t
       (* Module exists but symbol not found within it *)
       | Unresolved of {
-          module_qualifier: Ast.Reference.t;
+          module_id: ModuleId.t;
           module_name: Ast.Reference.t; (* Bare module name *)
           suffix: Ast.Reference.t; (* Unresolved part of the name *)
         }

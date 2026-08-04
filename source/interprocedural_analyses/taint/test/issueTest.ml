@@ -43,16 +43,15 @@ let test_no_errors context =
     |> BackwardState.Tree.prepend [Abstract.TreeDomain.Label.Index "b"]
   in
   let assert_no_errors ~source_tree ~sink_tree =
-    let location =
-      Location.with_module
-        ~module_reference:Reference.empty
-        (Location.create ~start:Lexing.dummy_pos ~stop:Lexing.dummy_pos)
-    in
     let candidates = Candidates.create () in
     let () =
       Candidates.check_flow
         candidates
-        ~location
+        ~module_id:
+          (Interprocedural.PyreflyApi.ReadOnly.module_id_of_qualifier
+             pyrefly_api
+             (Reference.create "test"))
+        ~location:(Location.create ~start:Lexing.dummy_pos ~stop:Lexing.dummy_pos)
         ~sink_handle:IssueHandle.Sink.Return
         ~source_tree
         ~sink_tree
@@ -63,10 +62,12 @@ let test_no_errors context =
         candidates
         ~taint_configuration
         ~callable:
-          (Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+          (Interprocedural.PyreflyApi.ReadOnly.Target.target_from_callable_id
              pyrefly_api
              ~override:false
-             (Reference.create "test.$toplevel"))
+             (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+                pyrefly_api
+                (Reference.create "test.$toplevel")))
         ~define_location:Location.any
       |> IssueHandle.SerializableMap.data
       |> List.map ~f:(to_error ~pyrefly_api ~taint_configuration)
@@ -114,16 +115,15 @@ let test_errors context =
   let sink_tree_c = sink_tree ~sink:"Demo" ~field:"a" in
   let sink_tree_d = sink_tree ~sink:"Test" ~field:"a" in
   let assert_errors ~source_tree ~sink_tree codes =
-    let location =
-      Location.with_module
-        ~module_reference:Reference.empty
-        (Location.create ~start:Lexing.dummy_pos ~stop:Lexing.dummy_pos)
-    in
     let candidates = Candidates.create () in
     let () =
       Candidates.check_flow
         candidates
-        ~location
+        ~module_id:
+          (Interprocedural.PyreflyApi.ReadOnly.module_id_of_qualifier
+             pyrefly_api
+             (Reference.create "test"))
+        ~location:(Location.create ~start:Lexing.dummy_pos ~stop:Lexing.dummy_pos)
         ~sink_handle:IssueHandle.Sink.Return
         ~source_tree
         ~sink_tree
@@ -133,10 +133,12 @@ let test_errors context =
       Candidates.generate_issues
         candidates
         ~callable:
-          (Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name
+          (Interprocedural.PyreflyApi.ReadOnly.Target.target_from_callable_id
              pyrefly_api
              ~override:false
-             (Reference.create "test.$toplevel"))
+             (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+                pyrefly_api
+                (Reference.create "test.$toplevel")))
         ~taint_configuration
         ~define_location:Location.any
       |> IssueHandle.SerializableMap.data
@@ -172,6 +174,7 @@ let test_canonical_location _ =
             callable = IssueHandle.CanonicalCallee.Name "$toplevel";
             sink = IssueHandle.Sink.Return;
           };
+        module_id = PyreflyTypes.ModuleId.from_int 0;
         locations;
         define_location = Location.any;
       }
@@ -179,41 +182,16 @@ let test_canonical_location _ =
     let actual = Issue.canonical_location issue in
     assert_equal expected actual
   in
-  let create_location
-      ?(qualifier = "a")
-      ?(start_line = 0)
-      ?(start_column = 0)
-      ?(stop_line = 0)
-      ?(stop_column = 1)
-      ()
-    =
-    Location.with_module
-      ~module_reference:(Reference.create qualifier)
-      {
-        start = { line = start_line; column = start_column };
-        stop = { line = stop_line; column = stop_column };
-      }
+  let create_location ?(start_line = 0) ?(start_column = 0) ?(stop_line = 0) ?(stop_column = 1) () =
+    {
+      Location.start = { line = start_line; column = start_column };
+      stop = { line = stop_line; column = stop_column };
+    }
   in
   assert_canonical_location ~set:[create_location ()] ~expected:(create_location ());
   assert_canonical_location
     ~set:[create_location (); create_location ()]
     ~expected:(create_location ());
-  assert_canonical_location
-    ~set:
-      [
-        create_location ~qualifier:"a" ();
-        create_location ~qualifier:"b" ();
-        create_location ~qualifier:"c" ();
-      ]
-    ~expected:(create_location ~qualifier:"a" ());
-  assert_canonical_location
-    ~set:
-      [
-        create_location ~qualifier:"b.a" ();
-        create_location ~qualifier:"a.z" ();
-        create_location ~qualifier:"a.y" ();
-      ]
-    ~expected:(create_location ~qualifier:"a.y" ());
   assert_canonical_location
     ~set:
       [
@@ -233,18 +211,17 @@ let test_canonical_location _ =
   assert_canonical_location
     ~set:
       [
-        create_location ~qualifier:"c" ~start_line:4 ~start_column:3 ~stop_line:10 ~stop_column:9 ();
-        create_location ~qualifier:"b" ~start_line:2 ~start_column:10 ~stop_line:8 ~stop_column:8 ();
-        create_location ~qualifier:"e" ~start_line:20 ~start_column:2 ~stop_line:4 ~stop_column:6 ();
-        create_location ~qualifier:"b" ~start_line:2 ~start_column:7 ~stop_line:6 ~stop_column:7 ();
-        create_location ~qualifier:"b" ~start_line:2 ~start_column:20 ~stop_line:2 ~stop_column:5 ();
-        create_location ~qualifier:"c" ~start_line:4 ~start_column:4 ~stop_line:4 ~stop_column:4 ();
-        create_location ~qualifier:"b" ~start_line:4 ~start_column:7 ~stop_line:6 ~stop_column:3 ();
-        create_location ~qualifier:"b" ~start_line:2 ~start_column:7 ~stop_line:98 ~stop_column:2 ();
-        create_location ~qualifier:"b" ~start_line:2 ~start_column:7 ~stop_line:6 ~stop_column:10 ();
+        create_location ~start_line:4 ~start_column:3 ~stop_line:10 ~stop_column:9 ();
+        create_location ~start_line:2 ~start_column:10 ~stop_line:8 ~stop_column:8 ();
+        create_location ~start_line:20 ~start_column:2 ~stop_line:4 ~stop_column:6 ();
+        create_location ~start_line:2 ~start_column:7 ~stop_line:6 ~stop_column:7 ();
+        create_location ~start_line:2 ~start_column:20 ~stop_line:2 ~stop_column:5 ();
+        create_location ~start_line:4 ~start_column:4 ~stop_line:4 ~stop_column:4 ();
+        create_location ~start_line:4 ~start_column:7 ~stop_line:6 ~stop_column:3 ();
+        create_location ~start_line:2 ~start_column:7 ~stop_line:98 ~stop_column:2 ();
+        create_location ~start_line:2 ~start_column:7 ~stop_line:6 ~stop_column:10 ();
       ]
-    ~expected:
-      (create_location ~qualifier:"b" ~start_line:2 ~start_column:7 ~stop_line:6 ~stop_column:7 ());
+    ~expected:(create_location ~start_line:2 ~start_column:7 ~stop_line:6 ~stop_column:7 ());
   ()
 
 

@@ -393,7 +393,7 @@ module ClassWithModifiers = struct
     >>= Result.all
     >>| fun modifiers ->
     {
-      PyreflyTypeRep.ClassWithModifiers.class_id =
+      PyreflyTypes.ClassWithModifiers.class_id =
         PyreflyReport.GlobalClassId.to_class_id global_class_id;
       modifiers;
     }
@@ -407,7 +407,7 @@ module ClassNamesResult = struct
     >>= Result.all
     >>= fun classes ->
     JsonUtil.get_optional_bool_member ~default:false json "is_exhaustive"
-    >>| fun is_exhaustive -> { PyreflyTypeRep.ClassNamesFromType.classes; is_exhaustive }
+    >>| fun is_exhaustive -> { PyreflyTypes.ClassesFromType.classes; is_exhaustive }
 
 
   let from_optional_json = function
@@ -424,7 +424,7 @@ module PyreflyType = struct
     >>= fun scalar_properties ->
     JsonUtil.get_optional_member json "class_names"
     |> ClassNamesResult.from_optional_json
-    >>| fun class_names -> { PyreflyTypeRep.string; scalar_properties; class_names }
+    >>| fun classes -> { PyreflyTypeRep.string; scalar_properties; classes }
 end
 
 module CapturedVariable = struct

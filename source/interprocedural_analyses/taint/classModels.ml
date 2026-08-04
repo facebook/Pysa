@@ -90,13 +90,13 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
     in
     BackwardState.Tree.transform BackwardTaint.Self Map ~f:transform tree
   in
-  let get_attribute_model class_name attribute =
-    Reference.create ~prefix:(Reference.create class_name) attribute
+  let get_attribute_model class_id attribute =
+    Reference.create ~prefix:(PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id) attribute
     |> Target.create_object
     |> SharedModels.ReadOnly.get user_models ~cache:false
   in
-  let get_attribute_tito_features class_name attribute root =
-    match get_attribute_model class_name attribute with
+  let get_attribute_tito_features class_id attribute root =
+    match get_attribute_model class_id attribute with
     | Some { Model.backward = { taint_in_taint_out; _ }; _ } ->
         BackwardState.read ~root:GlobalModel.global_root ~path:[] taint_in_taint_out
         |> translate_via_features_on_attribute attribute root
@@ -124,8 +124,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
     in
     BackwardState.assign ~root:input_root ~path:input_path leaf existing_state
   in
-  let add_parameter_to_self_attribute_tito ~class_name ~positional position existing_state attribute
-    =
+  let add_parameter_to_self_attribute_tito ~class_id ~positional position existing_state attribute =
     let input_root =
       if positional then
         AccessPath.Root.PositionalParameter { position; name = attribute; positional_only = false }
@@ -133,7 +132,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
         AccessPath.Root.NamedParameter { name = attribute }
     in
     let { FeatureSet.breadcrumbs; via_features } =
-      get_attribute_tito_features class_name attribute input_root
+      get_attribute_tito_features class_id attribute input_root
     in
     let self =
       AccessPath.Root.PositionalParameter { position = 0; name = "self"; positional_only = false }
@@ -148,8 +147,8 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       ~via_features
       existing_state
   in
-  let add_sink_from_attribute_model ~class_name ~positional position existing_state attribute =
-    match get_attribute_model class_name attribute with
+  let add_sink_from_attribute_model ~class_id ~positional position existing_state attribute =
+    match get_attribute_model class_id attribute with
     | Some { Model.backward = { sink_taint; _ }; _ } ->
         let root =
           if positional then
@@ -159,7 +158,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
             AccessPath.Root.NamedParameter { name = attribute }
         in
         let { FeatureSet.breadcrumbs; via_features } =
-          get_attribute_tito_features class_name attribute root
+          get_attribute_tito_features class_id attribute root
         in
         let taint =
           BackwardState.read ~root:GlobalModel.global_root ~path:[] sink_taint
@@ -170,25 +169,25 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
         BackwardState.assign ~weak:true ~root ~path:[] taint existing_state
     | None -> existing_state
   in
-  let taint_in_taint_out_for_positional_parameters ~class_name =
+  let taint_in_taint_out_for_positional_parameters ~class_id =
     List.foldi
       ~f:(fun position ->
-        add_parameter_to_self_attribute_tito ~class_name ~positional:true (position + 1))
+        add_parameter_to_self_attribute_tito ~class_id ~positional:true (position + 1))
       ~init:BackwardState.empty
   in
-  let sink_taint_for_positional_parameters ~class_name =
+  let sink_taint_for_positional_parameters ~class_id =
     List.foldi ~init:BackwardState.empty ~f:(fun position ->
-        add_sink_from_attribute_model ~class_name ~positional:true (position + 1))
+        add_sink_from_attribute_model ~class_id ~positional:true (position + 1))
   in
 
-  let compute_dataclass_models class_name class_summary =
+  let compute_dataclass_models class_id class_summary =
     let attributes =
       PyreflyApi.ReadOnly.ClassSummary.dataclass_ordered_attributes pyrefly_api class_summary
     in
     match
       PyreflyApi.ReadOnly.Target.resolve_method_target
         pyrefly_api
-        ~class_name:(Reference.create class_name)
+        ~class_id
         ~method_name:"__init__"
         ~is_property_setter:false
     with
@@ -201,23 +200,23 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
               backward =
                 {
                   Model.Backward.taint_in_taint_out =
-                    taint_in_taint_out_for_positional_parameters ~class_name attributes;
-                  sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
+                    taint_in_taint_out_for_positional_parameters ~class_id attributes;
+                  sink_taint = sink_taint_for_positional_parameters ~class_id attributes;
                 };
             } );
         ]
   in
   (* We always generate a special `_fields` attribute for NamedTuples which is a tuple containing
      field names. *)
-  let compute_named_tuple_models class_name class_summary =
+  let compute_named_tuple_models class_id class_summary =
     let attributes =
-      PyreflyApi.ReadOnly.named_tuple_attributes pyrefly_api class_name |> Option.value ~default:[]
+      PyreflyApi.ReadOnly.named_tuple_attributes pyrefly_api class_id |> Option.value ~default:[]
     in
     let prepend_init_model models =
       match
         PyreflyApi.ReadOnly.Target.resolve_method_target
           pyrefly_api
-          ~class_name:(Reference.create class_name)
+          ~class_id
           ~method_name:"__init__"
           ~is_property_setter:false
       with
@@ -230,8 +229,8 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
                 backward =
                   {
                     Model.Backward.taint_in_taint_out =
-                      taint_in_taint_out_for_positional_parameters ~class_name attributes;
-                    sink_taint = sink_taint_for_positional_parameters ~class_name attributes;
+                      taint_in_taint_out_for_positional_parameters ~class_id attributes;
+                    sink_taint = sink_taint_for_positional_parameters ~class_id attributes;
                   };
               } )
           in
@@ -246,7 +245,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       match
         PyreflyApi.ReadOnly.Target.resolve_method_target
           pyrefly_api
-          ~class_name:(Reference.create class_name)
+          ~class_id
           ~method_name:"__new__"
           ~is_property_setter:false
       with
@@ -254,7 +253,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       | None -> [])
     |> prepend_init_model
   in
-  let compute_typed_dict_models class_name class_summary =
+  let compute_typed_dict_models class_id class_summary =
     let fields =
       PyreflyApi.ReadOnly.ClassSummary.typed_dictionary_attributes pyrefly_api class_summary
     in
@@ -263,7 +262,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
     in
     let taint_in_taint_out =
       List.foldi
-        ~f:(add_parameter_to_self_attribute_tito ~class_name ~positional:false)
+        ~f:(add_parameter_to_self_attribute_tito ~class_id ~positional:false)
         ~init:BackwardState.empty
         fields
       (* `TypedDict.__init__ also accepts iterables and **kwargs. *)
@@ -302,12 +301,12 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
       List.foldi
         fields
         ~init:BackwardState.empty
-        ~f:(add_sink_from_attribute_model ~class_name ~positional:false)
+        ~f:(add_sink_from_attribute_model ~class_id ~positional:false)
     in
     match
       PyreflyApi.ReadOnly.Target.resolve_method_target
         pyrefly_api
-        ~class_name:(Reference.create class_name)
+        ~class_id
         ~method_name:"__init__"
         ~is_property_setter:false
     with
@@ -319,18 +318,18 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
           );
         ]
   in
-  let compute_models class_name class_summary =
+  let compute_models class_id class_summary =
     if PyreflyApi.ReadOnly.ClassSummary.is_dataclass pyrefly_api class_summary then
-      compute_dataclass_models class_name class_summary
+      compute_dataclass_models class_id class_summary
     else if PyreflyApi.ReadOnly.ClassSummary.is_named_tuple pyrefly_api class_summary then
-      compute_named_tuple_models class_name class_summary
+      compute_named_tuple_models class_id class_summary
     else if PyreflyApi.ReadOnly.ClassSummary.is_typed_dict pyrefly_api class_summary then
-      compute_typed_dict_models class_name class_summary
+      compute_typed_dict_models class_id class_summary
     else
       []
   in
-  let inferred_models class_name =
-    PyreflyApi.ReadOnly.get_class_summary pyrefly_api class_name |> compute_models class_name
+  let inferred_models class_id =
+    PyreflyApi.ReadOnly.get_class_summary pyrefly_api class_id |> compute_models class_id
   in
   let all_classes = PyreflyApi.ReadOnly.all_classes pyrefly_api ~scheduler in
   let models =

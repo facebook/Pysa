@@ -11,13 +11,25 @@ open Ast
 open Interprocedural
 
 let test_from_source context =
-  let assert_class_hierarchy ~source ~expected () =
+  let assert_class_hierarchy ~source ~expected_roots ~expected_edges () =
     let pyrefly_api =
       InterproceduralTest.ScratchPyrePysaProject.setup
         ~context
         ~requires_type_of_expressions:false
         ["test.py", source]
       |> InterproceduralTest.ScratchPyrePysaProject.read_only_api
+    in
+    (* The graph is keyed on class ids; resolve the expected class names into ids so that only the
+       node representation changes (names -> ids), not the structure. *)
+    let class_id name =
+      PyreflyApi.ReadOnly.class_id_from_name pyrefly_api (Reference.create name)
+    in
+    let expected =
+      ClassHierarchyGraph.Heap.create
+        ~roots:(List.map expected_roots ~f:class_id)
+        ~edges:
+          (List.map expected_edges ~f:(fun (parent, children) ->
+               class_id parent, List.map children ~f:class_id))
     in
     let class_hierarchy =
       ClassHierarchyGraph.Heap.from_qualifier ~pyrefly_api ~qualifier:(Reference.create "test")
@@ -28,7 +40,6 @@ let test_from_source context =
       ~printer:ClassHierarchyGraph.Heap.show
       ~cmp:ClassHierarchyGraph.Heap.equal
   in
-  let create = ClassHierarchyGraph.Heap.create in
   assert_class_hierarchy
     ~source:
       {|
@@ -37,17 +48,15 @@ let test_from_source context =
       class C(A): pass
       class D(B, C): pass
     |}
-    ~expected:
-      (create
-         ~roots:["builtins.object"]
-         ~edges:
-           [
-             "builtins.object", ["test.A"];
-             "test.A", ["test.B"; "test.C"];
-             "test.B", ["test.D"];
-             "test.C", ["test.D"];
-             "test.D", [];
-           ])
+    ~expected_roots:["builtins.object"]
+    ~expected_edges:
+      [
+        "builtins.object", ["test.A"];
+        "test.A", ["test.B"; "test.C"];
+        "test.B", ["test.D"];
+        "test.C", ["test.D"];
+        "test.D", [];
+      ]
     ();
   assert_class_hierarchy
     ~source:
@@ -56,17 +65,15 @@ let test_from_source context =
       class A(metaclass=Meta): pass
       class B(Meta, object): pass
     |}
-    ~expected:
-      (create
-         ~roots:["builtins.object"; "builtins.type"]
-         ~edges:
-           [
-             "builtins.object", ["test.A"; "test.B"];
-             "builtins.type", ["test.Meta"];
-             "test.Meta", ["test.B"];
-             "test.A", [];
-             "test.B", [];
-           ])
+    ~expected_roots:["builtins.object"; "builtins.type"]
+    ~expected_edges:
+      [
+        "builtins.object", ["test.A"; "test.B"];
+        "builtins.type", ["test.Meta"];
+        "test.Meta", ["test.B"];
+        "test.A", [];
+        "test.B", [];
+      ]
     ();
   assert_class_hierarchy
     ~source:
@@ -78,24 +85,41 @@ let test_from_source context =
       class E(D): pass
       class F(D, A): pass
     |}
-    ~expected:
-      (create
-         ~roots:["builtins.object"]
-         ~edges:
-           [
-             "builtins.object", ["test.A"; "test.B"];
-             "test.A", ["test.C"; "test.D"; "test.F"];
-             "test.B", ["test.D"];
-             "test.C", [];
-             "test.D", ["test.E"; "test.F"];
-             "test.E", [];
-             "test.F", [];
-           ])
+    ~expected_roots:["builtins.object"]
+    ~expected_edges:
+      [
+        "builtins.object", ["test.A"; "test.B"];
+        "test.A", ["test.C"; "test.D"; "test.F"];
+        "test.B", ["test.D"];
+        "test.C", [];
+        "test.D", ["test.E"; "test.F"];
+        "test.E", [];
+        "test.F", [];
+      ]
     ();
   ()
 
 
 let test_graph_join _ =
+  (* These tests use class names as opaque node identifiers, so assign a distinct synthetic class id
+     per name (deterministically within the test) and route both inputs and expected graphs through
+     the same mapping. *)
+  let cid =
+    let table = String.Table.create () in
+    let next = ref 0 in
+    fun name ->
+      Hashtbl.find_or_add table name ~default:(fun () ->
+          let id = !next in
+          incr next;
+          PyreflyTypes.ClassId.encode
+            ~module_id:(PyreflyTypes.ModuleId.from_int 0)
+            (PyreflyTypes.LocalClassId.from_int id))
+  in
+  let create ~roots ~edges =
+    ClassHierarchyGraph.Heap.create
+      ~roots:(List.map roots ~f:cid)
+      ~edges:(List.map edges ~f:(fun (parent, children) -> cid parent, List.map children ~f:cid))
+  in
   let assert_graph_join ~left ~right ~expected =
     let joined = ClassHierarchyGraph.Heap.join left right in
     assert_equal
@@ -104,7 +128,6 @@ let test_graph_join _ =
       ~printer:ClassHierarchyGraph.Heap.show
       ~cmp:ClassHierarchyGraph.Heap.equal
   in
-  let create = ClassHierarchyGraph.Heap.create in
   let left_graph = create ~roots:["A"; "D"] ~edges:["A", ["B"; "C"]; "B", []; "C", []; "D", []] in
   assert_graph_join ~left:left_graph ~right:left_graph ~expected:left_graph;
   assert_graph_join

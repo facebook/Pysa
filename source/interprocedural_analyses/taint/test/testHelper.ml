@@ -154,7 +154,10 @@ let outcome
 let create_callable ~pyrefly_api kind define_name =
   let name = Reference.create define_name in
   let target_from_define_name ~override name =
-    Interprocedural.PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override name
+    Interprocedural.PyreflyApi.ReadOnly.Target.target_from_callable_id
+      pyrefly_api
+      ~override
+      (Interprocedural.PyreflyApi.ReadOnly.Target.callable_id_from_name_exn pyrefly_api name)
   in
   match kind with
   | `Method
@@ -442,9 +445,9 @@ let check_expectation
   (* Check errors *)
   let actual_errors =
     let to_analysis_error =
-      Error.instantiate
-        ~show_error_traces:true
-        ~lookup:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+      Error.instantiate ~show_error_traces:true ~lookup:(fun qualifier ->
+          PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier
+          |> PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
     in
     get_errors callable
     |> List.map ~f:(Issue.to_error ~pyrefly_api ~taint_configuration)
@@ -504,7 +507,7 @@ let get_initial_models ~pyrefly_api =
   let { ModelParseResult.models; errors; _ } =
     ModelParser.parse
       ~pyrefly_api
-      ~path_of_qualifier:(PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+      ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
       ~source:initial_models_source
       ~taint_configuration:TaintConfiguration.Heap.default
       ~source_sink_filter:None
@@ -692,8 +695,7 @@ let initialize
         let { ModelParseResult.models = regular_models; errors; queries } =
           ModelParser.parse
             ~pyrefly_api
-            ~path_of_qualifier:
-              (PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api)
+            ~path_of_module:(PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api)
             ?path:model_path
             ~source:(Test.trim_extra_indentation source)
             ~taint_configuration
@@ -1198,8 +1200,8 @@ let end_to_end_integration_test path context =
         ~epoch:TaintFixpoint.Epoch.initial
         ~state:fixpoint_state
     in
-    let resolve_module_path qualifier =
-      PyreflyApi.ReadOnly.search_path_relative_path_of_qualifier pyrefly_api qualifier
+    let resolve_module_path module_id =
+      PyreflyApi.ReadOnly.search_path_relative_path_of_module pyrefly_api module_id
       >>| fun filename ->
       { RepositoryPath.filename = Some filename; path = PyrePath.create_absolute filename }
     in

@@ -59,7 +59,7 @@
               "resolves_to": [ "overrides.B.methodB", "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 13, "upper": 20 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -84,8 +84,8 @@
               "port": "formal(arg, position=1)",
               "call_site": "113:4-113:22"
             },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
-            "receiver_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": true
           }
         ]
@@ -134,7 +134,7 @@
               "resolves_to": [ "overrides.B.methodB", "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 13, "upper": 20 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -159,7 +159,7 @@
               "port": "formal(arg, position=1)",
               "call_site": "112:4-112:16"
             },
-            "receiver_interval": [ { "lower": 13, "upper": 20 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -208,7 +208,7 @@
               "resolves_to": [ "overrides.B.methodB", "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 10, "upper": 21 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -233,8 +233,8 @@
               "port": "formal(arg, position=1)",
               "call_site": "81:4-81:22"
             },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
-            "receiver_interval": [ { "lower": 10, "upper": 21 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 13 } ],
             "is_self_call": true
           }
         ]
@@ -283,7 +283,7 @@
               "resolves_to": [ "overrides.B.methodB", "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 10, "upper": 21 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -308,7 +308,7 @@
               "port": "formal(arg, position=1)",
               "call_site": "80:4-80:16"
             },
-            "receiver_interval": [ { "lower": 10, "upper": 21 } ],
+            "receiver_interval": [ { "lower": 2, "upper": 13 } ],
             "is_self_call": false
           }
         ]
@@ -357,7 +357,7 @@
               "resolves_to": [ "overrides.B.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 14, "upper": 19 } ],
+            "receiver_interval": [ { "lower": 6, "upper": 11 } ],
             "is_self_call": false
           },
           {
@@ -376,7 +376,7 @@
               "resolves_to": [ "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 14, "upper": 19 } ],
+            "receiver_interval": [ { "lower": 6, "upper": 11 } ],
             "is_self_call": false
           }
         ]
@@ -401,7 +401,7 @@
               "port": "formal(arg, position=1)",
               "call_site": "128:4-128:16"
             },
-            "receiver_interval": [ { "lower": 14, "upper": 19 } ],
+            "receiver_interval": [ { "lower": 6, "upper": 11 } ],
             "is_self_call": false
           }
         ]
@@ -450,7 +450,7 @@
               "resolves_to": [ "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 15, "upper": 18 } ],
+            "receiver_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -475,7 +475,7 @@
               "port": "formal(arg, position=1)",
               "call_site": "144:4-144:16"
             },
-            "receiver_interval": [ { "lower": 15, "upper": 18 } ],
+            "receiver_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -524,7 +524,7 @@
               "resolves_to": [ "overrides.B.methodB", "overrides.D.methodB" ],
               "port": "result"
             },
-            "receiver_interval": [ { "lower": 13, "upper": 20 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -549,7 +549,7 @@
               "port": "formal(arg, position=1)",
               "call_site": "118:4-118:20"
             },
-            "receiver_interval": [ { "lower": 13, "upper": 20 } ],
+            "receiver_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -599,7 +599,7 @@
               }
             ],
             "origin": { "line": 247, "start": 15, "end": 32 },
-            "receiver_interval": [ { "lower": 22, "upper": 25 } ],
+            "receiver_interval": [ { "lower": 34, "upper": 37 } ],
             "is_self_call": false
           }
         ]
@@ -1006,7 +1006,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 33, "start": 25, "end": 28 } ],
             "tito": {
-              "caller_interval": [ { "lower": 11, "upper": 12 } ],
+              "caller_interval": [ { "lower": 3, "upper": 4 } ],
               "is_self_call": false
             }
           }
@@ -1036,7 +1036,7 @@
               }
             ],
             "origin": { "line": 36, "start": 19, "end": 22 },
-            "caller_interval": [ { "lower": 11, "upper": 12 } ],
+            "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false,
             "call_site": "36:8-36:23"
           }
@@ -1066,7 +1066,7 @@
               }
             ],
             "origin": { "line": 203, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
+            "caller_interval": [ { "lower": 23, "upper": 24 } ],
             "is_self_call": false
           }
         ]
@@ -1095,7 +1095,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 43, "start": 32, "end": 35 } ],
             "tito": {
-              "caller_interval": [ { "lower": 13, "upper": 20 } ],
+              "caller_interval": [ { "lower": 5, "upper": 12 } ],
               "is_self_call": false
             }
           }
@@ -1125,7 +1125,7 @@
               }
             ],
             "origin": { "line": 50, "start": 19, "end": 22 },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false,
             "call_site": "50:8-50:23"
           }
@@ -1155,7 +1155,7 @@
               }
             ],
             "origin": { "line": 46, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -1222,7 +1222,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 57, "start": 32, "end": 35 } ],
             "tito": {
-              "caller_interval": [ { "lower": 14, "upper": 19 } ],
+              "caller_interval": [ { "lower": 6, "upper": 11 } ],
               "is_self_call": false
             }
           }
@@ -1252,7 +1252,7 @@
             "local_features": [ { "always-via": "tito" } ],
             "tito_positions": [ { "line": 69, "start": 32, "end": 35 } ],
             "tito": {
-              "caller_interval": [ { "lower": 15, "upper": 18 } ],
+              "caller_interval": [ { "lower": 7, "upper": 10 } ],
               "is_self_call": false
             }
           }
@@ -1282,7 +1282,7 @@
               }
             ],
             "origin": { "line": 72, "start": 19, "end": 22 },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false,
             "call_site": "72:8-72:23"
           }
@@ -1312,7 +1312,7 @@
               }
             ],
             "origin": { "line": 75, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -1355,7 +1355,7 @@
               }
             ],
             "origin": { "line": 181, "start": 19, "end": 22 },
-            "caller_interval": [ { "lower": 27, "upper": 28 } ],
+            "caller_interval": [ { "lower": 15, "upper": 16 } ],
             "is_self_call": false,
             "call_site": "181:8-181:23"
           }
@@ -1424,7 +1424,7 @@
               }
             ],
             "origin": { "line": 229, "start": 15, "end": 29 },
-            "caller_interval": [ { "lower": 35, "upper": 36 } ],
+            "caller_interval": [ { "lower": 31, "upper": 32 } ],
             "is_self_call": false
           }
         ]
@@ -1451,7 +1451,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 11, "upper": 12 } ],
+            "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           }
         ]
@@ -1478,7 +1478,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
+            "caller_interval": [ { "lower": 23, "upper": 24 } ],
             "is_self_call": false
           }
         ]
@@ -1506,7 +1506,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 7, "upper": 8 } ],
+            "caller_interval": [ { "lower": 23, "upper": 24 } ],
             "is_self_call": false
           }
         ]
@@ -1533,7 +1533,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -1560,7 +1560,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           },
           {
@@ -1574,7 +1574,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -1601,7 +1601,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           }
         ]
@@ -1628,7 +1628,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 11, "upper": 12 } ],
+            "caller_interval": [ { "lower": 3, "upper": 4 } ],
             "is_self_call": false
           },
           {
@@ -1642,7 +1642,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -1680,7 +1680,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 13, "upper": 20 } ],
+            "caller_interval": [ { "lower": 5, "upper": 12 } ],
             "is_self_call": false
           },
           {
@@ -1694,7 +1694,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -1752,7 +1752,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -1790,7 +1790,7 @@
               }
             ],
             "override_call": { "port": "formal(arg, position=1)" },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]
@@ -1828,7 +1828,7 @@
               }
             ],
             "override_call": { "port": "result" },
-            "caller_interval": [ { "lower": 15, "upper": 18 } ],
+            "caller_interval": [ { "lower": 7, "upper": 10 } ],
             "is_self_call": false
           }
         ]

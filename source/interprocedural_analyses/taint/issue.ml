@@ -39,22 +39,30 @@ module Flow = struct
     }
 end
 
-module LocationSet = Stdlib.Set.Make (Location.WithModule)
+module LocationSet = Stdlib.Set.Make (Location.T)
 
 type t = {
   flow: Flow.t;
   handle: IssueHandle.t;
+  module_id: PyreflyTypes.ModuleId.t;
   locations: LocationSet.t;
   define_location: Location.t;
 }
 
 let join
-    { flow = flow_left; handle; locations = locations_left; define_location }
-    { flow = flow_right; handle = _; locations = locations_right; define_location = _ }
+    { flow = flow_left; handle; module_id; locations = locations_left; define_location }
+    {
+      flow = flow_right;
+      handle = _;
+      module_id = _;
+      locations = locations_right;
+      define_location = _;
+    }
   =
   {
     flow = Flow.join flow_left flow_right;
     handle;
+    module_id;
     locations = LocationSet.union locations_left locations_right;
     define_location;
   }
@@ -68,7 +76,8 @@ let canonical_location { locations; _ } =
 module CandidateKey = struct
   module T = struct
     type t = {
-      location: Location.WithModule.t;
+      module_id: PyreflyTypes.ModuleId.t;
+      location: Location.t;
       sink_handle: IssueHandle.Sink.t;
     }
     [@@deriving compare, sexp, hash]
@@ -101,7 +110,7 @@ end
    Let F and B for forward and backward taint respectively. For each path p in B from the root to
    some node with non-empty taint T, we match T with the join of taint in the upward and downward
    closure from node at path p in F. *)
-let generate_source_sink_matches ~location ~sink_handle ~source_tree ~sink_tree =
+let generate_source_sink_matches ~module_id ~location ~sink_handle ~source_tree ~sink_tree =
   let make_source_sink_matches (path, sink_taint) matches =
     let source_taint =
       ForwardState.Tree.read_refined path source_tree
@@ -122,7 +131,7 @@ let generate_source_sink_matches ~location ~sink_handle ~source_tree ~sink_tree 
         ~f:make_source_sink_matches
         sink_tree
   in
-  { Candidate.flows; key = { location; sink_handle } }
+  { Candidate.flows; key = { module_id; location; sink_handle } }
 
 
 module PartitionedFlow = struct
@@ -136,7 +145,7 @@ let generate_issues
     ~taint_configuration
     ~callable
     ~define_location
-    { Candidate.flows; key = { location; sink_handle } }
+    { Candidate.flows; key = { module_id; location; sink_handle } }
   =
   let partitions =
     let partition { Flow.source_taint; sink_taint } =
@@ -366,6 +375,7 @@ let generate_issues
               callable = IssueHandle.CanonicalCallee.Target callable;
               sink = sink_handle;
             };
+          module_id;
           locations = LocationSet.singleton location;
           define_location;
         }
@@ -566,6 +576,7 @@ end
 let compute_triggered_flows
     ~taint_configuration:{ TaintConfiguration.Heap.partial_sink_converter; _ }
     ~triggered_sinks_for_call
+    ~module_id
     ~location
     ~sink_handle
     ~source_tree
@@ -586,7 +597,7 @@ let compute_triggered_flows
        No need to add subtraces for the discovered flow, since it is already an issue. *)
     let triggered_sink_taint =
       TriggeredSinkForCall.convert_partial_sinks_into_triggered
-        ~argument_location:(Location.strip_module location)
+        ~argument_location:location
         ~sink_tree
         ~partial_sink
         triggered_sinks_for_call
@@ -596,6 +607,7 @@ let compute_triggered_flows
     else
       Some
         (generate_source_sink_matches
+           ~module_id
            ~location
            ~sink_handle
            ~source_tree
@@ -620,7 +632,7 @@ let compute_triggered_flows
     let () =
       TriggeredSinkForCall.add
         triggered_sinks_for_call
-        ~argument_location:(Location.strip_module location)
+        ~argument_location:location
         ~triggered_sink
         ~extra_traces
     in
@@ -660,8 +672,8 @@ module Candidates = struct
 
   (* Check for issues in flows from the `source_tree` to the `sink_tree`, updating
    * issue `candidates`. *)
-  let check_flow candidates ~location ~sink_handle ~source_tree ~sink_tree =
-    generate_source_sink_matches ~location ~sink_handle ~source_tree ~sink_tree
+  let check_flow candidates ~module_id ~location ~sink_handle ~source_tree ~sink_tree =
+    generate_source_sink_matches ~module_id ~location ~sink_handle ~source_tree ~sink_tree
     |> add_candidate candidates
 
 
@@ -673,6 +685,7 @@ module Candidates = struct
       candidates
       ~taint_configuration
       ~triggered_sinks_for_call
+      ~module_id
       ~location
       ~sink_handle
       ~source_tree
@@ -683,6 +696,7 @@ module Candidates = struct
         ~taint_configuration
         ~triggered_sinks_for_call
         ~sink_handle
+        ~module_id
         ~location
         ~source_tree
         ~sink_tree
@@ -771,7 +785,7 @@ let get_name_and_detailed_message
 let to_error
     ~pyrefly_api
     ~taint_configuration:({ TaintConfiguration.Heap.rules; _ } as taint_configuration)
-    ({ handle = { code; callable; _ }; _ } as issue)
+    ({ handle = { code; callable; _ }; module_id; _ } as issue)
   =
   match List.find ~f:(fun { code = rule_code; _ } -> code = rule_code) rules with
   | None -> failwith "issue with code that has no rule"
@@ -779,13 +793,17 @@ let to_error
       let name, detail = get_name_and_detailed_message ~taint_configuration issue in
       let kind = { Error.name; messages = [detail]; code } in
       let location = canonical_location issue in
+      let module_reference = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
       let external_name =
         IssueHandle.CanonicalCallee.external_name
           ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api)
           callable
         |> Reference.create
       in
-      Error.create ~location ~kind ~define_name:external_name
+      Error.create
+        ~location:(Location.with_module ~module_reference location)
+        ~kind
+        ~define_name:external_name
 
 
 let to_json
@@ -852,16 +870,13 @@ let to_json
         `Assoc ["name", `String "backward"; "roots", sink_traces];
       ]
   in
-  let filename_lookup qualifier =
-    resolve_module_path qualifier >>= fun { RepositoryPath.filename; _ } -> filename
+  let { Location.start = { line; column = start_column }; stop = { column = stop_column; _ } } =
+    canonical_location issue
   in
-  let {
-    Location.WithPath.path;
-    start = { line; column = start_column };
-    stop = { column = stop_column; _ };
-  }
-    =
-    canonical_location issue |> Location.WithModule.instantiate ~lookup:filename_lookup
+  let path =
+    resolve_module_path issue.module_id
+    >>= (fun { RepositoryPath.filename; _ } -> filename)
+    |> Option.value ~default:"*"
   in
   let callable_line = Ast.(Location.line issue.define_location) in
   let sink_handle = IssueHandle.Sink.to_json ~display_api issue.handle.sink in

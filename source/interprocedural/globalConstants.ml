@@ -23,7 +23,11 @@ module Heap = struct
 
   let empty = Reference.Map.empty
 
-  let from_qualifier ~pyrefly_api ~callables_to_definitions_map qualifier =
+  let from_module ~pyrefly_api ~callables_to_definitions_map module_id =
+    let top_level_callable_id =
+      PyreflyTypes.CallableId.encode ~module_id PyreflyTypes.LocalFunctionId.ModuleTopLevel
+    in
+    let qualifier = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
     let extract_string = function
       (* __module__ affects name resolution, due to __module__ specifying the module something was
          defined in, so a solution is just to skip __module__ assignments *)
@@ -59,12 +63,11 @@ module Heap = struct
       | _ -> None
     in
     let open Option.Monad_infix in
-    qualifier
-    |> PyreflyApi.ReadOnly.get_qualifier_top_level_define_name pyrefly_api
-    |> PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false
+    top_level_callable_id
+    |> PyreflyApi.ReadOnly.Target.target_from_callable_id pyrefly_api ~override:false
     |> CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
     |> AstResult.to_option
-    >>| (fun { CallablesSharedMemory.DefineAndQualifier.define; _ } -> define)
+    >>| (fun { CallablesSharedMemory.DefineAndModule.define; _ } -> define)
     >>| Ast.Node.value
     >>| (fun { Ast.Statement.Define.body; _ } -> body)
     |> Option.value ~default:[]
@@ -79,9 +82,17 @@ module Heap = struct
     |> Ast.Reference.Map.of_alist_reduce ~f:(fun _old updated -> updated)
 
 
-  let from_qualifiers ~pyrefly_api ~callables_to_definitions_map ~qualifiers =
-    let build_per_qualifier qualifier =
-      from_qualifier ~pyrefly_api ~callables_to_definitions_map qualifier
+  (* Convenience wrapper used by tests, which naturally have a module qualifier in hand. *)
+  let from_qualifier ~pyrefly_api ~callables_to_definitions_map qualifier =
+    from_module
+      ~pyrefly_api
+      ~callables_to_definitions_map
+      (PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
+
+
+  let from_modules ~pyrefly_api ~callables_to_definitions_map ~module_ids =
+    let build_per_module module_id =
+      from_module ~pyrefly_api ~callables_to_definitions_map module_id
     in
     let reduce =
       let merge ~key = function
@@ -100,7 +111,15 @@ module Heap = struct
       in
       Map.merge ~f:merge
     in
-    qualifiers |> List.map ~f:build_per_qualifier |> Algorithms.fold_balanced ~init:empty ~f:reduce
+    module_ids |> List.map ~f:build_per_module |> Algorithms.fold_balanced ~init:empty ~f:reduce
+
+
+  (* Convenience wrapper used by tests, which naturally have a module qualifier in hand. *)
+  let from_qualifiers ~pyrefly_api ~callables_to_definitions_map ~qualifiers =
+    let module_ids =
+      List.map ~f:(PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api) qualifiers
+    in
+    from_modules ~pyrefly_api ~callables_to_definitions_map ~module_ids
 end
 
 module SharedMemory = struct
@@ -121,12 +140,12 @@ module SharedMemory = struct
 
   let from_heap heap = heap |> Map.to_alist |> T.of_alist_sequential
 
-  let from_qualifiers
+  let from_modules
       ~scheduler
       ~scheduler_policies
       ~pyrefly_api
       ~callables_to_definitions_map
-      ~qualifiers
+      ~module_ids
     =
     let scheduler_policy =
       Scheduler.Policy.from_configuration_or_default
@@ -148,12 +167,12 @@ module SharedMemory = struct
       scheduler
       ~policy:scheduler_policy
       ~initial:handle
-      ~map:(fun qualifiers ->
+      ~map:(fun module_ids ->
         add_heap
           empty_handle
-          (Heap.from_qualifiers ~pyrefly_api ~callables_to_definitions_map ~qualifiers))
+          (Heap.from_modules ~pyrefly_api ~callables_to_definitions_map ~module_ids))
       ~reduce:(fun smaller larger -> T.AddOnly.merge_same_handle_disjoint_keys ~smaller ~larger)
-      ~inputs:qualifiers
+      ~inputs:module_ids
       ()
     |> T.from_add_only
 end

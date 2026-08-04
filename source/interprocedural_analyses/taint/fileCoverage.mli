@@ -11,8 +11,7 @@ type t
 val from_callables
   :  scheduler:Scheduler.t ->
   scheduler_policies:Configuration.SchedulerPolicies.t ->
-  callables_to_definitions_map:Interprocedural.CallablesSharedMemory.ReadOnly.t ->
-  resolve_module_path:(Ast.Reference.t -> Interprocedural.RepositoryPath.t option) ->
+  resolve_module_path:(PyreflyTypes.ModuleId.t -> Interprocedural.RepositoryPath.t option) ->
   callables:Target.t list ->
   t
 

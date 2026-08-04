@@ -35,23 +35,20 @@ let join left right =
   }
 
 
-let from_qualifier ~pyrefly_api ~qualifier =
-  let define_names =
-    PyreflyApi.ReadOnly.get_define_names_for_qualifier
-      pyrefly_api
-      ~exclude_test_modules:true
-      qualifier
+let from_module ~pyrefly_api ~module_id =
+  let callable_ids =
+    PyreflyApi.ReadOnly.get_callable_ids_for_module pyrefly_api ~exclude_test_modules:true module_id
   in
-  let is_stub_module = PyreflyApi.ReadOnly.is_stub_qualifier pyrefly_api qualifier in
-  let is_internal = PyreflyApi.ReadOnly.is_internal_qualifier pyrefly_api qualifier in
-  let add_target result define_name =
+  let is_stub_module = PyreflyApi.ReadOnly.is_stub_module pyrefly_api module_id in
+  let is_internal = PyreflyApi.ReadOnly.is_internal_module pyrefly_api module_id in
+  let add_target result callable_id =
     let target =
-      PyreflyApi.ReadOnly.Target.target_from_define_name pyrefly_api ~override:false define_name
+      PyreflyApi.ReadOnly.Target.target_from_callable_id pyrefly_api ~override:false callable_id
     in
     let { PyreflyApi.CallableMetadata.is_toplevel; is_class_toplevel; _ } =
-      PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api define_name
+      PyreflyApi.ReadOnly.Target.get_callable_metadata pyrefly_api callable_id
     in
-    let is_stub_like = PyreflyApi.ReadOnly.is_stub_like_callable pyrefly_api define_name in
+    let is_stub_like = PyreflyApi.ReadOnly.is_stub_like_callable pyrefly_api callable_id in
     (* Note: when changing this, also change `PyreflyApi.ReadOnly.parse_call_graphs` *)
     if is_stub_module && (is_toplevel || is_class_toplevel) then
       (* Ignore top level define for stub modules (i.e, `.pyi`) *)
@@ -67,15 +64,22 @@ let from_qualifier ~pyrefly_api ~qualifier =
     else
       { result with definitions = target :: result.definitions }
   in
-  List.fold define_names ~init:empty ~f:add_target
+  List.fold callable_ids ~init:empty ~f:add_target
 
 
-let from_qualifiers ~scheduler ~scheduler_policy ~pyrefly_api ~configuration:_ ~qualifiers =
-  let map qualifiers =
-    let callables_of_qualifier callables qualifier =
-      from_qualifier ~pyrefly_api ~qualifier |> join callables
+(* Convenience wrapper used by tests, which naturally have a module qualifier in hand. *)
+let from_qualifier ~pyrefly_api ~qualifier =
+  from_module
+    ~pyrefly_api
+    ~module_id:(PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
+
+
+let from_modules ~scheduler ~scheduler_policy ~pyrefly_api ~configuration:_ ~module_ids =
+  let map module_ids =
+    let callables_of_module callables module_id =
+      from_module ~pyrefly_api ~module_id |> join callables
     in
-    List.fold qualifiers ~f:callables_of_qualifier ~init:empty
+    List.fold module_ids ~f:callables_of_module ~init:empty
   in
   Scheduler.map_reduce
     scheduler
@@ -83,7 +87,7 @@ let from_qualifiers ~scheduler ~scheduler_policy ~pyrefly_api ~configuration:_ ~
     ~map
     ~reduce:join
     ~initial:empty
-    ~inputs:qualifiers
+    ~inputs:module_ids
     ()
 
 

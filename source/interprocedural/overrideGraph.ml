@@ -88,11 +88,19 @@ module Heap = struct
       overrides
 
 
-  let from_qualifier ~pyrefly_api ~skip_overrides_targets qualifier =
-    PyreflyApi.ReadOnly.get_methods_for_qualifier ~exclude_test_modules:true pyrefly_api qualifier
+  let from_module ~pyrefly_api ~skip_overrides_targets module_id =
+    PyreflyApi.ReadOnly.get_methods_for_module ~exclude_test_modules:true pyrefly_api module_id
     |> List.filter_map ~f:(OverridingRelation.from_method_id ~pyrefly_api)
     |> from_overriding_relations
     |> skip_overrides ~pyrefly_api ~to_skip:skip_overrides_targets
+
+
+  (* Convenience wrapper used by tests, which naturally have a module qualifier in hand. *)
+  let from_qualifier ~pyrefly_api ~skip_overrides_targets qualifier =
+    from_module
+      ~pyrefly_api
+      ~skip_overrides_targets
+      (PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
 
 
   type cap_overrides_result = {
@@ -224,13 +232,13 @@ let build_whole_program_overrides
     ~skip_overrides_targets
     ~maximum_overrides
     ~analyze_all_overrides_targets
-    ~qualifiers
+    ~module_ids
   =
   let overrides =
     let combine ~key:_ left right = List.rev_append left right in
-    let build_overrides overrides qualifier =
-      qualifier
-      |> Heap.from_qualifier ~pyrefly_api ~skip_overrides_targets
+    let build_overrides overrides module_id =
+      module_id
+      |> Heap.from_module ~pyrefly_api ~skip_overrides_targets
       |> Target.Map.Tree.merge_skewed ~combine overrides
     in
     let scheduler_policy =
@@ -248,9 +256,9 @@ let build_whole_program_overrides
       scheduler
       ~policy:scheduler_policy
       ~initial:Heap.empty
-      ~map:(fun qualifiers -> List.fold qualifiers ~init:Heap.empty ~f:build_overrides)
+      ~map:(fun module_ids -> List.fold module_ids ~init:Heap.empty ~f:build_overrides)
       ~reduce:(Target.Map.Tree.merge_skewed ~combine)
-      ~inputs:qualifiers
+      ~inputs:module_ids
       ()
   in
   let { Heap.overrides = override_graph_heap; skipped_overrides } =
