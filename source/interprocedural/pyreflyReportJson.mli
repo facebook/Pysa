@@ -69,24 +69,20 @@ module ModulePath : sig
   val from_json : Yojson.Safe.t -> (PyreflyReport.ModulePath.t, PyreflyReport.FormatError.t) result
 end
 
-module GlobalClassId : sig
-  val from_json
-    :  Yojson.Safe.t ->
-    (PyreflyReport.GlobalClassId.t, PyreflyReport.FormatError.t) result
+module ClassId : sig
+  val from_json : Yojson.Safe.t -> (PyreflyTypes.ClassId.t, PyreflyReport.FormatError.t) result
 
   val from_optional_json
     :  Yojson.Safe.t option ->
-    (PyreflyReport.GlobalClassId.t option, PyreflyReport.FormatError.t) result
+    (PyreflyTypes.ClassId.t option, PyreflyReport.FormatError.t) result
 end
 
-module GlobalCallableId : sig
-  val from_json
-    :  Yojson.Safe.t ->
-    (PyreflyReport.GlobalCallableId.t, PyreflyReport.FormatError.t) result
+module CallableId : sig
+  val from_json : Yojson.Safe.t -> (PyreflyTypes.CallableId.t, PyreflyReport.FormatError.t) result
 
   val from_optional_json
     :  Yojson.Safe.t option ->
-    (PyreflyReport.GlobalCallableId.t option, PyreflyReport.FormatError.t) result
+    (PyreflyTypes.CallableId.t option, PyreflyReport.FormatError.t) result
 end
 
 module PyreflyTarget : sig
@@ -148,7 +144,7 @@ module ModuleDefinitionsFile : sig
 
   val parse_decorator_callees
     :  (string * Yojson.Safe.t) list ->
-    ( PyreflyReport.GlobalCallableId.t list Ast.Location.SerializableMap.t,
+    ( PyreflyTypes.CallableId.t list Ast.Location.SerializableMap.t,
       PyreflyReport.FormatError.t )
     result
 

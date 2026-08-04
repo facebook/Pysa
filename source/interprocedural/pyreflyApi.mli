@@ -517,11 +517,6 @@ module InContext : sig
 end
 
 (* Exposed for testing purposes *)
-module GlobalCallableId : sig
-  type t [@@deriving compare, equal, show]
-end
-
-(* Exposed for testing purposes *)
 module ModulePath : sig
   type t =
     | Filesystem of ArtifactPath.t
@@ -562,11 +557,6 @@ module ProjectFile : sig
 end
 
 (* Exposed for testing purposes *)
-module GlobalClassId : sig
-  type t [@@deriving show]
-end
-
-(* Exposed for testing purposes *)
 module ClassFieldDeclarationKind : sig
   type t =
     | DeclaredByAnnotation
@@ -581,7 +571,7 @@ end
 module CapturedVariable : sig
   type t = {
     name: string;
-    outer_function: GlobalCallableId.t;
+    outer_function: PyreflyTypes.CallableId.t;
   }
   [@@deriving equal, show]
 end
@@ -657,16 +647,16 @@ module ModuleDefinitionsFile : sig
       is_def_statement: bool;
       is_toplevel: bool;
       is_class_toplevel: bool;
-      overridden_base_method: GlobalCallableId.t option;
-      defining_class: GlobalClassId.t option;
-      decorator_callees: GlobalCallableId.t list Ast.Location.SerializableMap.t;
+      overridden_base_method: PyreflyTypes.CallableId.t option;
+      defining_class: PyreflyTypes.ClassId.t option;
+      decorator_callees: PyreflyTypes.CallableId.t list Ast.Location.SerializableMap.t;
     }
     [@@deriving equal, show]
   end
 
   module ClassMro : sig
     type t =
-      | Resolved of GlobalClassId.t list
+      | Resolved of PyreflyTypes.ClassId.t list
       | Cyclic
     [@@deriving equal, show]
   end
@@ -688,14 +678,14 @@ module ModuleDefinitionsFile : sig
       local_class_id: PyreflyTypes.LocalClassId.t;
       name_location: Ast.Location.t;
       parent: ParentScope.t;
-      bases: GlobalClassId.t list;
+      bases: PyreflyTypes.ClassId.t list;
       mro: ClassMro.t;
       is_synthesized: bool;
       is_dataclass: bool;
       is_named_tuple: bool;
       is_typed_dict: bool;
       fields: PyreflyClassField.t list;
-      decorator_callees: GlobalCallableId.t list Ast.Location.SerializableMap.t;
+      decorator_callees: PyreflyTypes.CallableId.t list Ast.Location.SerializableMap.t;
     }
     [@@deriving equal, show]
   end

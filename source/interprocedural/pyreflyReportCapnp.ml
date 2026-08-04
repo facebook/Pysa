@@ -74,7 +74,7 @@ let read_class_ref reader =
   let local_class_id =
     PyreflyTypes.LocalClassId.from_int (CapnpReader.ClassRef.class_id_get_int_exn reader)
   in
-  { PyreflyReport.GlobalClassId.module_id; local_class_id }
+  PyreflyTypes.ClassId.encode ~module_id local_class_id
 
 
 let read_optional_class_ref reader has_fn get_fn =
@@ -93,7 +93,7 @@ let read_function_ref reader =
     | Error error ->
         Format.asprintf "Invalid function id: %a" PyreflyReport.FormatError.pp error |> failwith
   in
-  { PyreflyReport.GlobalCallableId.module_id; local_function_id }
+  PyreflyTypes.CallableId.encode ~module_id local_function_id
 
 
 let read_optional_function_ref reader has_fn get_fn =
@@ -131,10 +131,7 @@ let read_class_with_modifiers reader =
     CapnpReader.ClassWithModifiers.modifiers_get_list reader
     |> List.filter_map ~f:read_type_modifier
   in
-  {
-    PyreflyTypes.ClassWithModifiers.class_id = PyreflyReport.GlobalClassId.to_class_id class_ref;
-    modifiers;
-  }
+  { PyreflyTypes.ClassWithModifiers.class_id = class_ref; modifiers }
 
 
 let read_class_names_from_type reader =

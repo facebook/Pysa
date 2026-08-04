@@ -188,17 +188,16 @@ module ModulePath = struct
           (PyreflyReport.FormatError.UnexpectedJsonType { json; message = "expected a module path" })
 end
 
-module GlobalClassId = struct
+module ClassId = struct
   let from_json json =
     let open Core.Result.Monad_infix in
     JsonUtil.get_int_member json "module_id"
     >>= fun module_id ->
     JsonUtil.get_int_member json "class_id"
     >>| fun class_id ->
-    {
-      PyreflyReport.GlobalClassId.module_id = PyreflyTypes.ModuleId.from_int module_id;
-      local_class_id = PyreflyTypes.LocalClassId.from_int class_id;
-    }
+    PyreflyTypes.ClassId.encode
+      ~module_id:(PyreflyTypes.ModuleId.from_int module_id)
+      (PyreflyTypes.LocalClassId.from_int class_id)
 
 
   let from_optional_json = function
@@ -208,7 +207,7 @@ module GlobalClassId = struct
     | None -> Ok None
 end
 
-module GlobalCallableId = struct
+module CallableId = struct
   let from_json json =
     let open Core.Result.Monad_infix in
     JsonUtil.get_int_member json "module_id"
@@ -216,10 +215,9 @@ module GlobalCallableId = struct
     JsonUtil.get_string_member json "function_id"
     >>= PyreflyTypes.LocalFunctionId.from_string
     >>| fun local_function_id ->
-    {
-      PyreflyReport.GlobalCallableId.module_id = PyreflyTypes.ModuleId.from_int module_id;
-      local_function_id;
-    }
+    PyreflyTypes.CallableId.encode
+      ~module_id:(PyreflyTypes.ModuleId.from_int module_id)
+      local_function_id
 
 
   let from_optional_json = function
@@ -234,10 +232,10 @@ module PyreflyTarget = struct
     let open Core.Result.Monad_infix in
     match json with
     | `Assoc [("Function", global_callable_id)] ->
-        GlobalCallableId.from_json global_callable_id
+        CallableId.from_json global_callable_id
         >>| fun global_callable_id -> PyreflyReport.PyreflyTarget.Function global_callable_id
     | `Assoc [("Overrides", global_callable_id)] ->
-        GlobalCallableId.from_json global_callable_id
+        CallableId.from_json global_callable_id
         >>| fun global_callable_id -> PyreflyReport.PyreflyTarget.Overrides global_callable_id
     | `String "FormatString" -> Ok PyreflyReport.PyreflyTarget.FormatString
     | _ ->
@@ -333,12 +331,12 @@ module ProjectFile = struct
     >>= fun builtin_module_ids ->
     JsonUtil.get_list_member json "object_class_refs"
     >>= fun object_class_refs_json ->
-    List.map ~f:GlobalClassId.from_json object_class_refs_json
+    List.map ~f:ClassId.from_json object_class_refs_json
     |> Result.all
     >>= fun object_class_refs ->
     JsonUtil.get_list_member json "dict_class_refs"
     >>= fun dict_class_refs_json ->
-    List.map ~f:GlobalClassId.from_json dict_class_refs_json
+    List.map ~f:ClassId.from_json dict_class_refs_json
     |> Result.all
     >>= fun dict_class_refs ->
     JsonUtil.get_list_member json "typing_module_ids"
@@ -349,7 +347,7 @@ module ProjectFile = struct
     >>= fun typing_module_ids ->
     JsonUtil.get_list_member json "typing_mapping_class_refs"
     >>= fun typing_mapping_class_refs_json ->
-    List.map ~f:GlobalClassId.from_json typing_mapping_class_refs_json
+    List.map ~f:ClassId.from_json typing_mapping_class_refs_json
     |> Result.all
     >>| fun typing_mapping_class_refs ->
     {
@@ -378,8 +376,8 @@ module ClassWithModifiers = struct
     let open Core.Result.Monad_infix in
     JsonUtil.get_object_member json "class"
     >>= fun class_name ->
-    GlobalClassId.from_json (`Assoc class_name)
-    >>= fun global_class_id ->
+    ClassId.from_json (`Assoc class_name)
+    >>= fun class_id ->
     JsonUtil.get_optional_list_member json "modifiers"
     >>| List.map ~f:JsonUtil.as_string
     >>= Result.all
@@ -391,12 +389,7 @@ module ClassWithModifiers = struct
                   (PyreflyReport.FormatError.UnexpectedJsonType
                      { json = `String modifier; message = "expected a modifier" }))
     >>= Result.all
-    >>| fun modifiers ->
-    {
-      PyreflyTypes.ClassWithModifiers.class_id =
-        PyreflyReport.GlobalClassId.to_class_id global_class_id;
-      modifiers;
-    }
+    >>| fun modifiers -> { PyreflyTypes.ClassWithModifiers.class_id; modifiers }
 end
 
 module ClassNamesResult = struct
@@ -434,7 +427,7 @@ module CapturedVariable = struct
     >>= fun name ->
     JsonUtil.get_object_member json "outer_function"
     >>= fun outer_function ->
-    GlobalCallableId.from_json (`Assoc outer_function)
+    CallableId.from_json (`Assoc outer_function)
     >>| fun outer_function -> { PyreflyReport.CapturedVariable.name; outer_function }
 end
 
@@ -588,10 +581,10 @@ module ModuleDefinitionsFile = struct
       JsonUtil.get_optional_bool_member ~default:true json "is_def_statement"
       >>= fun is_def_statement ->
       JsonUtil.get_optional_member json "overridden_base_method"
-      |> GlobalCallableId.from_optional_json
+      |> CallableId.from_optional_json
       >>= fun overridden_base_method ->
       JsonUtil.get_optional_member json "defining_class"
-      |> GlobalClassId.from_optional_json
+      |> ClassId.from_optional_json
       >>= fun defining_class ->
       (match JsonUtil.get_optional_string_member json "name_location" with
       | Ok (Some location_str) -> PyreflyReport.parse_location location_str >>| Option.some
@@ -628,7 +621,7 @@ module ModuleDefinitionsFile = struct
       | `Assoc [("Resolved", `List classes)] ->
           let open Core.Result.Monad_infix in
           classes
-          |> List.map ~f:GlobalClassId.from_json
+          |> List.map ~f:ClassId.from_json
           |> Result.all
           >>| fun classes -> PyreflyReport.ModuleDefinitionsFile.ClassMro.Resolved classes
       | `String "Cyclic" -> Ok PyreflyReport.ModuleDefinitionsFile.ClassMro.Cyclic
@@ -678,7 +671,7 @@ module ModuleDefinitionsFile = struct
       JsonUtil.get_int_member json "class_id"
       >>= fun class_id ->
       JsonUtil.get_optional_list_member json "bases"
-      >>| List.map ~f:GlobalClassId.from_json
+      >>| List.map ~f:ClassId.from_json
       >>= Result.all
       >>= fun bases ->
       JsonUtil.get_member json "mro"
@@ -891,7 +884,7 @@ module ModuleCallGraphs = struct
       JsonUtil.get_optional_bool_member ~default:false json "implicit_dunder_call"
       >>= fun implicit_dunder_call ->
       (match JsonUtil.get_optional_member json "receiver_class" with
-      | Some receiver_class -> GlobalClassId.from_json receiver_class >>| Option.some
+      | Some receiver_class -> ClassId.from_json receiver_class >>| Option.some
       | None -> Ok None)
       >>= fun receiver_class ->
       JsonUtil.get_optional_bool_member ~default:false json "is_class_method"

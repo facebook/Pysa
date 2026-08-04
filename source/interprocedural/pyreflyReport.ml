@@ -81,47 +81,10 @@ module ModulePath = struct
           |> ArtifactPath.create)
 end
 
-(* Unique identifier for a class, assigned by pyrefly. *)
-module GlobalClassId = struct
-  type t = {
-    module_id: ModuleId.t;
-    local_class_id: LocalClassId.t;
-  }
-  [@@deriving compare, equal, show]
-
-  let to_class_id { module_id; local_class_id } =
-    PyreflyTypes.ClassId.encode ~module_id local_class_id
-
-
-  let of_class_id class_id =
-    let module_id, local_class_id = PyreflyTypes.ClassId.decode class_id in
-    { module_id; local_class_id }
-end
-
-(* Unique identifier for a callable (function or method) *)
-module GlobalCallableId = struct
-  type t = {
-    module_id: ModuleId.t;
-    local_function_id: LocalFunctionId.t;
-  }
-  [@@deriving compare, equal, show]
-
-  let to_callable_id { module_id; local_function_id } =
-    PyreflyTypes.CallableId.encode ~module_id local_function_id
-
-
-  let of_callable_id callable_id =
-    let module_id, local_function_id = PyreflyTypes.CallableId.decode callable_id in
-    { module_id; local_function_id }
-
-
-  let _ = pp, LocalFunctionId.show
-end
-
 module PyreflyTarget = struct
   type t =
-    | Function of GlobalCallableId.t
-    | Overrides of GlobalCallableId.t
+    | Function of PyreflyTypes.CallableId.t
+    | Overrides of PyreflyTypes.CallableId.t
     | FormatString
   [@@deriving compare, equal, show]
 end
@@ -130,13 +93,6 @@ module ModuleIdSharedMemoryKey = struct
   type t = ModuleId.t [@@deriving compare]
 
   let to_string module_id = string_of_int (ModuleId.to_int module_id)
-end
-
-module GlobalCallableIdSharedMemoryKey = struct
-  type t = GlobalCallableId.t [@@deriving compare]
-
-  let to_string { GlobalCallableId.module_id; local_function_id } =
-    Format.asprintf "%d|%a" (ModuleId.to_int module_id) LocalFunctionId.pp local_function_id
 end
 
 module CallableIdSharedMemoryKey = struct
@@ -334,10 +290,10 @@ module ProjectFile = struct
   type t = {
     modules: Module.t list;
     builtin_module_ids: ModuleId.t list;
-    object_class_refs: GlobalClassId.t list;
-    dict_class_refs: GlobalClassId.t list;
+    object_class_refs: PyreflyTypes.ClassId.t list;
+    dict_class_refs: PyreflyTypes.ClassId.t list;
     typing_module_ids: ModuleId.t list;
-    typing_mapping_class_refs: GlobalClassId.t list;
+    typing_mapping_class_refs: PyreflyTypes.ClassId.t list;
   }
 end
 
@@ -365,7 +321,7 @@ end
 module CapturedVariable = struct
   type t = {
     name: string;
-    outer_function: GlobalCallableId.t;
+    outer_function: PyreflyTypes.CallableId.t;
   }
   [@@deriving equal, show]
 end
@@ -443,9 +399,9 @@ module ModuleDefinitionsFile = struct
       is_def_statement: bool;
       is_toplevel: bool;
       is_class_toplevel: bool;
-      overridden_base_method: GlobalCallableId.t option;
-      defining_class: GlobalClassId.t option;
-      decorator_callees: GlobalCallableId.t list Location.SerializableMap.t;
+      overridden_base_method: PyreflyTypes.CallableId.t option;
+      defining_class: PyreflyTypes.ClassId.t option;
+      decorator_callees: PyreflyTypes.CallableId.t list Location.SerializableMap.t;
     }
     [@@deriving equal, show]
 
@@ -519,7 +475,7 @@ module ModuleDefinitionsFile = struct
 
   module ClassMro = struct
     type t =
-      | Resolved of GlobalClassId.t list
+      | Resolved of PyreflyTypes.ClassId.t list
       | Cyclic
     [@@deriving equal, show]
   end
@@ -541,14 +497,14 @@ module ModuleDefinitionsFile = struct
       local_class_id: LocalClassId.t;
       name_location: Location.t;
       parent: ParentScope.t;
-      bases: GlobalClassId.t list;
+      bases: PyreflyTypes.ClassId.t list;
       mro: ClassMro.t;
       is_synthesized: bool;
       is_dataclass: bool;
       is_named_tuple: bool;
       is_typed_dict: bool;
       fields: PyreflyClassField.t list;
-      decorator_callees: GlobalCallableId.t list Location.SerializableMap.t;
+      decorator_callees: PyreflyTypes.CallableId.t list Location.SerializableMap.t;
     }
     [@@deriving equal, show]
   end
@@ -626,7 +582,7 @@ module ModuleCallGraphs = struct
       target: PyreflyTarget.t;
       implicit_receiver: PyreflyImplicitReceiver.t;
       implicit_dunder_call: bool;
-      receiver_class: GlobalClassId.t option;
+      receiver_class: PyreflyTypes.ClassId.t option;
       is_class_method: bool;
       is_static_method: bool;
       return_type: ScalarTypeProperties.t;

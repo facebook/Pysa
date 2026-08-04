@@ -64,11 +64,8 @@ exception PyreflyFileFormatError = PyreflyReport.PyreflyFileFormatError
 exception NoSourceFilesToAnalyze
 
 module ModulePath = PyreflyReport.ModulePath
-module GlobalClassId = PyreflyReport.GlobalClassId
-module GlobalCallableId = PyreflyReport.GlobalCallableId
 module PyreflyTarget = PyreflyReport.PyreflyTarget
 module ModuleIdSharedMemoryKey = PyreflyReport.ModuleIdSharedMemoryKey
-module GlobalCallableIdSharedMemoryKey = PyreflyReport.GlobalCallableIdSharedMemoryKey
 module CallableIdSharedMemoryKey = PyreflyReport.CallableIdSharedMemoryKey
 module ClassIdSharedMemoryKey = PyreflyReport.ClassIdSharedMemoryKey
 module ModuleName = PyreflyReport.ModuleName
@@ -129,7 +126,7 @@ module ModulesSharedMemory =
 module TypeOfExpressionsSharedMemory = struct
   include
     Hack_parallel.Std.SharedMemory.FirstClass.WithCache.Make
-      (GlobalCallableIdSharedMemoryKey)
+      (CallableIdSharedMemoryKey)
       (struct
         type t = PyreflyType.t Location.SerializableMap.t
 
@@ -334,7 +331,7 @@ module ClassMetadataSharedMemory = struct
       is_typed_dict: bool;
       (* For a given class, its list of immediate parents. Empty if the class has no parents (it is
          implicitly ['object']) *)
-      parents: GlobalClassId.t list;
+      parents: ClassId.t list;
       (* For a given class, its resolved MRO (Method Resolution Order). *)
       mro: ModuleDefinitionsFile.ClassMro.t;
       (* The list of callees for each decorator *)
@@ -628,7 +625,7 @@ let captures_from_metadata
           defining_function =
             CallableIdToQualifiedNameSharedMemory.get
               callable_id_to_qualified_name_shared_memory
-              (GlobalCallableId.to_callable_id outer_function)
+              outer_function
             |> FullyQualifiedName.to_reference;
         })
 
@@ -2023,12 +2020,9 @@ module ReadWrite = struct
                 module_id;
                 name;
                 local_function_id;
-                overridden_base_method = overridden_base_method >>| GlobalCallableId.to_callable_id;
-                defining_class = defining_class >>| GlobalClassId.to_class_id;
-                decorator_callees =
-                  Ast.Location.SerializableMap.map
-                    (List.map ~f:GlobalCallableId.to_callable_id)
-                    decorator_callees;
+                overridden_base_method;
+                defining_class;
+                decorator_callees;
                 captured_variables;
               };
             CallableIdToQualifiedNameSharedMemory.write_around
@@ -2069,10 +2063,7 @@ module ReadWrite = struct
                 is_typed_dict;
                 parents = bases;
                 mro;
-                decorator_callees =
-                  Ast.Location.SerializableMap.map
-                    (List.map ~f:GlobalCallableId.to_callable_id)
-                    decorator_callees;
+                decorator_callees;
               };
             let fields =
               (* When the user declares both `__x` and `_ClassName__x` in a class body, pyrefly
@@ -2132,13 +2123,8 @@ module ReadWrite = struct
             match definition with
             | Class { local_class_id; _ } ->
                 Hashtbl.set local_class_ids ~key:(LocalClassId.to_int local_class_id) ~data:()
-            | Function
-                {
-                  name;
-                  defining_class = Some { GlobalClassId.local_class_id; _ };
-                  local_function_id;
-                  _;
-                } ->
+            | Function { name; defining_class = Some defining_class; local_function_id; _ } ->
+                let local_class_id = ClassId.local_class_id defining_class in
                 (* We assume the defining class is in the same module. *)
                 let callable_id = CallableId.encode ~module_id local_function_id in
                 Hashtbl.update
@@ -2390,17 +2376,9 @@ module ReadWrite = struct
     in
 
     let make_typeshed_class = make_typeshed_class ~module_infos_shared_memory in
-    let object_classes =
-      object_class_refs |> List.map ~f:GlobalClassId.to_class_id |> List.map ~f:make_typeshed_class
-    in
-    let dict_classes =
-      dict_class_refs |> List.map ~f:GlobalClassId.to_class_id |> List.map ~f:make_typeshed_class
-    in
-    let typing_mapping_classes =
-      typing_mapping_class_refs
-      |> List.map ~f:GlobalClassId.to_class_id
-      |> List.map ~f:make_typeshed_class
-    in
+    let object_classes = object_class_refs |> List.map ~f:make_typeshed_class in
+    let dict_classes = dict_class_refs |> List.map ~f:make_typeshed_class in
+    let typing_mapping_classes = typing_mapping_class_refs |> List.map ~f:make_typeshed_class in
 
     {
       pyrefly_directory;
@@ -2489,7 +2467,7 @@ module ReadWrite = struct
           in
           TypeOfExpressionsSharedMemory.write_around
             type_of_expressions_shared_memory
-            { GlobalCallableId.module_id; local_function_id }
+            (CallableId.encode ~module_id local_function_id)
             location_to_type_map)
     in
     let inputs =
@@ -3084,7 +3062,7 @@ module ReadOnly = struct
     let get_parents_from_class_metadata { ClassMetadataSharedMemory.Metadata.parents; _ } =
       match parents with
       | [] when not (is_object_class_id api class_id) -> [object_class_id_for api class_id]
-      | parents -> List.map parents ~f:GlobalClassId.to_class_id
+      | parents -> parents
     in
     ClassMetadataSharedMemory.get class_metadata_shared_memory class_id
     |> assert_shared_memory_key_exists (fun () -> "missing class metadata for class")
@@ -3100,7 +3078,6 @@ module ReadOnly = struct
              [object]. *)
           [object_class_id_for api class_id]
       | ModuleDefinitionsFile.ClassMro.Resolved mro ->
-          let mro = List.map mro ~f:GlobalClassId.to_class_id in
           (* Pyrefly does not include 'object' in the mro. *)
           mro @ [object_class_id_for api class_id]
     in
@@ -3119,9 +3096,7 @@ module ReadOnly = struct
       in
       match mro with
       | ModuleDefinitionsFile.ClassMro.Cyclic -> false
-      | ModuleDefinitionsFile.ClassMro.Resolved mro ->
-          List.exists mro ~f:(fun class_id ->
-              ClassId.equal parent (GlobalClassId.to_class_id class_id))
+      | ModuleDefinitionsFile.ClassMro.Resolved mro -> List.exists mro ~f:(ClassId.equal parent)
 
 
   let resolve_callable_id
@@ -3507,15 +3482,9 @@ module ReadOnly = struct
     let open CallGraph in
     let instantiate_target ~receiver_class = function
       | PyreflyTarget.Function callable_id ->
-          let target =
-            target_from_callable_id
-              api
-              ~override:false
-              (GlobalCallableId.to_callable_id callable_id)
-          in
+          let target = target_from_callable_id api ~override:false callable_id in
           [target]
       | PyreflyTarget.Overrides callable_id -> (
-          let callable_id = GlobalCallableId.to_callable_id callable_id in
           let target = target_from_callable_id api ~override:false callable_id in
           let declaring_class =
             get_method_class_id api callable_id
@@ -3566,7 +3535,6 @@ module ReadOnly = struct
           return_type;
         }
       =
-      let receiver_class = receiver_class >>| GlobalClassId.to_class_id in
       let targets = instantiate_target ~receiver_class target in
       List.map
         ~f:(fun target ->
@@ -3605,7 +3573,7 @@ module ReadOnly = struct
           defining_function =
             CallableIdToQualifiedNameSharedMemory.get
               callable_id_to_qualified_name_shared_memory
-              (GlobalCallableId.to_callable_id outer_function)
+              outer_function
             |> FullyQualifiedName.to_reference;
         }
     in
@@ -4044,7 +4012,7 @@ module ReadOnly = struct
         |> fun { CallableMetadataSharedMemory.Value.module_id; local_function_id; _ } ->
         TypeOfExpressionsSharedMemory.get
           type_of_expressions_shared_memory
-          { GlobalCallableId.module_id; local_function_id }
+          (CallableId.encode ~module_id local_function_id)
         |> assert_shared_memory_key_exists (fun () ->
                Format.asprintf "missing type of expressions: `%a`" CallableId.pp callable_id)
         |> fun location_to_type_map ->

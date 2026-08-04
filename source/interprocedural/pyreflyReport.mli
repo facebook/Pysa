@@ -44,46 +44,16 @@ module ModulePath : sig
   val artifact_file_path : pyrefly_directory:PyrePath.t -> t -> ArtifactPath.t option
 end
 
-module GlobalClassId : sig
-  type t = {
-    module_id: PyreflyTypes.ModuleId.t;
-    local_class_id: PyreflyTypes.LocalClassId.t;
-  }
-  [@@deriving compare, equal, show]
-
-  val to_class_id : t -> PyreflyTypes.ClassId.t
-
-  val of_class_id : PyreflyTypes.ClassId.t -> t
-end
-
-module GlobalCallableId : sig
-  type t = {
-    module_id: PyreflyTypes.ModuleId.t;
-    local_function_id: PyreflyTypes.LocalFunctionId.t;
-  }
-  [@@deriving compare, equal, show]
-
-  val to_callable_id : t -> PyreflyTypes.CallableId.t
-
-  val of_callable_id : PyreflyTypes.CallableId.t -> t
-end
-
 module PyreflyTarget : sig
   type t =
-    | Function of GlobalCallableId.t
-    | Overrides of GlobalCallableId.t
+    | Function of PyreflyTypes.CallableId.t
+    | Overrides of PyreflyTypes.CallableId.t
     | FormatString
   [@@deriving compare, equal, show]
 end
 
 module ModuleIdSharedMemoryKey : sig
   type t = PyreflyTypes.ModuleId.t [@@deriving compare]
-
-  val to_string : t -> string
-end
-
-module GlobalCallableIdSharedMemoryKey : sig
-  type t = GlobalCallableId.t [@@deriving compare]
 
   val to_string : t -> string
 end
@@ -170,10 +140,10 @@ module ProjectFile : sig
   type t = {
     modules: Module.t list;
     builtin_module_ids: PyreflyTypes.ModuleId.t list;
-    object_class_refs: GlobalClassId.t list;
-    dict_class_refs: GlobalClassId.t list;
+    object_class_refs: PyreflyTypes.ClassId.t list;
+    dict_class_refs: PyreflyTypes.ClassId.t list;
     typing_module_ids: PyreflyTypes.ModuleId.t list;
-    typing_mapping_class_refs: GlobalClassId.t list;
+    typing_mapping_class_refs: PyreflyTypes.ClassId.t list;
   }
 end
 
@@ -192,7 +162,7 @@ end
 module CapturedVariable : sig
   type t = {
     name: string;
-    outer_function: GlobalCallableId.t;
+    outer_function: PyreflyTypes.CallableId.t;
   }
   [@@deriving equal, show]
 end
@@ -267,9 +237,9 @@ module ModuleDefinitionsFile : sig
       is_def_statement: bool;
       is_toplevel: bool;
       is_class_toplevel: bool;
-      overridden_base_method: GlobalCallableId.t option;
-      defining_class: GlobalClassId.t option;
-      decorator_callees: GlobalCallableId.t list Ast.Location.SerializableMap.t;
+      overridden_base_method: PyreflyTypes.CallableId.t option;
+      defining_class: PyreflyTypes.ClassId.t option;
+      decorator_callees: PyreflyTypes.CallableId.t list Ast.Location.SerializableMap.t;
     }
     [@@deriving equal, show]
 
@@ -280,7 +250,7 @@ module ModuleDefinitionsFile : sig
 
   module ClassMro : sig
     type t =
-      | Resolved of GlobalClassId.t list
+      | Resolved of PyreflyTypes.ClassId.t list
       | Cyclic
     [@@deriving equal, show]
   end
@@ -302,14 +272,14 @@ module ModuleDefinitionsFile : sig
       local_class_id: PyreflyTypes.LocalClassId.t;
       name_location: Ast.Location.t;
       parent: ParentScope.t;
-      bases: GlobalClassId.t list;
+      bases: PyreflyTypes.ClassId.t list;
       mro: ClassMro.t;
       is_synthesized: bool;
       is_dataclass: bool;
       is_named_tuple: bool;
       is_typed_dict: bool;
       fields: PyreflyClassField.t list;
-      decorator_callees: GlobalCallableId.t list Ast.Location.SerializableMap.t;
+      decorator_callees: PyreflyTypes.CallableId.t list Ast.Location.SerializableMap.t;
     }
     [@@deriving equal, show]
   end
@@ -375,7 +345,7 @@ module ModuleCallGraphs : sig
       target: PyreflyTarget.t;
       implicit_receiver: PyreflyImplicitReceiver.t;
       implicit_dunder_call: bool;
-      receiver_class: GlobalClassId.t option;
+      receiver_class: PyreflyTypes.ClassId.t option;
       is_class_method: bool;
       is_static_method: bool;
       return_type: ScalarTypeProperties.t;
