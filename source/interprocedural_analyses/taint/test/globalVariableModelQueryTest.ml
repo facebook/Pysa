@@ -29,7 +29,10 @@ let test_find_globals =
       ModelQueryExecution.GlobalVariableQueryExecutor.get_globals
         ~scheduler:(Test.mock_scheduler ())
         ~pyrefly_api
-      |> List.map ~f:Target.object_name
+      |> List.map
+           ~f:
+             (Target.object_name
+                ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api))
       |> List.filter ~f:is_test_global
       |> List.sort ~compare:Reference.compare
     in

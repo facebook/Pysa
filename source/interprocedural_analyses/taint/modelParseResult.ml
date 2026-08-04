@@ -998,12 +998,14 @@ module Modelable = struct
         captures: AccessPath.CapturedVariable.t list Lazy.t;
       }
     | Attribute of {
+        target: Target.t;
         target_name: Reference.t;
         class_id: PyreflyTypes.ClassId.t;
         class_name: Reference.t;
         type_annotation: TypeAnnotation.t Lazy.t;
       }
     | Global of {
+        target: Target.t;
         target_name: Reference.t;
         type_annotation: TypeAnnotation.t Lazy.t;
       }
@@ -1065,13 +1067,19 @@ module Modelable = struct
 
 
   let create_attribute ~pyrefly_api target =
-    let target_name = Target.object_name target in
-    let class_name = Reference.prefix target_name |> Option.value_exn ~message:"unexpected" in
-    let class_id = PyreflyApi.ReadOnly.class_id_from_name pyrefly_api class_name in
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
+    let target_name = Target.object_name ~display_api target in
+    let class_id, attribute =
+      match Target.get_regular target with
+      | Target.Regular.ClassInstanceAttribute { class_id; name }
+      | Target.Regular.ClassTypeAttribute { class_id; name } ->
+          class_id, name
+      | _ -> failwith "expected a class attribute target"
+    in
+    let class_name = PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id in
     let type_annotation =
       lazy
         ((* TODO(T225700656): Add API to get class name from attribute name *)
-         let attribute = Reference.last target_name in
          let inferred_type =
            PyreflyApi.ReadOnly.get_class_attribute_inferred_type pyrefly_api ~class_id ~attribute
            |> Option.some
@@ -1087,33 +1095,34 @@ module Modelable = struct
          in
          TypeAnnotation.create ~inferred_type ~explicit_annotation)
     in
-    Attribute { target_name; class_name; class_id; type_annotation }
+    Attribute { target; target_name; class_name; class_id; type_annotation }
 
 
   let create_global ~pyrefly_api target =
-    let target_name = Target.object_name target in
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
+    let target_name = Target.object_name ~display_api target in
+    let module_id, name =
+      match Target.get_regular target with
+      | Target.Regular.GlobalVariable { module_id; name } -> module_id, name
+      | _ -> failwith "expected a global variable target"
+    in
     let type_annotation =
       lazy
-        (let qualifier = Option.value_exn (Reference.prefix target_name) in
-         let name = Reference.last target_name in
-         let module_id = PyreflyApi.ReadOnly.module_id_of_qualifier_opt pyrefly_api qualifier in
-         let inferred_type =
-           module_id
-           >>= fun module_id ->
+        (let inferred_type =
            PyreflyApi.ReadOnly.get_global_inferred_type pyrefly_api ~module_id ~name
          in
          TypeAnnotation.create
            ~inferred_type
            ~explicit_annotation:TypeAnnotation.ExplicitAnnotation.Unsupported)
     in
-    Global { target_name; type_annotation }
+    Global { target; target_name; type_annotation }
 
 
   let target = function
     | Callable { target; _ } -> target
-    | Attribute { target_name; _ }
-    | Global { target_name; _ } ->
-        Target.create_object target_name
+    | Attribute { target; _ }
+    | Global { target; _ } ->
+        target
 
 
   let target_name = function

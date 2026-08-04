@@ -1963,15 +1963,13 @@ module AttributeQueryExecutor = struct
   let get_attributes ~scheduler ~pyrefly_api =
     let () = Log.info "Fetching all attributes..." in
     let get_class_attributes class_id =
-      let class_name_reference = PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id in
       PyreflyApi.ReadOnly.get_class_attributes
         pyrefly_api
         ~include_generated_attributes:false
         ~only_simple_assignments:true
         class_id
       |> Option.value ~default:[]
-      |> List.map ~f:(fun attribute_name ->
-             Target.create_object (Reference.create ~prefix:class_name_reference attribute_name))
+      |> List.map ~f:(Target.create_class_instance_attribute class_id)
     in
     let all_classes = PyreflyApi.ReadOnly.all_classes pyrefly_api ~scheduler in
     let scheduler_policy =
@@ -2032,7 +2030,7 @@ module AttributeQueryExecutor = struct
       =
       ModelParser.create_attribute_model_from_annotations
         ~pyrefly_api
-        ~name:(Target.object_name target)
+        ~name:(Target.object_name ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api) target)
         ~source_sink_filter
         annotations
   end)
@@ -2042,10 +2040,7 @@ module GlobalVariableQueryExecutor = struct
   let get_globals ~scheduler ~pyrefly_api =
     let () = Log.info "Fetching all globals..." in
     PyreflyApi.ReadOnly.all_global_variables pyrefly_api ~scheduler
-    |> List.map ~f:(fun (module_id, name) ->
-           let qualifier = PyreflyApi.ReadOnly.module_qualifier_of_id pyrefly_api module_id in
-           Reference.create ~prefix:qualifier name)
-    |> List.map ~f:Target.create_object
+    |> List.map ~f:(fun (module_id, name) -> Target.create_global_variable module_id name)
 
 
   include MakeQueryExecutor (struct
@@ -2088,7 +2083,7 @@ module GlobalVariableQueryExecutor = struct
       =
       ModelParser.create_attribute_model_from_annotations
         ~pyrefly_api
-        ~name:(Target.object_name target)
+        ~name:(Target.object_name ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api) target)
         ~source_sink_filter
         annotations
   end)

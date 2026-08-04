@@ -4184,8 +4184,18 @@ let create_models_from_attribute
         in
         let resolved_attributes, classify_errors =
           List.partition_map resolved_attributes ~f:(function
-              | (Global.ClassAttribute { name; _ } | Global.ModuleGlobal { name; _ }) as global ->
-                  First (name, lazy (source_location_of_global ~path_of_module global))
+              | Global.ClassAttribute { class_id; name; _ } as global ->
+                  First
+                    (`ClassAttribute
+                      ( class_id,
+                        Reference.last name,
+                        lazy (source_location_of_global ~path_of_module global) ))
+              | Global.ModuleGlobal { module_id; name; _ } as global ->
+                  First
+                    (`GlobalVariable
+                      ( module_id,
+                        Reference.last name,
+                        lazy (source_location_of_global ~path_of_module global) ))
               | Global.Class _ as global ->
                   Second
                     (make_verification_error
@@ -4211,7 +4221,12 @@ let create_models_from_attribute
         in
         resolved_attributes, unresolved_errors @ classify_errors, bare_module_name
   in
-  let build_model_for_attribute (attribute_name, attribute_location) =
+  let build_model_for_attribute resolved_attribute =
+    let kind, attribute_location =
+      match resolved_attribute with
+      | `ClassAttribute (class_id, name, location) -> `ClassAttribute (class_id, name), location
+      | `GlobalVariable (module_id, name, location) -> `GlobalVariable (module_id, name), location
+    in
     let open Core.Result in
     let model_annotations =
       List.map annotations ~f:(fun annotation ->
@@ -4243,13 +4258,16 @@ let create_models_from_attribute
            ~callable_undecorated_signatures:None
            ~source_sink_filter)
     >>| fun model ->
-    let target_name =
-      if PyreflyApi.ModelQueries.has_class_attribute_form user_provided_attribute_name then
-        PyreflyApi.ModelQueries.mangle_class_attribute attribute_name
-      else
-        attribute_name
+    let target =
+      match kind with
+      | `ClassAttribute (class_id, attribute) ->
+          if PyreflyApi.ModelQueries.has_class_attribute_form user_provided_attribute_name then
+            Target.create_class_type_attribute class_id attribute
+          else
+            Target.create_class_instance_attribute class_id attribute
+      | `GlobalVariable (module_id, name) -> Target.create_global_variable module_id name
     in
-    { MatchedModel.model; target = Target.create_object target_name; location = attribute_location }
+    { MatchedModel.model; target; location = attribute_location }
   in
   let models, build_errors =
     List.map resolved_attributes ~f:build_model_for_attribute |> List.partition_result

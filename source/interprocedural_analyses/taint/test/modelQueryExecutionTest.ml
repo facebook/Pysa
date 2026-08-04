@@ -111,7 +111,10 @@ let assert_generated_annotations_for_attributes context ~source ~query ~name ~ex
       ~qualifiers:[Ast.Reference.create "test"]
     |> ClassHierarchyGraph.SharedMemory.from_heap ~store_transitive_children_for:[]
   in
-  let target = name |> Ast.Reference.create |> Target.create_object in
+  let target_name = Ast.Reference.create name in
+  let class_name = Ast.Reference.prefix target_name |> Option.value_exn in
+  let class_id = PyreflyApi.ReadOnly.class_id_from_name pyrefly_api class_name in
+  let target = Target.create_class_instance_attribute class_id (Ast.Reference.last target_name) in
   let actual =
     ModelQueryExecution.AttributeQueryExecutor.generate_annotations_from_query_on_target
       ~verbose:false
@@ -154,7 +157,10 @@ let assert_generated_annotations_for_globals context ~source ~query ~name ~expec
       ~qualifiers:[Ast.Reference.create "test"]
     |> ClassHierarchyGraph.SharedMemory.from_heap ~store_transitive_children_for:[]
   in
-  let target = name |> Ast.Reference.create |> Target.create_object in
+  let target_name = Ast.Reference.create name in
+  let qualifier = Ast.Reference.prefix target_name |> Option.value_exn in
+  let module_id = PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier in
+  let target = Target.create_global_variable module_id (Ast.Reference.last target_name) in
   let actual =
     ModelQueryExecution.GlobalVariableQueryExecutor.generate_annotations_from_query_on_target
       ~verbose:false

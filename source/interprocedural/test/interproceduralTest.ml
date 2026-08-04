@@ -67,9 +67,21 @@ module SyntheticCallables = struct
       else
         define_name
     in
+    let module_name module_id =
+      Hashtbl.find
+        names_by_callable_id
+        (PyreflyTypes.CallableId.encode
+           ~module_id
+           (PyreflyTypes.LocalFunctionId.Function (PyreflyTypes.FuncDefIndex.from_int 0)))
+      |> Option.value_exn ~message:"synthetic module id was never registered"
+      |> Ast.Reference.create
+      |> Ast.Reference.prefix
+      |> Option.value_exn ~message:"synthetic name has no module prefix"
+    in
     {
       PyreflyTypes.DisplayApi.callable_define_name;
       callable_external_name;
+      module_name;
       class_name = (fun _ -> failwith "no synthetic class ids registered");
     }
 

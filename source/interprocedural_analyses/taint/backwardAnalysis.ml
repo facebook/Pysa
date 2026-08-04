@@ -322,6 +322,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
           >>= List.hd
           >>| CallGraph.CallTarget.target
           >>| Target.object_name
+                ~display_api:(PyreflyApi.ReadOnly.display_api FunctionContext.pyrefly_api)
         in
         let global_string =
           as_reference

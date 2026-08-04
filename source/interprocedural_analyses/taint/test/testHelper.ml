@@ -36,7 +36,12 @@ let compare_targets_by_rendered_name ~display_api =
       | Target.Regular.Function _ -> 0, name_of Target.function_name, ""
       | Target.Regular.Method _ -> 1, name_of Target.class_name, name_of Target.method_name
       | Target.Regular.Override _ -> 2, name_of Target.class_name, name_of Target.method_name
-      | Target.Regular.Object name -> 3, name, ""
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _ ->
+          3, Target.object_name ~display_api target |> Ast.Reference.show, ""
+      | Target.Regular.Artificial kind -> 3, Target.ArtificialKind.name kind, ""
+      | Target.Regular.UnknownCallee name -> 3, name, ""
     in
     let parameters =
       match target with
@@ -90,7 +95,15 @@ type error_expectation = {
 }
 
 type expectation = {
-  kind: [ `Function | `Method | `Override | `Object | `PropertySetter ];
+  kind:
+    [ `ClassInstanceAttribute
+    | `ClassTypeAttribute
+    | `Function
+    | `GlobalVariable
+    | `Method
+    | `Override
+    | `PropertySetter
+    ];
   define_name: string;
   parameter_generations: parameter_sources list;
   parameter_sources: parameter_sources list;
@@ -168,7 +181,22 @@ let create_callable ~pyrefly_api kind define_name =
         ~override:false
         (Reference.create (Format.sprintf "%s@setter" define_name))
   | `Override -> target_from_define_name ~override:true name
-  | `Object -> Target.create_object name
+  | `GlobalVariable ->
+      let qualifier = Reference.prefix name |> Option.value_exn in
+      Target.create_global_variable
+        (Interprocedural.PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api qualifier)
+        (Reference.last name)
+  | `ClassInstanceAttribute ->
+      let class_name = Reference.prefix name |> Option.value_exn in
+      Target.create_class_instance_attribute
+        (Interprocedural.PyreflyApi.ReadOnly.class_id_from_name pyrefly_api class_name)
+        (Reference.last name)
+  | `ClassTypeAttribute ->
+      let name = Interprocedural.PyreflyApi.ModelQueries.demangle_class_attribute name in
+      let class_name = Reference.prefix name |> Option.value_exn in
+      Target.create_class_type_attribute
+        (Interprocedural.PyreflyApi.ReadOnly.class_id_from_name pyrefly_api class_name)
+        (Reference.last name)
 
 
 let check_expectation

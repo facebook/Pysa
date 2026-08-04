@@ -262,7 +262,10 @@ let test_hardcoded_source context =
         return request.FILES
     |}
     [
-      outcome ~kind:`Object ~returns:[Sources.NamedSource "UserControlled"] "django.http.Request.GET";
+      outcome
+        ~kind:`ClassInstanceAttribute
+        ~returns:[Sources.NamedSource "UserControlled"]
+        "django.http.Request.GET";
       outcome ~kind:`Function ~returns:[Sources.NamedSource "UserControlled"] "qualifier.get";
       outcome ~kind:`Function ~returns:[Sources.NamedSource "UserControlled"] "qualifier.post";
     ];

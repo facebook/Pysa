@@ -2790,11 +2790,19 @@ module ReadOnly = struct
     |> FullyQualifiedName.to_reference
 
 
+  let module_name_from_module_id { module_id_to_qualifier_shared_memory; _ } module_id =
+    ModuleIdToQualifierSharedMemory.get_module_qualifier
+      module_id_to_qualifier_shared_memory
+      module_id
+    |> ModuleQualifier.to_reference
+
+
   (* Build a `PyreflyTypes.DisplayApi.t` from the id->name shared-memory maps. *)
   let display_api api =
     {
       PyreflyTypes.DisplayApi.callable_external_name = external_name_from_callable_id api;
       callable_define_name = define_name_from_callable_id api;
+      module_name = module_name_from_module_id api;
       class_name = class_name_from_class_id api;
     }
 
@@ -2825,12 +2833,7 @@ module ReadOnly = struct
 
 
   (* Materialize a module id back into its module qualifier via the reverse id->qualifier index. *)
-  let module_qualifier_of_id { module_id_to_qualifier_shared_memory; _ } module_id =
-    ModuleIdToQualifierSharedMemory.get_module_qualifier
-      module_id_to_qualifier_shared_memory
-      module_id
-    |> ModuleQualifier.to_reference
-
+  let module_qualifier_of_id api module_id = module_name_from_module_id api module_id
 
   let resolve_class_id { fully_qualified_name_to_class_id_shared_memory; _ } fully_qualified_name =
     FullyQualifiedNameToClassIdSharedMemory.get
@@ -3468,8 +3471,7 @@ module ReadOnly = struct
 
 
   let instantiate_call_graph
-      ({ module_id_to_qualifier_shared_memory; callable_id_to_qualified_name_shared_memory; _ } as
-      api)
+      ({ callable_id_to_qualified_name_shared_memory; _ } as api)
       ~overrides_exist
       ~get_overriding_targets
       ~global_is_string_literal
@@ -3480,6 +3482,7 @@ module ReadOnly = struct
     =
     let open ModuleCallGraphs in
     let open CallGraph in
+    let display_api = display_api api in
     let instantiate_target ~receiver_class = function
       | PyreflyTarget.Function callable_id ->
           let target = target_from_callable_id api ~override:false callable_id in
@@ -3551,15 +3554,8 @@ module ReadOnly = struct
         targets
     in
     let instantiate_global_target { PyreflyGlobalVariable.module_id; name } =
-      let module_qualifier =
-        ModuleIdToQualifierSharedMemory.get_module_qualifier
-          module_id_to_qualifier_shared_memory
-          module_id
-      in
-      let object_reference =
-        Reference.create ~prefix:(ModuleQualifier.to_reference module_qualifier) name
-      in
-      let object_target = Target.create_object object_reference in
+      let object_target = Target.create_global_variable module_id name in
+      let object_reference = Target.object_name ~display_api object_target in
       if Target.Set.mem object_target attribute_targets || global_is_string_literal object_reference
       then
         Some (CallTarget.create ~return_type:None object_target)
@@ -3697,9 +3693,9 @@ module ReadOnly = struct
       | ExpressionCallees.Call ({ CallCallees.unresolved; call_targets; _ } as call_callees) -> (
           match find_missing_flows with
           | Some Configuration.MissingFlowKind.Type when Unresolved.is_unresolved unresolved ->
-              let target =
+              let unknown_callee =
                 Format.asprintf
-                  "unknown-callee:%a:%a"
+                  "%a:%a"
                   Target.pp_pretty
                   (Target.strip_parameters callable)
                   Location.pp
@@ -3707,7 +3703,8 @@ module ReadOnly = struct
               in
               let call_target =
                 {
-                  CallTarget.target = Target.Regular.Object target |> Target.from_regular;
+                  CallTarget.target =
+                    Target.Regular.UnknownCallee unknown_callee |> Target.from_regular;
                   implicit_receiver = false;
                   implicit_dunder_call = false;
                   index = 0;
@@ -4178,7 +4175,11 @@ module ReadOnly = struct
       | Target.Regular.Method callable_id ->
           Some (define_name_from_callable_id api callable_id)
       | Target.Regular.Override _
-      | Target.Regular.Object _ ->
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
           None
 
 
@@ -4197,7 +4198,11 @@ module ReadOnly = struct
       | Target.Regular.Override callable_id ->
           get_method_class_id api callable_id
       | Target.Regular.Function _
-      | Target.Regular.Object _ ->
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
           None
 
 
@@ -4216,7 +4221,11 @@ module ReadOnly = struct
           |> Reference.prefix
           |> Option.map ~f:Reference.show
       | Target.Regular.Function _
-      | Target.Regular.Object _ ->
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
           None
 
 
@@ -4232,7 +4241,11 @@ module ReadOnly = struct
       | Target.Regular.Override callable_id ->
           Some (Reference.last (define_name_from_callable_id api callable_id))
       | Target.Regular.Function _
-      | Target.Regular.Object _ ->
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
           None
 
 
@@ -4248,7 +4261,11 @@ module ReadOnly = struct
           Some (Reference.show (define_name_from_callable_id api callable_id))
       | Target.Regular.Method _
       | Target.Regular.Override _
-      | Target.Regular.Object _ ->
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
           None
 
 
@@ -4267,7 +4284,12 @@ module ReadOnly = struct
       | Target.Regular.Override callable_id ->
           let { CallableMetadata.is_property_setter; _ } = get_callable_metadata api callable_id in
           is_property_setter
-      | Target.Regular.Object _ -> false
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
+          false
 
 
     (* A "normal" callable: neither decorated (the `CallableId` tag) nor a property setter (from

@@ -794,7 +794,12 @@ let test_strip_path_prefix _ =
   let override class_name method_name =
     Target.create_override (id_for (class_name ^ "." ^ method_name))
   in
-  let obj name = Target.create_object (Reference.create name) in
+  let obj name =
+    let reference = Reference.create name in
+    Target.create_global_variable
+      (id_for name |> PyreflyTypes.CallableId.module_id)
+      (Reference.last reference)
+  in
   (* Function name (rendered bare): path prefix at the start is stripped. *)
   assert_strip_external ~expected:"a.b.c.foo" (func "a/b/c.py:a.b.c.foo");
   (* A `@decorated` tag suffix is preserved (the transform only rewrites the name component). *)

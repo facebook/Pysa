@@ -597,7 +597,12 @@ let add_obscure_sink ~callables_to_definitions_map ~call_target model =
     | Target.Regular.Method _ -> Some call_target
     | Target.Regular.Override method_name ->
         Some (Target.Regular.Method method_name |> Target.from_regular)
-    | Target.Regular.Object _ -> None
+    | Target.Regular.GlobalVariable _
+    | Target.Regular.ClassInstanceAttribute _
+    | Target.Regular.ClassTypeAttribute _
+    | Target.Regular.Artificial _
+    | Target.Regular.UnknownCallee _ ->
+        None
   in
   match real_target with
   | None -> model

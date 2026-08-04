@@ -77,8 +77,10 @@ module Sink = struct
           |> List.filter ~f:(fun regular ->
                  let target = Target.from_regular regular in
                  match regular with
-                 | Target.Regular.Object name ->
-                     String.equal callee_suffix (name |> Ast.Reference.create |> Ast.Reference.last)
+                 | Target.Regular.GlobalVariable { name; _ }
+                 | Target.Regular.ClassInstanceAttribute { name; _ }
+                 | Target.Regular.ClassTypeAttribute { name; _ } ->
+                     String.equal callee_suffix name
                  | Target.Regular.Function _ ->
                      String.equal
                        callee_suffix
@@ -87,7 +89,9 @@ module Sink = struct
                        |> Ast.Reference.last)
                  | Target.Regular.Method _
                  | Target.Regular.Override _ ->
-                     String.equal callee_suffix (Target.method_name_exn ~display_api target))
+                     String.equal callee_suffix (Target.method_name_exn ~display_api target)
+                 | Target.Regular.Artificial _ -> false
+                 | Target.Regular.UnknownCallee _ -> false)
         in
         let callee =
           match regular_targets_matching_suffix with

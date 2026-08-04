@@ -158,6 +158,7 @@ module DisplayApi : sig
     callable_external_name: CallableId.t -> Ast.Reference.t;
     (* Python define name; never includes `@decorated`. *)
     callable_define_name: CallableId.t -> Ast.Reference.t;
+    module_name: ModuleId.t -> Ast.Reference.t;
     class_name: ClassId.t -> Ast.Reference.t;
   }
 

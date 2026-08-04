@@ -147,27 +147,14 @@ module CallTarget = struct
     |> List.remove_consecutive_duplicates ~which_to_keep:`First ~equal:equal_ignoring_indices
 
 
-  let default =
-    {
-      target = "<default_call_target>" |> Reference.create |> Target.create_object;
-      implicit_receiver = false;
-      implicit_dunder_call = false;
-      index = 0;
-      return_type = Some ReturnType.unknown;
-      receiver_class = None;
-      is_class_method = false;
-      is_static_method = false;
-    }
-
-
   let create
-      ?(implicit_receiver = default.implicit_receiver)
-      ?(implicit_dunder_call = default.implicit_dunder_call)
-      ?(index = default.index)
-      ?(return_type = default.return_type)
+      ?(implicit_receiver = false)
+      ?(implicit_dunder_call = false)
+      ?(index = 0)
+      ?(return_type = Some ReturnType.unknown)
       ?receiver_class
-      ?(is_class_method = default.is_class_method)
-      ?(is_static_method = default.is_static_method)
+      ?(is_class_method = false)
+      ?(is_static_method = false)
       target
     =
     {
@@ -183,13 +170,13 @@ module CallTarget = struct
 
 
   let create_regular
-      ?(implicit_receiver = default.implicit_receiver)
-      ?(implicit_dunder_call = default.implicit_dunder_call)
-      ?(index = default.index)
-      ?(return_type = default.return_type)
+      ?(implicit_receiver = false)
+      ?(implicit_dunder_call = false)
+      ?(index = 0)
+      ?(return_type = Some ReturnType.unknown)
       ?receiver_class
-      ?(is_class_method = default.is_class_method)
-      ?(is_static_method = default.is_static_method)
+      ?(is_class_method = false)
+      ?(is_static_method = false)
       target
     =
     target

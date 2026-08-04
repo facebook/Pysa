@@ -860,12 +860,27 @@ let test_source_models context =
     ();
   assert_model
     ~model_source:"os.environ: TaintSource[TestTest] = ..."
-    ~expect:[outcome ~kind:`Object ~returns:[Sources.NamedSource "TestTest"] "os.environ"]
+    ~expect:[outcome ~kind:`GlobalVariable ~returns:[Sources.NamedSource "TestTest"] "os.environ"]
     ();
   assert_model
     ~model_source:"django.http.Request.GET: TaintSource[TestTest] = ..."
     ~expect:
-      [outcome ~kind:`Object ~returns:[Sources.NamedSource "TestTest"] "django.http.Request.GET"]
+      [
+        outcome
+          ~kind:`ClassInstanceAttribute
+          ~returns:[Sources.NamedSource "TestTest"]
+          "django.http.Request.GET";
+      ]
+    ();
+  assert_model
+    ~model_source:"django.http.Request.__class__.GET: TaintSource[TestTest] = ..."
+    ~expect:
+      [
+        outcome
+          ~kind:`ClassTypeAttribute
+          ~returns:[Sources.NamedSource "TestTest"]
+          "django.http.Request.__class__.GET";
+      ]
     ();
   assert_model
     ~model_source:"def test.taint() -> TaintSource[Test, UserControlled]: ..."
@@ -883,7 +898,7 @@ let test_source_models context =
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`GlobalVariable
           ~parameter_sinks:[{ name = "$global"; sinks = [Sinks.NamedSink "Test"] }]
           "os.environ";
       ]
@@ -1467,14 +1482,20 @@ let test_attribute_sanitize context =
   let assert_model = assert_model ~context in
   assert_model
     ~model_source:"django.http.Request.GET: Sanitize = ..."
-    ~expect:[outcome ~kind:`Object ~global_sanitizer:Sanitize.all "django.http.Request.GET"]
+    ~expect:
+      [
+        outcome
+          ~kind:`ClassInstanceAttribute
+          ~global_sanitizer:Sanitize.all
+          "django.http.Request.GET";
+      ]
     ();
   assert_model
     ~model_source:"django.http.Request.GET: Sanitize[TaintSource] = ..."
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`ClassInstanceAttribute
           ~global_sanitizer:(Sanitize.from_sources_only SanitizeTransform.SourceSet.all)
           "django.http.Request.GET";
       ]
@@ -1484,7 +1505,7 @@ let test_attribute_sanitize context =
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`ClassInstanceAttribute
           ~global_sanitizer:(Sanitize.from_sinks_only SanitizeTransform.SinkSet.all)
           "django.http.Request.GET";
       ]
@@ -1494,7 +1515,7 @@ let test_attribute_sanitize context =
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`ClassInstanceAttribute
           ~global_sanitizer:
             (Sanitize.from_sources_only
                (SanitizeTransform.SourceSet.singleton (SanitizeTransform.Source.Named "Test")))
@@ -1506,7 +1527,7 @@ let test_attribute_sanitize context =
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`ClassInstanceAttribute
           ~global_sanitizer:
             (Sanitize.from_sinks_only
                (SanitizeTransform.SinkSet.singleton (SanitizeTransform.Sink.Named "Test")))
@@ -1518,7 +1539,7 @@ let test_attribute_sanitize context =
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`ClassInstanceAttribute
           ~global_sanitizer:
             (Sanitize.from_sources_only
                (SanitizeTransform.SourceSet.of_list
@@ -1531,7 +1552,7 @@ let test_attribute_sanitize context =
     ~expect:
       [
         outcome
-          ~kind:`Object
+          ~kind:`ClassInstanceAttribute
           ~global_sanitizer:
             (Sanitize.from_sinks_only
                (SanitizeTransform.SinkSet.of_list

@@ -539,31 +539,33 @@ module ViaFeature = struct
     Breadcrumb.ViaType { value = feature; tag } |> BreadcrumbInterned.intern
 
 
-  let via_type_of_breadcrumb_for_object ?tag ~pyrefly_in_context ~object_target () =
-    let object_target = Reference.create object_target in
+  let via_type_of_breadcrumb_for_object ?tag ~pyrefly_in_context ~target () =
+    let pyrefly_api = Interprocedural.PyreflyApi.InContext.pyrefly_api pyrefly_in_context in
     let feature =
-      let pyrefly_api = Interprocedural.PyreflyApi.InContext.pyrefly_api pyrefly_in_context in
-      (* TODO(T278961928): Don't fabricate a class id from a reference. *)
-      match
-        PyreflyApi.ReadOnly.class_id_from_name_opt
-          pyrefly_api
-          (Reference.prefix object_target |> Option.value_exn)
-      with
-      | Some class_id ->
+      match Target.get_regular target with
+      | Target.Regular.ClassInstanceAttribute { class_id; name }
+      | Target.Regular.ClassTypeAttribute { class_id; name } ->
           Interprocedural.PyreflyApi.ReadOnly.get_class_attribute_inferred_type
             pyrefly_api
             ~class_id
-            ~attribute:(Reference.last object_target)
+            ~attribute:name
           |> PyreflyApi.PyreflyType.weaken_literals
-      | None -> PyreflyApi.PyreflyType.top
+      | _ -> PyreflyApi.PyreflyType.top
     in
     Breadcrumb.ViaType { value = PyreflyApi.PyreflyType.show_fully_qualified feature; tag }
     |> BreadcrumbInterned.intern
 
 
-  let via_attribute_name_breadcrumb_for_object ?tag ~object_target () =
-    Breadcrumb.ViaAttributeName { value = object_target |> Reference.create |> Reference.last; tag }
-    |> BreadcrumbInterned.intern
+  let via_attribute_name_breadcrumb_for_object ?tag ~target () =
+    let value =
+      match Target.get_regular target with
+      | Target.Regular.GlobalVariable { name; _ }
+      | Target.Regular.ClassInstanceAttribute { name; _ }
+      | Target.Regular.ClassTypeAttribute { name; _ } ->
+          name
+      | _ -> failwith "expected an object target"
+    in
+    Breadcrumb.ViaAttributeName { value; tag } |> BreadcrumbInterned.intern
 
 
   let to_json via =
@@ -849,11 +851,13 @@ let expand_via_features ~pyrefly_in_context ~callee ~arguments via_features =
     | ViaFeature.ViaTypeOf { parameter; tag } ->
         let breadcrumb =
           match Target.get_regular callee with
-          | Target.Regular.Object object_target ->
+          | Target.Regular.GlobalVariable _
+          | Target.Regular.ClassInstanceAttribute _
+          | Target.Regular.ClassTypeAttribute _ ->
               ViaFeature.via_type_of_breadcrumb_for_object
                 ?tag
                 ~pyrefly_in_context
-                ~object_target
+                ~target:callee
                 ()
           | _ ->
               ViaFeature.via_type_of_breadcrumb
@@ -865,9 +869,11 @@ let expand_via_features ~pyrefly_in_context ~callee ~arguments via_features =
         BreadcrumbSet.add breadcrumb breadcrumbs
     | ViaFeature.ViaAttributeName { tag } -> (
         match Target.get_regular callee with
-        | Target.Regular.Object object_target ->
+        | Target.Regular.GlobalVariable _
+        | Target.Regular.ClassInstanceAttribute _
+        | Target.Regular.ClassTypeAttribute _ ->
             let breadcrumb =
-              ViaFeature.via_attribute_name_breadcrumb_for_object ?tag ~object_target ()
+              ViaFeature.via_attribute_name_breadcrumb_for_object ?tag ~target:callee ()
             in
             BreadcrumbSet.add breadcrumb breadcrumbs
         | _ -> breadcrumbs)

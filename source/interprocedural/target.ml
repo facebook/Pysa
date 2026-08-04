@@ -10,22 +10,55 @@
  * This is mostly used to represent callables in the interprocedural framework,
  * using `Function` or `Method`.
  * `Override f` represents the set of methods overriding the method `f`.
- * `Object` represents global variables or class attributes.
+ * `GlobalVariable` and `ClassAttribute` represent modeled objects.
+ * `Artificial` represents synthetic analysis targets.
  *)
 
 open Core
 open Ast
 module CallableId = PyreflyTypes.CallableId
+module ModuleId = PyreflyTypes.ModuleId
+module ClassId = PyreflyTypes.ClassId
 module DisplayApi = PyreflyTypes.DisplayApi
+
+module ArtificialKind = struct
+  type t =
+    | FormatString
+    | StrAdd
+    | StrMod
+    | StrFormat
+    | StrLiteral
+    | Condition
+  [@@deriving sexp, compare, hash, equal, show]
+
+  let name = function
+    | FormatString -> "<format-string>"
+    | StrAdd -> "<str.__add__>"
+    | StrMod -> "<str.__mod__>"
+    | StrFormat -> "<str.format>"
+    | StrLiteral -> "<literal-string>"
+    | Condition -> "<condition>"
+end
 
 module Regular = struct
   type t =
     | Function of CallableId.t
     | Method of CallableId.t
     | Override of CallableId.t
-    (* Represents a global variable or field of a class that we want to model,
-     * e.g os.environ or HttpRequest.GET *)
-    | Object of string
+    | GlobalVariable of {
+        module_id: ModuleId.t;
+        name: string;
+      }
+    | ClassInstanceAttribute of {
+        class_id: ClassId.t;
+        name: string;
+      }
+    | ClassTypeAttribute of {
+        class_id: ClassId.t;
+        name: string;
+      }
+    | Artificial of ArtificialKind.t
+    | UnknownCallee of string
   [@@deriving sexp, hash, equal]
 
   (* Lower priority appears earlier in comparison. *)
@@ -33,7 +66,11 @@ module Regular = struct
     | Function _ -> 0
     | Method _ -> 1
     | Override _ -> 2
-    | Object _ -> 3
+    | GlobalVariable _ -> 3
+    | ClassInstanceAttribute _ -> 4
+    | ClassTypeAttribute _ -> 5
+    | Artificial _ -> 6
+    | UnknownCallee _ -> 7
 
 
   let compare left right =
@@ -46,7 +83,16 @@ module Regular = struct
       | Method first, Method second
       | Override first, Override second ->
           CallableId.compare first second
-      | Object first, Object second -> String.compare first second
+      | ( GlobalVariable { module_id = first_id; name = first_name },
+          GlobalVariable { module_id = second_id; name = second_name } ) ->
+          [%compare: ModuleId.t * string] (first_id, first_name) (second_id, second_name)
+      | ( ClassInstanceAttribute { class_id = first_id; name = first_name },
+          ClassInstanceAttribute { class_id = second_id; name = second_name } )
+      | ( ClassTypeAttribute { class_id = first_id; name = first_name },
+          ClassTypeAttribute { class_id = second_id; name = second_name } ) ->
+          [%compare: ClassId.t * string] (first_id, first_name) (second_id, second_name)
+      | Artificial first, Artificial second -> ArtificialKind.compare first second
+      | UnknownCallee first, UnknownCallee second -> String.compare first second
       | _ -> failwith "The compared targets must belong to the same variant."
 
 
@@ -56,7 +102,14 @@ module Regular = struct
     | Function callable_id -> Format.fprintf formatter "Function(%a)" CallableId.pp callable_id
     | Method callable_id -> Format.fprintf formatter "Method(%a)" CallableId.pp callable_id
     | Override callable_id -> Format.fprintf formatter "Override(%a)" CallableId.pp callable_id
-    | Object name -> Format.fprintf formatter "Object(%s)" name
+    | GlobalVariable { module_id; name } ->
+        Format.fprintf formatter "GlobalVariable(%a, %s)" ModuleId.pp module_id name
+    | ClassInstanceAttribute { class_id; name } ->
+        Format.fprintf formatter "ClassInstanceAttribute(%a, %s)" ClassId.pp class_id name
+    | ClassTypeAttribute { class_id; name } ->
+        Format.fprintf formatter "ClassTypeAttribute(%a, %s)" ClassId.pp class_id name
+    | Artificial kind -> Format.fprintf formatter "Artificial(%s)" (ArtificialKind.name kind)
+    | UnknownCallee name -> Format.fprintf formatter "UnknownCallee(%s)" name
 
 
   let show = Format.asprintf "%a" pp
@@ -68,14 +121,28 @@ module Regular = struct
     | Method callable_id ->
         Format.fprintf formatter "%a" CallableId.pp callable_id
     | Override callable_id -> Format.fprintf formatter "Overrides{%a}" CallableId.pp callable_id
-    | Object name -> Format.fprintf formatter "Object{%s}" name
+    | GlobalVariable { module_id; name } ->
+        Format.fprintf formatter "Object{%a.%s}" ModuleId.pp module_id name
+    | ClassInstanceAttribute { class_id; name } ->
+        Format.fprintf formatter "Object{%a.%s}" ClassId.pp class_id name
+    | ClassTypeAttribute { class_id; name } ->
+        Format.fprintf formatter "Object{%a.__class__.%s}" ClassId.pp class_id name
+    | Artificial kind -> Format.fprintf formatter "Object{%s}" (ArtificialKind.name kind)
+    | UnknownCallee name -> Format.fprintf formatter "Object{unknown-callee:%s}" name
 
 
   let pp_pretty_with_kind formatter = function
     | Function callable_id -> Format.fprintf formatter "%a (fun)" CallableId.pp callable_id
     | Method callable_id -> Format.fprintf formatter "%a (method)" CallableId.pp callable_id
     | Override callable_id -> Format.fprintf formatter "%a (override)" CallableId.pp callable_id
-    | Object name -> Format.fprintf formatter "%s (object)" name
+    | GlobalVariable { module_id; name } ->
+        Format.fprintf formatter "%a.%s (object)" ModuleId.pp module_id name
+    | ClassInstanceAttribute { class_id; name } ->
+        Format.fprintf formatter "%a.%s (object)" ClassId.pp class_id name
+    | ClassTypeAttribute { class_id; name } ->
+        Format.fprintf formatter "%a.__class__.%s (object)" ClassId.pp class_id name
+    | Artificial kind -> Format.fprintf formatter "%s (object)" (ArtificialKind.name kind)
+    | UnknownCallee name -> Format.fprintf formatter "unknown-callee:%s (object)" name
 
 
   (* Decode a callable id to its external (user-facing) name through the display api. The external
@@ -88,7 +155,11 @@ module Regular = struct
      pyrefly source-path prefix. Byte-identical to the old string-based rendering: the display api
      decodes the same qualified name the string target carried, and `strip_path_prefix` only affects
      the leading module prefix (the `@decorated` suffix has no colon, so it is left intact). *)
-  let pp_external ~display_api ?(transform = Fn.id) formatter = function
+  let pp_external
+      ~display_api:({ DisplayApi.module_name; class_name; _ } as display_api)
+      ?(transform = Fn.id)
+      formatter
+    = function
     | Function callable_id
     | Method callable_id ->
         Format.fprintf formatter "%s" (transform (callable_external_name ~display_api callable_id))
@@ -97,26 +168,65 @@ module Regular = struct
           formatter
           "Overrides{%s}"
           (transform (callable_external_name ~display_api callable_id))
-    | Object name -> Format.fprintf formatter "Obj{%s}" (transform name)
+    | GlobalVariable { module_id; name } ->
+        Format.fprintf
+          formatter
+          "Obj{%s.%s}"
+          (transform (Reference.show (module_name module_id)))
+          name
+    | ClassInstanceAttribute { class_id; name } ->
+        Format.fprintf
+          formatter
+          "Obj{%s.%s}"
+          (transform (Reference.show (class_name class_id)))
+          name
+    | ClassTypeAttribute { class_id; name } ->
+        Format.fprintf
+          formatter
+          "Obj{%s.__class__.%s}"
+          (transform (Reference.show (class_name class_id)))
+          name
+    | Artificial kind -> Format.fprintf formatter "Obj{%s}" (transform (ArtificialKind.name kind))
+    | UnknownCallee name -> Format.fprintf formatter "Obj{unknown-callee:%s}" name
 
 
-  let pp_pretty_with_display_api ~display_api formatter = function
+  let pp_pretty_with_display_api
+      ~display_api:({ DisplayApi.module_name; class_name; _ } as display_api)
+      formatter
+    = function
     | Function callable_id
     | Method callable_id ->
         Format.fprintf formatter "%s" (callable_external_name ~display_api callable_id)
     | Override callable_id ->
         Format.fprintf formatter "Overrides{%s}" (callable_external_name ~display_api callable_id)
-    | Object name -> Format.fprintf formatter "Object{%s}" name
+    | GlobalVariable { module_id; name } ->
+        Format.fprintf formatter "Object{%a.%s}" Reference.pp (module_name module_id) name
+    | ClassInstanceAttribute { class_id; name } ->
+        Format.fprintf formatter "Object{%a.%s}" Reference.pp (class_name class_id) name
+    | ClassTypeAttribute { class_id; name } ->
+        Format.fprintf formatter "Object{%a.__class__.%s}" Reference.pp (class_name class_id) name
+    | Artificial kind -> Format.fprintf formatter "Object{%s}" (ArtificialKind.name kind)
+    | UnknownCallee name -> Format.fprintf formatter "Object{unknown-callee:%s}" name
 
 
-  let pp_pretty_with_kind_with_display_api ~display_api formatter = function
+  let pp_pretty_with_kind_with_display_api
+      ~display_api:({ DisplayApi.module_name; class_name; _ } as display_api)
+      formatter
+    = function
     | Function callable_id ->
         Format.fprintf formatter "%s (fun)" (callable_external_name ~display_api callable_id)
     | Method callable_id ->
         Format.fprintf formatter "%s (method)" (callable_external_name ~display_api callable_id)
     | Override callable_id ->
         Format.fprintf formatter "%s (override)" (callable_external_name ~display_api callable_id)
-    | Object name -> Format.fprintf formatter "%s (object)" name
+    | GlobalVariable { module_id; name } ->
+        Format.fprintf formatter "%a.%s (object)" Reference.pp (module_name module_id) name
+    | ClassInstanceAttribute { class_id; name } ->
+        Format.fprintf formatter "%a.%s (object)" Reference.pp (class_name class_id) name
+    | ClassTypeAttribute { class_id; name } ->
+        Format.fprintf formatter "%a.__class__.%s (object)" Reference.pp (class_name class_id) name
+    | Artificial kind -> Format.fprintf formatter "%s (object)" (ArtificialKind.name kind)
+    | UnknownCallee name -> Format.fprintf formatter "unknown-callee:%s (object)" name
 
 
   let get_corresponding_method_exn = function
@@ -129,8 +239,15 @@ module Regular = struct
     | _ -> failwith "unexpected"
 
 
-  let object_name = function
-    | Object name -> Reference.create name
+  let object_name ~display_api:{ DisplayApi.module_name; class_name; _ } = function
+    | GlobalVariable { module_id; name } -> Reference.create ~prefix:(module_name module_id) name
+    | ClassInstanceAttribute { class_id; name } ->
+        Reference.create ~prefix:(class_name class_id) name
+    | ClassTypeAttribute { class_id; name } ->
+        Reference.create ~prefix:(class_name class_id) ("__class__." ^ name)
+    | Artificial kind -> Reference.create (ArtificialKind.name kind)
+    | UnknownCallee unknown_callee ->
+        Reference.create (Format.sprintf "unknown-callee:%s" unknown_callee)
     | _ -> failwith "unexpected"
 
 
@@ -139,7 +256,11 @@ module Regular = struct
     | Method _ ->
         true
     | Override _
-    | Object _ ->
+    | GlobalVariable _
+    | ClassInstanceAttribute _
+    | ClassTypeAttribute _
+    | Artificial _
+    | UnknownCallee _ ->
         false
 
 
@@ -148,7 +269,11 @@ module Regular = struct
     | Override _ ->
         true
     | Function _
-    | Object _ ->
+    | GlobalVariable _
+    | ClassInstanceAttribute _
+    | ClassTypeAttribute _
+    | Artificial _
+    | UnknownCallee _ ->
         false
 
 
@@ -168,7 +293,12 @@ module Regular = struct
 
 
   let is_object = function
-    | Object _ -> true
+    | GlobalVariable _
+    | ClassInstanceAttribute _
+    | ClassTypeAttribute _
+    | Artificial _
+    | UnknownCallee _ ->
+        true
     | _ -> false
 
 
@@ -177,12 +307,19 @@ module Regular = struct
     | Method callable_id
     | Override callable_id ->
         CallableId.is_decorated callable_id
-    | Object _ -> false
+    | GlobalVariable _
+    | ClassInstanceAttribute _
+    | ClassTypeAttribute _
+    | Artificial _
+    | UnknownCallee _ ->
+        false
 
 
   let override_to_method = function
     | Override callable_id -> Method callable_id
-    | (Function _ | Method _ | Object _) as regular -> regular
+    | ( Function _ | Method _ | GlobalVariable _ | ClassInstanceAttribute _ | ClassTypeAttribute _
+      | Artificial _ | UnknownCallee _ ) as regular ->
+        regular
 
 
   (* Mark a callable as its decorated variant (the `FunctionDecoratedTarget` id tag). *)
@@ -197,7 +334,12 @@ module Regular = struct
     | Function callable_id -> Function (mark callable_id)
     | Method callable_id -> Method (mark callable_id)
     | Override callable_id -> Override (mark callable_id)
-    | Object _ -> failwith "to_decorated on object target"
+    | GlobalVariable _
+    | ClassInstanceAttribute _
+    | ClassTypeAttribute _
+    | Artificial _
+    | UnknownCallee _ ->
+        failwith "to_decorated on non-callable target"
 
 
   (* Mark a decorated callable as its undecorated variant, or raise an error. *)
@@ -212,7 +354,12 @@ module Regular = struct
     | Function callable_id -> Function (unmark callable_id)
     | Method callable_id -> Method (unmark callable_id)
     | Override callable_id -> Override (unmark callable_id)
-    | Object _ -> failwith "to_undecorated_exn on object target"
+    | GlobalVariable _
+    | ClassInstanceAttribute _
+    | ClassTypeAttribute _
+    | Artificial _
+    | UnknownCallee _ ->
+        failwith "to_undecorated_exn on non-callable target"
 end
 
 module ParameterMap = Data_structures.SerializableMap.Make (AccessPath.Root)
@@ -360,15 +507,21 @@ let get_regular = function
 
 
 (* Return the callable id carried by a target. `Function`, `Method` and `Override` all carry one (an
-   override wraps the callable id of the method it overrides); `Object` targets have none. Returns
-   the id as-is, without stripping the `@decorated` tag - that is the caller's responsibility. *)
+   override wraps the callable id of the method it overrides); non-callable targets have none.
+   Returns the id as-is, without stripping the `@decorated` tag - that is the caller's
+   responsibility. *)
 let callable_id target =
   match get_regular target with
   | Regular.Function callable_id
   | Regular.Method callable_id
   | Regular.Override callable_id ->
       Some callable_id
-  | Regular.Object _ -> None
+  | Regular.GlobalVariable _
+  | Regular.ClassInstanceAttribute _
+  | Regular.ClassTypeAttribute _
+  | Regular.Artificial _
+  | Regular.UnknownCallee _ ->
+      None
 
 
 let callable_id_exn target =
@@ -383,7 +536,12 @@ let module_id target =
   | Regular.Method callable_id
   | Regular.Override callable_id ->
       Some (CallableId.module_id callable_id)
-  | Regular.Object _ -> None
+  | Regular.GlobalVariable { module_id; _ } -> Some module_id
+  | Regular.ClassInstanceAttribute { class_id; _ }
+  | Regular.ClassTypeAttribute { class_id; _ } ->
+      Some (ClassId.module_id class_id)
+  | Regular.Artificial _ -> None
+  | Regular.UnknownCallee _ -> None
 
 
 let module_id_exn target =
@@ -408,7 +566,11 @@ let class_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
   | Regular.Override callable_id ->
       callable_define_name callable_id |> Reference.prefix |> Option.map ~f:Reference.show
   | Regular.Function _
-  | Regular.Object _ ->
+  | Regular.GlobalVariable _
+  | Regular.ClassInstanceAttribute _
+  | Regular.ClassTypeAttribute _
+  | Regular.Artificial _
+  | Regular.UnknownCallee _ ->
       None
 
 
@@ -426,7 +588,11 @@ let method_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
   | Regular.Override callable_id ->
       Some (Reference.last (callable_define_name callable_id))
   | Regular.Function _
-  | Regular.Object _ ->
+  | Regular.GlobalVariable _
+  | Regular.ClassInstanceAttribute _
+  | Regular.ClassTypeAttribute _
+  | Regular.Artificial _
+  | Regular.UnknownCallee _ ->
       None
 
 
@@ -442,7 +608,11 @@ let function_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
   | Regular.Function callable_id -> Some (Reference.show (callable_define_name callable_id))
   | Regular.Method _
   | Regular.Override _
-  | Regular.Object _ ->
+  | Regular.GlobalVariable _
+  | Regular.ClassInstanceAttribute _
+  | Regular.ClassTypeAttribute _
+  | Regular.Artificial _
+  | Regular.UnknownCallee _ ->
       None
 
 
@@ -460,7 +630,11 @@ let define_name ~display_api:{ DisplayApi.callable_define_name; _ } target =
   | Regular.Method callable_id ->
       Some (callable_define_name callable_id)
   | Regular.Override _
-  | Regular.Object _ ->
+  | Regular.GlobalVariable _
+  | Regular.ClassInstanceAttribute _
+  | Regular.ClassTypeAttribute _
+  | Regular.Artificial _
+  | Regular.UnknownCallee _ ->
       None
 
 
@@ -495,7 +669,15 @@ let create_method callable_id = Method callable_id |> from_regular
 
 let create_override callable_id = Override callable_id |> from_regular
 
-let create_object reference = Object (Reference.show reference) |> from_regular
+let create_global_variable module_id name = GlobalVariable { module_id; name } |> from_regular
+
+let create_class_instance_attribute class_id name =
+  ClassInstanceAttribute { class_id; name } |> from_regular
+
+
+let create_class_type_attribute class_id name =
+  ClassTypeAttribute { class_id; name } |> from_regular
+
 
 let get_corresponding_method_exn ~must_be_regular target =
   (if must_be_regular then
@@ -506,7 +688,7 @@ let get_corresponding_method_exn ~must_be_regular target =
   |> from_regular
 
 
-let object_name target = target |> get_regular |> Regular.object_name
+let object_name ~display_api target = target |> get_regular |> Regular.object_name ~display_api
 
 let is_function_or_method target = target |> get_regular |> Regular.is_function_or_method
 
@@ -659,17 +841,19 @@ let should_skip_analysis ~skip_analysis_targets target =
 
 
 module ArtificialTargets = struct
-  let format_string = Object "<format-string>" |> from_regular
+  let create kind = Artificial kind |> from_regular
 
-  let str_add = Object "<str.__add__>" |> from_regular
+  let format_string = create ArtificialKind.FormatString
 
-  let str_mod = Object "<str.__mod__>" |> from_regular
+  let str_add = create ArtificialKind.StrAdd
 
-  let str_format = Object "<str.format>" |> from_regular
+  let str_mod = create ArtificialKind.StrMod
 
-  let str_literal = Object "<literal-string>" |> from_regular
+  let str_format = create ArtificialKind.StrFormat
 
-  let condition = Object "<condition>" |> from_regular
+  let str_literal = create ArtificialKind.StrLiteral
+
+  let condition = create ArtificialKind.Condition
 end
 
 module SharedMemoryKey = struct

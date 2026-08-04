@@ -915,23 +915,13 @@ module HigherOrderCallGraph = struct
       }
     end
 
-    let analyze_callee_targets
-        ~location
-        ~call
-        ~arguments
-        ~argument_callees
-        ~track_apply_call_step_name
-        callee_targets
-      =
+    let analyze_callee_targets ~location ~call ~arguments ~argument_callees callee_targets =
       let track_apply_call_step step f =
         CallGraphProfiler.track_apply_call_step
           ~profiler:Context.profiler
           ~analysis:Forward
           ~step
-          ~call_target:
-            (* A hack to distinguish the profiling of different calls to
-               `analyze_callee_targets`. *)
-            (Some (Target.Regular.Object track_apply_call_step_name |> Target.from_regular))
+          ~call_target:None
           ~location
           ~argument:None
           ~f
@@ -1351,12 +1341,7 @@ module HigherOrderCallGraph = struct
           =
           callee_return_values
           |> CallTarget.Set.elements
-          |> analyze_callee_targets
-               ~location
-               ~call
-               ~arguments
-               ~argument_callees
-               ~track_apply_call_step_name:"callee_return_targets"
+          |> analyze_callee_targets ~location ~call ~arguments ~argument_callees
         in
         let {
           AnalyzeCalleeResult.parameterized_targets = parameterized_call_targets;
@@ -1365,13 +1350,7 @@ module HigherOrderCallGraph = struct
           stub_targets = stub_call_targets;
         }
           =
-          analyze_callee_targets
-            ~location
-            ~call
-            ~arguments
-            ~argument_callees
-            ~track_apply_call_step_name:"call_targets"
-            original_call_targets
+          analyze_callee_targets ~location ~call ~arguments ~argument_callees original_call_targets
         in
         ( List.rev_append parameterized_callee_return_targets parameterized_call_targets,
           List.rev_append decorated_callee_return_targets decorated_call_targets,
@@ -1385,13 +1364,7 @@ module HigherOrderCallGraph = struct
         stub_targets = stub_init_targets;
       }
         =
-        analyze_callee_targets
-          ~location
-          ~call
-          ~arguments
-          ~argument_callees
-          ~track_apply_call_step_name:"init_targets"
-          original_init_targets
+        analyze_callee_targets ~location ~call ~arguments ~argument_callees original_init_targets
       in
       (* Discard higher order parameters only if each original target is parameterized, except for
          the targets that must be treated as being called. *)
@@ -2327,26 +2300,15 @@ let build_whole_program_call_graph
                     if is_class_instance modifiers then
                       List.map
                         ~f:(fun class_id ->
-                          Format.asprintf
-                            "%a.%s"
-                            Reference.pp
-                            (PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id)
-                            attribute)
+                          Target.create_class_instance_attribute class_id attribute)
                         parents
                     else if is_class_type modifiers then
                       List.map
-                        ~f:(fun class_id ->
-                          Format.asprintf
-                            "%a.__class__.%s"
-                            Reference.pp
-                            (PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id)
-                            attribute)
+                        ~f:(fun class_id -> Target.create_class_type_attribute class_id attribute)
                         parents
                     else
                       [])
             >>| List.concat
-            >>| List.map ~f:Reference.create
-            >>| List.map ~f:Target.create_object
             >>| List.filter ~f:(fun target -> Target.Set.mem target attribute_targets)
             >>| List.map ~f:CallGraph.CallTarget.create
             |> Option.value ~default:[]

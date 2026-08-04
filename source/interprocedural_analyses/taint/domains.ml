@@ -1491,7 +1491,11 @@ end = struct
       in
       let class_intervals =
         match Target.get_regular callee with
-        | Target.Regular.Object _
+        | Target.Regular.GlobalVariable _
+        | Target.Regular.ClassInstanceAttribute _
+        | Target.Regular.ClassTypeAttribute _
+        | Target.Regular.Artificial _
+        | Target.Regular.UnknownCallee _
         | Target.Regular.Function _ ->
             Some call_info_intervals
         | Target.Regular.Method _
@@ -1580,7 +1584,11 @@ end = struct
     let apply (call_info, local_taint) =
       let class_intervals =
         match Target.get_regular callee with
-        | Target.Regular.Object _
+        | Target.Regular.GlobalVariable _
+        | Target.Regular.ClassInstanceAttribute _
+        | Target.Regular.ClassTypeAttribute _
+        | Target.Regular.Artificial _
+        | Target.Regular.UnknownCallee _
         | Target.Regular.Function _ ->
             Some call_info_intervals
         | Target.Regular.Method _

@@ -18,6 +18,19 @@ let class_id_exn pyrefly_api class_name =
   |> Option.value_exn ~message:(Format.sprintf "unknown class `%s`" class_name)
 
 
+let global_variable pyrefly_api module_name name =
+  Target.Regular.GlobalVariable
+    {
+      module_id =
+        PyreflyApi.ReadOnly.module_id_of_qualifier pyrefly_api (Reference.create module_name);
+      name;
+    }
+
+
+let class_attribute pyrefly_api class_name name =
+  Target.Regular.ClassInstanceAttribute { class_id = class_id_exn pyrefly_api class_name; name }
+
+
 let compute_define_call_graph
     ~callable
     ~module_name
@@ -105,6 +118,7 @@ let assert_call_graph_of_define
          pyrefly_api
          (Reference.create define_name))
   in
+  let object_targets = List.map object_targets ~f:(fun create -> create pyrefly_api) in
   let expected = DefineCallGraphForTest.from_expected (expected pyrefly_api) in
   let actual, callables_to_definitions_map =
     compute_define_call_graph
@@ -187,6 +201,7 @@ let assert_higher_order_call_graph_of_define
              (Reference.create define_name))
   in
   let maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth in
+  let object_targets = List.map object_targets ~f:(fun create -> create pyrefly_api) in
   let define_call_graph, callables_to_definitions_map =
     compute_define_call_graph
       ~callable:(Target.strip_parameters callable)
@@ -2365,7 +2380,7 @@ let test_call_graph_of_define =
           d[s].foo()
       |}
            ~define_name:"test.calls_d_method"
-           ~object_targets:[Target.Regular.Object "test.d"]
+           ~object_targets:[(fun api -> global_variable api "test" "d")]
            ~expected:(fun pyrefly_api ->
              [
                ( "11:2-11:3|identifier|d",
@@ -2375,7 +2390,7 @@ let test_call_graph_of_define =
                         [
                           CallTarget.create_regular
                             ~return_type:None
-                            (Target.Regular.Object "test.d");
+                            (global_variable pyrefly_api "test" "d");
                         ]
                       ()) );
                ( "11:2-11:6|artificial-call|subscript-get-item",
@@ -3669,7 +3684,7 @@ let test_call_graph_of_define =
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
-           ~object_targets:[Target.Regular.Object "test.Token.token"]
+           ~object_targets:[(fun api -> class_attribute api "test.Token" "token")]
            ~source:
              {|
       class Token:
@@ -3689,7 +3704,10 @@ let test_call_graph_of_define =
                    {
                      AttributeAccessCallees.property_targets = [];
                      global_targets =
-                       [CallTarget.create_regular (Target.Regular.Object "test.Token.token")];
+                       [
+                         CallTarget.create_regular
+                           (class_attribute _pyrefly_api "test.Token" "token");
+                       ];
                      is_attribute = true;
                      if_called = CallCallees.empty;
                    } );
@@ -3698,7 +3716,10 @@ let test_call_graph_of_define =
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
            ~object_targets:
-             [Target.Regular.Object "test.A.attribute"; Target.Regular.Object "test.C.attribute"]
+             [
+               (fun api -> class_attribute api "test.A" "attribute");
+               (fun api -> class_attribute api "test.C" "attribute");
+             ]
            ~source:
              {|
       from typing import Union
@@ -3724,8 +3745,10 @@ let test_call_graph_of_define =
                      AttributeAccessCallees.property_targets = [];
                      global_targets =
                        [
-                         CallTarget.create_regular (Target.Regular.Object "test.A.attribute");
-                         CallTarget.create_regular (Target.Regular.Object "test.C.attribute");
+                         CallTarget.create_regular
+                           (class_attribute _pyrefly_api "test.A" "attribute");
+                         CallTarget.create_regular
+                           (class_attribute _pyrefly_api "test.C" "attribute");
                        ];
                      is_attribute = true;
                      if_called = CallCallees.empty;
@@ -3734,7 +3757,7 @@ let test_call_graph_of_define =
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
-           ~object_targets:[Target.Regular.Object "test.Token.token"]
+           ~object_targets:[(fun api -> class_attribute api "test.Token" "token")]
            ~source:
              {|
       from typing import Optional
@@ -3755,13 +3778,16 @@ let test_call_graph_of_define =
                  ExpressionCallees.from_attribute_access
                    (AttributeAccessCallees.create
                       ~global_targets:
-                        [CallTarget.create_regular (Target.Regular.Object "test.Token.token")]
+                        [
+                          CallTarget.create_regular
+                            (class_attribute _pyrefly_api "test.Token" "token");
+                        ]
                       ()) );
              ])
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
-           ~object_targets:[Target.Regular.Object "test.Token.token"]
+           ~object_targets:[(fun api -> class_attribute api "test.Token" "token")]
            ~source:
              {|
       class Token:
@@ -3792,7 +3818,7 @@ let test_call_graph_of_define =
                        [
                          CallTarget.create_regular
                            ~return_type:(Some ReturnType.none)
-                           (Target.Regular.Object "test.Token.token");
+                           (class_attribute pyrefly_api "test.Token" "token");
                        ];
                      is_attribute = true;
                      if_called =
@@ -3804,7 +3830,7 @@ let test_call_graph_of_define =
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
-           ~object_targets:[Target.Regular.Object "test.Token.token"]
+           ~object_targets:[(fun api -> class_attribute api "test.Token" "token")]
            ~source:
              {|
       class Token:
@@ -5792,7 +5818,7 @@ let test_call_graph_of_define =
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
-           ~object_targets:[Target.Regular.Object "test.A.B"]
+           ~object_targets:[(fun api -> class_attribute api "test.A" "B")]
            ~source:
              {|
       from typing import Any, MutableMapping
@@ -5815,7 +5841,8 @@ let test_call_graph_of_define =
                  ExpressionCallees.from_attribute_access
                    {
                      AttributeAccessCallees.property_targets = [];
-                     global_targets = [CallTarget.create_regular (Target.Regular.Object "test.A.B")];
+                     global_targets =
+                       [CallTarget.create_regular (class_attribute pyrefly_api "test.A" "B")];
                      is_attribute = true;
                      if_called = CallCallees.empty;
                    } );
@@ -5838,7 +5865,7 @@ let test_call_graph_of_define =
            ();
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_call_graph_of_define
-           ~object_targets:[Target.Regular.Object "test.A.B"]
+           ~object_targets:[(fun api -> class_attribute api "test.A" "B")]
            ~source:
              {|
       from typing import Any, MutableMapping
@@ -5859,7 +5886,8 @@ let test_call_graph_of_define =
                  ExpressionCallees.from_attribute_access
                    {
                      AttributeAccessCallees.property_targets = [];
-                     global_targets = [CallTarget.create_regular (Target.Regular.Object "test.A.B")];
+                     global_targets =
+                       [CallTarget.create_regular (class_attribute pyrefly_api "test.A" "B")];
                      is_attribute = true;
                      if_called = CallCallees.empty;
                    } );

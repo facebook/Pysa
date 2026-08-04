@@ -7,14 +7,38 @@
 
 open Ast
 
+module ArtificialKind : sig
+  type t =
+    | FormatString
+    | StrAdd
+    | StrMod
+    | StrFormat
+    | StrLiteral
+    | Condition
+  [@@deriving sexp, compare, hash, equal, show]
+
+  val name : t -> string
+end
+
 module Regular : sig
   type t =
     | Function of PyreflyTypes.CallableId.t
     | Method of PyreflyTypes.CallableId.t
     | Override of PyreflyTypes.CallableId.t
-    (* Represents a global variable or field of a class that we want to model, * e.g os.environ or
-       HttpRequest.GET *)
-    | Object of string
+    | GlobalVariable of {
+        module_id: PyreflyTypes.ModuleId.t;
+        name: string;
+      }
+    | ClassInstanceAttribute of {
+        class_id: PyreflyTypes.ClassId.t;
+        name: string;
+      }
+    | ClassTypeAttribute of {
+        class_id: PyreflyTypes.ClassId.t;
+        name: string;
+      }
+    | Artificial of ArtificialKind.t
+    | UnknownCallee of string
   [@@deriving sexp, compare, hash, equal, show]
 
   val override_to_method : t -> t
@@ -159,7 +183,11 @@ val create_method : PyreflyTypes.CallableId.t -> t
 
 val create_override : PyreflyTypes.CallableId.t -> t
 
-val create_object : Reference.t -> t
+val create_global_variable : PyreflyTypes.ModuleId.t -> string -> t
+
+val create_class_instance_attribute : PyreflyTypes.ClassId.t -> string -> t
+
+val create_class_type_attribute : PyreflyTypes.ClassId.t -> string -> t
 
 val from_regular : Regular.t -> t
 
@@ -170,11 +198,11 @@ val get_regular : t -> Regular.t
 val as_regular_exn : t -> Regular.t
 
 (* Return the callable id carried by a `Function`, `Method` or `Override` target (an override wraps
-   the callable id of the method it overrides). `None` for `Object` targets. The id is returned
+   the callable id of the method it overrides). `None` for non-callable targets. The id is returned
    as-is, without stripping the `@decorated` tag. *)
 val callable_id : t -> PyreflyTypes.CallableId.t option
 
-(* Like `callable_id`, but raises on `Object` targets. *)
+(* Like `callable_id`, but raises on non-callable targets. *)
 val callable_id_exn : t -> PyreflyTypes.CallableId.t
 
 val module_id : t -> PyreflyTypes.ModuleId.t option
@@ -194,7 +222,7 @@ val get_corresponding_method_exn : must_be_regular:bool -> t -> t
 
 (* Accessors. *)
 
-val object_name : t -> Reference.t
+val object_name : display_api:PyreflyTypes.DisplayApi.t -> t -> Reference.t
 
 val is_function_or_method : t -> bool
 

@@ -91,8 +91,7 @@ let infer ~scheduler ~scheduler_policies ~pyrefly_api ~user_models =
     BackwardState.Tree.transform BackwardTaint.Self Map ~f:transform tree
   in
   let get_attribute_model class_id attribute =
-    Reference.create ~prefix:(PyreflyApi.ReadOnly.class_name_from_id pyrefly_api class_id) attribute
-    |> Target.create_object
+    Target.create_class_instance_attribute class_id attribute
     |> SharedModels.ReadOnly.get user_models ~cache:false
   in
   let get_attribute_tito_features class_id attribute root =

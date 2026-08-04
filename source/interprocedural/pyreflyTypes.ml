@@ -459,6 +459,7 @@ module DisplayApi = struct
   type t = {
     callable_external_name: CallableId.t -> Ast.Reference.t;
     callable_define_name: CallableId.t -> Ast.Reference.t;
+    module_name: ModuleId.t -> Ast.Reference.t;
     class_name: ClassId.t -> Ast.Reference.t;
   }
 
@@ -478,6 +479,7 @@ module DisplayApi = struct
               (Ast.Reference.last define_name ^ "@decorated")
           else
             define_name);
+      module_name = (fun module_id -> Ast.Reference.create (ModuleId.show module_id));
       class_name = (fun class_id -> Ast.Reference.create (ClassId.show class_id));
     }
 end

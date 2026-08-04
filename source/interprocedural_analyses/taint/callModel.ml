@@ -78,7 +78,12 @@ module Callee = struct
       | Target.Regular.Function _ ->
           let name = PyreflyApi.ReadOnly.Target.function_name_exn pyrefly_api target in
           Some (Name.Identifier name)
-      | Target.Regular.Object _ -> failwith "callees should be either methods or functions"
+      | Target.Regular.GlobalVariable _
+      | Target.Regular.ClassInstanceAttribute _
+      | Target.Regular.ClassTypeAttribute _
+      | Target.Regular.Artificial _
+      | Target.Regular.UnknownCallee _ ->
+          failwith "callees should be either methods or functions"
     in
     { name; location }
 
@@ -324,7 +329,11 @@ let treat_tito_return_as_self_update ~pyrefly_api target =
       || (not (Target.is_decorated target))
          && PyreflyApi.ReadOnly.Target.is_property_setter pyrefly_api target
   | Target.Regular.Function _
-  | Target.Regular.Object _ ->
+  | Target.Regular.GlobalVariable _
+  | Target.Regular.ClassInstanceAttribute _
+  | Target.Regular.ClassTypeAttribute _
+  | Target.Regular.Artificial _
+  | Target.Regular.UnknownCallee _ ->
       false
 
 
