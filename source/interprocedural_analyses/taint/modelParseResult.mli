@@ -500,7 +500,7 @@ module Modelable : sig
 
   val parameters_of_signatures : t -> PyreflyApi.ModelQueries.FunctionParameter.t list
 
-  val captures : t -> AccessPath.CapturedVariable.t list
+  val captures : t -> PyreflyTypes.CapturedVariable.t list
 
   val decorator_expressions_after_inlining : t -> Ast.Expression.t list
 

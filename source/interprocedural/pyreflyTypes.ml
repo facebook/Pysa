@@ -691,6 +691,14 @@ module AstResult = struct
     | Pyre1NotFound -> Pyre1NotFound
 end
 
+module CapturedVariable = struct
+  type t = {
+    name: string;
+    defining_function: CallableId.t;
+  }
+  [@@deriving compare, equal, hash, sexp, show]
+end
+
 module CallableSignature = struct
   type t = {
     module_id: ModuleId.t;
@@ -699,7 +707,7 @@ module CallableSignature = struct
     parameters: Ast.Expression.Parameter.t list AstResult.t;
     return_annotation: Ast.Expression.t option AstResult.t;
     decorators: Ast.Expression.t list AstResult.t;
-    captures: AccessPath.CapturedVariable.t list;
+    captures: CapturedVariable.t list;
     method_kind: MethodKind.t option;
     is_stub_like: bool;
   }
@@ -735,23 +743,6 @@ module ModelQueries = struct
           excluded: string list;
         }
     [@@deriving equal, compare, show]
-
-    let root = function
-      | PositionalOnly { name; position; _ } ->
-          let name =
-            match name with
-            | Some name -> name
-            | None -> Format.sprintf "__arg%d" position
-          in
-          AccessPath.Root.PositionalParameter { position; name; positional_only = true }
-      | Named { name; position; _ } ->
-          AccessPath.Root.PositionalParameter { position; name; positional_only = false }
-      | KeywordOnly { name; _ } -> AccessPath.Root.NamedParameter { name }
-      | Variable { position; _ } -> AccessPath.Root.StarParameter { position }
-      | Keywords { excluded; _ } ->
-          AccessPath.Root.StarStarParameter
-            { excluded = Ast.Identifier.SerializableSet.of_list excluded }
-
 
     let annotation = function
       | PositionalOnly { annotation; _ } -> Some annotation

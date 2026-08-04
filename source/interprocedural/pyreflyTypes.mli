@@ -283,6 +283,14 @@ module AstResult : sig
   val map_node : f:('a -> 'b) -> 'a Ast.Node.t t -> 'b Ast.Node.t t
 end
 
+module CapturedVariable : sig
+  type t = {
+    name: string;
+    defining_function: CallableId.t;
+  }
+  [@@deriving compare, equal, hash, sexp, show]
+end
+
 module CallableSignature : sig
   type t = {
     module_id: ModuleId.t;
@@ -291,7 +299,7 @@ module CallableSignature : sig
     parameters: Ast.Expression.Parameter.t list AstResult.t;
     return_annotation: Ast.Expression.t option AstResult.t;
     decorators: Ast.Expression.t list AstResult.t;
-    captures: AccessPath.CapturedVariable.t list;
+    captures: CapturedVariable.t list;
     method_kind: MethodKind.t option;
     is_stub_like: bool;
   }
@@ -329,8 +337,6 @@ module ModelQueries : sig
     [@@deriving equal, compare, show]
 
     val annotation : t -> PyreflyType.t option
-
-    val root : t -> AccessPath.Root.t
 
     val name : t -> string option
 

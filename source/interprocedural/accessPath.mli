@@ -8,17 +8,6 @@
 open Ast
 open Expression
 
-module CapturedVariable : sig
-  type t =
-    | FromFunction of {
-        name: string;
-        defining_function: Reference.t;
-      }
-  [@@deriving compare, equal, hash, sexp, show]
-
-  val name : t -> string
-end
-
 (** Roots representing parameters, locals, and special return value in models. *)
 module Root : sig
   type t =
@@ -32,7 +21,7 @@ module Root : sig
     | StarParameter of { position: int }
     | StarStarParameter of { excluded: Identifier.SerializableSet.t }
     | Variable of Identifier.t
-    | CapturedVariable of CapturedVariable.t
+    | CapturedVariable of PyreflyTypes.CapturedVariable.t
   [@@deriving compare, equal, hash, sexp, show]
 
   val is_parameter : t -> bool
@@ -43,13 +32,21 @@ module Root : sig
 
   val chop_parameter_prefix : string -> string
 
-  val pp_for_issue_handle : Format.formatter -> t -> unit
+  val pp : Format.formatter -> t -> unit
 
-  val show_for_issue_handle : t -> string
+  val show : t -> string
 
-  val pp_for_via_breadcrumb : Format.formatter -> t -> unit
+  val pp_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
 
-  val show_for_via_breadcrumb : t -> string
+  val show_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+  val pp_for_issue_handle : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
+
+  val show_for_issue_handle : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+
+  val pp_for_via_breadcrumb : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
+
+  val show_for_via_breadcrumb : display_api:PyreflyTypes.DisplayApi.t -> t -> string
 
   val is_captured_variable : t -> bool
 
@@ -63,6 +60,8 @@ module Root : sig
     type nonrec t = t list [@@deriving show]
   end
 end
+
+val from_function_parameter : PyreflyTypes.ModelQueries.FunctionParameter.t -> Root.t
 
 module NormalizedParameter : sig
   type t = {
@@ -94,6 +93,10 @@ type t = {
 val pp : Format.formatter -> t -> unit
 
 val show : t -> string
+
+val pp_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
+
+val show_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> t -> string
 
 val create : Root.t -> Path.t -> t
 

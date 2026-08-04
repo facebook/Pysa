@@ -1858,7 +1858,7 @@ module CallableQueryExecutor = MakeQueryExecutor (struct
           let parameter =
             List.find_map parameters ~f:(fun parameter ->
                 if Option.equal String.equal (FunctionParameter.name parameter) (Some name) then
-                  Some (FunctionParameter.root parameter)
+                  Some (AccessPath.from_function_parameter parameter)
                 else
                   None)
           in
@@ -1877,7 +1877,7 @@ module CallableQueryExecutor = MakeQueryExecutor (struct
                 | FunctionParameter.PositionalOnly { position; _ }
                 | FunctionParameter.Named { position; _ }
                   when position = index ->
-                    Some (FunctionParameter.root parameter)
+                    Some (AccessPath.from_function_parameter parameter)
                 | _ -> None)
           in
           match parameter with
@@ -1899,7 +1899,7 @@ module CallableQueryExecutor = MakeQueryExecutor (struct
             then
               None
             else
-              let root = FunctionParameter.root parameter in
+              let root = AccessPath.from_function_parameter parameter in
               production_to_taint ~root ~production
               >>| fun annotation ->
               ModelParseResult.ModelAnnotation.ParameterAnnotation
@@ -1918,7 +1918,7 @@ module CallableQueryExecutor = MakeQueryExecutor (struct
                      ~name_captures
                      ~parameter)
             then
-              let root = FunctionParameter.root parameter in
+              let root = AccessPath.from_function_parameter parameter in
               production_to_taint ~root ~production
               >>| fun annotation ->
               ModelParseResult.ModelAnnotation.ParameterAnnotation

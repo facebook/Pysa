@@ -159,7 +159,7 @@ module Sink = struct
         let json =
           [
             "index", `Int index;
-            "parameter", `String (AccessPath.Root.show_for_issue_handle parameter);
+            "parameter", `String (AccessPath.Root.show_for_issue_handle ~display_api parameter);
           ]
         in
         let json =
@@ -234,7 +234,7 @@ module T = struct
             "Call|%s|%d|%s"
             (CanonicalCallee.external_name ~display_api callee)
             index
-            (AccessPath.Root.show_for_issue_handle parameter)
+            (AccessPath.Root.show_for_issue_handle ~display_api parameter)
       | Global { callee; index } ->
           Format.asprintf "Global|%s|%d" (CanonicalCallee.external_name ~display_api callee) index
       | Return -> "Return"

@@ -336,14 +336,20 @@ module CallInfo = struct
           [
             "position", `Assoc location_json;
             "resolves_to", `List callee_json;
-            "port", `String (AccessPath.show full_port);
+            "port", `String (AccessPath.show_with_display_api ~display_api full_port);
           ]
           @ CallSite.to_json ~location call_site
         in
         let class_intervals_json_list = class_intervals_to_json class_intervals in
         ("call", `Assoc call_json) :: class_intervals_json_list
     | OverrideCall { port; path; class_intervals } ->
-        ("override_call", `Assoc ["port", `String (AccessPath.show (AccessPath.create port path))])
+        ( "override_call",
+          `Assoc
+            [
+              ( "port",
+                `String
+                  (AccessPath.show_with_display_api ~display_api (AccessPath.create port path)) );
+            ] )
         :: class_intervals_to_json class_intervals
 
 
@@ -1021,7 +1027,7 @@ end = struct
         let via_features =
           Frame.get Frame.Slots.ViaFeature frame
           |> ViaFeatureSet.elements
-          |> List.map ~f:ViaFeature.to_json
+          |> List.map ~f:(ViaFeature.to_json ~display_api)
         in
         let json = cons_if_non_empty "via_features" via_features json in
 
@@ -2006,7 +2012,7 @@ module MakeTaintEnvironment (Taint : TAINT_DOMAIN) () = struct
         let port = AccessPath.create root path in
         ( path,
           [
-            "port", `String (AccessPath.show port);
+            "port", `String (AccessPath.show_with_display_api ~display_api port);
             ( "taint",
               Taint.to_json
                 ~display_api

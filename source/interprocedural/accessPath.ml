@@ -21,17 +21,6 @@ open Core
 open Ast
 open Expression
 
-module CapturedVariable = struct
-  type t =
-    | FromFunction of {
-        name: string;
-        defining_function: Reference.t;
-      }
-  [@@deriving compare, equal, hash, sexp, show]
-
-  let name (FromFunction { name; _ }) = name
-end
-
 (** Roots representing parameters, locals, and special return value in models. *)
 module Root = struct
   module T = struct
@@ -46,7 +35,7 @@ module Root = struct
       | StarParameter of { position: int }
       | StarStarParameter of { excluded: Identifier.SerializableSet.t }
       | Variable of Identifier.t
-      | CapturedVariable of CapturedVariable.t
+      | CapturedVariable of PyreflyTypes.CapturedVariable.t
     [@@deriving compare, equal, hash, sexp]
 
     let parameter_prefix = "$parameter$"
@@ -77,7 +66,10 @@ module Root = struct
       | _ -> None
 
 
-    let pp formatter = function
+    let pp_with_display_api
+        ~display_api:{ PyreflyTypes.DisplayApi.callable_external_name; _ }
+        formatter
+      = function
       | LocalResult -> Format.fprintf formatter "result"
       | PositionalParameter { position; name; positional_only } ->
           Format.fprintf
@@ -96,30 +88,53 @@ module Root = struct
             "formal(**kwargs, excluded=[%s])"
             (excluded |> Identifier.SerializableSet.elements |> String.concat ~sep:",")
       | Variable name -> Format.fprintf formatter "local(%s)" name
-      | CapturedVariable (CapturedVariable.FromFunction { name; defining_function }) ->
-          Format.fprintf formatter "captured_variable(%s, %a)" name Reference.pp defining_function
+      | CapturedVariable { name; defining_function } ->
+          Format.fprintf
+            formatter
+            "captured_variable(%s, %a)"
+            name
+            Reference.pp
+            (callable_external_name defining_function)
 
 
-    let show = Format.asprintf "%a" pp
+    let show_with_display_api ~display_api root =
+      Format.asprintf "%a" (pp_with_display_api ~display_api) root
+
+
+    let pp = pp_with_display_api ~display_api:PyreflyTypes.DisplayApi.for_debug
+
+    let show root = Format.asprintf "%a" pp root
 
     (* Export for issue handles. This must be stable so handles are consistent between runs. *)
-    let pp_for_issue_handle formatter = function
+    let pp_for_issue_handle
+        ~display_api:{ PyreflyTypes.DisplayApi.callable_external_name; _ }
+        formatter
+      = function
       | LocalResult -> Format.fprintf formatter "result"
       | PositionalParameter { name; _ } -> Format.fprintf formatter "formal(%s)" name
       | NamedParameter { name } -> Format.fprintf formatter "formal(%s)" name
       | StarParameter { position } -> Format.fprintf formatter "formal(*rest%d)" position
       | StarStarParameter _ -> Format.fprintf formatter "formal(**kw)"
       | Variable name -> Format.fprintf formatter "local(%s)" name
-      | CapturedVariable (CapturedVariable.FromFunction { name; defining_function }) ->
-          Format.fprintf formatter "captured_variable(%s, %a)" name Reference.pp defining_function
+      | CapturedVariable { name; defining_function } ->
+          Format.fprintf
+            formatter
+            "captured_variable(%s, %a)"
+            name
+            Reference.pp
+            (callable_external_name defining_function)
 
 
-    let show_for_issue_handle = Format.asprintf "%a" pp_for_issue_handle
+    let show_for_issue_handle ~display_api root =
+      Format.asprintf "%a" (pp_for_issue_handle ~display_api) root
 
-    (* For backward compatibility, use the issue handle ports *)
+
+    (* For backward compatibility, use the issue handle port format. *)
     let pp_for_via_breadcrumb = pp_for_issue_handle
 
-    let show_for_via_breadcrumb = Format.asprintf "%a" pp_for_via_breadcrumb
+    let show_for_via_breadcrumb ~display_api root =
+      Format.asprintf "%a" (pp_for_via_breadcrumb ~display_api) root
+
 
     let is_captured_variable = function
       | CapturedVariable _ -> true
@@ -139,6 +154,20 @@ module Root = struct
     type t = T.t list [@@deriving show]
   end
 end
+
+let from_function_parameter = function
+  | PyreflyTypes.ModelQueries.FunctionParameter.PositionalOnly { name; position; _ } ->
+      let name = Option.value name ~default:(Format.sprintf "__arg%d" position) in
+      Root.PositionalParameter { position; name; positional_only = true }
+  | PyreflyTypes.ModelQueries.FunctionParameter.Named { name; position; _ } ->
+      Root.PositionalParameter { position; name; positional_only = false }
+  | PyreflyTypes.ModelQueries.FunctionParameter.KeywordOnly { name; _ } ->
+      Root.NamedParameter { name }
+  | PyreflyTypes.ModelQueries.FunctionParameter.Variable { position; _ } ->
+      Root.StarParameter { position }
+  | PyreflyTypes.ModelQueries.FunctionParameter.Keywords { excluded; _ } ->
+      Root.StarStarParameter { excluded = Identifier.SerializableSet.of_list excluded }
+
 
 module NormalizedParameter = struct
   type t = {
@@ -396,7 +425,15 @@ type t = {
 }
 [@@deriving compare, equal, sexp, hash]
 
-let pp formatter { root; path } = Format.fprintf formatter "%a%a" Root.pp root Path.pp path
+let pp_with_display_api ~display_api formatter { root; path } =
+  Format.fprintf formatter "%a%a" (Root.pp_with_display_api ~display_api) root Path.pp path
+
+
+let show_with_display_api ~display_api access_path =
+  Format.asprintf "%a" (pp_with_display_api ~display_api) access_path
+
+
+let pp = pp_with_display_api ~display_api:PyreflyTypes.DisplayApi.for_debug
 
 let show access_path = Format.asprintf "%a" pp access_path
 

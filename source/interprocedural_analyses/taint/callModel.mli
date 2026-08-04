@@ -51,7 +51,7 @@ module ArgumentMatches : sig
        scope. *)
     | CapturedVariable of {
         state_root: AccessPath.Root.t;
-        capture: AccessPath.CapturedVariable.t;
+        capture: PyreflyTypes.CapturedVariable.t;
       }
   [@@deriving show]
 

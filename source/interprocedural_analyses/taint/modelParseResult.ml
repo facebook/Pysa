@@ -995,7 +995,7 @@ module Modelable = struct
         (* The semantic (undecorated) signature(s) of the function. *)
         undecorated_signatures: PyreflyApi.ModelQueries.FunctionSignature.t list Lazy.t;
         decorators: CallableDecorator.t list Lazy.t;
-        captures: AccessPath.CapturedVariable.t list Lazy.t;
+        captures: PyreflyTypes.CapturedVariable.t list Lazy.t;
       }
     | Attribute of {
         target: Target.t;

@@ -134,7 +134,7 @@ module ArgumentMatches = struct
        scope. *)
     | CapturedVariable of {
         state_root: AccessPath.Root.t;
-        capture: AccessPath.CapturedVariable.t;
+        capture: PyreflyTypes.CapturedVariable.t;
       }
   [@@deriving show]
 
@@ -150,9 +150,8 @@ module ArgumentMatches = struct
 
   let expression_for_logging = function
     | Expression argument -> argument
-    | CapturedVariable { capture; _ } ->
-        Node.create_with_default_location
-          (Expression.Name (Name.Identifier (AccessPath.CapturedVariable.name capture)))
+    | CapturedVariable { capture = { PyreflyTypes.CapturedVariable.name; _ }; _ } ->
+        Node.create_with_default_location (Expression.Name (Name.Identifier name))
 end
 
 let match_captures ~pyrefly_in_context ~model ~captures_taint ~call_location =

@@ -22,6 +22,10 @@ let function_regular pyrefly_api name =
   InterproceduralTest.resolve_function_regular_exn ~pyrefly_api (Ast.Reference.create name)
 
 
+let callable_id_exn pyrefly_api name =
+  PyreflyApi.ReadOnly.Target.callable_id_from_name_exn pyrefly_api (Ast.Reference.create name)
+
+
 let function_regular_decorated pyrefly_api name =
   InterproceduralTest.resolve_function_regular_decorated_exn
     ~pyrefly_api
@@ -582,11 +586,10 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "f";
-                                       defining_function = Ast.Reference.create "test.decorator";
-                                     }),
+                                  {
+                                    name = "f";
+                                    defining_function = callable_id_exn pyrefly_api "test.decorator";
+                                  },
                                 function_regular pyrefly_api "test.bar" |> Target.from_regular );
                             ]);
                    ];
@@ -630,12 +633,11 @@ let test_higher_order_call_graph_fixpoint =
                                            function_regular pyrefly_api "test.baz"
                                            |> Target.from_regular );
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create "test.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn pyrefly_api "test.decorator";
+                                             },
                                            function_regular pyrefly_api "test.foo"
                                            |> Target.from_regular );
                                        ]);
@@ -841,11 +843,10 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "f";
-                                       defining_function = Ast.Reference.create "test.decorator";
-                                     }),
+                                  {
+                                    name = "f";
+                                    defining_function = callable_id_exn pyrefly_api "test.decorator";
+                                  },
                                 function_regular pyrefly_api "test.foo1" |> Target.from_regular );
                             ]);
                      CallTarget.create
@@ -854,11 +855,10 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "f";
-                                       defining_function = Ast.Reference.create "test.decorator";
-                                     }),
+                                  {
+                                    name = "f";
+                                    defining_function = callable_id_exn pyrefly_api "test.decorator";
+                                  },
                                 function_regular pyrefly_api "test.foo3" |> Target.from_regular );
                             ]);
                      CallTarget.create
@@ -868,11 +868,10 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "f";
-                                       defining_function = Ast.Reference.create "test.decorator";
-                                     }),
+                                  {
+                                    name = "f";
+                                    defining_function = callable_id_exn pyrefly_api "test.decorator";
+                                  },
                                 method_regular pyrefly_api ~class_name:"test.C" ~method_name:"foo2"
                                 |> Target.from_regular );
                             ]);
@@ -961,12 +960,11 @@ let test_higher_order_call_graph_fixpoint =
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create "test.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn pyrefly_api "test.decorator";
+                                             },
                                            function_regular pyrefly_api "test.baz"
                                            |> Target.from_regular );
                                        ]);
@@ -1177,11 +1175,10 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "func";
-                                       defining_function = Ast.Reference.create "test.log.inner";
-                                     }),
+                                  {
+                                    name = "func";
+                                    defining_function = callable_id_exn pyrefly_api "test.log.inner";
+                                  },
                                 function_regular pyrefly_api "test.foo" |> Target.from_regular );
                             ]);
                      CallTarget.create_regular (function_regular pyrefly_api "test.foo");
@@ -1341,12 +1338,11 @@ let test_higher_order_call_graph_fixpoint =
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create "test.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn pyrefly_api "test.decorator";
+                                             },
                                            function_regular pyrefly_api "test.bar"
                                            |> Target.from_regular );
                                        ]);
@@ -1668,11 +1664,11 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "func";
-                                       defining_function = Ast.Reference.create "test.Base.__call__";
-                                     }),
+                                  {
+                                    name = "func";
+                                    defining_function =
+                                      callable_id_exn pyrefly_api "test.Base.__call__";
+                                  },
                                 function_regular pyrefly_api "test.contextmanager"
                                 |> Target.from_regular );
                             ]);
@@ -1730,11 +1726,11 @@ let test_higher_order_call_graph_fixpoint =
                           ~parameters:
                             [
                               ( AccessPath.Root.CapturedVariable
-                                  (AccessPath.CapturedVariable.FromFunction
-                                     {
-                                       name = "func";
-                                       defining_function = Ast.Reference.create "test.Base.__call__";
-                                     }),
+                                  {
+                                    name = "func";
+                                    defining_function =
+                                      callable_id_exn pyrefly_api "test.Base.__call__";
+                                  },
                                 function_regular pyrefly_api "test.contextmanager_subclass"
                                 |> Target.from_regular );
                             ]);
@@ -1981,12 +1977,11 @@ let test_higher_order_call_graph_fixpoint =
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create "test.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn pyrefly_api "test.decorator";
+                                             },
                                            function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
@@ -2003,12 +1998,11 @@ let test_higher_order_call_graph_fixpoint =
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create "test.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn pyrefly_api "test.decorator";
+                                             },
                                            function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
@@ -2057,13 +2051,13 @@ let test_higher_order_call_graph_fixpoint =
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create
-                                                      "test.decorator_factory.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn
+                                                   pyrefly_api
+                                                   "test.decorator_factory.decorator";
+                                             },
                                            function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);
@@ -2085,13 +2079,13 @@ let test_higher_order_call_graph_fixpoint =
                                      ~parameters:
                                        [
                                          ( AccessPath.Root.CapturedVariable
-                                             (AccessPath.CapturedVariable.FromFunction
-                                                {
-                                                  name = "f";
-                                                  defining_function =
-                                                    Ast.Reference.create
-                                                      "test.decorator_factory.decorator";
-                                                }),
+                                             {
+                                               name = "f";
+                                               defining_function =
+                                                 callable_id_exn
+                                                   pyrefly_api
+                                                   "test.decorator_factory.decorator";
+                                             },
                                            function_regular pyrefly_api "test.main.inner"
                                            |> Target.from_regular );
                                        ]);

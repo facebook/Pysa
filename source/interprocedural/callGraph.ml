@@ -1208,7 +1208,7 @@ end
 module IdentifierCallees = struct
   type t = {
     global_targets: CallTarget.t list;
-    captured_variables: AccessPath.CapturedVariable.t list;
+    captured_variables: PyreflyTypes.CapturedVariable.t list;
     (* Function-typed runtime values that the identifier may evaluate into. *)
     if_called: CallCallees.t;
   }
@@ -1227,10 +1227,10 @@ module IdentifierCallees = struct
       global_targets = CallTarget.dedup_and_sort global_targets;
       captured_variables =
         captured_variables
-        |> List.sort ~compare:AccessPath.CapturedVariable.compare
+        |> List.sort ~compare:PyreflyTypes.CapturedVariable.compare
         |> List.remove_consecutive_duplicates
              ~which_to_keep:`First
-             ~equal:AccessPath.CapturedVariable.equal;
+             ~equal:PyreflyTypes.CapturedVariable.equal;
       if_called = CallCallees.dedup_and_sort if_called;
     }
 
@@ -1263,11 +1263,16 @@ module IdentifierCallees = struct
         |> List.rev_append (List.map ~f:CallTarget.target global_targets)
 
 
-  let to_json ~display_api { global_targets; captured_variables; if_called } =
-    let captured_variable_to_json = function
-      | AccessPath.CapturedVariable.FromFunction { name; defining_function } ->
-          `Assoc
-            ["name", `String name; "defining_function", `String (Reference.show defining_function)]
+  let to_json
+      ~display_api:({ PyreflyTypes.DisplayApi.callable_external_name; _ } as display_api)
+      { global_targets; captured_variables; if_called }
+    =
+    let captured_variable_to_json { PyreflyTypes.CapturedVariable.name; defining_function } =
+      `Assoc
+        [
+          "name", `String name;
+          "defining_function", `String (callable_external_name defining_function |> Reference.show);
+        ]
     in
     []
     |> JsonHelper.add_list "globals" global_targets (CallTarget.to_json ~display_api)

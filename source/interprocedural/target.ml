@@ -395,15 +395,14 @@ module Map = struct
   end)
 end
 
-let rec pp_from_regular ~pp_regular formatter = function
-  | Regular regular -> pp_regular formatter regular
+let rec pp_from_regular ~display_api ~pp_regular formatter = function
+  | Regular regular -> pp_regular ~display_api formatter regular
   | Parameterized { regular; parameters } ->
-      let recursive_pp = pp_from_regular ~pp_regular in
       let pp_parameter_value formatter { target; implicit_receiver } =
         Format.fprintf
           formatter
           "%a%s"
-          recursive_pp
+          (pp_from_regular ~display_api ~pp_regular)
           target
           (if implicit_receiver then " (bound)" else "")
       in
@@ -413,7 +412,7 @@ let rec pp_from_regular ~pp_regular formatter = function
             Format.fprintf
               formatter
               "%a=%a"
-              AccessPath.Root.pp
+              (AccessPath.Root.pp_with_display_api ~display_api)
               access_path
               pp_parameter_value
               parameter_value
@@ -422,7 +421,7 @@ let rec pp_from_regular ~pp_regular formatter = function
               Format.fprintf
                 formatter
                 "%a=%a, "
-                AccessPath.Root.pp
+                (AccessPath.Root.pp_with_display_api ~display_api)
                 access_path
                 pp_parameter_value
                 parameter_value
@@ -432,7 +431,7 @@ let rec pp_from_regular ~pp_regular formatter = function
       Format.fprintf
         formatter
         "%a[%a]"
-        pp_regular
+        (pp_regular ~display_api)
         regular
         pp_parameters
         (ParameterMap.to_alist parameters)
@@ -445,7 +444,10 @@ let show_internal = Format.asprintf "%a" pp_internal
 (* Equivalent to pp_internal. Required by @@deriving. *)
 let pp = pp_internal
 
-let pp_pretty = pp_from_regular ~pp_regular:Regular.pp_pretty
+let pp_pretty =
+  pp_from_regular ~display_api:DisplayApi.for_debug ~pp_regular:(fun ~display_api:_ ->
+      Regular.pp_pretty)
+
 
 let show_pretty = Format.asprintf "%a" pp_pretty
 
@@ -463,14 +465,17 @@ module ParameterValue = struct
     Format.fprintf formatter "%a%s" pp_pretty target (if implicit_receiver then " (bound)" else "")
 end
 
-let pp_pretty_with_kind = pp_from_regular ~pp_regular:Regular.pp_pretty_with_kind
+let pp_pretty_with_kind =
+  pp_from_regular ~display_api:DisplayApi.for_debug ~pp_regular:(fun ~display_api:_ ->
+      Regular.pp_pretty_with_kind)
+
 
 let show_pretty_with_kind = Format.asprintf "%a" pp_pretty_with_kind
 
 (* Api-aware pretty-printers used by golden-generating output sites (call/override graph dumps), so
    those keep rendering names (not raw ids) after the payload swap. *)
 let pp_pretty_with_display_api ~display_api =
-  pp_from_regular ~pp_regular:(Regular.pp_pretty_with_display_api ~display_api)
+  pp_from_regular ~display_api ~pp_regular:Regular.pp_pretty_with_display_api
 
 
 let show_pretty_with_display_api ~display_api =
@@ -478,14 +483,16 @@ let show_pretty_with_display_api ~display_api =
 
 
 let pp_pretty_with_kind_with_display_api ~display_api =
-  pp_from_regular ~pp_regular:(Regular.pp_pretty_with_kind_with_display_api ~display_api)
+  pp_from_regular ~display_api ~pp_regular:Regular.pp_pretty_with_kind_with_display_api
 
 
 let show_pretty_with_kind_with_display_api ~display_api =
   Format.asprintf "%a" (pp_pretty_with_kind_with_display_api ~display_api)
 
 
-let pp_external ~display_api = pp_from_regular ~pp_regular:(Regular.pp_external ~display_api)
+let pp_external ~display_api =
+  pp_from_regular ~display_api ~pp_regular:(Regular.pp_external ?transform:None)
+
 
 (* Render a target as an external (user-facing) name, decoding packed ids through the display api.
    The external name includes the `@decorated` suffix for decorated callables. `transform` (default
@@ -494,7 +501,7 @@ let pp_external ~display_api = pp_from_regular ~pp_regular:(Regular.pp_external 
 let external_name ~display_api ?transform target =
   Format.asprintf
     "%a"
-    (pp_from_regular ~pp_regular:(Regular.pp_external ~display_api ?transform))
+    (pp_from_regular ~display_api ~pp_regular:(Regular.pp_external ?transform))
     target
 
 

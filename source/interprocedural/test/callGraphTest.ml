@@ -5930,15 +5930,20 @@ let test_call_graph_of_define =
           x = "str"
       |}
            ~define_name:"test.outer.inner"
-           ~expected:(fun _pyrefly_api ->
+           ~expected:(fun pyrefly_api ->
              [
                ( "6:4-6:5|identifier|x",
                  ExpressionCallees.from_identifier
                    (IdentifierCallees.create
                       ~captured_variables:
                         [
-                          AccessPath.CapturedVariable.FromFunction
-                            { name = "x"; defining_function = Reference.create "test.outer" };
+                          {
+                            name = "x";
+                            defining_function =
+                              PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+                                pyrefly_api
+                                (Reference.create "test.outer");
+                          };
                         ]
                       ()) );
              ])
@@ -5953,15 +5958,20 @@ let test_call_graph_of_define =
           y = x
       |}
            ~define_name:"test.outer.inner"
-           ~expected:(fun _pyrefly_api ->
+           ~expected:(fun pyrefly_api ->
              [
                ( "5:8-5:9|identifier|x",
                  ExpressionCallees.from_identifier
                    (IdentifierCallees.create
                       ~captured_variables:
                         [
-                          AccessPath.CapturedVariable.FromFunction
-                            { name = "x"; defining_function = Reference.create "test.outer" };
+                          {
+                            name = "x";
+                            defining_function =
+                              PyreflyApi.ReadOnly.Target.callable_id_from_name_exn
+                                pyrefly_api
+                                (Reference.create "test.outer");
+                          };
                         ]
                       ()) );
              ])

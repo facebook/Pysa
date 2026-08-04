@@ -199,12 +199,12 @@ module ReadOnly : sig
     AccessPath.NormalizedParameter.t list ->
     (AccessPath.NormalizedParameter.t * PyreflyType.t list) list
 
-  val get_callable_captures : t -> PyreflyTypes.CallableId.t -> AccessPath.CapturedVariable.t list
+  val get_callable_captures : t -> PyreflyTypes.CallableId.t -> PyreflyTypes.CapturedVariable.t list
 
   val get_callable_captures_opt
     :  t ->
     PyreflyTypes.CallableId.t ->
-    AccessPath.CapturedVariable.t list option
+    PyreflyTypes.CapturedVariable.t list option
 
   val get_callable_decorator_callees
     :  t ->
@@ -344,7 +344,7 @@ module ReadOnly : sig
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
-  val state_root_of_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
+  val state_root_of_captured_variable : t -> PyreflyTypes.CapturedVariable.t -> AccessPath.Root.t
 
   val ensures_qualified : t -> Ast.Source.t -> Ast.Source.t
 
@@ -500,7 +500,7 @@ module InContext : sig
 
   (* Propagate a captured variable from a callee to a caller. Return the new root representing that
      variable in the caller. *)
-  val propagate_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
+  val propagate_captured_variable : t -> PyreflyTypes.CapturedVariable.t -> AccessPath.Root.t
 
   val access_path_of_expression
     :  t ->
@@ -510,7 +510,7 @@ module InContext : sig
 
   (* Turn a captured variable root into a root for the state. Used to assign user provided sources
      for captured variables at the beginning of the forward analysis. *)
-  val state_root_of_captured_variable : t -> AccessPath.CapturedVariable.t -> AccessPath.Root.t
+  val state_root_of_captured_variable : t -> PyreflyTypes.CapturedVariable.t -> AccessPath.Root.t
 
   (* Compute the type of the given expression. *)
   val type_of_expression : t -> Ast.Expression.t -> PyreflyType.t

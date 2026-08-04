@@ -614,20 +614,9 @@ let is_stub_like_from_metadata
   | AstResult.Pyre1NotFound -> failwith "unreachable"
 
 
-let captures_from_metadata
-    ~callable_id_to_qualified_name_shared_memory
-    { CallableMetadataSharedMemory.Value.captured_variables; _ }
-  =
+let captures_from_metadata { CallableMetadataSharedMemory.Value.captured_variables; _ } =
   List.map captured_variables ~f:(fun { CapturedVariable.name; outer_function } ->
-      AccessPath.CapturedVariable.FromFunction
-        {
-          name;
-          defining_function =
-            CallableIdToQualifiedNameSharedMemory.get
-              callable_id_to_qualified_name_shared_memory
-              outer_function
-            |> FullyQualifiedName.to_reference;
-        })
+      { PyreflyTypes.CapturedVariable.name; defining_function = outer_function })
 
 
 (* Undecorated signatures of each callable, provided by pyrefly. *)
@@ -3213,19 +3202,15 @@ module ReadOnly = struct
     overridden_base_method
 
 
-  let get_callable_captures_opt
-      ({ callable_id_to_qualified_name_shared_memory; _ } as api)
-      define_name
-    =
-    get_callable_metadata_value_opt api define_name
-    >>| captures_from_metadata ~callable_id_to_qualified_name_shared_memory
+  let get_callable_captures_opt api define_name =
+    get_callable_metadata_value_opt api define_name >>| captures_from_metadata
 
 
-  let get_callable_captures ({ callable_id_to_qualified_name_shared_memory; _ } as api) callable_id =
+  let get_callable_captures api callable_id =
     get_callable_metadata_value_opt api callable_id
     |> assert_shared_memory_key_exists (fun () ->
            Format.asprintf "missing callable metadata: `%a`" CallableId.pp callable_id)
-    |> captures_from_metadata ~callable_id_to_qualified_name_shared_memory
+    |> captures_from_metadata
 
 
   let get_callable_return_annotations
@@ -3261,7 +3246,7 @@ module ReadOnly = struct
       | root -> root
     in
     let fold_signature_parameter sofar parameter =
-      let root = normalize_root (FunctionParameter.root parameter) in
+      let root = normalize_root (AccessPath.from_function_parameter parameter) in
       match FunctionParameter.annotation parameter with
       | None -> sofar
       | Some annotation ->
@@ -3331,7 +3316,6 @@ module ReadOnly = struct
          callable_metadata_shared_memory;
          callable_define_signature_shared_memory;
          callable_parse_result_shared_memory;
-         callable_id_to_qualified_name_shared_memory;
          _;
        } as api)
       callable_id
@@ -3344,9 +3328,7 @@ module ReadOnly = struct
              Format.asprintf "missing callable define signature: `%a`" CallableId.pp callable_id)
     in
     let method_kind = CallableMetadata.get_method_kind metadata in
-    let captures =
-      captures_from_metadata ~callable_id_to_qualified_name_shared_memory metadata_value
-    in
+    let captures = captures_from_metadata metadata_value in
     let is_stub_like =
       is_stub_like_from_metadata ~metadata ~callable_parse_result_shared_memory callable_id
     in
@@ -3471,7 +3453,7 @@ module ReadOnly = struct
 
 
   let instantiate_call_graph
-      ({ callable_id_to_qualified_name_shared_memory; _ } as api)
+      api
       ~overrides_exist
       ~get_overriding_targets
       ~global_is_string_literal
@@ -3563,15 +3545,7 @@ module ReadOnly = struct
         None
     in
     let instantiate_captured_variable { CapturedVariable.name; outer_function } =
-      AccessPath.CapturedVariable.FromFunction
-        {
-          name;
-          defining_function =
-            CallableIdToQualifiedNameSharedMemory.get
-              callable_id_to_qualified_name_shared_memory
-              outer_function
-            |> FullyQualifiedName.to_reference;
-        }
+      { PyreflyTypes.CapturedVariable.name; defining_function = outer_function }
     in
     let instantiate_higher_order_parameter
         { PyreflyHigherOrderParameter.index; call_targets; unresolved }
@@ -4796,11 +4770,6 @@ module InContext = struct
 
   let undecorated_callable_id context = CallableId.strip_decorated (callable_id context)
 
-  let define_name = function
-    | FunctionScope { define_name; _ } -> define_name
-    | StatementScope { define_name; _ } -> define_name
-
-
   let call_graph = function
     | FunctionScope { call_graph; _ } -> call_graph
     | StatementScope { call_graph; _ } -> call_graph
@@ -4821,14 +4790,13 @@ module InContext = struct
   (* Propagate a captured variable from a callee to a caller. Return the new root representing that
      variable in the caller. *)
   let propagate_captured_variable pyrefly_in_context = function
-    | AccessPath.CapturedVariable.FromFunction { name; defining_function } ->
-        if Reference.equal defining_function (define_name pyrefly_in_context) then
+    | { PyreflyTypes.CapturedVariable.name; defining_function } as captured_variable ->
+        if CallableId.equal defining_function (undecorated_callable_id pyrefly_in_context) then
           (* We have reached the function that originated the variable. We should treat it as a
              regular variable now. *)
           AccessPath.Root.Variable name
         else
-          AccessPath.Root.CapturedVariable
-            (AccessPath.CapturedVariable.FromFunction { name; defining_function })
+          AccessPath.Root.CapturedVariable captured_variable
 
 
   let access_path_of_expression pyrefly_in_context ~self_variable expression =

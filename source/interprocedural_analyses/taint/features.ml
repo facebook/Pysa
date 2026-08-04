@@ -241,7 +241,7 @@ module LeafPort = struct
       | AccessPath.Root.LocalResult -> "return"
       | AccessPath.Root.PositionalParameter { name; _ }
       | AccessPath.Root.NamedParameter { name }
-      | AccessPath.Root.CapturedVariable (AccessPath.CapturedVariable.FromFunction { name; _ }) ->
+      | AccessPath.Root.CapturedVariable { name; _ } ->
           name
       | AccessPath.Root.StarParameter _ -> "*"
       | AccessPath.Root.StarStarParameter _ -> "**"
@@ -483,13 +483,18 @@ module ViaFeature = struct
       | None, None -> Format.fprintf formatter "%s" header
       | None, Some tag -> Format.fprintf formatter "%s[tag=%s]" header tag
       | Some parameter, None ->
-          Format.fprintf formatter "%s[%a]" header AccessPath.Root.pp_for_via_breadcrumb parameter
+          Format.fprintf
+            formatter
+            "%s[%a]"
+            header
+            (AccessPath.Root.pp_for_via_breadcrumb ~display_api:PyreflyTypes.DisplayApi.for_debug)
+            parameter
       | Some parameter, Some tag ->
           Format.fprintf
             formatter
             "%s[%a, tag=%s]"
             header
-            AccessPath.Root.pp_for_via_breadcrumb
+            (AccessPath.Root.pp_for_via_breadcrumb ~display_api:PyreflyTypes.DisplayApi.for_debug)
             parameter
             tag
     in
@@ -568,13 +573,14 @@ module ViaFeature = struct
     Breadcrumb.ViaAttributeName { value; tag } |> BreadcrumbInterned.intern
 
 
-  let to_json via =
+  let to_json ~display_api via =
     let via_to_json kind parameter tag =
       let json = ["kind", `String kind] in
       let json =
         match parameter with
         | Some parameter ->
-            ("parameter", `String (AccessPath.Root.show_for_via_breadcrumb parameter)) :: json
+            ("parameter", `String (AccessPath.Root.show_for_via_breadcrumb ~display_api parameter))
+            :: json
         | None -> json
       in
       let json =
