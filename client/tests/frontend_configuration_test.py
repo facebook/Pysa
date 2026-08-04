@@ -121,6 +121,56 @@ class FrontendConfigurationTest(testslide.TestCase):
                 ).get_server_start_command(),
             )
 
+    def test_get_pysa_pyrefly_binary_from_argument(self) -> None:
+        with switch_environment({}):
+            self.assertEqual(
+                frontend_configuration.OpenSource(
+                    configuration_module.Configuration(
+                        global_root=Path("irrelevant"),
+                        dot_pyre_directory=Path(".pyre"),
+                    )
+                ).get_pysa_pyrefly_binary_location(
+                    user_provided_pyrefly_binary="foo",
+                    download_path=Path("irrelevant"),
+                ),
+                Path("foo"),
+            )
+
+    def test_get_pysa_pyrefly_binary_auto_determined(self) -> None:
+        self.mock_callable(shutil, "which").for_call(
+            find_directories.PYREFLY_BINARY_NAME
+        ).to_return_value("foo").and_assert_called_once()
+
+        with switch_environment({}):
+            self.assertEqual(
+                frontend_configuration.OpenSource(
+                    configuration_module.Configuration(
+                        global_root=Path("irrelevant"),
+                        dot_pyre_directory=Path(".pyre"),
+                    )
+                ).get_pysa_pyrefly_binary_location(
+                    user_provided_pyrefly_binary=None,
+                    download_path=Path("irrelevant"),
+                ),
+                Path("foo"),
+            )
+
+    def test_get_pysa_pyrefly_binary_cannot_auto_determine(self) -> None:
+        self.mock_callable(shutil, "which").to_return_value(None).and_assert_called()
+
+        with switch_environment({}):
+            self.assertIsNone(
+                frontend_configuration.OpenSource(
+                    configuration_module.Configuration(
+                        global_root=Path("irrelevant"),
+                        dot_pyre_directory=Path(".pyre"),
+                    )
+                ).get_pysa_pyrefly_binary_location(
+                    user_provided_pyrefly_binary=None,
+                    download_path=Path("irrelevant"),
+                ),
+            )
+
     def test_typeshed_existent_search_path(self) -> None:
         with tempfile.TemporaryDirectory() as root:
             root_path = Path(root)

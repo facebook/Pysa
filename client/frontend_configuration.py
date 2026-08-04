@@ -430,7 +430,14 @@ class OpenSource(Base):
     ) -> Optional[Path]:
         if user_provided_pyrefly_binary is not None:
             return Path(user_provided_pyrefly_binary)
-        LOG.error(
-            "Using Pysa with auto-downloaded Pyrefly is not supported yet. Please consider using a local Pyrefly binary."
+
+        LOG.info(
+            f"No Pyrefly binary specified, looking for `{find_directories.PYREFLY_BINARY_NAME}` in PATH"
         )
-        return None
+        binary_candidate = shutil.which(find_directories.PYREFLY_BINARY_NAME)
+        if binary_candidate is None:
+            LOG.error(
+                f"Could not find a `{find_directories.PYREFLY_BINARY_NAME}` binary in PATH. Install pyrefly first."
+            )
+            return None
+        return Path(binary_candidate)

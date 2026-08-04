@@ -28,6 +28,7 @@ JSON_CONFIGURATION_FILE: str = ".pyre_configuration"
 TOML_CONFIGURATION_FILE: str = "pyproject.toml"
 LOCAL_CONFIGURATION_FILE: str = ".pyre_configuration.local"
 BINARY_NAME: str = "pyre.bin"
+PYREFLY_BINARY_NAME: str = "pyrefly"
 CLIENT_NAME: str = "pyre-client"
 LOG_DIRECTORY: str = ".pyre"
 
