@@ -1,18 +1,19 @@
 @generated
 Call dependencies
 {
-  "missing_type.test_unknown_sink_attribute (fun)": [
-    "missing_type.UnknownSinkAttribute.sink (method)",
-    "pysa._test_source (fun)"
+  "Function{missing_type.test_unknown_sink_attribute}": [
+    "Function{pysa._test_source}",
+    "Method{missing_type.UnknownSinkAttribute.sink}"
   ],
-  "missing_type.test_unknown_sink_def (fun)": [
-    "missing_type.UnknownSinkDef.sink (method)", "pysa._test_source (fun)"
+  "Function{missing_type.test_unknown_sink_def}": [
+    "Function{pysa._test_source}", "Method{missing_type.UnknownSinkDef.sink}"
   ],
-  "missing_type.test_unknown_source_attribute (fun)": [
-    "missing_type.UnknownSourceAttribute.source (method)",
-    "pysa._test_sink (fun)"
+  "Function{missing_type.test_unknown_source_attribute}": [
+    "Function{pysa._test_sink}",
+    "Method{missing_type.UnknownSourceAttribute.source}"
   ],
-  "missing_type.test_unknown_source_def (fun)": [
-    "missing_type.UnknownSourceDef.source (method)", "pysa._test_sink (fun)"
+  "Function{missing_type.test_unknown_source_def}": [
+    "Function{pysa._test_sink}",
+    "Method{missing_type.UnknownSourceDef.source}"
   ]
 }

@@ -1,34 +1,41 @@
 @generated
 Call dependencies
 {
-  "readonly.A.__init__ (method)": [
-    "readonly.A.B (object)", "readonly.A.mapping (object)"
+  "Function{readonly.readonly_foo_not_tainted}": [
+    "Function{pysa._test_sink}"
   ],
-  "readonly.A.self_readonly_map (method)": [
-    "pysa._test_sink (fun)", "readonly.A.mapping (object)",
-    "typing.Mapping.get (method)"
+  "Function{readonly.readonly_foo_tainted}": [
+    "ClassInstanceAttribute{readonly.Foo.tainted}",
+    "Function{pysa._test_sink}"
   ],
-  "readonly.A.self_readonly_str (method)": [
-    "pysa._test_sink (fun)", "readonly.A.B (object)"
+  "Function{readonly.readonly_tito}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{readonly.A.__init__}",
+    "Method{readonly.A.readonly_tito}"
   ],
-  "readonly.A.self_untyped_map (method)": [
-    "pysa._test_sink (fun)", "readonly.A.mapping (object)",
-    "typing.Mapping.get (method)"
+  "Function{readonly.regular_foo_not_tainted}": [
+    "Function{pysa._test_sink}"
   ],
-  "readonly.A.self_untyped_str (method)": [
-    "pysa._test_sink (fun)", "readonly.A.B (object)"
+  "Function{readonly.regular_foo_tainted}": [
+    "ClassInstanceAttribute{readonly.Foo.tainted}",
+    "Function{pysa._test_sink}"
   ],
-  "readonly.readonly_foo_not_tainted (fun)": [ "pysa._test_sink (fun)" ],
-  "readonly.readonly_foo_tainted (fun)": [
-    "pysa._test_sink (fun)", "readonly.Foo.tainted (object)"
+  "Method{readonly.A.__init__}": [
+    "ClassInstanceAttribute{readonly.A.B}",
+    "ClassInstanceAttribute{readonly.A.mapping}"
   ],
-  "readonly.readonly_tito (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "readonly.A.__init__ (method)",
-    "readonly.A.readonly_tito (method)"
+  "Method{readonly.A.self_readonly_map}": [
+    "ClassInstanceAttribute{readonly.A.mapping}",
+    "Function{pysa._test_sink}", "Method{typing.Mapping.get}"
   ],
-  "readonly.regular_foo_not_tainted (fun)": [ "pysa._test_sink (fun)" ],
-  "readonly.regular_foo_tainted (fun)": [
-    "pysa._test_sink (fun)", "readonly.Foo.tainted (object)"
+  "Method{readonly.A.self_readonly_str}": [
+    "ClassInstanceAttribute{readonly.A.B}", "Function{pysa._test_sink}"
+  ],
+  "Method{readonly.A.self_untyped_map}": [
+    "ClassInstanceAttribute{readonly.A.mapping}",
+    "Function{pysa._test_sink}", "Method{typing.Mapping.get}"
+  ],
+  "Method{readonly.A.self_untyped_str}": [
+    "ClassInstanceAttribute{readonly.A.B}", "Function{pysa._test_sink}"
   ]
 }

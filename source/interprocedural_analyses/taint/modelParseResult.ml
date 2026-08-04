@@ -691,7 +691,7 @@ module ModelQuery = struct
         formatter
         "Model:\n[\n%s\n]\nTarget: \"%s\"\nModel source: \"%s\""
         (Model.show model_with_target_and_string.model)
-        (Target.show_pretty model_with_target_and_string.target)
+        (Format.asprintf "%a" Target.pp model_with_target_and_string.target)
         model_with_target_and_string.model_source
 
 
@@ -1022,10 +1022,7 @@ module Modelable = struct
       lazy
         (match CallablesSharedMemory.ReadOnly.get_signature callables_to_definitions_map target with
         | None ->
-            Format.asprintf
-              "unknown target `%a` in `Modelable.create_callable`"
-              Target.pp_internal
-              target
+            Format.asprintf "unknown target `%a` in `Modelable.create_callable`" Target.pp target
             |> failwith
         | Some signature -> signature)
     in

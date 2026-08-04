@@ -1,6 +1,6 @@
 @generated
 Overrides
-obscure_tito.C.taint_parameter (override) -> [obscure_tito.C.taint_parameter (method) obscure_tito.D.taint_parameter (override)]
-obscure_tito.C.update (override) -> [obscure_tito.C.update (method) obscure_tito.D.update (override)]
-obscure_tito.D.taint_parameter (override) -> [obscure_tito.D.taint_parameter (method)]
-obscure_tito.D.update (override) -> [obscure_tito.D.update (method)]
+Override{obscure_tito.C.taint_parameter} -> [Method{obscure_tito.C.taint_parameter} Override{obscure_tito.D.taint_parameter}]
+Override{obscure_tito.C.update} -> [Method{obscure_tito.C.update} Override{obscure_tito.D.update}]
+Override{obscure_tito.D.taint_parameter} -> [Method{obscure_tito.D.taint_parameter}]
+Override{obscure_tito.D.update} -> [Method{obscure_tito.D.update}]

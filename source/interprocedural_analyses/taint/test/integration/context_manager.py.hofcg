@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "context_manager.source_on_enter_and_sink_on_exit",
+  "callable": "Function{context_manager.source_on_enter_and_sink_on_exit}",
   "returned_callables": [],
   "calls": {
     "82:14-82:28": {
@@ -21,7 +21,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_generator_sink_on_exit",
+  "callable": "Function{context_manager.test_generator_sink_on_exit}",
   "returned_callables": [],
   "calls": {
     "93:9-93:57": {
@@ -65,7 +65,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_generator_source_on_enter",
+  "callable": "Function{context_manager.test_generator_source_on_enter}",
   "returned_callables": [],
   "calls": {
     "88:9-88:45": {
@@ -102,7 +102,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_sink_on_enter",
+  "callable": "Function{context_manager.test_sink_on_enter}",
   "returned_callables": [],
   "calls": {
     "74:8-74:22": {
@@ -142,7 +142,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_source_on_enter",
+  "callable": "Function{context_manager.test_source_on_enter}",
   "returned_callables": [],
   "calls": {
     "24:8-24:23": {
@@ -189,7 +189,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_source_on_enter_as",
+  "callable": "Function{context_manager.test_source_on_enter_as}",
   "returned_callables": [],
   "calls": {
     "30:9-30:24": {
@@ -236,7 +236,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_source_on_enter_clear",
+  "callable": "Function{context_manager.test_source_on_enter_clear}",
   "returned_callables": [],
   "calls": {
     "35:8-35:23": {
@@ -283,7 +283,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.test_source_on_exit",
+  "callable": "Function{context_manager.test_source_on_exit}",
   "returned_callables": [],
   "calls": {
     "54:8-54:22": {
@@ -337,7 +337,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.SinkOnEnter.__enter__",
+  "callable": "Method{context_manager.SinkOnEnter.__enter__}",
   "returned_callables": [],
   "calls": {
     "66:8-66:30": {
@@ -350,7 +350,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.SourceOnEnter.__enter__",
+  "callable": "Method{context_manager.SourceOnEnter.__enter__}",
   "returned_callables": [],
   "calls": {
     "16:21-16:35": {
@@ -363,7 +363,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "context_manager.SourceOnExit.__exit__",
+  "callable": "Method{context_manager.SourceOnExit.__exit__}",
   "returned_callables": [],
   "calls": {
     "50:21-50:35": {

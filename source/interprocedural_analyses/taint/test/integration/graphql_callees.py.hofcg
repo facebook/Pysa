@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_1",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_1}",
   "returned_callables": [],
   "calls": {
     "36:17-36:50": {
@@ -47,7 +47,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_1@decorated",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_1@decorated}",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_1",
@@ -83,7 +83,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_2",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_2}",
   "returned_callables": [],
   "calls": {
     "43:4-43:44": {
@@ -129,7 +129,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_2@decorated",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_2@decorated}",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_2",
@@ -165,7 +165,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_3",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_3}",
   "returned_callables": [],
   "calls": {
     "49:4-49:21": {
@@ -183,7 +183,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_3@decorated",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_3@decorated}",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_3",
@@ -219,7 +219,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_strip_list",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_strip_list}",
   "returned_callables": [],
   "calls": {
     "55:17-55:50": {
@@ -265,7 +265,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_strip_list@decorated",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_strip_list@decorated}",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_strip_list",
@@ -301,7 +301,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_strip_list_with_sink",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_strip_list_with_sink}",
   "returned_callables": [],
   "calls": {
     "64:4-64:22": {
@@ -319,7 +319,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.return_graphql_entrypoint_strip_list_with_sink@decorated",
+  "callable": "Function{graphql_callees.return_graphql_entrypoint_strip_list_with_sink@decorated}",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_strip_list_with_sink",
@@ -355,7 +355,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.GraphQLEntrypoint.callee",
+  "callable": "Method{graphql_callees.GraphQLEntrypoint.callee}",
   "returned_callables": [],
   "calls": {
     "23:8-23:24": {
@@ -368,7 +368,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.GraphQLEntrypoint.callee@decorated",
+  "callable": "Method{graphql_callees.GraphQLEntrypoint.callee@decorated}",
   "returned_callables": [
     {
       "target": "graphql_callees.GraphQLEntrypoint.callee",
@@ -404,7 +404,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.GraphQLEntrypoint.not_callee",
+  "callable": "Method{graphql_callees.GraphQLEntrypoint.not_callee}",
   "returned_callables": [],
   "calls": {
     "27:8-27:24": {
@@ -417,7 +417,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "graphql_callees.entrypoint_decorator[formal(callable, position=0)=graphql_callees.return_graphql_entrypoint_1]",
+  "callable": "Function{graphql_callees.entrypoint_decorator}[formal(callable, position=0)=Function{graphql_callees.return_graphql_entrypoint_1}]",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_1",
@@ -428,7 +428,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "graphql_callees.entrypoint_decorator[formal(callable, position=0)=graphql_callees.return_graphql_entrypoint_2]",
+  "callable": "Function{graphql_callees.entrypoint_decorator}[formal(callable, position=0)=Function{graphql_callees.return_graphql_entrypoint_2}]",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_2",
@@ -439,7 +439,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "graphql_callees.entrypoint_decorator[formal(callable, position=0)=graphql_callees.return_graphql_entrypoint_3]",
+  "callable": "Function{graphql_callees.entrypoint_decorator}[formal(callable, position=0)=Function{graphql_callees.return_graphql_entrypoint_3}]",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_3",
@@ -450,7 +450,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "graphql_callees.entrypoint_decorator[formal(callable, position=0)=graphql_callees.return_graphql_entrypoint_strip_list]",
+  "callable": "Function{graphql_callees.entrypoint_decorator}[formal(callable, position=0)=Function{graphql_callees.return_graphql_entrypoint_strip_list}]",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_strip_list",
@@ -461,7 +461,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "graphql_callees.entrypoint_decorator[formal(callable, position=0)=graphql_callees.return_graphql_entrypoint_strip_list_with_sink]",
+  "callable": "Function{graphql_callees.entrypoint_decorator}[formal(callable, position=0)=Function{graphql_callees.return_graphql_entrypoint_strip_list_with_sink}]",
   "returned_callables": [
     {
       "target": "graphql_callees.return_graphql_entrypoint_strip_list_with_sink",
@@ -472,7 +472,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "graphql_callees.method_decorator[formal(callable, position=0)=graphql_callees.GraphQLEntrypoint.callee]",
+  "callable": "Function{graphql_callees.method_decorator}[formal(callable, position=0)=Method{graphql_callees.GraphQLEntrypoint.callee}]",
   "returned_callables": [
     {
       "target": "graphql_callees.GraphQLEntrypoint.callee",

@@ -104,7 +104,12 @@ let compare_dependency_graph pyrefly_api call_graph ~expected =
       ( create_callable pyrefly_api callee,
         List.map callers ~f:(create_callable pyrefly_api) |> List.sort ~compare:Target.compare )
     in
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
     List.map expected ~f:map_callee_callers
+    |> List.sort ~compare:(fun (left, _) (right, _) ->
+           String.compare
+             (Target.show_pretty ~display_api left)
+             (Target.show_pretty ~display_api right))
   in
   let call_graph =
     List.map call_graph ~f:(fun (callee, callers) ->
@@ -574,7 +579,7 @@ let test_prune_callables _ =
     let actual_dependencies = DependencyGraph.Reversed.to_target_graph actual_dependencies in
     assert_equal
       ~cmp:(List.equal Target.equal)
-      ~printer:(List.to_string ~f:Target.show_pretty)
+      ~printer:(List.to_string ~f:(Target.show_pretty ~display_api:synthetic_display_api))
       (List.map expected_callables ~f:(fun callable -> create (Reference.create callable)))
       actual_callables;
     assert_equal
@@ -586,13 +591,17 @@ let test_prune_callables _ =
         |> List.map ~f:(fun (key, values) ->
                Format.asprintf
                  "%a -> %s"
-                 Target.pp_pretty
+                 (Target.pp_pretty ~display_api:synthetic_display_api)
                  key
-                 (List.to_string values ~f:Target.show_pretty))
+                 (List.to_string values ~f:(Target.show_pretty ~display_api:synthetic_display_api)))
         |> String.concat ~sep:"\n")
       (List.map expected_dependencies ~f:(fun (key, values) ->
            ( create (Reference.create key),
-             List.map values ~f:(fun value -> create (Reference.create value)) )))
+             List.map values ~f:(fun value -> create (Reference.create value)) ))
+      |> List.sort ~compare:(fun (left, _) (right, _) ->
+             String.compare
+               (Target.show_pretty ~display_api:synthetic_display_api left)
+               (Target.show_pretty ~display_api:synthetic_display_api right)))
       (TargetGraph.to_alist ~display_api:synthetic_display_api ~sorted:true actual_dependencies)
   in
   (* Basic case. *)

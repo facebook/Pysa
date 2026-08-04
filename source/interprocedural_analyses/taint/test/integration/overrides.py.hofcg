@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "overrides.$toplevel",
+  "callable": "Function{overrides.$toplevel}",
   "returned_callables": [],
   "calls": {
     "29:8-29:12|identifier|Base": {
@@ -306,7 +306,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.call_analyze_call_overrides",
+  "callable": "Function{overrides.call_analyze_call_overrides}",
   "returned_callables": [],
   "calls": {
     "207:4-207:21": {
@@ -325,7 +325,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.call_too_many_overrides",
+  "callable": "Function{overrides.call_too_many_overrides}",
   "returned_callables": [],
   "calls": {
     "233:4-233:21": {
@@ -344,7 +344,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.constructorTest",
+  "callable": "Function{overrides.constructorTest}",
   "returned_callables": [],
   "calls": {
     "159:11-159:30": {
@@ -378,7 +378,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testA",
+  "callable": "Function{overrides.testA}",
   "returned_callables": [],
   "calls": {
     "95:8-95:19": {
@@ -447,7 +447,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testB",
+  "callable": "Function{overrides.testB}",
   "returned_callables": [],
   "calls": {
     "111:8-111:19": {
@@ -523,7 +523,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testBase",
+  "callable": "Function{overrides.testBase}",
   "returned_callables": [],
   "calls": {
     "79:8-79:19": {
@@ -592,7 +592,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testC",
+  "callable": "Function{overrides.testC}",
   "returned_callables": [],
   "calls": {
     "127:8-127:19": {
@@ -668,7 +668,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testD",
+  "callable": "Function{overrides.testD}",
   "returned_callables": [],
   "calls": {
     "143:8-143:19": {
@@ -737,7 +737,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testMakeA",
+  "callable": "Function{overrides.testMakeA}",
   "returned_callables": [],
   "calls": {
     "106:8-106:13": {
@@ -777,7 +777,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testMakeB",
+  "callable": "Function{overrides.testMakeB}",
   "returned_callables": [],
   "calls": {
     "122:8-122:13": {
@@ -817,7 +817,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testMakeBase",
+  "callable": "Function{overrides.testMakeBase}",
   "returned_callables": [],
   "calls": {
     "90:8-90:16": {
@@ -857,7 +857,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testMakeC",
+  "callable": "Function{overrides.testMakeC}",
   "returned_callables": [],
   "calls": {
     "138:8-138:13": {
@@ -904,7 +904,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testMakeD",
+  "callable": "Function{overrides.testMakeD}",
   "returned_callables": [],
   "calls": {
     "154:8-154:13": {
@@ -944,7 +944,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testStaticA",
+  "callable": "Function{overrides.testStaticA}",
   "returned_callables": [],
   "calls": {
     "101:8-101:19": {
@@ -1000,7 +1000,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testStaticB",
+  "callable": "Function{overrides.testStaticB}",
   "returned_callables": [],
   "calls": {
     "117:8-117:19": {
@@ -1056,7 +1056,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testStaticBase",
+  "callable": "Function{overrides.testStaticBase}",
   "returned_callables": [],
   "calls": {
     "85:8-85:19": {
@@ -1112,7 +1112,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testStaticC",
+  "callable": "Function{overrides.testStaticC}",
   "returned_callables": [],
   "calls": {
     "133:8-133:19": {
@@ -1175,7 +1175,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.testStaticD",
+  "callable": "Function{overrides.testStaticD}",
   "returned_callables": [],
   "calls": {
     "149:8-149:19": {
@@ -1231,7 +1231,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.test_overrides_with_declaration",
+  "callable": "Function{overrides.test_overrides_with_declaration}",
   "returned_callables": [],
   "calls": {
     "247:4-247:33": {
@@ -1257,7 +1257,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.A.__init__",
+  "callable": "Method{overrides.A.__init__}",
   "returned_callables": [],
   "calls": {
     "33:8-33:15": {
@@ -1297,7 +1297,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.A.methodA",
+  "callable": "Method{overrides.A.methodA}",
   "returned_callables": [],
   "calls": {
     "36:8-36:23": {
@@ -1310,7 +1310,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.AnalyzeAllOverridesChild3.return_source",
+  "callable": "Method{overrides.AnalyzeAllOverridesChild3.return_source}",
   "returned_callables": [],
   "calls": {
     "203:15-203:29": {
@@ -1323,7 +1323,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.B.__init__",
+  "callable": "Method{overrides.B.__init__}",
   "returned_callables": [],
   "calls": {
     "43:8-43:22": {
@@ -1386,7 +1386,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.B.classMethod",
+  "callable": "Method{overrides.B.classMethod}",
   "returned_callables": [],
   "calls": {
     "50:8-50:23": {
@@ -1399,7 +1399,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.B.methodB",
+  "callable": "Method{overrides.B.methodB}",
   "returned_callables": [],
   "calls": {
     "46:15-46:29": {
@@ -1412,7 +1412,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.C.__init__",
+  "callable": "Method{overrides.C.__init__}",
   "returned_callables": [],
   "calls": {
     "57:8-57:22": {
@@ -1475,7 +1475,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.D.__init__",
+  "callable": "Method{overrides.D.__init__}",
   "returned_callables": [],
   "calls": {
     "69:8-69:22": {
@@ -1538,7 +1538,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.D.methodA",
+  "callable": "Method{overrides.D.methodA}",
   "returned_callables": [],
   "calls": {
     "72:8-72:23": {
@@ -1551,7 +1551,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.D.methodB",
+  "callable": "Method{overrides.D.methodB}",
   "returned_callables": [],
   "calls": {
     "75:15-75:29": {
@@ -1564,7 +1564,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.ExtendsSkipped.method",
+  "callable": "Method{overrides.ExtendsSkipped.method}",
   "returned_callables": [],
   "calls": {
     "181:8-181:23": {
@@ -1577,7 +1577,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overrides.TooManyOverridesChild3.return_source",
+  "callable": "Method{overrides.TooManyOverridesChild3.return_source}",
   "returned_callables": [],
   "calls": {
     "229:15-229:29": {

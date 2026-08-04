@@ -1,41 +1,43 @@
 @generated
 Call dependencies
 {
-  "global_flows.append_argument (fun)": [
-    "global_flows.MyList.append (method)"
+  "Function{global_flows.append_argument}": [
+    "Method{global_flows.MyList.append}"
   ],
-  "global_flows.append_directly (fun)": [
-    "global_flows.MyList.append (method)", "pysa._test_source (fun)"
+  "Function{global_flows.append_directly}": [
+    "Function{pysa._test_source}", "Method{global_flows.MyList.append}"
   ],
-  "global_flows.append_indirectly (fun)": [
-    "global_flows.append_argument (fun)", "pysa._test_source (fun)"
+  "Function{global_flows.append_indirectly}": [
+    "Function{global_flows.append_argument}", "Function{pysa._test_source}"
   ],
-  "global_flows.global_source (fun)": [ "pysa._test_sink (fun)" ],
-  "global_flows.indirectly_update_x_arg1 (fun)": [
-    "global_flows.update_arg1 (fun)"
+  "Function{global_flows.global_source}": [ "Function{pysa._test_sink}" ],
+  "Function{global_flows.indirectly_update_x_arg1}": [
+    "Function{global_flows.update_arg1}"
   ],
-  "global_flows.indirectly_update_x_arg2 (fun)": [
-    "global_flows.update_arg2 (fun)"
+  "Function{global_flows.indirectly_update_x_arg2}": [
+    "Function{global_flows.update_arg2}"
   ],
-  "global_flows.unaffected_x_at_arg1 (fun)": [
-    "global_flows.update_arg1 (fun)"
+  "Function{global_flows.unaffected_x_at_arg1}": [
+    "Function{global_flows.update_arg1}"
   ],
-  "global_flows.unaffected_x_at_arg2 (fun)": [
-    "global_flows.update_arg2 (fun)"
+  "Function{global_flows.unaffected_x_at_arg2}": [
+    "Function{global_flows.update_arg2}"
   ],
-  "global_flows.update_x_at_arg1 (fun)": [
-    "global_flows.update_arg1 (fun)", "pysa._test_source (fun)"
+  "Function{global_flows.update_x_at_arg1}": [
+    "Function{global_flows.update_arg1}", "Function{pysa._test_source}"
   ],
-  "global_flows.update_x_at_arg2 (fun)": [
-    "global_flows.update_arg2 (fun)", "pysa._test_source (fun)"
+  "Function{global_flows.update_x_at_arg2}": [
+    "Function{global_flows.update_arg2}", "Function{pysa._test_source}"
   ],
-  "global_flows.x_not_tainted (fun)": [
-    "global_flows.indirectly_update_x_arg1 (fun)"
+  "Function{global_flows.x_not_tainted}": [
+    "Function{global_flows.indirectly_update_x_arg1}"
   ],
-  "global_flows.x_tainted_indirectly_arg1 (fun)": [
-    "global_flows.indirectly_update_x_arg1 (fun)", "pysa._test_source (fun)"
+  "Function{global_flows.x_tainted_indirectly_arg1}": [
+    "Function{global_flows.indirectly_update_x_arg1}",
+    "Function{pysa._test_source}"
   ],
-  "global_flows.x_tainted_indirectly_arg2 (fun)": [
-    "global_flows.indirectly_update_x_arg2 (fun)", "pysa._test_source (fun)"
+  "Function{global_flows.x_tainted_indirectly_arg2}": [
+    "Function{global_flows.indirectly_update_x_arg2}",
+    "Function{pysa._test_source}"
   ]
 }

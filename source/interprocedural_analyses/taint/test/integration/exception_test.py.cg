@@ -1,46 +1,47 @@
 @generated
 Call dependencies
 {
-  "exception_test.none_throws (fun)": [
-    "builtins.BaseException.__init__ (method)",
-    "builtins.BaseException.__new__ (method)"
+  "Function{exception_test.none_throws}": [
+    "Method{builtins.BaseException.__init__}",
+    "Method{builtins.BaseException.__new__}"
   ],
-  "exception_test.test_before_try_to_finally (fun)": [
-    "exception_test.none_throws (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{exception_test.test_before_try_to_finally}": [
+    "Function{exception_test.none_throws}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ],
-  "exception_test.test_caught_exception (fun)": [
-    "builtins.BaseException.__str__ (method)", "builtins.isinstance (fun)",
-    "builtins.object.__init__ (method)", "builtins.str.__new__ (method)"
+  "Function{exception_test.test_caught_exception}": [
+    "Function{builtins.isinstance}",
+    "Method{builtins.BaseException.__str__}",
+    "Method{builtins.object.__init__}", "Method{builtins.str.__new__}"
   ],
-  "exception_test.test_constructed_exception (fun)": [
-    "builtins.BaseException.__init__ (method)",
-    "builtins.BaseException.__new__ (method)",
-    "builtins.BaseException.__str__ (method)",
-    "builtins.object.__init__ (method)", "builtins.str.__new__ (method)"
+  "Function{exception_test.test_constructed_exception}": [
+    "Method{builtins.BaseException.__init__}",
+    "Method{builtins.BaseException.__new__}",
+    "Method{builtins.BaseException.__str__}",
+    "Method{builtins.object.__init__}", "Method{builtins.str.__new__}"
   ],
-  "exception_test.test_except_to_finally (fun)": [
-    "exception_test.none_throws (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{exception_test.test_except_to_finally}": [
+    "Function{exception_test.none_throws}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ],
-  "exception_test.test_parameter_flow (fun)": [
-    "builtins.BaseException.__str__ (method)",
-    "builtins.object.__init__ (method)", "builtins.str.__new__ (method)"
+  "Function{exception_test.test_parameter_flow}": [
+    "Method{builtins.BaseException.__str__}",
+    "Method{builtins.object.__init__}", "Method{builtins.str.__new__}"
   ],
-  "exception_test.test_return_finally (fun)": [
-    "builtins.print (fun)", "pysa._test_source (fun)"
+  "Function{exception_test.test_return_finally}": [
+    "Function{builtins.print}", "Function{pysa._test_source}"
   ],
-  "exception_test.test_return_overrides_finally (fun)": [
-    "pysa._test_source (fun)"
+  "Function{exception_test.test_return_overrides_finally}": [
+    "Function{pysa._test_source}"
   ],
-  "exception_test.test_return_twice_finally (fun)": [
-    "pysa._test_source (fun)"
+  "Function{exception_test.test_return_twice_finally}": [
+    "Function{pysa._test_source}"
   ],
-  "exception_test.test_sink_in_finally (fun)": [
-    "exception_test.none_throws (fun)", "pysa._test_sink (fun)"
+  "Function{exception_test.test_sink_in_finally}": [
+    "Function{exception_test.none_throws}", "Function{pysa._test_sink}"
   ],
-  "exception_test.test_within_try_to_finally (fun)": [
-    "exception_test.none_throws (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{exception_test.test_within_try_to_finally}": [
+    "Function{exception_test.none_throws}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ]
 }

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "typed_dict.test_sanitize_field",
+  "callable": "Function{typed_dict.test_sanitize_field}",
   "returned_callables": [],
   "calls": {
     "61:25-61:39": {
@@ -114,7 +114,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "typed_dict.test_typed_dict_constructor",
+  "callable": "Function{typed_dict.test_typed_dict_constructor}",
   "returned_callables": [],
   "calls": {
     "24:8-24:50": {
@@ -532,7 +532,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "typed_dict.test_typed_dict_setitem",
+  "callable": "Function{typed_dict.test_typed_dict_setitem}",
   "returned_callables": [],
   "calls": {
     "18:4-18:29|artificial-call|subscript-set-item": {

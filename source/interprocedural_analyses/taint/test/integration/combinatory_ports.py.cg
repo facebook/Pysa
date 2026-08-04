@@ -1,13 +1,13 @@
 @generated
 Call dependencies
 {
-  "combinatory_ports.A.method (method)": [
-    "combinatory_ports.Base.method (override)"
+  "Method{combinatory_ports.A.method}": [
+    "Override{combinatory_ports.Base.method}"
   ],
-  "combinatory_ports.B.method (method)": [
-    "combinatory_ports.Base.method (override)"
+  "Method{combinatory_ports.B.method}": [
+    "Override{combinatory_ports.Base.method}"
   ],
-  "combinatory_ports.C.method (method)": [
-    "combinatory_ports.Base.method (override)", "pysa._test_sink (fun)"
+  "Method{combinatory_ports.C.method}": [
+    "Function{pysa._test_sink}", "Override{combinatory_ports.Base.method}"
   ]
 }

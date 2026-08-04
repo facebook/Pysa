@@ -1,90 +1,96 @@
 @generated
 Call dependencies
 {
-  "attributes.$toplevel (fun)": [ "dataclasses.dataclass (fun)" ],
-  "attributes.IsAttributeBug.issue (method)": [
-    "attributes.IsAttributeBug.__init__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{attributes.$toplevel}": [ "Function{dataclasses.dataclass}" ],
+  "Function{attributes.Request.$class_toplevel}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "attributes.NoListInference.append (method)": [
-    "builtins.list.append (method)"
+  "Function{attributes.test_attribute_union_sink}": [
+    "ClassInstanceAttribute{attributes.Sink.token}",
+    "Function{builtins.isinstance}", "Function{pysa._test_source}"
   ],
-  "attributes.NoListInference.sink (method)": [ "pysa._test_sink (fun)" ],
-  "attributes.Request.$class_toplevel (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)"
+  "Function{attributes.test_attribute_union_source}": [
+    "ClassInstanceAttribute{attributes.Token.token}",
+    "Function{builtins.isinstance}", "Function{pysa._test_sink}"
   ],
-  "attributes.test_attribute (fun)": [ "attributes.Token.token (object)" ],
-  "attributes.test_attribute_union_sink (fun)": [
-    "attributes.Sink.token (object)", "builtins.isinstance (fun)",
-    "pysa._test_source (fun)"
+  "Function{attributes.test_attribute_via_dunder_dict}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{attributes.UseViaDict.__init__}",
+    "Method{builtins.dict.__getitem__}", "Method{builtins.object.__new__}"
   ],
-  "attributes.test_attribute_union_source (fun)": [
-    "attributes.Token.token (object)", "builtins.isinstance (fun)",
-    "pysa._test_sink (fun)"
+  "Function{attributes.test_attribute}": [
+    "ClassInstanceAttribute{attributes.Token.token}"
   ],
-  "attributes.test_attribute_via_dunder_dict (fun)": [
-    "attributes.UseViaDict.__init__ (method)",
-    "builtins.dict.__getitem__ (method)", "builtins.object.__new__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{attributes.test_getattr_backwards_default}": [
+    "ClassInstanceAttribute{attributes.Token.token}",
+    "Function{builtins.getattr}", "Function{pysa._test_sink}"
   ],
-  "attributes.test_getattr_backwards (fun)": [
-    "attributes.Token.token (object)", "builtins.getattr (fun)",
-    "pysa._test_sink (fun)"
+  "Function{attributes.test_getattr_backwards}": [
+    "ClassInstanceAttribute{attributes.Token.token}",
+    "Function{builtins.getattr}", "Function{pysa._test_sink}"
   ],
-  "attributes.test_getattr_backwards_default (fun)": [
-    "attributes.Token.token (object)", "builtins.getattr (fun)",
-    "pysa._test_sink (fun)"
+  "Function{attributes.test_getattr_default}": [
+    "Function{builtins.getattr}", "Function{pysa._test_source}"
   ],
-  "attributes.test_getattr_default (fun)": [
-    "builtins.getattr (fun)", "pysa._test_source (fun)"
+  "Function{attributes.test_getattr_forward}": [
+    "ClassInstanceAttribute{attributes.Token.token}",
+    "Function{builtins.getattr}"
   ],
-  "attributes.test_getattr_forward (fun)": [
-    "attributes.Token.token (object)", "builtins.getattr (fun)"
+  "Function{attributes.test_issue_with_text_key_of_dictionary}": [
+    "ClassInstanceAttribute{attributes.C.dictionary}",
+    "Function{pysa._test_sink}", "Method{builtins.dict.__getitem__}"
   ],
-  "attributes.test_issue_with_text_key_of_dictionary (fun)": [
-    "attributes.C.dictionary (object)", "builtins.dict.__getitem__ (method)",
-    "pysa._test_sink (fun)"
+  "Function{attributes.test_issue_with_tito_copy_dict}": [
+    "Function{attributes.tito_copy_dict}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ],
-  "attributes.test_issue_with_tito_copy_dict (fun)": [
-    "attributes.tito_copy_dict (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{attributes.test_issue_with_tito_copy_multiple_possible_dictlike_objects}": [
+    "Function{attributes.tito_copy_multiple_possible_dictlike_objects}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{attributes.RegularForm.__init__}",
+    "Method{builtins.object.__new__}", "Method{typing.Mapping.__getitem__}"
   ],
-  "attributes.test_issue_with_tito_copy_multiple_possible_dictlike_objects (fun)": [
-    "attributes.RegularForm.__init__ (method)",
-    "attributes.tito_copy_multiple_possible_dictlike_objects (fun)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "typing.Mapping.__getitem__ (method)"
+  "Function{attributes.test_issue_with_update_to_self_attribute}": [
+    "ClassInstanceAttribute{attributes.D.buffer}",
+    "Function{pysa._test_source}", "Method{builtins.list.append}"
   ],
-  "attributes.test_issue_with_update_to_self_attribute (fun)": [
-    "attributes.D.buffer (object)", "builtins.list.append (method)",
-    "pysa._test_source (fun)"
+  "Function{attributes.test_no_issue_sanitize_via_call}": [
+    "Function{attributes.sanitize_attribute}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}"
   ],
-  "attributes.test_no_issue_sanitize (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{attributes.test_no_issue_sanitize}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "attributes.test_no_issue_sanitize_via_call (fun)": [
-    "attributes.sanitize_attribute (fun)",
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{attributes.test_no_issue_with_other_key_of_dictionary}": [
+    "ClassInstanceAttribute{attributes.C.dictionary}",
+    "Function{pysa._test_sink}", "Method{builtins.dict.__getitem__}"
   ],
-  "attributes.test_no_issue_with_other_key_of_dictionary (fun)": [
-    "attributes.C.dictionary (object)", "builtins.dict.__getitem__ (method)",
-    "pysa._test_sink (fun)"
+  "Function{attributes.test_no_list_inference}": [
+    "Function{pysa._test_source}",
+    "Method{attributes.NoListInference.__init__}",
+    "Method{attributes.NoListInference.append}",
+    "Method{attributes.NoListInference.sink}",
+    "Method{builtins.object.__new__}"
   ],
-  "attributes.test_no_list_inference (fun)": [
-    "attributes.NoListInference.__init__ (method)",
-    "attributes.NoListInference.append (method)",
-    "attributes.NoListInference.sink (method)",
-    "builtins.object.__new__ (method)", "pysa._test_source (fun)"
+  "Function{attributes.test_via_non_optional}": [
+    "ClassInstanceAttribute{attributes.Token.token}"
   ],
-  "attributes.test_via_non_optional (fun)": [
-    "attributes.Token.token (object)"
+  "Function{attributes.test_via_optional}": [
+    "ClassInstanceAttribute{attributes.Token.token}"
   ],
-  "attributes.test_via_optional (fun)": [ "attributes.Token.token (object)" ],
-  "attributes.tito_copy_multiple_possible_dictlike_objects (fun)": [
-    "attributes.PartiallyZonedDict.copy (method)",
-    "attributes.ZonedForm.data (method)", "builtins.dict.copy (method)"
-  ]
+  "Function{attributes.tito_copy_multiple_possible_dictlike_objects}": [
+    "Method{attributes.PartiallyZonedDict.copy}",
+    "Method{attributes.ZonedForm.data}", "Method{builtins.dict.copy}"
+  ],
+  "Method{attributes.IsAttributeBug.issue}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{attributes.IsAttributeBug.__init__}",
+    "Method{builtins.object.__new__}"
+  ],
+  "Method{attributes.NoListInference.append}": [
+    "Method{builtins.list.append}"
+  ],
+  "Method{attributes.NoListInference.sink}": [ "Function{pysa._test_sink}" ]
 }

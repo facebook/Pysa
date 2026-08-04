@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "global_flows.append_argument",
+  "callable": "Function{global_flows.append_argument}",
   "returned_callables": [],
   "calls": {
     "66:4-66:5|identifier|l": {
@@ -25,7 +25,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.append_directly",
+  "callable": "Function{global_flows.append_directly}",
   "returned_callables": [],
   "calls": {
     "62:4-62:5|identifier|l": {
@@ -56,7 +56,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.append_indirectly",
+  "callable": "Function{global_flows.append_indirectly}",
   "returned_callables": [],
   "calls": {
     "70:4-70:35": {
@@ -80,7 +80,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.global_source",
+  "callable": "Function{global_flows.global_source}",
   "returned_callables": [],
   "calls": {
     "77:4-77:23": {
@@ -98,7 +98,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.indirectly_update_x_arg1",
+  "callable": "Function{global_flows.indirectly_update_x_arg1}",
   "returned_callables": [],
   "calls": {
     "35:4-35:23": {
@@ -120,7 +120,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.indirectly_update_x_arg2",
+  "callable": "Function{global_flows.indirectly_update_x_arg2}",
   "returned_callables": [],
   "calls": {
     "47:4-47:23": {
@@ -142,7 +142,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.unaffected_x_at_arg1",
+  "callable": "Function{global_flows.unaffected_x_at_arg1}",
   "returned_callables": [],
   "calls": {
     "23:4-23:40": {
@@ -164,7 +164,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.unaffected_x_at_arg2",
+  "callable": "Function{global_flows.unaffected_x_at_arg2}",
   "returned_callables": [],
   "calls": {
     "31:4-31:40": {
@@ -186,7 +186,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.update_x_at_arg1",
+  "callable": "Function{global_flows.update_x_at_arg1}",
   "returned_callables": [],
   "calls": {
     "19:4-19:34": {
@@ -215,7 +215,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.update_x_at_arg2",
+  "callable": "Function{global_flows.update_x_at_arg2}",
   "returned_callables": [],
   "calls": {
     "27:4-27:34": {
@@ -244,7 +244,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.x_not_tainted",
+  "callable": "Function{global_flows.x_not_tainted}",
   "returned_callables": [],
   "calls": {
     "43:4-43:31": {
@@ -261,7 +261,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.x_tainted_indirectly_arg1",
+  "callable": "Function{global_flows.x_tainted_indirectly_arg1}",
   "returned_callables": [],
   "calls": {
     "39:4-39:44": {
@@ -285,7 +285,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global_flows.x_tainted_indirectly_arg2",
+  "callable": "Function{global_flows.x_tainted_indirectly_arg2}",
   "returned_callables": [],
   "calls": {
     "51:4-51:44": {

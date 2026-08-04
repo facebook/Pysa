@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "cross_repository.cross_repository_source",
+  "callable": "Function{cross_repository.cross_repository_source}",
   "returned_callables": [],
   "calls": {
     "10:4-10:32": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "cross_repository.test",
+  "callable": "Function{cross_repository.test}",
   "returned_callables": [],
   "calls": {
     "22:8-22:30": {
@@ -38,7 +38,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "cross_repository.test_cross_repository_anchor",
+  "callable": "Function{cross_repository.test_cross_repository_anchor}",
   "returned_callables": [],
   "calls": {
     "31:13-31:27": {
@@ -62,7 +62,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "cross_repository.test_propagate_cross_repository_sink_once",
+  "callable": "Function{cross_repository.test_propagate_cross_repository_sink_once}",
   "returned_callables": [],
   "calls": {
     "44:4-44:25": {
@@ -79,7 +79,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "cross_repository.test_propagate_cross_repository_sink_twice",
+  "callable": "Function{cross_repository.test_propagate_cross_repository_sink_twice}",
   "returned_callables": [],
   "calls": {
     "48:4-48:48": {
@@ -96,7 +96,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "cross_repository.test_propagate_cross_repository_source_once",
+  "callable": "Function{cross_repository.test_propagate_cross_repository_source_once}",
   "returned_callables": [],
   "calls": {
     "36:11-36:33": {
@@ -113,7 +113,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "cross_repository.test_propagate_cross_repository_source_twice",
+  "callable": "Function{cross_repository.test_propagate_cross_repository_source_twice}",
   "returned_callables": [],
   "calls": {
     "40:11-40:56": {

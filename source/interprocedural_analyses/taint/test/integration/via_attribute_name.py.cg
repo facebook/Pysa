@@ -1,76 +1,82 @@
 @generated
 Call dependencies
 {
-  "via_attribute_name.TitoAttributes.__init__ (method)": [
-    "via_attribute_name.TitoAttributes.x (object)",
-    "via_attribute_name.TitoAttributes.y (object)",
-    "via_attribute_name.TitoAttributes.z (object)"
+  "Function{via_attribute_name.test_sink_attribute_x}": [
+    "ClassInstanceAttribute{via_attribute_name.SinkAttributes.x}",
+    "Function{pysa._test_source}"
   ],
-  "via_attribute_name.test_sink_attribute_x (fun)": [
-    "pysa._test_source (fun)", "via_attribute_name.SinkAttributes.x (object)"
+  "Function{via_attribute_name.test_sink_attribute_y}": [
+    "ClassInstanceAttribute{via_attribute_name.SinkAttributes.y}",
+    "Function{pysa._test_source}"
   ],
-  "via_attribute_name.test_sink_attribute_y (fun)": [
-    "pysa._test_source (fun)", "via_attribute_name.SinkAttributes.y (object)"
+  "Function{via_attribute_name.test_sink_attribute_z}": [
+    "ClassInstanceAttribute{via_attribute_name.SinkAttributes.z}",
+    "Function{pysa._test_source}"
   ],
-  "via_attribute_name.test_sink_attribute_z (fun)": [
-    "pysa._test_source (fun)", "via_attribute_name.SinkAttributes.z (object)"
+  "Function{via_attribute_name.test_source_attribute_join}": [
+    "ClassInstanceAttribute{via_attribute_name.SourceAttributes.x}",
+    "ClassInstanceAttribute{via_attribute_name.SourceAttributes.y}",
+    "ClassInstanceAttribute{via_attribute_name.SourceAttributes.z}",
+    "Function{pysa._test_sink}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}"
   ],
-  "via_attribute_name.test_source_attribute_join (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._test_sink (fun)",
-    "via_attribute_name.SourceAttributes.x (object)",
-    "via_attribute_name.SourceAttributes.y (object)",
-    "via_attribute_name.SourceAttributes.z (object)"
+  "Function{via_attribute_name.test_source_attribute_x}": [
+    "ClassInstanceAttribute{via_attribute_name.SourceAttributes.x}",
+    "Function{pysa._test_sink}"
   ],
-  "via_attribute_name.test_source_attribute_x (fun)": [
-    "pysa._test_sink (fun)", "via_attribute_name.SourceAttributes.x (object)"
+  "Function{via_attribute_name.test_source_attribute_y}": [
+    "ClassInstanceAttribute{via_attribute_name.SourceAttributes.y}",
+    "Function{pysa._test_sink}"
   ],
-  "via_attribute_name.test_source_attribute_y (fun)": [
-    "pysa._test_sink (fun)", "via_attribute_name.SourceAttributes.y (object)"
+  "Function{via_attribute_name.test_source_attribute_z}": [
+    "ClassInstanceAttribute{via_attribute_name.SourceAttributes.z}",
+    "Function{pysa._test_sink}"
   ],
-  "via_attribute_name.test_source_attribute_z (fun)": [
-    "pysa._test_sink (fun)", "via_attribute_name.SourceAttributes.z (object)"
+  "Function{via_attribute_name.test_tito_attribute_join}": [
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.x}",
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.y}",
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.z}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributes.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_join (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributes.__init__ (method)",
-    "via_attribute_name.TitoAttributes.x (object)",
-    "via_attribute_name.TitoAttributes.y (object)",
-    "via_attribute_name.TitoAttributes.z (object)"
+  "Function{via_attribute_name.test_tito_attribute_model_query_x}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributeModelQuery.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_model_query_x (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributeModelQuery.__init__ (method)"
+  "Function{via_attribute_name.test_tito_attribute_model_query_y}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributeModelQuery.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_model_query_y (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributeModelQuery.__init__ (method)"
+  "Function{via_attribute_name.test_tito_attribute_model_query_z}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributeModelQuery.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_model_query_z (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributeModelQuery.__init__ (method)"
+  "Function{via_attribute_name.test_tito_attribute_x}": [
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.x}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributes.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_x (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributes.__init__ (method)",
-    "via_attribute_name.TitoAttributes.x (object)"
+  "Function{via_attribute_name.test_tito_attribute_y}": [
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.y}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributes.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_y (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributes.__init__ (method)",
-    "via_attribute_name.TitoAttributes.y (object)"
+  "Function{via_attribute_name.test_tito_attribute_z_with_tag}": [
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.z}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{via_attribute_name.TitoAttributes.__init__}"
   ],
-  "via_attribute_name.test_tito_attribute_z_with_tag (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "via_attribute_name.TitoAttributes.__init__ (method)",
-    "via_attribute_name.TitoAttributes.z (object)"
+  "Method{via_attribute_name.TitoAttributes.__init__}": [
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.x}",
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.y}",
+    "ClassInstanceAttribute{via_attribute_name.TitoAttributes.z}"
   ]
 }

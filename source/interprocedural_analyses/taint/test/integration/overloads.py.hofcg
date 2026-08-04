@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "overloads.call_me",
+  "callable": "Function{overloads.call_me}",
   "returned_callables": [],
   "calls": {
     "28:4-28:17": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overloads.f",
+  "callable": "Function{overloads.f}",
   "returned_callables": [],
   "calls": {
     "24:4-24:14": {
@@ -27,7 +27,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overloads.g",
+  "callable": "Function{overloads.g}",
   "returned_callables": [],
   "calls": {
     "47:8-47:22": {
@@ -87,7 +87,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "overloads.A.call_me",
+  "callable": "Method{overloads.A.call_me}",
   "returned_callables": [],
   "calls": {
     "33:8-33:21": {

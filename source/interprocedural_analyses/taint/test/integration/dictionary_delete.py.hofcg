@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "dictionary_delete.dict_into_sink",
+  "callable": "Function{dictionary_delete.dict_into_sink}",
   "returned_callables": [],
   "calls": {
     "40:8-40:22|artificial-call|subscript-get-item": {
@@ -40,7 +40,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary_delete.pop_dict_with_bad_key",
+  "callable": "Function{dictionary_delete.pop_dict_with_bad_key}",
   "returned_callables": [],
   "calls": {
     "31:4-31:22": {
@@ -72,7 +72,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary_delete.pop_key",
+  "callable": "Function{dictionary_delete.pop_key}",
   "returned_callables": [],
   "calls": {
     "36:11-36:29": {
@@ -91,7 +91,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary_delete.return_dict_with_bad_key",
+  "callable": "Function{dictionary_delete.return_dict_with_bad_key}",
   "returned_callables": [],
   "calls": {
     "19:10-19:24": {
@@ -117,7 +117,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary_delete.take_dict_with_bad_key",
+  "callable": "Function{dictionary_delete.take_dict_with_bad_key}",
   "returned_callables": [],
   "calls": {
     "26:8-26:22|artificial-call|subscript-get-item": {
@@ -149,7 +149,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary_delete.test_del_keyword",
+  "callable": "Function{dictionary_delete.test_del_keyword}",
   "returned_callables": [],
   "calls": {
     "12:10-12:24": {
@@ -195,7 +195,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary_delete.test_pop_method",
+  "callable": "Function{dictionary_delete.test_pop_method}",
   "returned_callables": [],
   "calls": {
     "45:10-45:24": {

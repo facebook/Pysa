@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "optionals.$toplevel",
+  "callable": "Function{optionals.$toplevel}",
   "returned_callables": [],
   "calls": {
     "21:26-21:43": {
@@ -28,7 +28,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "optionals.test",
+  "callable": "Function{optionals.test}",
   "returned_callables": [],
   "calls": {
     "26:4-26:25": {
@@ -67,7 +67,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "optionals.Client.offer",
+  "callable": "Method{optionals.Client.offer}",
   "returned_callables": [],
   "calls": {
     "13:8-13:27": {
@@ -80,7 +80,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "optionals.ClientSingleton.get_instance",
+  "callable": "Method{optionals.ClientSingleton.get_instance}",
   "returned_callables": [],
   "calls": {
     "18:15-18:23": {

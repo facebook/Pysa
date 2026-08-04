@@ -1,4 +1,4 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) long_access_path_taint.C.__init__ (override)]
-long_access_path_taint.C.__init__ (override) -> [long_access_path_taint.C.__init__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{long_access_path_taint.C.__init__}]
+Override{long_access_path_taint.C.__init__} -> [Method{long_access_path_taint.C.__init__}]

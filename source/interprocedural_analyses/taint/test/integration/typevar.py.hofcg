@@ -1,14 +1,14 @@
 @generated
 Higher order call graphs
 {
-  "callable": "typevar.$toplevel",
+  "callable": "Function{typevar.$toplevel}",
   "returned_callables": [],
   "calls": {
     "10:4-10:29": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } }
   }
 }
 {
-  "callable": "typevar.issue",
+  "callable": "Function{typevar.issue}",
   "returned_callables": [],
   "calls": {
     "19:4-19:27": {
@@ -33,7 +33,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "typevar.Foo.__init__",
+  "callable": "Method{typevar.Foo.__init__}",
   "returned_callables": [],
   "calls": {
     "15:8-15:20": {

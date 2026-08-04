@@ -1,7 +1,7 @@
 @generated
 Call dependencies
 {
-  "walrus_operator.walrus_operator_forward (fun)": [
-    "pysa._test_source (fun)"
+  "Function{walrus_operator.walrus_operator_forward}": [
+    "Function{pysa._test_source}"
   ]
 }

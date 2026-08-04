@@ -1,100 +1,117 @@
 @generated
 Call dependencies
 {
-  "via_type_of.Test1_C.__init__ (method)": [
-    "via_type_of.Test1_C.x (object)", "via_type_of.Test1_C.y (object)",
-    "via_type_of.Test1_C.z (object)"
+  "Function{via_type_of.Test3_C.$class_toplevel}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "via_type_of.Test3_C.$class_toplevel (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)"
+  "Function{via_type_of.meta}": [
+    "Function{via_type_of.return_via_parameter_type}"
   ],
-  "via_type_of.meta (fun)": [ "via_type_of.return_via_parameter_type (fun)" ],
-  "via_type_of.test1_alarm1 (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test1_C.__init__ (method)",
-    "via_type_of.Test1_C.x (object)"
+  "Function{via_type_of.test1_alarm1}": [
+    "ClassInstanceAttribute{via_type_of.Test1_C.x}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test1_C.__init__}"
   ],
-  "via_type_of.test1_alarm2 (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test1_C.__init__ (method)",
-    "via_type_of.Test1_C.y (object)"
+  "Function{via_type_of.test1_alarm2}": [
+    "ClassInstanceAttribute{via_type_of.Test1_C.y}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test1_C.__init__}"
   ],
-  "via_type_of.test1_alarm3 (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test1_C.__init__ (method)",
-    "via_type_of.Test1_C.z (object)"
+  "Function{via_type_of.test1_alarm3}": [
+    "ClassInstanceAttribute{via_type_of.Test1_C.z}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test1_C.__init__}"
   ],
-  "via_type_of.test1_alarm4 (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test1_C.__init__ (method)",
-    "via_type_of.Test1_C.x (object)", "via_type_of.Test1_C.y (object)",
-    "via_type_of.Test1_C.z (object)"
+  "Function{via_type_of.test1_alarm4}": [
+    "ClassInstanceAttribute{via_type_of.Test1_C.x}",
+    "ClassInstanceAttribute{via_type_of.Test1_C.y}",
+    "ClassInstanceAttribute{via_type_of.Test1_C.z}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test1_C.__init__}"
   ],
-  "via_type_of.test2_alarm1 (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test2_C.__init__ (method)",
-    "via_type_of.Test2_C.x (object)"
+  "Function{via_type_of.test2_alarm1}": [
+    "ClassInstanceAttribute{via_type_of.Test2_C.x}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test2_C.__init__}"
   ],
-  "via_type_of.test2_alarm2 (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test2_C.__init__ (method)",
-    "via_type_of.Test2_C.y (object)"
+  "Function{via_type_of.test2_alarm2}": [
+    "ClassInstanceAttribute{via_type_of.Test2_C.y}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test2_C.__init__}"
   ],
-  "via_type_of.test2_alarm3 (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test2_C.__init__ (method)",
-    "via_type_of.Test2_C.z (object)"
+  "Function{via_type_of.test2_alarm3}": [
+    "ClassInstanceAttribute{via_type_of.Test2_C.z}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test2_C.__init__}"
   ],
-  "via_type_of.test2_alarm4 (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test2_C.__init__ (method)",
-    "via_type_of.Test2_C.x (object)", "via_type_of.Test2_C.y (object)",
-    "via_type_of.Test2_C.z (object)"
+  "Function{via_type_of.test2_alarm4}": [
+    "ClassInstanceAttribute{via_type_of.Test2_C.x}",
+    "ClassInstanceAttribute{via_type_of.Test2_C.y}",
+    "ClassInstanceAttribute{via_type_of.Test2_C.z}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test2_C.__init__}"
   ],
-  "via_type_of.test2_alarm5_via_constructor (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "via_type_of.Test2_C.__init__ (method)"
+  "Function{via_type_of.test2_alarm5_via_constructor}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{via_type_of.Test2_C.__init__}"
   ],
-  "via_type_of.test3_alarm1 (fun)": [
-    "pysa._test_sink (fun)", "via_type_of.Test3_C.x (object)"
+  "Function{via_type_of.test3_alarm1}": [
+    "ClassInstanceAttribute{via_type_of.Test3_C.x}",
+    "Function{pysa._test_sink}"
   ],
-  "via_type_of.test3_alarm2 (fun)": [
-    "pysa._test_sink (fun)", "via_type_of.Test3_C.y (object)"
+  "Function{via_type_of.test3_alarm2}": [
+    "ClassInstanceAttribute{via_type_of.Test3_C.y}",
+    "Function{pysa._test_sink}"
   ],
-  "via_type_of.test3_alarm3 (fun)": [
-    "pysa._test_sink (fun)", "via_type_of.Test3_C.z (object)"
+  "Function{via_type_of.test3_alarm3}": [
+    "ClassInstanceAttribute{via_type_of.Test3_C.z}",
+    "Function{pysa._test_sink}"
   ],
-  "via_type_of.test3_alarm4 (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._test_sink (fun)", "via_type_of.Test3_C.x (object)",
-    "via_type_of.Test3_C.y (object)", "via_type_of.Test3_C.z (object)"
+  "Function{via_type_of.test3_alarm4}": [
+    "ClassInstanceAttribute{via_type_of.Test3_C.x}",
+    "ClassInstanceAttribute{via_type_of.Test3_C.y}",
+    "ClassInstanceAttribute{via_type_of.Test3_C.z}",
+    "Function{pysa._test_sink}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}"
   ],
-  "via_type_of.test4_alarm1 (fun)": [
-    "pysa._test_source (fun)", "via_type_of.Test4_C.x (object)"
+  "Function{via_type_of.test4_alarm1}": [
+    "ClassInstanceAttribute{via_type_of.Test4_C.x}",
+    "Function{pysa._test_source}"
   ],
-  "via_type_of.test4_alarm2 (fun)": [
-    "pysa._test_source (fun)", "via_type_of.Test4_C.y (object)"
+  "Function{via_type_of.test4_alarm2}": [
+    "ClassInstanceAttribute{via_type_of.Test4_C.y}",
+    "Function{pysa._test_source}"
   ],
-  "via_type_of.test4_alarm3 (fun)": [
-    "pysa._test_source (fun)", "via_type_of.Test4_C.z (object)"
+  "Function{via_type_of.test4_alarm3}": [
+    "ClassInstanceAttribute{via_type_of.Test4_C.z}",
+    "Function{pysa._test_source}"
   ],
-  "via_type_of.test_backwards_tito (fun)": [ "via_type_of.tito (fun)" ],
-  "via_type_of.test_lists (fun)": [
-    "via_type_of.return_via_parameter_type (fun)"
+  "Function{via_type_of.test_backwards_tito}": [
+    "Function{via_type_of.tito}"
   ],
-  "via_type_of.test_numerals (fun)": [
-    "via_type_of.return_via_parameter_type (fun)"
+  "Function{via_type_of.test_lists}": [
+    "Function{via_type_of.return_via_parameter_type}"
   ],
-  "via_type_of.test_sink (fun)": [ "via_type_of.sink_via_type_of (fun)" ],
-  "via_type_of.test_strings (fun)": [
-    "via_type_of.return_via_parameter_type (fun)"
+  "Function{via_type_of.test_numerals}": [
+    "Function{via_type_of.return_via_parameter_type}"
   ],
-  "via_type_of.test_tito (fun)": [
-    "pysa._test_source (fun)", "via_type_of.tito (fun)"
+  "Function{via_type_of.test_sink}": [
+    "Function{via_type_of.sink_via_type_of}"
   ],
-  "via_type_of.test_via_type_of_does_not_propagate (fun)": [
-    "via_type_of.meta (fun)"
+  "Function{via_type_of.test_strings}": [
+    "Function{via_type_of.return_via_parameter_type}"
+  ],
+  "Function{via_type_of.test_tito}": [
+    "Function{pysa._test_source}", "Function{via_type_of.tito}"
+  ],
+  "Function{via_type_of.test_via_type_of_does_not_propagate}": [
+    "Function{via_type_of.meta}"
+  ],
+  "Method{via_type_of.Test1_C.__init__}": [
+    "ClassInstanceAttribute{via_type_of.Test1_C.x}",
+    "ClassInstanceAttribute{via_type_of.Test1_C.y}",
+    "ClassInstanceAttribute{via_type_of.Test1_C.z}"
   ]
 }

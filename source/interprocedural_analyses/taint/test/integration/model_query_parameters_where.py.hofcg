@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_parameters_where.test1_alarm1",
+  "callable": "Function{model_query_parameters_where.test1_alarm1}",
   "returned_callables": [],
   "calls": {
     "15:4-15:17": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test1_alarm2",
+  "callable": "Function{model_query_parameters_where.test1_alarm2}",
   "returned_callables": [],
   "calls": {
     "19:4-19:17": {
@@ -27,7 +27,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test1_alarm3",
+  "callable": "Function{model_query_parameters_where.test1_alarm3}",
   "returned_callables": [],
   "calls": {
     "23:4-23:17": {
@@ -40,7 +40,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test1_alarm4",
+  "callable": "Function{model_query_parameters_where.test1_alarm4}",
   "returned_callables": [],
   "calls": {
     "27:4-27:17": {
@@ -53,7 +53,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test1_args_kwargs",
+  "callable": "Function{model_query_parameters_where.test1_args_kwargs}",
   "returned_callables": [],
   "calls": {
     "35:4-35:17": {
@@ -66,7 +66,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test1_positional_arguments",
+  "callable": "Function{model_query_parameters_where.test1_positional_arguments}",
   "returned_callables": [],
   "calls": {
     "31:4-31:17": {
@@ -79,7 +79,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test2_noalarm1",
+  "callable": "Function{model_query_parameters_where.test2_noalarm1}",
   "returned_callables": [],
   "calls": {
     "39:4-39:21": {
@@ -92,7 +92,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test2_noalarm2",
+  "callable": "Function{model_query_parameters_where.test2_noalarm2}",
   "returned_callables": [],
   "calls": {
     "43:4-43:21": {
@@ -105,7 +105,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test3_alarm1",
+  "callable": "Function{model_query_parameters_where.test3_alarm1}",
   "returned_callables": [],
   "calls": {
     "55:4-55:17": {
@@ -118,7 +118,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test3_alarm2",
+  "callable": "Function{model_query_parameters_where.test3_alarm2}",
   "returned_callables": [],
   "calls": {
     "59:4-59:17": {
@@ -131,7 +131,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test3_noalarm1",
+  "callable": "Function{model_query_parameters_where.test3_noalarm1}",
   "returned_callables": [],
   "calls": {
     "47:4-47:17": {
@@ -144,7 +144,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test3_noalarm2",
+  "callable": "Function{model_query_parameters_where.test3_noalarm2}",
   "returned_callables": [],
   "calls": {
     "51:4-51:17": {
@@ -157,7 +157,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test4_alarm1",
+  "callable": "Function{model_query_parameters_where.test4_alarm1}",
   "returned_callables": [],
   "calls": {
     "63:4-63:17": {
@@ -170,7 +170,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test4_alarm2",
+  "callable": "Function{model_query_parameters_where.test4_alarm2}",
   "returned_callables": [],
   "calls": {
     "71:4-71:17": {
@@ -183,7 +183,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test4_noalarm1",
+  "callable": "Function{model_query_parameters_where.test4_noalarm1}",
   "returned_callables": [],
   "calls": {
     "67:4-67:17": {
@@ -196,7 +196,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test4_noalarm2",
+  "callable": "Function{model_query_parameters_where.test4_noalarm2}",
   "returned_callables": [],
   "calls": {
     "75:4-75:17": {
@@ -209,7 +209,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test6_alarm1",
+  "callable": "Function{model_query_parameters_where.test6_alarm1}",
   "returned_callables": [],
   "calls": {
     "96:4-96:17": {
@@ -222,7 +222,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test6_alarm2",
+  "callable": "Function{model_query_parameters_where.test6_alarm2}",
   "returned_callables": [],
   "calls": {
     "104:4-104:17": {
@@ -235,7 +235,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test6_noalarm1",
+  "callable": "Function{model_query_parameters_where.test6_noalarm1}",
   "returned_callables": [],
   "calls": {
     "100:4-100:17": {
@@ -248,7 +248,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test6_noalarm2",
+  "callable": "Function{model_query_parameters_where.test6_noalarm2}",
   "returned_callables": [],
   "calls": {
     "108:4-108:17": {
@@ -261,7 +261,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test8_alarm1",
+  "callable": "Function{model_query_parameters_where.test8_alarm1}",
   "returned_callables": [],
   "calls": {
     "120:4-120:17": {
@@ -274,7 +274,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test8_alarm2",
+  "callable": "Function{model_query_parameters_where.test8_alarm2}",
   "returned_callables": [],
   "calls": {
     "124:4-124:17": {
@@ -287,7 +287,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test8_alarm3",
+  "callable": "Function{model_query_parameters_where.test8_alarm3}",
   "returned_callables": [],
   "calls": {
     "128:4-128:17": {
@@ -300,7 +300,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_where.test8_alarm4",
+  "callable": "Function{model_query_parameters_where.test8_alarm4}",
   "returned_callables": [],
   "calls": {
     "132:4-132:17": {

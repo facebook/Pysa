@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "multiline.test",
+  "callable": "Function{multiline.test}",
   "returned_callables": [],
   "calls": {
     "12:4-15:6": {

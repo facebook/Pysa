@@ -1,9 +1,9 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) call_graph.IsSource.__init__ (override) call_graph.LogRecord.__init__ (override) call_graph.NotSource.__init__ (override) call_graph.namespace.A.__init__ (override) call_graph.namespace.B.__init__ (override) call_graph.namespace.C.__init__ (override)]
-call_graph.IsSource.__init__ (override) -> [call_graph.IsSource.__init__ (method)]
-call_graph.LogRecord.__init__ (override) -> [call_graph.LogRecord.__init__ (method)]
-call_graph.NotSource.__init__ (override) -> [call_graph.NotSource.__init__ (method)]
-call_graph.namespace.A.__init__ (override) -> [call_graph.namespace.A.__init__ (method)]
-call_graph.namespace.B.__init__ (override) -> [call_graph.namespace.B.__init__ (method)]
-call_graph.namespace.C.__init__ (override) -> [call_graph.namespace.C.__init__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{call_graph.IsSource.__init__} Override{call_graph.LogRecord.__init__} Override{call_graph.NotSource.__init__} Override{call_graph.namespace.A.__init__} Override{call_graph.namespace.B.__init__} Override{call_graph.namespace.C.__init__}]
+Override{call_graph.IsSource.__init__} -> [Method{call_graph.IsSource.__init__}]
+Override{call_graph.LogRecord.__init__} -> [Method{call_graph.LogRecord.__init__}]
+Override{call_graph.NotSource.__init__} -> [Method{call_graph.NotSource.__init__}]
+Override{call_graph.namespace.A.__init__} -> [Method{call_graph.namespace.A.__init__}]
+Override{call_graph.namespace.B.__init__} -> [Method{call_graph.namespace.B.__init__}]
+Override{call_graph.namespace.C.__init__} -> [Method{call_graph.namespace.C.__init__}]

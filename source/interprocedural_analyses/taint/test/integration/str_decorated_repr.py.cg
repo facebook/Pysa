@@ -1,26 +1,27 @@
 @generated
 Call dependencies
 {
-  "str_decorated_repr.MyClass.__repr__@decorated (method)": [
-    "str_decorated_repr.cachedmethod (fun)[formal(f, position=0)=str_decorated_repr.MyClass.__repr__ (method)]"
+  "Function{str_decorated_repr.cachedmethod.g}": [
+    "Function{builtins.getattr}", "Function{builtins.hasattr}",
+    "Function{builtins.setattr}"
   ],
-  "str_decorated_repr.cachedmethod (fun)": [
-    "builtins.str.__format__ (method)"
+  "Function{str_decorated_repr.cachedmethod.g}[captured_variable(f, str_decorated_repr.cachedmethod)=Method{str_decorated_repr.MyClass.__repr__}]": [
+    "Function{builtins.getattr}", "Function{builtins.hasattr}",
+    "Function{builtins.setattr}",
+    "Method{str_decorated_repr.MyClass.__repr__}"
   ],
-  "str_decorated_repr.cachedmethod (fun)[formal(f, position=0)=str_decorated_repr.MyClass.__repr__ (method)]": [
-    "builtins.str.__format__ (method)"
+  "Function{str_decorated_repr.cachedmethod}": [
+    "Method{builtins.str.__format__}"
   ],
-  "str_decorated_repr.cachedmethod.g (fun)": [
-    "builtins.getattr (fun)", "builtins.hasattr (fun)",
-    "builtins.setattr (fun)"
+  "Function{str_decorated_repr.cachedmethod}[formal(f, position=0)=Method{str_decorated_repr.MyClass.__repr__}]": [
+    "Method{builtins.str.__format__}"
   ],
-  "str_decorated_repr.cachedmethod.g (fun)[captured_variable(f, str_decorated_repr.cachedmethod)=str_decorated_repr.MyClass.__repr__ (method)]": [
-    "builtins.getattr (fun)", "builtins.hasattr (fun)",
-    "builtins.setattr (fun)", "str_decorated_repr.MyClass.__repr__ (method)"
+  "Function{str_decorated_repr.test_str_of_decorated_repr}": [
+    "Function{str_decorated_repr._test_sink}",
+    "Function{str_decorated_repr.cachedmethod.g}[captured_variable(f, str_decorated_repr.cachedmethod)=Method{str_decorated_repr.MyClass.__repr__}]",
+    "Method{builtins.object.__init__}", "Method{builtins.str.__new__}"
   ],
-  "str_decorated_repr.test_str_of_decorated_repr (fun)": [
-    "builtins.object.__init__ (method)", "builtins.str.__new__ (method)",
-    "str_decorated_repr._test_sink (fun)",
-    "str_decorated_repr.cachedmethod.g (fun)[captured_variable(f, str_decorated_repr.cachedmethod)=str_decorated_repr.MyClass.__repr__ (method)]"
+  "Method{str_decorated_repr.MyClass.__repr__@decorated}": [
+    "Function{str_decorated_repr.cachedmethod}[formal(f, position=0)=Method{str_decorated_repr.MyClass.__repr__}]"
   ]
 }

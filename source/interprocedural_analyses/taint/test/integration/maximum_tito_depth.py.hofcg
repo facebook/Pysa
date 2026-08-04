@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "maximum_tito_depth.issue",
+  "callable": "Function{maximum_tito_depth.issue}",
   "returned_callables": [],
   "calls": {
     "67:8-67:22": {
@@ -32,7 +32,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.non_issue",
+  "callable": "Function{maximum_tito_depth.non_issue}",
   "returned_callables": [],
   "calls": {
     "73:8-73:22": {
@@ -63,7 +63,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_four",
+  "callable": "Function{maximum_tito_depth.tito_four}",
   "returned_callables": [],
   "calls": {
     "63:11-63:24": {
@@ -80,7 +80,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_max_consecutive",
+  "callable": "Function{maximum_tito_depth.tito_max_consecutive}",
   "returned_callables": [],
   "calls": {
     "27:8-27:20": {
@@ -119,7 +119,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_min_disjoint",
+  "callable": "Function{maximum_tito_depth.tito_min_disjoint}",
   "returned_callables": [],
   "calls": {
     "35:15-35:27": {
@@ -147,7 +147,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_min_disjoint_max_consecutive",
+  "callable": "Function{maximum_tito_depth.tito_min_disjoint_max_consecutive}",
   "returned_callables": [],
   "calls": {
     "43:12-43:23": {
@@ -197,7 +197,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_obscure",
+  "callable": "Function{maximum_tito_depth.tito_obscure}",
   "returned_callables": [],
   "calls": {
     "57:8-57:11": {
@@ -237,7 +237,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_one",
+  "callable": "Function{maximum_tito_depth.tito_one}",
   "returned_callables": [],
   "calls": {
     "15:11-15:23": {
@@ -254,7 +254,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_three",
+  "callable": "Function{maximum_tito_depth.tito_three}",
   "returned_callables": [],
   "calls": {
     "23:11-23:22": {
@@ -271,7 +271,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_tito_depth.tito_two",
+  "callable": "Function{maximum_tito_depth.tito_two}",
   "returned_callables": [],
   "calls": {
     "19:11-19:22": {

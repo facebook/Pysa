@@ -1,38 +1,47 @@
 @generated
 Call dependencies
 {
-  "features.async_issue_bools (fun)": [
-    "features.async_tuple_of_bools (fun)", "pysa._test_sink (fun)"
+  "Function{features.async_issue_bools}": [
+    "Function{features.async_tuple_of_bools}", "Function{pysa._test_sink}"
   ],
-  "features.async_tuple_of_bools (fun)": [ "pysa._test_source (fun)" ],
-  "features.issue_from_tuple (fun)": [
-    "features.return_tuple_of_bools (fun)", "pysa._test_sink (fun)"
+  "Function{features.async_tuple_of_bools}": [
+    "Function{pysa._test_source}"
   ],
-  "features.issue_via_bool (fun)": [
-    "builtins.bool.__new__ (method)", "builtins.object.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{features.issue_from_tuple}": [
+    "Function{features.return_tuple_of_bools}", "Function{pysa._test_sink}"
   ],
-  "features.issue_via_equality (fun)": [
-    "builtins.str.__eq__ (method)", "features.returns_tainted_object (fun)",
-    "pysa._test_sink (fun)"
+  "Function{features.issue_via_bool}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.bool.__new__}", "Method{builtins.object.__init__}"
   ],
-  "features.issue_via_in (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{features.issue_via_equality}": [
+    "Function{features.returns_tainted_object}", "Function{pysa._test_sink}",
+    "Method{builtins.str.__eq__}"
   ],
-  "features.no_always_when_calling_setitem (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "features.SetItemClass.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{features.issue_via_in}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "features.return_tuple_of_bools (fun)": [ "pysa._test_source (fun)" ],
-  "features.returns_tainted_object (fun)": [ "pysa._test_source (fun)" ],
-  "features.tito_via_constructor (fun)": [
-    "builtins.int.__new__ (method)", "builtins.object.__init__ (method)"
+  "Function{features.no_always_when_calling_setitem}": [
+    "Function{pysa._test_source}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{features.SetItemClass.__setitem__}"
   ],
-  "features.tito_via_len (fun)": [ "features.len (fun)" ],
-  "features.tito_via_min_left (fun)": [ "features.min (fun)" ],
-  "features.tito_via_min_or_not (fun)": [ "features.min (fun)" ],
-  "features.tito_via_min_right (fun)": [ "features.min (fun)" ],
-  "features.tito_via_named (fun)": [ "features.named (fun)" ],
-  "features.tito_via_optional (fun)": [ "features.optional_scalar (fun)" ],
-  "features.tito_with_tuple (fun)": [ "features.min (fun)" ]
+  "Function{features.return_tuple_of_bools}": [
+    "Function{pysa._test_source}"
+  ],
+  "Function{features.returns_tainted_object}": [
+    "Function{pysa._test_source}"
+  ],
+  "Function{features.tito_via_constructor}": [
+    "Method{builtins.int.__new__}", "Method{builtins.object.__init__}"
+  ],
+  "Function{features.tito_via_len}": [ "Function{features.len}" ],
+  "Function{features.tito_via_min_left}": [ "Function{features.min}" ],
+  "Function{features.tito_via_min_or_not}": [ "Function{features.min}" ],
+  "Function{features.tito_via_min_right}": [ "Function{features.min}" ],
+  "Function{features.tito_via_named}": [ "Function{features.named}" ],
+  "Function{features.tito_via_optional}": [
+    "Function{features.optional_scalar}"
+  ],
+  "Function{features.tito_with_tuple}": [ "Function{features.min}" ]
 }

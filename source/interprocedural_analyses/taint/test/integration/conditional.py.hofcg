@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "conditional.issue1",
+  "callable": "Function{conditional.issue1}",
   "returned_callables": [],
   "calls": {
     "23:8-23:30": {
@@ -18,7 +18,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "conditional.issue2",
+  "callable": "Function{conditional.issue2}",
   "returned_callables": [],
   "calls": {
     "29:8-29:28": {

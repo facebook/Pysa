@@ -1,17 +1,17 @@
 @generated
 Call dependencies
 {
-  "first_index.alternate_fields (fun)": [
-    "_random.Random.random (method)", "builtins.dict.__getitem__ (method)",
-    "builtins.float.__gt__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{first_index.alternate_fields}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{_random.Random.random}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.float.__gt__}"
   ],
-  "first_index.local_fields (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "first_index.alternate_fields (fun)"
+  "Function{first_index.local_fields_hop}": [
+    "Function{first_index.local_fields}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}"
   ],
-  "first_index.local_fields_hop (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "first_index.local_fields (fun)"
+  "Function{first_index.local_fields}": [
+    "Function{first_index.alternate_fields}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ]
 }

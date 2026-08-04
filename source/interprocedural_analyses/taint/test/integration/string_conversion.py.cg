@@ -1,132 +1,135 @@
 @generated
 Call dependencies
 {
-  "string_conversion.C.__str__ (method)": [
-    "string_conversion.C.g (object)"
+  "Function{string_conversion.analyze_implicit_call}": [
+    "ClassInstanceAttribute{django.http.Request.GET}",
+    "Function{builtins.eval}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}",
+    "Method{builtins.str.__format__}", "Method{builtins.str.__new__}",
+    "Method{string_conversion.B.__str__}"
   ],
-  "string_conversion.OverrideStr.__str__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{string_conversion.backward_unioned_callees_2}": [
+    "Method{string_conversion.D.__str__}"
   ],
-  "string_conversion.ReprIsTainted.__repr__ (method)": [
-    "builtins.dict.__getitem__ (method)", "django.http.Request.GET (object)"
+  "Function{string_conversion.backward_unioned_callees}": [
+    "Method{builtins.str.__format__}", "Method{string_conversion.D.__str__}"
   ],
-  "string_conversion.StrIsTainted.__str__ (method)": [
-    "builtins.dict.__getitem__ (method)", "django.http.Request.GET (object)"
+  "Function{string_conversion.base_exception}": [
+    "Method{builtins.type.__init__}", "Method{builtins.type.__new__}"
   ],
-  "string_conversion.analyze_implicit_call (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.eval (fun)",
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "builtins.str.__format__ (method)", "builtins.str.__new__ (method)",
-    "django.http.Request.GET (object)",
-    "string_conversion.B.__str__ (method)"
+  "Function{string_conversion.compute_tito}": [
+    "Function{string_conversion.tito_f}",
+    "Function{string_conversion.tito_g}"
   ],
-  "string_conversion.backward_unioned_callees (fun)": [
-    "builtins.str.__format__ (method)",
-    "string_conversion.D.__str__ (method)"
+  "Function{string_conversion.explicit_str}": [
+    "Function{builtins.eval}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{string_conversion.StrIsTainted.__str__}"
   ],
-  "string_conversion.backward_unioned_callees_2 (fun)": [
-    "string_conversion.D.__str__ (method)"
+  "Function{string_conversion.forward_unioned_callees_2}": [
+    "Function{pysa._test_source}", "Method{string_conversion.D.__str__}"
   ],
-  "string_conversion.base_exception (fun)": [
-    "builtins.type.__init__ (method)", "builtins.type.__new__ (method)"
+  "Function{string_conversion.forward_unioned_callees}": [
+    "Function{pysa._test_source}", "Method{builtins.str.__format__}",
+    "Method{string_conversion.D.__str__}"
   ],
-  "string_conversion.compute_tito (fun)": [
-    "string_conversion.tito_f (fun)", "string_conversion.tito_g (fun)"
+  "Function{string_conversion.function_call_target_1}": [
+    "Method{builtins.str.__format__}"
   ],
-  "string_conversion.explicit_str (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)",
-    "string_conversion.StrIsTainted.__str__ (method)"
+  "Function{string_conversion.implicit_repr}": [
+    "Function{builtins.eval}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{string_conversion.ReprIsTainted.__repr__}"
   ],
-  "string_conversion.forward_unioned_callees (fun)": [
-    "builtins.str.__format__ (method)", "pysa._test_source (fun)",
-    "string_conversion.D.__str__ (method)"
+  "Function{string_conversion.implicit_str}": [
+    "Function{builtins.eval}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{string_conversion.StrIsTainted.__str__}"
   ],
-  "string_conversion.forward_unioned_callees_2 (fun)": [
-    "pysa._test_source (fun)", "string_conversion.D.__str__ (method)"
+  "Function{string_conversion.join_source_and_attribute_source}": [
+    "ClassInstanceAttribute{django.http.Request.GET}",
+    "Function{builtins.eval}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.int.__gt__}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}", "Method{builtins.str.__format__}",
+    "Method{string_conversion.C.__str__}"
   ],
-  "string_conversion.function_call_target_1 (fun)": [
-    "builtins.str.__format__ (method)"
+  "Function{string_conversion.joined_base}": [
+    "ClassInstanceAttribute{django.http.Request.GET}",
+    "Function{builtins.eval}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.str.__format__}"
   ],
-  "string_conversion.implicit_repr (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)",
-    "string_conversion.ReprIsTainted.__repr__ (method)"
+  "Function{string_conversion.multiple_callees_same_location}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}",
+    "Method{builtins.str.__add__}", "Method{builtins.str.__new__}",
+    "Method{string_conversion.StrIsTainted.__str__}"
   ],
-  "string_conversion.implicit_str (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)",
-    "string_conversion.StrIsTainted.__str__ (method)"
+  "Function{string_conversion.multiple_targets_for_single_expression_2}": [
+    "Function{builtins.eval}", "Method{builtins.int.__format__}",
+    "Method{string_conversion.B.__str__}",
+    "Method{string_conversion.C.__str__}"
   ],
-  "string_conversion.join_source_and_attribute_source (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.eval (fun)",
-    "builtins.int.__gt__ (method)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)", "builtins.str.__format__ (method)",
-    "django.http.Request.GET (object)",
-    "string_conversion.C.__str__ (method)"
+  "Function{string_conversion.multiple_targets_for_single_expression_3}": [
+    "Method{builtins.int.__format__}", "Method{string_conversion.B.__str__}",
+    "Method{string_conversion.C.__str__}"
   ],
-  "string_conversion.joined_base (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.eval (fun)",
-    "builtins.str.__format__ (method)", "django.http.Request.GET (object)"
+  "Function{string_conversion.multiple_targets_for_single_expression}": [
+    "Function{builtins.eval}", "Method{string_conversion.A.__str__}",
+    "Method{string_conversion.StrIsTainted.__str__}"
   ],
-  "string_conversion.multiple_callees_same_location (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "builtins.str.__add__ (method)", "builtins.str.__new__ (method)",
-    "string_conversion.StrIsTainted.__str__ (method)"
+  "Function{string_conversion.not_propagate_taint}": [
+    "Function{builtins.eval}", "Method{builtins.object.__new__}",
+    "Method{string_conversion.A.__init__}",
+    "Method{string_conversion.A.__str__}"
   ],
-  "string_conversion.multiple_targets_for_single_expression (fun)": [
-    "builtins.eval (fun)", "string_conversion.A.__str__ (method)",
-    "string_conversion.StrIsTainted.__str__ (method)"
+  "Function{string_conversion.object_type}": [
+    "Method{builtins.object.__format__}"
   ],
-  "string_conversion.multiple_targets_for_single_expression_2 (fun)": [
-    "builtins.eval (fun)", "builtins.int.__format__ (method)",
-    "string_conversion.B.__str__ (method)",
-    "string_conversion.C.__str__ (method)"
+  "Function{string_conversion.optional_str}": [
+    "Function{builtins.eval}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}", "Method{builtins.str.__new__}",
+    "Method{string_conversion.StrIsTainted.__str__}",
+    "Override{builtins.object.__repr__}"
   ],
-  "string_conversion.multiple_targets_for_single_expression_3 (fun)": [
-    "builtins.int.__format__ (method)",
-    "string_conversion.B.__str__ (method)",
-    "string_conversion.C.__str__ (method)"
+  "Function{string_conversion.propagate_taint}": [
+    "ClassInstanceAttribute{django.http.Request.GET}",
+    "Function{builtins.eval}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.object.__new__}",
+    "Method{string_conversion.A.__init__}",
+    "Method{string_conversion.A.__str__}"
   ],
-  "string_conversion.not_propagate_taint (fun)": [
-    "builtins.eval (fun)", "builtins.object.__new__ (method)",
-    "string_conversion.A.__init__ (method)",
-    "string_conversion.A.__str__ (method)"
+  "Function{string_conversion.repr_is_tainted}": [
+    "Function{builtins.eval}", "Function{builtins.repr}",
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}",
+    "Method{string_conversion.ReprIsTainted.__repr__}"
   ],
-  "string_conversion.object_type (fun)": [
-    "builtins.object.__format__ (method)"
+  "Function{string_conversion.str_falls_back_to_repr}": [
+    "Function{builtins.eval}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}", "Method{builtins.str.__new__}",
+    "Method{string_conversion.ReprIsTainted.__repr__}"
   ],
-  "string_conversion.optional_str (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)",
-    "builtins.object.__repr__ (override)", "builtins.str.__new__ (method)",
-    "string_conversion.StrIsTainted.__str__ (method)"
+  "Function{string_conversion.str_is_tainted}": [
+    "Function{builtins.eval}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}", "Method{builtins.str.__new__}",
+    "Method{string_conversion.StrIsTainted.__str__}"
   ],
-  "string_conversion.propagate_taint (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.eval (fun)",
-    "builtins.object.__new__ (method)", "django.http.Request.GET (object)",
-    "string_conversion.A.__init__ (method)",
-    "string_conversion.A.__str__ (method)"
+  "Function{string_conversion.test_str_with_double_starred_kwargs}": [
+    "Method{builtins.object.__init__}", "Method{builtins.str.__new__}"
   ],
-  "string_conversion.repr_is_tainted (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)", "builtins.repr (fun)",
-    "string_conversion.ReprIsTainted.__repr__ (method)"
+  "Function{string_conversion.test_str_with_starred_args}": [
+    "Method{builtins.object.__init__}", "Method{builtins.str.__new__}"
   ],
-  "string_conversion.str_falls_back_to_repr (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)", "builtins.str.__new__ (method)",
-    "string_conversion.ReprIsTainted.__repr__ (method)"
+  "Method{string_conversion.C.__str__}": [
+    "ClassInstanceAttribute{string_conversion.C.g}"
   ],
-  "string_conversion.str_is_tainted (fun)": [
-    "builtins.eval (fun)", "builtins.object.__init__ (method)",
-    "builtins.object.__new__ (method)", "builtins.str.__new__ (method)",
-    "string_conversion.StrIsTainted.__str__ (method)"
+  "Method{string_conversion.OverrideStr.__str__}": [
+    "Function{pysa._test_source}"
   ],
-  "string_conversion.test_str_with_double_starred_kwargs (fun)": [
-    "builtins.object.__init__ (method)", "builtins.str.__new__ (method)"
+  "Method{string_conversion.ReprIsTainted.__repr__}": [
+    "ClassInstanceAttribute{django.http.Request.GET}",
+    "Method{builtins.dict.__getitem__}"
   ],
-  "string_conversion.test_str_with_starred_args (fun)": [
-    "builtins.object.__init__ (method)", "builtins.str.__new__ (method)"
+  "Method{string_conversion.StrIsTainted.__str__}": [
+    "ClassInstanceAttribute{django.http.Request.GET}",
+    "Method{builtins.dict.__getitem__}"
   ]
 }

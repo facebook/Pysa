@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "named_tuple_asdict.sink_on_asdict_pop_value",
+  "callable": "Function{named_tuple_asdict.sink_on_asdict_pop_value}",
   "returned_callables": [],
   "calls": {
     "38:18-38:45": {
@@ -40,7 +40,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "named_tuple_asdict.sink_on_charset_direct",
+  "callable": "Function{named_tuple_asdict.sink_on_charset_direct}",
   "returned_callables": [],
   "calls": {
     "26:4-26:41": {
@@ -53,7 +53,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "named_tuple_asdict.sink_on_charset_via_asdict_getitem",
+  "callable": "Function{named_tuple_asdict.sink_on_charset_via_asdict_getitem}",
   "returned_callables": [],
   "calls": {
     "32:18-32:45": {
@@ -92,7 +92,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "named_tuple_asdict.sink_on_charset_via_asdict_pop",
+  "callable": "Function{named_tuple_asdict.sink_on_charset_via_asdict_pop}",
   "returned_callables": [],
   "calls": {
     "19:18-19:45": {

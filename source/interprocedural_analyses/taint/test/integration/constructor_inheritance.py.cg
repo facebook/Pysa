@@ -1,12 +1,11 @@
 @generated
 Call dependencies
 {
-  "constructor_inheritance.MyBaseClass.__init__ (method)": [
-    "pysa._test_sink (fun)"
+  "Function{constructor_inheritance.test}": [
+    "Function{pysa._test_source}", "Method{builtins.object.__new__}",
+    "Method{constructor_inheritance.MyBaseClass.__init__}"
   ],
-  "constructor_inheritance.test (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructor_inheritance.MyBaseClass.__init__ (method)",
-    "pysa._test_source (fun)"
+  "Method{constructor_inheritance.MyBaseClass.__init__}": [
+    "Function{pysa._test_sink}"
   ]
 }

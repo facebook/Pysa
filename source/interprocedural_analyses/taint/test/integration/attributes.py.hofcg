@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "attributes.$toplevel",
+  "callable": "Function{attributes.$toplevel}",
   "returned_callables": [],
   "calls": {
     "150:1-150:23": {
@@ -99,7 +99,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.Request.$class_toplevel",
+  "callable": "Function{attributes.Request.$class_toplevel}",
   "returned_callables": [],
   "calls": {
     "24:33-24:47": {
@@ -126,7 +126,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_attribute",
+  "callable": "Function{attributes.test_attribute}",
   "returned_callables": [],
   "calls": {
     "44:11-44:18": {
@@ -144,7 +144,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_attribute_union_sink",
+  "callable": "Function{attributes.test_attribute_union_sink}",
   "returned_callables": [],
   "calls": {
     "94:4-94:11": {
@@ -263,7 +263,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_attribute_union_source",
+  "callable": "Function{attributes.test_attribute_union_source}",
   "returned_callables": [],
   "calls": {
     "82:4-82:23": {
@@ -382,7 +382,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_attribute_via_dunder_dict",
+  "callable": "Function{attributes.test_attribute_via_dunder_dict}",
   "returned_callables": [],
   "calls": {
     "70:10-70:46": {
@@ -463,7 +463,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_getattr_backwards",
+  "callable": "Function{attributes.test_getattr_backwards}",
   "returned_callables": [],
   "calls": {
     "56:4-56:41": {
@@ -496,7 +496,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_getattr_backwards_default",
+  "callable": "Function{attributes.test_getattr_backwards_default}",
   "returned_callables": [],
   "calls": {
     "60:4-60:42": {
@@ -534,7 +534,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_getattr_default",
+  "callable": "Function{attributes.test_getattr_default}",
   "returned_callables": [],
   "calls": {
     "52:11-52:50": {
@@ -560,7 +560,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_getattr_forward",
+  "callable": "Function{attributes.test_getattr_forward}",
   "returned_callables": [],
   "calls": {
     "48:11-48:36": {
@@ -586,7 +586,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_issue_with_text_key_of_dictionary",
+  "callable": "Function{attributes.test_issue_with_text_key_of_dictionary}",
   "returned_callables": [],
   "calls": {
     "106:4-106:36": {
@@ -624,7 +624,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_issue_with_tito_copy_dict",
+  "callable": "Function{attributes.test_issue_with_tito_copy_dict}",
   "returned_callables": [],
   "calls": {
     "144:20-144:34": {
@@ -658,7 +658,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_issue_with_tito_copy_multiple_possible_dictlike_objects",
+  "callable": "Function{attributes.test_issue_with_tito_copy_multiple_possible_dictlike_objects}",
   "returned_callables": [],
   "calls": {
     "180:8-180:48": {
@@ -723,7 +723,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_issue_with_update_to_self_attribute",
+  "callable": "Function{attributes.test_issue_with_update_to_self_attribute}",
   "returned_callables": [],
   "calls": {
     "118:4-118:12": {
@@ -761,7 +761,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_no_issue_sanitize",
+  "callable": "Function{attributes.test_no_issue_sanitize}",
   "returned_callables": [],
   "calls": {
     "191:8-191:11": {
@@ -802,7 +802,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_no_issue_sanitize_via_call",
+  "callable": "Function{attributes.test_no_issue_sanitize_via_call}",
   "returned_callables": [],
   "calls": {
     "202:8-202:11": {
@@ -854,7 +854,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_no_issue_with_other_key_of_dictionary",
+  "callable": "Function{attributes.test_no_issue_with_other_key_of_dictionary}",
   "returned_callables": [],
   "calls": {
     "110:4-110:37": {
@@ -892,7 +892,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_no_list_inference",
+  "callable": "Function{attributes.test_no_list_inference}",
   "returned_callables": [],
   "calls": {
     "134:8-134:25": {
@@ -952,7 +952,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_via_non_optional",
+  "callable": "Function{attributes.test_via_non_optional}",
   "returned_callables": [],
   "calls": {
     "39:15-39:33": {
@@ -970,7 +970,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.test_via_optional",
+  "callable": "Function{attributes.test_via_optional}",
   "returned_callables": [],
   "calls": {
     "32:19-32:37": {
@@ -988,7 +988,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.tito_copy_dict",
+  "callable": "Function{attributes.tito_copy_dict}",
   "returned_callables": [],
   "calls": {
     "140:11-140:19": {
@@ -997,7 +997,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.tito_copy_multiple_possible_dictlike_objects",
+  "callable": "Function{attributes.tito_copy_multiple_possible_dictlike_objects}",
   "returned_callables": [],
   "calls": {
     "176:11-176:17": {
@@ -1034,7 +1034,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.IsAttributeBug.__init__",
+  "callable": "Method{attributes.IsAttributeBug.__init__}",
   "returned_callables": [],
   "calls": {
     "217:8-217:14": {
@@ -1073,7 +1073,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.IsAttributeBug.issue",
+  "callable": "Method{attributes.IsAttributeBug.issue}",
   "returned_callables": [],
   "calls": {
     "222:8-222:68": {
@@ -1114,7 +1114,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.NoListInference.append",
+  "callable": "Method{attributes.NoListInference.append}",
   "returned_callables": [],
   "calls": {
     "127:8-127:31": {
@@ -1133,7 +1133,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "attributes.NoListInference.sink",
+  "callable": "Method{attributes.NoListInference.sink}",
   "returned_callables": [],
   "calls": {
     "130:8-130:31": {

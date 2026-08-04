@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "long_access_path_taint.test",
+  "callable": "Function{long_access_path_taint.test}",
   "returned_callables": [],
   "calls": {
     "36:16-36:17|identifier|C": {
@@ -65,7 +65,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "long_access_path_taint.C.__init__",
+  "callable": "Method{long_access_path_taint.C.__init__}",
   "returned_callables": [],
   "calls": {
     "16:25-16:48": {
@@ -97,7 +97,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "long_access_path_taint.C.async_create",
+  "callable": "Method{long_access_path_taint.C.async_create}",
   "returned_callables": [],
   "calls": {
     "25:15-25:26": {

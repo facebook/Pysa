@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "remote_code_execution.rce_problem",
+  "callable": "Function{remote_code_execution.rce_problem}",
   "returned_callables": [],
   "calls": {
     "10:8-10:26": {

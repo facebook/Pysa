@@ -1,4 +1,4 @@
 @generated
 Overrides
-builder_pattern.Builder.__init__ (override) -> [builder_pattern.Builder.__init__ (method)]
-builtins.object.__init__ (override) -> [builder_pattern.Builder.__init__ (override) builtins.object.__init__ (method)]
+Override{builder_pattern.Builder.__init__} -> [Method{builder_pattern.Builder.__init__}]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{builder_pattern.Builder.__init__}]

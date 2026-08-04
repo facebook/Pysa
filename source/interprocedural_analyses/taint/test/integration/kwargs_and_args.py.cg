@@ -1,15 +1,15 @@
 @generated
 Call dependencies
 {
-  "kwargs_and_args.args_sink (fun)": [
-    "builtins.tuple.__getitem__ (method)", "pysa._test_sink (fun)"
+  "Function{kwargs_and_args.args_sink}": [
+    "Function{pysa._test_sink}", "Method{builtins.tuple.__getitem__}"
   ],
-  "kwargs_and_args.async_distillery_render (fun)": [
-    "builtins.dict.__setitem__ (method)", "builtins.dict.pop (method)",
-    "kwargs_and_args.async_render_to_response (fun)",
-    "pysa._test_source (fun)"
+  "Function{kwargs_and_args.async_distillery_render}": [
+    "Function{kwargs_and_args.async_render_to_response}",
+    "Function{pysa._test_source}", "Method{builtins.dict.__setitem__}",
+    "Method{builtins.dict.pop}"
   ],
-  "kwargs_and_args.async_render_to_response (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{kwargs_and_args.async_render_to_response}": [
+    "Function{pysa._test_sink}"
   ]
 }

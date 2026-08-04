@@ -1,14 +1,14 @@
 @generated
 Call dependencies
 {
-  "locals.locals_to_sink (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.locals (fun)",
-    "locals.named_sink (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{locals.locals_to_sink}": [
+    "Function{builtins.locals}", "Function{locals.named_sink}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.dict.__getitem__}"
   ],
-  "locals.named_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "locals.source_parameter_to_sink (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.locals (fun)",
-    "pysa._test_sink (fun)"
+  "Function{locals.named_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{locals.source_parameter_to_sink}": [
+    "Function{builtins.locals}", "Function{pysa._test_sink}",
+    "Method{builtins.dict.__getitem__}"
   ]
 }

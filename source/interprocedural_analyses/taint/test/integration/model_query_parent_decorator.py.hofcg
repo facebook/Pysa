@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_parent_decorator.$toplevel",
+  "callable": "Function{model_query_parent_decorator.$toplevel}",
   "returned_callables": [],
   "calls": {
     "21:1-21:3|identifier|d1": {
@@ -128,7 +128,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parent_decorator.setup",
+  "callable": "Function{model_query_parent_decorator.setup}",
   "returned_callables": [],
   "calls": {
     "47:4-47:20": {
@@ -323,7 +323,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parent_decorator.TestC_1.__init__",
+  "callable": "Method{model_query_parent_decorator.TestC_1.__init__}",
   "returned_callables": [],
   "calls": {
     "24:8-24:23": {
@@ -350,7 +350,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parent_decorator.TestC_2.__init__",
+  "callable": "Method{model_query_parent_decorator.TestC_2.__init__}",
   "returned_callables": [],
   "calls": {
     "32:8-32:23": {
@@ -377,7 +377,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parent_decorator.TestC_3.__init__",
+  "callable": "Method{model_query_parent_decorator.TestC_3.__init__}",
   "returned_callables": [],
   "calls": {
     "41:8-41:23": {

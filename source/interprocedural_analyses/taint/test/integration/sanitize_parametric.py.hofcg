@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "sanitize_parametric.partial_issue_sanitize",
+  "callable": "Function{sanitize_parametric.partial_issue_sanitize}",
   "returned_callables": [],
   "calls": {
     "48:8-48:31": {
@@ -29,7 +29,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_parametric.partial_issue_sinks",
+  "callable": "Function{sanitize_parametric.partial_issue_sinks}",
   "returned_callables": [],
   "calls": {
     "38:7-38:22": {
@@ -94,7 +94,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_parametric.partial_issue_sources",
+  "callable": "Function{sanitize_parametric.partial_issue_sources}",
   "returned_callables": [],
   "calls": {
     "30:7-30:22": {

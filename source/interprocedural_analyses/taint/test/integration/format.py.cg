@@ -1,22 +1,24 @@
 @generated
 Call dependencies
 {
-  "format.issue_in_format (fun)": [
-    "builtins.object.__repr__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{format.issue_in_format_specifier}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.str.__format__}"
   ],
-  "format.issue_in_format_specifier (fun)": [
-    "builtins.str.__format__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{format.issue_in_format}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__repr__}"
   ],
-  "format.sink_in_format (fun)": [
-    "builtins.object.__repr__ (method)", "pysa._test_sink (fun)"
+  "Function{format.sink_in_format_specifier}": [
+    "Function{pysa._test_sink}"
   ],
-  "format.sink_in_format_specifier (fun)": [ "pysa._test_sink (fun)" ],
-  "format.sink_via_format (fun)": [ "pysa._test_sink (fun)" ],
-  "format.source_in_format (fun)": [ "pysa._test_source (fun)" ],
-  "format.source_in_format_specifier (fun)": [
-    "builtins.str.__format__ (method)", "pysa._test_source (fun)"
+  "Function{format.sink_in_format}": [
+    "Function{pysa._test_sink}", "Method{builtins.object.__repr__}"
   ],
-  "format.source_via_format (fun)": [ "pysa._test_source (fun)" ]
+  "Function{format.sink_via_format}": [ "Function{pysa._test_sink}" ],
+  "Function{format.source_in_format_specifier}": [
+    "Function{pysa._test_source}", "Method{builtins.str.__format__}"
+  ],
+  "Function{format.source_in_format}": [ "Function{pysa._test_source}" ],
+  "Function{format.source_via_format}": [ "Function{pysa._test_source}" ]
 }

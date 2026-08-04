@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "except_star.test_except_star",
+  "callable": "Function{except_star.test_except_star}",
   "returned_callables": [],
   "calls": {
     "12:12-12:22|artificial-call|subscript-get-item": {

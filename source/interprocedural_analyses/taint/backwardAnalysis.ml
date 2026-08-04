@@ -475,7 +475,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
     in
     log
       "Backward analysis of call to `%a` with arguments (%a)@,Call site model:@,%a"
-      Target.pp_pretty
+      (Target.pp_pretty ~display_api)
       target
       Ast.Expression.pp_expression_argument_list
       arguments
@@ -3363,8 +3363,11 @@ let run
   in
   let module State = State (FunctionContext) in
   let module Fixpoint = PyrePysaLogic.Fixpoint.Make (State) in
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   let initial = State.{ taint = initial_taint } in
-  let () = State.log "Backward analysis of callable: `%a`" Target.pp_pretty callable in
+  let () =
+    State.log "Backward analysis of callable: `%a`" (Target.pp_pretty ~display_api) callable
+  in
   let captures =
     if not (Target.is_decorated callable) then
       PyreflyApi.ReadOnly.get_callable_captures pyrefly_api (Target.callable_id_exn callable)
@@ -3385,7 +3388,7 @@ let run
             Alarm.with_alarm
               ~max_time_in_seconds:60
               ~event_name:"backward taint analysis"
-              ~callable:(Target.show_pretty callable)
+              ~callable:((Target.show_pretty ~display_api) callable)
               (fun () -> Fixpoint.backward ~cfg ~initial |> Fixpoint.entry)
               ())
   in
@@ -3426,7 +3429,7 @@ let run
     ~randomly_log_every:1000
     ~always_log_time_threshold:1.0 (* Seconds *)
     ~name:"Backward analysis"
-    ~normals:["callable", Target.show_pretty callable]
+    ~normals:["callable", (Target.show_pretty ~display_api) callable]
     ~section:`Taint
     ~timer
     ();

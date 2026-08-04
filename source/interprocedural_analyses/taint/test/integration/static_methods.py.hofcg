@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "static_methods.run_test",
+  "callable": "Function{static_methods.run_test}",
   "returned_callables": [],
   "calls": {
     "20:4-20:24": {
@@ -21,7 +21,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "static_methods.test",
+  "callable": "Function{static_methods.test}",
   "returned_callables": [],
   "calls": {
     "16:11-16:22|identifier|StaticClass": {
@@ -62,7 +62,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "static_methods.StaticClass.sink",
+  "callable": "Method{static_methods.StaticClass.sink}",
   "returned_callables": [],
   "calls": {
     "12:8-12:24": {

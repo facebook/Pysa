@@ -1,28 +1,28 @@
 @generated
 Call dependencies
 {
-  "constant_fields.test_untracked_constant (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "builtins.dict.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{constant_fields.test_untracked_constant}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.dict.__setitem__}"
   ],
-  "constant_fields.tracked_constant_A (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "builtins.dict.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{constant_fields.tracked_constant_A}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.dict.__setitem__}"
   ],
-  "constant_fields.tracked_constant_B (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "builtins.dict.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{constant_fields.tracked_constant_B}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.dict.__setitem__}"
   ],
-  "constant_fields.tracked_index (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "builtins.dict.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{constant_fields.tracked_index}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.dict.__setitem__}"
   ],
-  "constant_fields.untracked_index_a (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "builtins.dict.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{constant_fields.untracked_index_a}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.dict.__setitem__}"
   ],
-  "constant_fields.untracked_index_b (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "builtins.dict.__setitem__ (method)", "pysa._test_source (fun)"
+  "Function{constant_fields.untracked_index_b}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}",
+    "Method{builtins.dict.__setitem__}"
   ]
 }

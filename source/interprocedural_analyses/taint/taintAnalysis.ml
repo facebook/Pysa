@@ -351,6 +351,7 @@ let initialize_models
   let models =
     MissingFlow.add_obscure_models
       ~scheduler
+      ~display_api:(PyreflyApi.ReadOnly.display_api pyrefly_api)
       ~static_analysis_configuration
       ~callables_to_definitions_map
       ~stubs:(Interprocedural.FetchCallables.get_stubs initial_callables)

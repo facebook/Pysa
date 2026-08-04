@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "format_stringify_redefinition.$toplevel",
+  "callable": "Function{format_stringify_redefinition.$toplevel}",
   "returned_callables": [],
   "calls": {
     "16:12-16:30|artificial-call|comparison": {
@@ -65,7 +65,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "format_stringify_redefinition.Base.$class_toplevel",
+  "callable": "Function{format_stringify_redefinition.Base.$class_toplevel}",
   "returned_callables": [],
   "calls": {
     "25:18-25:29|identifier|__unicode__": {
@@ -85,7 +85,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "format_stringify_redefinition.source_via_str",
+  "callable": "Function{format_stringify_redefinition.source_via_str}",
   "returned_callables": [],
   "calls": {
     "45:8-45:22": {
@@ -121,7 +121,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "format_stringify_redefinition.str_of_base",
+  "callable": "Function{format_stringify_redefinition.str_of_base}",
   "returned_callables": [],
   "calls": {
     "41:11-41:17": {
@@ -167,7 +167,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "format_stringify_redefinition.str_of_sub",
+  "callable": "Function{format_stringify_redefinition.str_of_sub}",
   "returned_callables": [],
   "calls": {
     "37:11-37:17": {

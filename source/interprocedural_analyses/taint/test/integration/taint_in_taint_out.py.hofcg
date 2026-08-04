@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "taint_in_taint_out.$toplevel",
+  "callable": "Function{taint_in_taint_out.$toplevel}",
   "returned_callables": [],
   "calls": {
     "96:23-96:34|identifier|FieldIsTITO": {
@@ -53,7 +53,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.ComplexEvaluator.evaluate_lazy_payload._evaluate",
+  "callable": "Function{taint_in_taint_out.ComplexEvaluator.evaluate_lazy_payload._evaluate}",
   "returned_callables": [],
   "calls": {
     "196:15-196:38": {
@@ -139,7 +139,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.adds_tito",
+  "callable": "Function{taint_in_taint_out.adds_tito}",
   "returned_callables": [],
   "calls": {
     "93:11-93:21": {
@@ -157,7 +157,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.adds_tito_inherited",
+  "callable": "Function{taint_in_taint_out.adds_tito_inherited}",
   "returned_callables": [],
   "calls": {
     "101:11-101:21": {
@@ -175,7 +175,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.adds_tito_with_indirect_sink",
+  "callable": "Function{taint_in_taint_out.adds_tito_with_indirect_sink}",
   "returned_callables": [],
   "calls": {
     "105:4-105:22": {
@@ -192,7 +192,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.collapse_two_then_into_deep_dict",
+  "callable": "Function{taint_in_taint_out.collapse_two_then_into_deep_dict}",
   "returned_callables": [],
   "calls": {
     "331:8-331:28": {
@@ -209,7 +209,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.collapse_two_then_into_dict",
+  "callable": "Function{taint_in_taint_out.collapse_two_then_into_dict}",
   "returned_callables": [],
   "calls": {
     "321:8-321:28": {
@@ -226,7 +226,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.combine_collapse_one",
+  "callable": "Function{taint_in_taint_out.combine_collapse_one}",
   "returned_callables": [],
   "calls": {
     "337:8-337:28": {
@@ -254,7 +254,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.combine_collapse_one_and_two",
+  "callable": "Function{taint_in_taint_out.combine_collapse_one_and_two}",
   "returned_callables": [],
   "calls": {
     "369:8-369:28": {
@@ -282,7 +282,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.combine_collapse_three",
+  "callable": "Function{taint_in_taint_out.combine_collapse_three}",
   "returned_callables": [],
   "calls": {
     "353:8-353:30": {
@@ -310,7 +310,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.combine_collapse_two",
+  "callable": "Function{taint_in_taint_out.combine_collapse_two}",
   "returned_callables": [],
   "calls": {
     "345:8-345:28": {
@@ -338,7 +338,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.combine_collapse_two_and_one",
+  "callable": "Function{taint_in_taint_out.combine_collapse_two_and_one}",
   "returned_callables": [],
   "calls": {
     "361:8-361:28": {
@@ -366,7 +366,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.evaluate_lazy",
+  "callable": "Function{taint_in_taint_out.evaluate_lazy}",
   "returned_callables": [],
   "calls": {
     "180:41-180:56": {
@@ -411,7 +411,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.forward_taint_kwargs_into_parameters",
+  "callable": "Function{taint_in_taint_out.forward_taint_kwargs_into_parameters}",
   "returned_callables": [],
   "calls": {
     "657:19-657:33": {
@@ -459,7 +459,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.get_related",
+  "callable": "Function{taint_in_taint_out.get_related}",
   "returned_callables": [],
   "calls": {
     "85:11-85:28": {
@@ -486,7 +486,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.indirect_sink",
+  "callable": "Function{taint_in_taint_out.indirect_sink}",
   "returned_callables": [],
   "calls": {
     "109:4-109:26": {
@@ -511,7 +511,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.into_dict_then_collapse_two",
+  "callable": "Function{taint_in_taint_out.into_dict_then_collapse_two}",
   "returned_callables": [],
   "calls": {
     "317:11-317:31": {
@@ -528,7 +528,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.into_dict_then_perfect_tito",
+  "callable": "Function{taint_in_taint_out.into_dict_then_perfect_tito}",
   "returned_callables": [],
   "calls": {
     "241:11-241:26": {
@@ -545,7 +545,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.into_dict_then_tito_collapse",
+  "callable": "Function{taint_in_taint_out.into_dict_then_tito_collapse}",
   "returned_callables": [],
   "calls": {
     "215:11-215:26": {
@@ -562,7 +562,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.issue_approximate_return_access_paths",
+  "callable": "Function{taint_in_taint_out.issue_approximate_return_access_paths}",
   "returned_callables": [],
   "calls": {
     "262:8-262:16": {
@@ -627,7 +627,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.issue_approximate_return_access_paths_common_prefix",
+  "callable": "Function{taint_in_taint_out.issue_approximate_return_access_paths_common_prefix}",
   "returned_callables": [],
   "calls": {
     "269:8-269:16": {
@@ -692,7 +692,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.issue_join_tito_collapse_test_3",
+  "callable": "Function{taint_in_taint_out.issue_join_tito_collapse_test_3}",
   "returned_callables": [],
   "calls": {
     "436:14-436:28": {
@@ -740,7 +740,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.issue_user_declared_tito_collapse_one",
+  "callable": "Function{taint_in_taint_out.issue_user_declared_tito_collapse_one}",
   "returned_callables": [],
   "calls": {
     "462:20-462:34": {
@@ -777,7 +777,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.issue_with_indirect_sink_tito",
+  "callable": "Function{taint_in_taint_out.issue_with_indirect_sink_tito}",
   "returned_callables": [],
   "calls": {
     "113:8-113:22": {
@@ -801,7 +801,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.issue_with_into_dict_then_tito_collapse",
+  "callable": "Function{taint_in_taint_out.issue_with_into_dict_then_tito_collapse}",
   "returned_callables": [],
   "calls": {
     "224:8-224:22": {
@@ -835,7 +835,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.join_tito_collapse_test_1",
+  "callable": "Function{taint_in_taint_out.join_tito_collapse_test_1}",
   "returned_callables": [],
   "calls": {
     "397:13-397:21": {
@@ -910,7 +910,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.join_tito_collapse_test_2",
+  "callable": "Function{taint_in_taint_out.join_tito_collapse_test_2}",
   "returned_callables": [],
   "calls": {
     "406:13-406:21": {
@@ -985,7 +985,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.join_tito_collapse_test_3",
+  "callable": "Function{taint_in_taint_out.join_tito_collapse_test_3}",
   "returned_callables": [],
   "calls": {
     "429:7-429:22": {
@@ -1039,7 +1039,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.loop_perfect_tito",
+  "callable": "Function{taint_in_taint_out.loop_perfect_tito}",
   "returned_callables": [],
   "calls": {
     "376:13-376:23": {
@@ -1102,7 +1102,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.loop_tito_collapse_one",
+  "callable": "Function{taint_in_taint_out.loop_tito_collapse_one}",
   "returned_callables": [],
   "calls": {
     "383:13-383:23": {
@@ -1165,7 +1165,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.loop_tito_collapse_two",
+  "callable": "Function{taint_in_taint_out.loop_tito_collapse_two}",
   "returned_callables": [],
   "calls": {
     "390:13-390:23": {
@@ -1228,7 +1228,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_issue_tito_collapse_two_with_input_path",
+  "callable": "Function{taint_in_taint_out.no_issue_tito_collapse_two_with_input_path}",
   "returned_callables": [],
   "calls": {
     "423:26-423:40": {
@@ -1262,7 +1262,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_issue_user_declared_tito_collapse_one",
+  "callable": "Function{taint_in_taint_out.no_issue_user_declared_tito_collapse_one}",
   "returned_callables": [],
   "calls": {
     "456:14-456:28": {
@@ -1296,7 +1296,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_issue_user_declared_tito_no_collapse",
+  "callable": "Function{taint_in_taint_out.no_issue_user_declared_tito_no_collapse}",
   "returned_callables": [],
   "calls": {
     "446:14-446:28": {
@@ -1330,7 +1330,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_issue_with_into_dict_then_perfect_tito",
+  "callable": "Function{taint_in_taint_out.no_issue_with_into_dict_then_perfect_tito}",
   "returned_callables": [],
   "calls": {
     "250:8-250:22": {
@@ -1364,7 +1364,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_issue_with_perfect_tito_then_into_dict",
+  "callable": "Function{taint_in_taint_out.no_issue_with_perfect_tito_then_into_dict}",
   "returned_callables": [],
   "calls": {
     "256:8-256:22": {
@@ -1408,7 +1408,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_issue_with_tito_collapse_then_into_dict",
+  "callable": "Function{taint_in_taint_out.no_issue_with_tito_collapse_then_into_dict}",
   "returned_callables": [],
   "calls": {
     "230:8-230:22": {
@@ -1452,7 +1452,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_tito_init_then_overwrite",
+  "callable": "Function{taint_in_taint_out.no_tito_init_then_overwrite}",
   "returned_callables": [],
   "calls": {
     "472:4-472:14|artificial-call|subscript-set-item": {
@@ -1471,7 +1471,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.no_tito_overwrite_then_init",
+  "callable": "Function{taint_in_taint_out.no_tito_overwrite_then_init}",
   "returned_callables": [],
   "calls": {
     "477:4-477:14|artificial-call|subscript-set-item": {
@@ -1483,7 +1483,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.non_issue_approximate_return_access_paths_common_prefix",
+  "callable": "Function{taint_in_taint_out.non_issue_approximate_return_access_paths_common_prefix}",
   "returned_callables": [],
   "calls": {
     "276:8-276:16": {
@@ -1548,7 +1548,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.perfect_tito_then_into_deep_dict",
+  "callable": "Function{taint_in_taint_out.perfect_tito_then_into_deep_dict}",
   "returned_callables": [],
   "calls": {
     "326:8-326:23": {
@@ -1565,7 +1565,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.perfect_tito_then_into_dict",
+  "callable": "Function{taint_in_taint_out.perfect_tito_then_into_dict}",
   "returned_callables": [],
   "calls": {
     "245:8-245:23": {
@@ -1582,7 +1582,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.perfect_tito_with_tree_manipulation",
+  "callable": "Function{taint_in_taint_out.perfect_tito_with_tree_manipulation}",
   "returned_callables": [],
   "calls": {
     "285:11-285:17|artificial-call|subscript-get-item": {
@@ -1601,7 +1601,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.product_data",
+  "callable": "Function{taint_in_taint_out.product_data}",
   "returned_callables": [],
   "calls": {
     "43:11-43:22": {
@@ -1737,7 +1737,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.product_data_wrapper",
+  "callable": "Function{taint_in_taint_out.product_data_wrapper}",
   "returned_callables": [],
   "calls": {
     "65:11-65:26": {
@@ -1754,7 +1754,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_always_via_feature",
+  "callable": "Function{taint_in_taint_out.test_always_via_feature}",
   "returned_callables": [],
   "calls": {
     "158:4-158:49": {
@@ -1785,7 +1785,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_complex_argument_tito",
+  "callable": "Function{taint_in_taint_out.test_complex_argument_tito}",
   "returned_callables": [],
   "calls": {
     "586:8-586:16": {
@@ -2006,7 +2006,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_complex_evaluator",
+  "callable": "Function{taint_in_taint_out.test_complex_evaluator}",
   "returned_callables": [],
   "calls": {
     "204:4-204:63": {
@@ -2039,7 +2039,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_explicit_call_to_superclass",
+  "callable": "Function{taint_in_taint_out.test_explicit_call_to_superclass}",
   "returned_callables": [],
   "calls": {
     "175:11-175:34": {
@@ -2080,7 +2080,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_simplified_evaluator",
+  "callable": "Function{taint_in_taint_out.test_simplified_evaluator}",
   "returned_callables": [],
   "calls": {
     "184:4-184:45": {
@@ -2111,7 +2111,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_tito_class_method",
+  "callable": "Function{taint_in_taint_out.test_tito_class_method}",
   "returned_callables": [],
   "calls": {
     "558:4-558:33": {
@@ -2221,7 +2221,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_tito_from_0_to_1",
+  "callable": "Function{taint_in_taint_out.test_tito_from_0_to_1}",
   "returned_callables": [],
   "calls": {
     "574:8-574:22": {
@@ -2259,7 +2259,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_tito_self",
+  "callable": "Function{taint_in_taint_out.test_tito_self}",
   "returned_callables": [],
   "calls": {
     "515:8-515:36": {
@@ -2581,7 +2581,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.test_tuple_tito_indices",
+  "callable": "Function{taint_in_taint_out.test_tuple_tito_indices}",
   "returned_callables": [],
   "calls": {
     "138:28-138:64": {
@@ -2612,7 +2612,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito",
+  "callable": "Function{taint_in_taint_out.tito}",
   "returned_callables": [],
   "calls": {
     "69:11-69:47": {
@@ -2636,7 +2636,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_collapse_one",
+  "callable": "Function{taint_in_taint_out.tito_collapse_one}",
   "returned_callables": [],
   "calls": {
     "293:8-293:41": {
@@ -2692,7 +2692,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_collapse_one_with_input_path",
+  "callable": "Function{taint_in_taint_out.tito_collapse_one_with_input_path}",
   "returned_callables": [],
   "calls": {
     "415:11-415:41": {
@@ -2715,7 +2715,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_collapse_one_with_input_path_with_hop",
+  "callable": "Function{taint_in_taint_out.tito_collapse_one_with_input_path_with_hop}",
   "returned_callables": [],
   "calls": {
     "419:11-419:47": {
@@ -2732,7 +2732,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_collapse_then_into_dict",
+  "callable": "Function{taint_in_taint_out.tito_collapse_then_into_dict}",
   "returned_callables": [],
   "calls": {
     "219:8-219:23": {
@@ -2749,7 +2749,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_collapse_three",
+  "callable": "Function{taint_in_taint_out.tito_collapse_three}",
   "returned_callables": [],
   "calls": {
     "311:8-311:39": {
@@ -2779,7 +2779,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_collapse_two",
+  "callable": "Function{taint_in_taint_out.tito_collapse_two}",
   "returned_callables": [],
   "calls": {
     "302:8-302:39": {
@@ -2822,7 +2822,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_from_0_to_1",
+  "callable": "Function{taint_in_taint_out.tito_from_0_to_1}",
   "returned_callables": [],
   "calls": {
     "570:4-570:27|artificial-call|subscript-set-item": {
@@ -2852,7 +2852,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_via_kwargs_into_parameters",
+  "callable": "Function{taint_in_taint_out.tito_via_kwargs_into_parameters}",
   "returned_callables": [],
   "calls": {
     "711:11-711:36": {
@@ -2879,7 +2879,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_with_feature",
+  "callable": "Function{taint_in_taint_out.tito_with_feature}",
   "returned_callables": [],
   "calls": {
     "154:15-154:31": {
@@ -2896,7 +2896,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.tito_with_sink",
+  "callable": "Function{taint_in_taint_out.tito_with_sink}",
   "returned_callables": [],
   "calls": {
     "482:8-482:14|artificial-call|subscript-get-item": {
@@ -2915,7 +2915,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.via_getattr",
+  "callable": "Function{taint_in_taint_out.via_getattr}",
   "returned_callables": [],
   "calls": {
     "73:11-73:31": {
@@ -2934,7 +2934,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.ComplexEvaluator.evaluate_lazy_field",
+  "callable": "Method{taint_in_taint_out.ComplexEvaluator.evaluate_lazy_field}",
   "returned_callables": [],
   "calls": {
     "189:11-189:26": {
@@ -2954,7 +2954,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.ComplexEvaluator.evaluate_lazy_payload",
+  "callable": "Method{taint_in_taint_out.ComplexEvaluator.evaluate_lazy_payload}",
   "returned_callables": [],
   "calls": {
     "195:8-198:50": {
@@ -2991,7 +2991,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.GetUser.__init__",
+  "callable": "Method{taint_in_taint_out.GetUser.__init__}",
   "returned_callables": [],
   "calls": {
     "171:8-171:16|identifier|GetQuery": {
@@ -3031,7 +3031,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.Recursive.__init__",
+  "callable": "Method{taint_in_taint_out.Recursive.__init__}",
   "returned_callables": [],
   "calls": {
     "79:12-79:16|artificial-call|subscript-get-item": {
@@ -3080,7 +3080,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.TitoClassMethod.set_a",
+  "callable": "Method{taint_in_taint_out.TitoClassMethod.set_a}",
   "returned_callables": [],
   "calls": {
     "554:8-554:11|identifier|cls": {
@@ -3109,7 +3109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.TitoSelf.self_tito",
+  "callable": "Method{taint_in_taint_out.TitoSelf.self_tito}",
   "returned_callables": [],
   "calls": {
     "508:15-508:33": {
@@ -3126,7 +3126,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.TitoSelf.set_join",
+  "callable": "Method{taint_in_taint_out.TitoSelf.set_join}",
   "returned_callables": [],
   "calls": {
     "499:11-499:26": {
@@ -3158,7 +3158,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "taint_in_taint_out.TitoSelf.set_subfield",
+  "callable": "Method{taint_in_taint_out.TitoSelf.set_subfield}",
   "returned_callables": [],
   "calls": {
     "505:19-505:34": {

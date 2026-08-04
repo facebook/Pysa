@@ -702,6 +702,8 @@ module HigherOrderCallGraph = struct
   struct
     type t = State.t [@@deriving show]
 
+    let display_api = PyreflyApi.ReadOnly.display_api Context.pyrefly_api
+
     let bottom = State.bottom
 
     let less_or_equal = State.less_or_equal
@@ -725,7 +727,7 @@ module HigherOrderCallGraph = struct
 
 
     let returned_callables_of_target { CallTarget.target; _ } =
-      log "Fetching returned callables for `%a`" Target.pp_pretty target;
+      log "Fetching returned callables for `%a`" (Target.pp_pretty ~display_api) target;
       match Context.get_callee_model target with
       | Some { returned_callables; _ } -> returned_callables
       | None -> CallTarget.Set.bottom
@@ -838,7 +840,9 @@ module HigherOrderCallGraph = struct
       in
       log
         "Decorated targets: `%a`"
-        Target.List.pp_pretty_with_kind
+        (Format.pp_print_list
+           ~pp_sep:(fun formatter () -> Format.fprintf formatter ";@ ")
+           (Target.pp_pretty ~display_api))
         (List.map ~f:CallTarget.target decorated_targets);
       (* When substituting a decorated call target (e.g. `foo@decorated`) with its returned
          callables, the decorated call target carries the type-aware receiver information resolved
@@ -887,7 +891,7 @@ module HigherOrderCallGraph = struct
           log
             "Invalid target: `%a` (contain_recursive_target: `%b`. exceed_depth: `%b`. \
              skip_analysis: `%b`)"
-            Target.pp_pretty_with_kind
+            (Target.pp_pretty ~display_api)
             target
             contain_recursive_target
             exceed_depth
@@ -938,7 +942,7 @@ module HigherOrderCallGraph = struct
           with
           | Some { CallablesSharedMemory.CallableSignature.is_stub_like; parameters; _ } ->
               if is_stub_like then
-                let () = log "Callable `%a` is a stub" Target.pp_pretty_with_kind target in
+                let () = log "Callable `%a` is a stub" (Target.pp_pretty ~display_api) target in
                 None
               else
                 parameters
@@ -946,7 +950,7 @@ module HigherOrderCallGraph = struct
                 >>| AccessPath.normalize_parameters
                 >>| List.map ~f:(fun { AccessPath.NormalizedParameter.root; _ } -> root)
           | None ->
-              log "Cannot find define for callable `%a`" Target.pp_pretty_with_kind target;
+              log "Cannot find define for callable `%a`" (Target.pp_pretty ~display_api) target;
               None
       in
       let create_parameter_target_excluding_args_kwargs (parameter_target, (_, argument_matches)) =
@@ -997,7 +1001,7 @@ module HigherOrderCallGraph = struct
               let () =
                 log
                   "Callable `%a` is marked as @SkipInliningHigherOrderFunctions"
-                  Target.pp_pretty_with_kind
+                  (Target.pp_pretty ~display_api)
                   (Target.from_regular callee_regular)
               in
               None
@@ -1046,7 +1050,7 @@ module HigherOrderCallGraph = struct
               in
               log
                 "Parameter targets: %a"
-                (Target.ParameterMap.pp Target.ParameterValue.pp_pretty)
+                (Target.ParameterMap.pp (Target.ParameterValue.pp_pretty ~display_api))
                 parameters;
               if Target.ParameterMap.is_empty parameters then
                 None
@@ -1082,7 +1086,7 @@ module HigherOrderCallGraph = struct
             non_parameterized_targets ~parameterized_targets call_targets_from_callee)
       in
       List.iter parameterized_targets ~f:(fun { CallTarget.target; _ } ->
-          log "Created parameterized target: `%a`" Target.pp_pretty target);
+          log "Created parameterized target: `%a`" (Target.pp_pretty ~display_api) target);
       let stub_targets =
         List.filter_map call_targets_from_callee ~f:(fun { CallTarget.target; _ } ->
             let is_stub =
@@ -1204,7 +1208,7 @@ module HigherOrderCallGraph = struct
                 let () =
                   Log.error
                     "Call graph of `%a`: `%a`"
-                    Target.pp_pretty
+                    (Target.pp_pretty ~display_api)
                     Context.callable
                     DefineCallGraph.pp
                     Context.input_define_call_graph
@@ -1215,7 +1219,7 @@ module HigherOrderCallGraph = struct
                       above)."
                      Ast.Expression.Call.pp
                      call
-                     Target.pp_pretty
+                     (Target.pp_pretty ~display_api)
                      Context.callable
                      Location.pp
                      location))
@@ -2111,7 +2115,7 @@ let higher_order_call_graph_of_define
   log
     ~debug:Context.debug
     "Building higher order call graph of `%a` with initial state `%a`. Define call graph: `%a`"
-    Target.pp_internal
+    Target.pp
     callable
     HigherOrderCallGraph.State.pp
     initial_state
@@ -2160,7 +2164,7 @@ let higher_order_call_graph_of_define
   log
     ~debug:Context.debug
     "Built higher order call graph of `%a`: `%a`"
-    Target.pp_internal
+    Target.pp
     callable
     HigherOrderCallGraph.pp
     higher_order_call_graph;
@@ -2773,7 +2777,7 @@ let build_whole_program_call_graph
       log
         ~debug
         "Transforming Pyrefly call graph for `%a`: %a"
-        Target.pp_internal
+        Target.pp
         callable
         DefineCallGraph.pp
         call_graph

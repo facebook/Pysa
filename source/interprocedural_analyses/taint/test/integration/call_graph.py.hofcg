@@ -1,14 +1,14 @@
 @generated
 Higher order call graphs
 {
-  "callable": "call_graph.$toplevel",
+  "callable": "Function{call_graph.$toplevel}",
   "returned_callables": [],
   "calls": {
     "80:4-80:16": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } }
   }
 }
 {
-  "callable": "call_graph.is_dict",
+  "callable": "Function{call_graph.is_dict}",
   "returned_callables": [],
   "calls": {
     "50:11-50:32": {
@@ -48,7 +48,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.no_op_decorator_factory",
+  "callable": "Function{call_graph.no_op_decorator_factory}",
   "returned_callables": [
     {
       "target": "call_graph.no_op_decorator_factory.inner",
@@ -84,7 +84,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.no_op_decorator_factory.inner",
+  "callable": "Function{call_graph.no_op_decorator_factory.inner}",
   "returned_callables": [],
   "calls": {
     "85:8-85:39": {
@@ -97,7 +97,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.test_chained_assign",
+  "callable": "Function{call_graph.test_chained_assign}",
   "returned_callables": [],
   "calls": {
     "32:8-32:19": {
@@ -151,7 +151,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.test_chained_assign_subscript",
+  "callable": "Function{call_graph.test_chained_assign_subscript}",
   "returned_callables": [],
   "calls": {
     "55:8-55:28": {
@@ -223,7 +223,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.test_default_parameters",
+  "callable": "Function{call_graph.test_default_parameters}",
   "returned_callables": [],
   "calls": {
     "39:37-39:51": {
@@ -246,7 +246,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.test_localized_target",
+  "callable": "Function{call_graph.test_localized_target}",
   "returned_callables": [],
   "calls": {
     "70:7-70:22": {
@@ -300,7 +300,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.test_match_type_of",
+  "callable": "Function{call_graph.test_match_type_of}",
   "returned_callables": [],
   "calls": {
     "141:10-141:17": {
@@ -679,7 +679,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.CallableKindConfusion.foo@decorated",
+  "callable": "Method{call_graph.CallableKindConfusion.foo@decorated}",
   "returned_callables": [
     {
       "target": "call_graph.CallableKindConfusion.foo",
@@ -738,7 +738,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.IsSource.method",
+  "callable": "Method{call_graph.IsSource.method}",
   "returned_callables": [],
   "calls": {
     "20:15-20:29": {
@@ -751,7 +751,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.NotSource.method",
+  "callable": "Method{call_graph.NotSource.method}",
   "returned_callables": [],
   "calls": {
     "28:15-28:25": {
@@ -778,7 +778,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "call_graph.no_op_decorator[formal(f, position=0)=call_graph.CallableKindConfusion.foo]",
+  "callable": "Function{call_graph.no_op_decorator}[formal(f, position=0)=Method{call_graph.CallableKindConfusion.foo}]",
   "returned_callables": [
     {
       "target": "call_graph.CallableKindConfusion.foo",
@@ -789,7 +789,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "call_graph.no_op_decorator_factory.inner[formal(original, position=0)=call_graph.CallableKindConfusion.foo]",
+  "callable": "Function{call_graph.no_op_decorator_factory.inner}[formal(original, position=0)=Method{call_graph.CallableKindConfusion.foo}]",
   "returned_callables": [
     {
       "target": "call_graph.CallableKindConfusion.foo",

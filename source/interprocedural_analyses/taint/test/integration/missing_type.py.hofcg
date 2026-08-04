@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "missing_type.UnknownSinkAttribute.$class_toplevel",
+  "callable": "Function{missing_type.UnknownSinkAttribute.$class_toplevel}",
   "returned_callables": [],
   "calls": {
     "51:14-51:18|identifier|sink": {
@@ -21,7 +21,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.UnknownSinkDef.$class_toplevel",
+  "callable": "Function{missing_type.UnknownSinkDef.$class_toplevel}",
   "returned_callables": [],
   "calls": {
     "39:14-39:18|identifier|sink": {
@@ -41,7 +41,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.UnknownSourceAttribute.$class_toplevel",
+  "callable": "Function{missing_type.UnknownSourceAttribute.$class_toplevel}",
   "returned_callables": [],
   "calls": {
     "26:14-26:20|identifier|source": {
@@ -61,7 +61,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.UnknownSourceDef.$class_toplevel",
+  "callable": "Function{missing_type.UnknownSourceDef.$class_toplevel}",
   "returned_callables": [],
   "calls": {
     "13:14-13:20|identifier|source": {
@@ -81,7 +81,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.test_unknown_sink_attribute",
+  "callable": "Function{missing_type.test_unknown_sink_attribute}",
   "returned_callables": [],
   "calls": {
     "56:4-56:29": {
@@ -107,7 +107,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.test_unknown_sink_def",
+  "callable": "Function{missing_type.test_unknown_sink_def}",
   "returned_callables": [],
   "calls": {
     "44:4-44:29": {
@@ -133,7 +133,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.test_unknown_source_attribute",
+  "callable": "Function{missing_type.test_unknown_source_attribute}",
   "returned_callables": [],
   "calls": {
     "31:8-31:19": {
@@ -159,7 +159,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "missing_type.test_unknown_source_def",
+  "callable": "Function{missing_type.test_unknown_source_def}",
   "returned_callables": [],
   "calls": {
     "18:8-18:19": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "class_methods.$toplevel",
+  "callable": "Function{class_methods.$toplevel}",
   "returned_callables": [],
   "calls": {
     "25:9-25:26": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } },
@@ -59,7 +59,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.bar",
+  "callable": "Function{class_methods.bar}",
   "returned_callables": [],
   "calls": {
     "22:4-22:8|identifier|Test": {
@@ -109,7 +109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.issue_with_abstract_class_method",
+  "callable": "Function{class_methods.issue_with_abstract_class_method}",
   "returned_callables": [],
   "calls": {
     "109:4-109:5|identifier|D": {
@@ -335,7 +335,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.issue_with_abstract_property",
+  "callable": "Function{class_methods.issue_with_abstract_property}",
   "returned_callables": [],
   "calls": {
     "119:8-119:11": {
@@ -402,7 +402,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.test_obscure_class_method_tito",
+  "callable": "Function{class_methods.test_obscure_class_method_tito}",
   "returned_callables": [],
   "calls": {
     "133:8-133:46": {
@@ -457,7 +457,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.class_method",
+  "callable": "Method{class_methods.C.class_method}",
   "returned_callables": [],
   "calls": {
     "39:8-39:23": {
@@ -470,7 +470,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.one_hop_abstract_class_method",
+  "callable": "Method{class_methods.C.one_hop_abstract_class_method}",
   "returned_callables": [],
   "calls": {
     "35:8-35:11|identifier|cls": {
@@ -513,7 +513,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.one_hop_abstract_method",
+  "callable": "Method{class_methods.C.one_hop_abstract_method}",
   "returned_callables": [],
   "calls": {
     "52:8-52:11|identifier|cls": {
@@ -554,7 +554,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.one_hop_class_abstractmethod",
+  "callable": "Method{class_methods.C.one_hop_class_abstractmethod}",
   "returned_callables": [],
   "calls": {
     "61:8-61:11|identifier|cls": {
@@ -597,7 +597,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.one_hop_class_method",
+  "callable": "Method{class_methods.C.one_hop_class_method}",
   "returned_callables": [],
   "calls": {
     "43:8-43:11|identifier|cls": {
@@ -640,7 +640,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.one_hop_static_abstractmethod",
+  "callable": "Method{class_methods.C.one_hop_static_abstractmethod}",
   "returned_callables": [],
   "calls": {
     "71:8-71:11|identifier|cls": {
@@ -681,7 +681,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.C.static_abstractmethod",
+  "callable": "Method{class_methods.C.static_abstractmethod}",
   "returned_callables": [],
   "calls": {
     "66:8-66:23": {
@@ -694,7 +694,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.D.__init__",
+  "callable": "Method{class_methods.D.__init__}",
   "returned_callables": [],
   "calls": {
     "85:8-85:15": {
@@ -722,7 +722,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.D.abstract_class_method",
+  "callable": "Method{class_methods.D.abstract_class_method}",
   "returned_callables": [],
   "calls": {
     "90:8-90:23": {
@@ -735,7 +735,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.D.abstract_method",
+  "callable": "Method{class_methods.D.abstract_method}",
   "returned_callables": [],
   "calls": {
     "93:8-93:23": {
@@ -748,7 +748,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.D.class_abstractmethod",
+  "callable": "Method{class_methods.D.class_abstractmethod}",
   "returned_callables": [],
   "calls": {
     "97:8-97:23": {
@@ -761,7 +761,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "class_methods.Test.foo",
+  "callable": "Method{class_methods.Test.foo}",
   "returned_callables": [],
   "calls": {
     "18:15-18:28": {

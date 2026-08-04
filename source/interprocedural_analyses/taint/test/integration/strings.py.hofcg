@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "strings.bad_1",
+  "callable": "Function{strings.bad_1}",
   "returned_callables": [],
   "calls": {
     "18:8-18:39": {
@@ -32,7 +32,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.bad_2",
+  "callable": "Function{strings.bad_2}",
   "returned_callables": [],
   "calls": {
     "23:8-23:39": {
@@ -63,7 +63,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.concatenate_lhs",
+  "callable": "Function{strings.concatenate_lhs}",
   "returned_callables": [],
   "calls": {
     "10:11-10:23|artificial-call|binary": {
@@ -82,7 +82,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.concatenate_rhs",
+  "callable": "Function{strings.concatenate_rhs}",
   "returned_callables": [],
   "calls": {
     "14:11-14:23|artificial-call|binary": {
@@ -100,7 +100,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.either",
+  "callable": "Function{strings.either}",
   "returned_callables": [],
   "calls": {
     "29:12-29:43": {
@@ -149,7 +149,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.format_sink",
+  "callable": "Function{strings.format_sink}",
   "returned_callables": [],
   "calls": {
     "79:8-79:24": {
@@ -174,7 +174,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.format_source",
+  "callable": "Function{strings.format_source}",
   "returned_callables": [],
   "calls": {
     "74:8-74:22": {
@@ -199,7 +199,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.format_tito",
+  "callable": "Function{strings.format_tito}",
   "returned_callables": [],
   "calls": {
     "70:11-70:27": {
@@ -217,7 +217,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.iadd_lhs_infer_sink",
+  "callable": "Function{strings.iadd_lhs_infer_sink}",
   "returned_callables": [],
   "calls": {
     "59:4-59:11|artificial-call|augmented-assign-dunder-call": {
@@ -243,7 +243,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.iadd_rhs_infer_sink",
+  "callable": "Function{strings.iadd_rhs_infer_sink}",
   "returned_callables": [],
   "calls": {
     "65:4-65:10|artificial-call|augmented-assign-dunder-call": {
@@ -268,7 +268,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.maybe_lhs",
+  "callable": "Function{strings.maybe_lhs}",
   "returned_callables": [],
   "calls": {
     "37:12-37:43": {
@@ -306,7 +306,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.maybe_rhs",
+  "callable": "Function{strings.maybe_rhs}",
   "returned_callables": [],
   "calls": {
     "45:12-45:26": {
@@ -344,7 +344,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "strings.through_iadd",
+  "callable": "Function{strings.through_iadd}",
   "returned_callables": [],
   "calls": {
     "52:8-52:22": {

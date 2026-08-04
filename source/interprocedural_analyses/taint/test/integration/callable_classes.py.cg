@@ -1,10 +1,12 @@
 @generated
 Call dependencies
 {
-  "callable_classes.$toplevel (fun)": [ "callable_classes.returns_p (fun)" ],
-  "callable_classes.bar (fun)": [
-    "callable_classes.CallableProtocol.__call__ (method)",
-    "callable_classes.returns_callable_protocol (fun)"
+  "Function{callable_classes.$toplevel}": [
+    "Function{callable_classes.returns_p}"
   ],
-  "callable_classes.foo (fun)": [ "callable_classes.P.__call__ (method)" ]
+  "Function{callable_classes.bar}": [
+    "Function{callable_classes.returns_callable_protocol}",
+    "Method{callable_classes.CallableProtocol.__call__}"
+  ],
+  "Function{callable_classes.foo}": [ "Method{callable_classes.P.__call__}" ]
 }

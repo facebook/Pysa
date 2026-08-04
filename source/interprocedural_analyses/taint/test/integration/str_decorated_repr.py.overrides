@@ -1,6 +1,6 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) str_decorated_repr.MyClass.__init__ (override)]
-builtins.object.__repr__ (override) -> [builtins.object.__repr__ (method) str_decorated_repr.MyClass.__repr__ (override)]
-str_decorated_repr.MyClass.__init__ (override) -> [str_decorated_repr.MyClass.__init__ (method)]
-str_decorated_repr.MyClass.__repr__ (override) -> [str_decorated_repr.MyClass.__repr__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{str_decorated_repr.MyClass.__init__}]
+Override{builtins.object.__repr__} -> [Method{builtins.object.__repr__} Override{str_decorated_repr.MyClass.__repr__}]
+Override{str_decorated_repr.MyClass.__init__} -> [Method{str_decorated_repr.MyClass.__init__}]
+Override{str_decorated_repr.MyClass.__repr__} -> [Method{str_decorated_repr.MyClass.__repr__}]

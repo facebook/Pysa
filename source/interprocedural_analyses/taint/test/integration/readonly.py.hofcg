@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "readonly.readonly_foo_not_tainted",
+  "callable": "Function{readonly.readonly_foo_not_tainted}",
   "returned_callables": [],
   "calls": {
     "51:4-51:31": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.readonly_foo_tainted",
+  "callable": "Function{readonly.readonly_foo_tainted}",
   "returned_callables": [],
   "calls": {
     "47:4-47:27": {
@@ -39,7 +39,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.readonly_tito",
+  "callable": "Function{readonly.readonly_tito}",
   "returned_callables": [],
   "calls": {
     "36:8-36:11": {
@@ -93,7 +93,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.regular_foo_not_tainted",
+  "callable": "Function{readonly.regular_foo_not_tainted}",
   "returned_callables": [],
   "calls": {
     "59:4-59:31": {
@@ -106,7 +106,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.regular_foo_tainted",
+  "callable": "Function{readonly.regular_foo_tainted}",
   "returned_callables": [],
   "calls": {
     "55:4-55:27": {
@@ -131,7 +131,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "pyre_extensions.generic.Generic.__class_getitem__",
+  "callable": "Method{pyre_extensions.generic.Generic.__class_getitem__}",
   "returned_callables": [],
   "calls": {
     "5:15-5:18|identifier|cls": {
@@ -160,7 +160,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.A.__init__",
+  "callable": "Method{readonly.A.__init__}",
   "returned_callables": [],
   "calls": {
     "15:8-15:14": {
@@ -186,7 +186,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.A.self_readonly_map",
+  "callable": "Method{readonly.A.self_readonly_map}",
   "returned_callables": [],
   "calls": {
     "26:8-26:40": {
@@ -224,7 +224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.A.self_readonly_str",
+  "callable": "Method{readonly.A.self_readonly_str}",
   "returned_callables": [],
   "calls": {
     "19:8-19:26": {
@@ -245,7 +245,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.A.self_untyped_map",
+  "callable": "Method{readonly.A.self_untyped_map}",
   "returned_callables": [],
   "calls": {
     "29:8-29:40": {
@@ -283,7 +283,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "readonly.A.self_untyped_str",
+  "callable": "Method{readonly.A.self_untyped_str}",
   "returned_callables": [],
   "calls": {
     "22:8-22:26": {

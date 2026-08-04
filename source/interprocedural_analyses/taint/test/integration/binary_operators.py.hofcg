@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "binary_operators.test1",
+  "callable": "Function{binary_operators.test1}",
   "returned_callables": [],
   "calls": {
     "15:10-15:15": {
@@ -48,7 +48,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "binary_operators.test2",
+  "callable": "Function{binary_operators.test2}",
   "returned_callables": [],
   "calls": {
     "20:10-20:15": {
@@ -95,7 +95,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "binary_operators.Add.__add__",
+  "callable": "Method{binary_operators.Add.__add__}",
   "returned_callables": [],
   "calls": {
     "11:8-11:25": {

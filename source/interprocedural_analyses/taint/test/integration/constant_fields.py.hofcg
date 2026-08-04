@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "constant_fields.$toplevel",
+  "callable": "Function{constant_fields.$toplevel}",
   "returned_callables": [],
   "calls": {
     "11:17-11:21|identifier|Enum": {
@@ -29,7 +29,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constant_fields.test_untracked_constant",
+  "callable": "Function{constant_fields.test_untracked_constant}",
   "returned_callables": [],
   "calls": {
     "54:4-54:42|artificial-call|subscript-set-item": {
@@ -82,7 +82,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constant_fields.tracked_constant_A",
+  "callable": "Function{constant_fields.tracked_constant_A}",
   "returned_callables": [],
   "calls": {
     "42:4-42:34|artificial-call|subscript-set-item": {
@@ -135,7 +135,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constant_fields.tracked_constant_B",
+  "callable": "Function{constant_fields.tracked_constant_B}",
   "returned_callables": [],
   "calls": {
     "48:4-48:34|artificial-call|subscript-set-item": {
@@ -174,7 +174,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constant_fields.tracked_index",
+  "callable": "Function{constant_fields.tracked_index}",
   "returned_callables": [],
   "calls": {
     "19:4-19:48|artificial-call|subscript-set-item": {
@@ -257,7 +257,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constant_fields.untracked_index_a",
+  "callable": "Function{constant_fields.untracked_index_a}",
   "returned_callables": [],
   "calls": {
     "25:4-25:50|artificial-call|subscript-set-item": {
@@ -340,7 +340,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constant_fields.untracked_index_b",
+  "callable": "Function{constant_fields.untracked_index_b}",
   "returned_callables": [],
   "calls": {
     "31:4-31:50|artificial-call|subscript-set-item": {

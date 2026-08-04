@@ -1,8 +1,8 @@
 @generated
 Call dependencies
 {
-  "class_level_taint.test (fun)": [
-    "class_level_taint.ClassSink.sink (method)",
-    "class_level_taint.ClassSource.source (method)"
+  "Function{class_level_taint.test}": [
+    "Method{class_level_taint.ClassSink.sink}",
+    "Method{class_level_taint.ClassSource.source}"
   ]
 }

@@ -88,7 +88,7 @@ module ParameterValue : sig
 
   val target : t -> T.t
 
-  val pp_pretty : Format.formatter -> t -> unit
+  val pp_pretty : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
 end
 
 module Map : sig
@@ -104,38 +104,9 @@ end
 
 (* Pretty printers. *)
 
-val pp_internal : Format.formatter -> t -> unit
+val pp_pretty : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
 
-val show_internal : t -> string
-
-val pp_pretty : Format.formatter -> t -> unit
-
-val show_pretty : t -> string
-
-(* Structural (api-free) pretty-printers. They render the raw packed id, not a name. Used for
-   debug/logging/test-printer sites; golden-generating sites use the `*_with_display_api`
-   variants. *)
-val pp_pretty_with_kind : Format.formatter -> t -> unit
-
-val show_pretty_with_kind : t -> string
-
-(* Api-aware pretty-printers, used by golden-generating output sites so they keep rendering
-   names. *)
-val pp_pretty_with_display_api
-  :  display_api:PyreflyTypes.DisplayApi.t ->
-  Format.formatter ->
-  t ->
-  unit
-
-val show_pretty_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> t -> string
-
-val pp_pretty_with_kind_with_display_api
-  :  display_api:PyreflyTypes.DisplayApi.t ->
-  Format.formatter ->
-  t ->
-  unit
-
-val show_pretty_with_kind_with_display_api : display_api:PyreflyTypes.DisplayApi.t -> t -> string
+val show_pretty : display_api:PyreflyTypes.DisplayApi.t -> t -> string
 
 val pp_external : display_api:PyreflyTypes.DisplayApi.t -> Format.formatter -> t -> unit
 
@@ -172,7 +143,7 @@ val define_name : display_api:PyreflyTypes.DisplayApi.t -> t -> Reference.t opti
 
 val define_name_exn : display_api:PyreflyTypes.DisplayApi.t -> t -> Reference.t
 
-(* Equivalent to pp_internal. Required by @@deriving. *)
+(* Structural printer required by `[@@deriving]`. Prefer `pp_pretty` for explicit output. *)
 val pp : Format.formatter -> t -> unit
 
 (* Constructors. *)
@@ -260,23 +231,11 @@ val to_undecorated_exn : t -> t
 
 module Set : sig
   include Stdlib.Set.S with type elt = t
-
-  val pp_pretty_with_kind : Format.formatter -> t -> unit
-
-  val show_pretty_with_kind : t -> string
 end
 
 module HashMap : Core.Hashtbl.S with type key := t
 
 module HashSet : Core.Hash_set.S with type elt := t
-
-module List : sig
-  type t = T.t list
-
-  val pp_pretty_with_kind : Format.formatter -> t -> unit
-
-  val show_pretty_with_kind : t -> string
-end
 
 (* Define the meaning of `skip_analysis_targets`. We assume `skip_analysis_targets` only contains
    regular callables. *)

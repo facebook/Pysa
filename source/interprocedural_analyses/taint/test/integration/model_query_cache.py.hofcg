@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_cache.$toplevel",
+  "callable": "Function{model_query_cache.$toplevel}",
   "returned_callables": [],
   "calls": {
     "13:8-13:12|identifier|Base": {

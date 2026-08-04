@@ -16,6 +16,7 @@ val unknown_callee_model : Target.t -> Model.t
 (* Return the initial set of models, updated for the missing-flows=obscure analysis. *)
 val add_obscure_models
   :  scheduler:Scheduler.t ->
+  display_api:PyreflyTypes.DisplayApi.t ->
   static_analysis_configuration:Configuration.StaticAnalysis.t ->
   callables_to_definitions_map:CallablesSharedMemory.ReadOnly.t ->
   stubs:Target.t list ->

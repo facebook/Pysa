@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "source_sink_flow.bad",
+  "callable": "Function{source_sink_flow.bad}",
   "returned_callables": [],
   "calls": {
     "18:4-18:12": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "source_sink_flow.bar",
+  "callable": "Function{source_sink_flow.bar}",
   "returned_callables": [],
   "calls": {
     "10:11-10:25": {
@@ -27,7 +27,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "source_sink_flow.match_flows",
+  "callable": "Function{source_sink_flow.match_flows}",
   "returned_callables": [],
   "calls": {
     "26:8-26:21": {
@@ -51,7 +51,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "source_sink_flow.qux",
+  "callable": "Function{source_sink_flow.qux}",
   "returned_callables": [],
   "calls": {
     "14:4-14:19": {
@@ -64,7 +64,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "source_sink_flow.some_source",
+  "callable": "Function{source_sink_flow.some_source}",
   "returned_callables": [],
   "calls": {
     "22:11-22:16": {

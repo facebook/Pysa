@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "extra_trace.$toplevel",
+  "callable": "Function{extra_trace.$toplevel}",
   "returned_callables": [],
   "calls": {
     "109:24-109:37|identifier|TransformBase": {
@@ -30,7 +30,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.branch_tito_backward",
+  "callable": "Function{extra_trace.branch_tito_backward}",
   "returned_callables": [],
   "calls": {
     "71:15-71:38": {
@@ -65,7 +65,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.branch_tito_forward",
+  "callable": "Function{extra_trace.branch_tito_forward}",
   "returned_callables": [],
   "calls": {
     "60:9-60:23": {
@@ -111,7 +111,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.double_nested_transform_x",
+  "callable": "Function{extra_trace.double_nested_transform_x}",
   "returned_callables": [],
   "calls": {
     "41:11-41:34": {
@@ -128,7 +128,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.extra_trace_sink_as_origin",
+  "callable": "Function{extra_trace.extra_trace_sink_as_origin}",
   "returned_callables": [],
   "calls": {
     "99:13-99:27": {
@@ -159,7 +159,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.extra_trace_through_override",
+  "callable": "Function{extra_trace.extra_trace_through_override}",
   "returned_callables": [],
   "calls": {
     "115:13-115:27": {
@@ -192,7 +192,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.issue_via_transfom_captured_variable",
+  "callable": "Function{extra_trace.issue_via_transfom_captured_variable}",
   "returned_callables": [],
   "calls": {
     "170:8-170:22": {
@@ -234,7 +234,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.issue_via_transfom_captured_variable.nested_function",
+  "callable": "Function{extra_trace.issue_via_transfom_captured_variable.nested_function}",
   "returned_callables": [],
   "calls": {
     "174:15-174:16|identifier|x": {
@@ -251,7 +251,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.loop_tito_backward",
+  "callable": "Function{extra_trace.loop_tito_backward}",
   "returned_callables": [],
   "calls": {
     "85:10-85:33": {
@@ -299,7 +299,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.loop_tito_forward",
+  "callable": "Function{extra_trace.loop_tito_forward}",
   "returned_callables": [],
   "calls": {
     "78:9-78:23": {
@@ -347,7 +347,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.mismatching_tito_extra_sink",
+  "callable": "Function{extra_trace.mismatching_tito_extra_sink}",
   "returned_callables": [],
   "calls": {
     "140:7-140:30": {
@@ -526,7 +526,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.nested_transform_x",
+  "callable": "Function{extra_trace.nested_transform_x}",
   "returned_callables": [],
   "calls": {
     "37:11-37:27": {
@@ -543,7 +543,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.no_issue_via_transform_tito_with_missing_extra_sink",
+  "callable": "Function{extra_trace.no_issue_via_transform_tito_with_missing_extra_sink}",
   "returned_callables": [],
   "calls": {
     "164:8-164:22": {
@@ -574,7 +574,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.sequential_tito_backward",
+  "callable": "Function{extra_trace.sequential_tito_backward}",
   "returned_callables": [],
   "calls": {
     "53:11-53:34": {
@@ -616,7 +616,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.sequential_tito_forward",
+  "callable": "Function{extra_trace.sequential_tito_forward}",
   "returned_callables": [],
   "calls": {
     "45:9-45:23": {
@@ -658,7 +658,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.source_transform_nested_x_y",
+  "callable": "Function{extra_trace.source_transform_nested_x_y}",
   "returned_callables": [],
   "calls": {
     "95:11-95:47": {
@@ -682,7 +682,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.tito_transform_attribute",
+  "callable": "Function{extra_trace.tito_transform_attribute}",
   "returned_callables": [],
   "calls": {
     "131:7-131:30": {
@@ -740,7 +740,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.transform_nested_x_y",
+  "callable": "Function{extra_trace.transform_nested_x_y}",
   "returned_callables": [],
   "calls": {
     "91:11-91:47": {
@@ -768,7 +768,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.transform_tito_with_missing_extra_sink",
+  "callable": "Function{extra_trace.transform_tito_with_missing_extra_sink}",
   "returned_callables": [],
   "calls": {
     "159:4-159:32|artificial-call|subscript-set-item": {
@@ -788,7 +788,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.transform_yz",
+  "callable": "Function{extra_trace.transform_yz}",
   "returned_callables": [],
   "calls": {
     "29:11-29:20": {
@@ -830,7 +830,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "extra_trace.OverrideTransform.transform",
+  "callable": "Method{extra_trace.OverrideTransform.transform}",
   "returned_callables": [],
   "calls": {
     "111:15-111:31": {

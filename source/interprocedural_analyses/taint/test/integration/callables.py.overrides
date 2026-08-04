@@ -1,9 +1,9 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) callables.AbstractEventProcessor.__init__ (override) callables.ProcessorInfo.__init__ (override)]
-callables.AbstractEventProcessor.__init__ (override) -> [callables.AbstractEventProcessor.__init__ (method)]
-callables.AbstractEventProcessor.async_call_tainted (override) -> [callables.AbstractEventProcessor.async_call_tainted (method) callables.ConcreteEventProcessor.async_call_tainted (override)]
-callables.AbstractEventProcessor.async_run (override) -> [callables.AbstractEventProcessor.async_run (method) callables.ConcreteEventProcessor.async_run (override)]
-callables.ConcreteEventProcessor.async_call_tainted (override) -> [callables.ConcreteEventProcessor.async_call_tainted (method)]
-callables.ConcreteEventProcessor.async_run (override) -> [callables.ConcreteEventProcessor.async_run (method)]
-callables.ProcessorInfo.__init__ (override) -> [callables.ProcessorInfo.__init__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{callables.AbstractEventProcessor.__init__} Override{callables.ProcessorInfo.__init__}]
+Override{callables.AbstractEventProcessor.__init__} -> [Method{callables.AbstractEventProcessor.__init__}]
+Override{callables.AbstractEventProcessor.async_call_tainted} -> [Method{callables.AbstractEventProcessor.async_call_tainted} Override{callables.ConcreteEventProcessor.async_call_tainted}]
+Override{callables.AbstractEventProcessor.async_run} -> [Method{callables.AbstractEventProcessor.async_run} Override{callables.ConcreteEventProcessor.async_run}]
+Override{callables.ConcreteEventProcessor.async_call_tainted} -> [Method{callables.ConcreteEventProcessor.async_call_tainted}]
+Override{callables.ConcreteEventProcessor.async_run} -> [Method{callables.ConcreteEventProcessor.async_run}]
+Override{callables.ProcessorInfo.__init__} -> [Method{callables.ProcessorInfo.__init__}]

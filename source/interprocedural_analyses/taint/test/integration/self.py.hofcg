@@ -1,14 +1,14 @@
 @generated
 Higher order call graphs
 {
-  "callable": "self.$toplevel",
+  "callable": "Function{self.$toplevel}",
   "returned_callables": [],
   "calls": {
     "11:7-11:35": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } }
   }
 }
 {
-  "callable": "self.foo_class_attributes",
+  "callable": "Function{self.foo_class_attributes}",
   "returned_callables": [],
   "calls": {
     "133:4-133:33": {
@@ -86,7 +86,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.selftype_access_other",
+  "callable": "Function{self.selftype_access_other}",
   "returned_callables": [],
   "calls": {
     "197:13-197:24": {
@@ -261,7 +261,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.selftype_access_self",
+  "callable": "Function{self.selftype_access_self}",
   "returned_callables": [],
   "calls": {
     "182:13-182:24": {
@@ -436,7 +436,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.selftype_access_untyped_self",
+  "callable": "Function{self.selftype_access_untyped_self}",
   "returned_callables": [],
   "calls": {
     "212:13-212:24": {
@@ -611,7 +611,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.typevar_access_other",
+  "callable": "Function{self.typevar_access_other}",
   "returned_callables": [],
   "calls": {
     "167:13-167:24": {
@@ -786,7 +786,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.typevar_access_self",
+  "callable": "Function{self.typevar_access_self}",
   "returned_callables": [],
   "calls": {
     "152:13-152:24": {
@@ -961,7 +961,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.untyped_access_self",
+  "callable": "Function{self.untyped_access_self}",
   "returned_callables": [],
   "calls": {
     "138:8-138:19": {
@@ -1102,7 +1102,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.__init__",
+  "callable": "Method{self.Foo.__init__}",
   "returned_callables": [],
   "calls": {
     "21:43-21:57": {
@@ -1115,7 +1115,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.selftype_self_class",
+  "callable": "Method{self.Foo.selftype_self_class}",
   "returned_callables": [],
   "calls": {
     "89:8-91:9": {
@@ -1128,7 +1128,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.selftype_self_class_direct",
+  "callable": "Method{self.Foo.selftype_self_class_direct}",
   "returned_callables": [],
   "calls": {
     "81:8-83:9": {
@@ -1176,7 +1176,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.selftype_self_extra_instance",
+  "callable": "Method{self.Foo.selftype_self_extra_instance}",
   "returned_callables": [],
   "calls": {
     "105:8-107:9": {
@@ -1189,7 +1189,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.selftype_self_instance",
+  "callable": "Method{self.Foo.selftype_self_instance}",
   "returned_callables": [],
   "calls": {
     "97:8-99:9": {
@@ -1202,7 +1202,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.selftype_self_not_tainted",
+  "callable": "Method{self.Foo.selftype_self_not_tainted}",
   "returned_callables": [],
   "calls": {
     "113:8-113:42": {
@@ -1229,7 +1229,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.typevar_self_class",
+  "callable": "Method{self.Foo.typevar_self_class}",
   "returned_callables": [],
   "calls": {
     "53:8-53:38": {
@@ -1242,7 +1242,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.typevar_self_class_direct",
+  "callable": "Method{self.Foo.typevar_self_class_direct}",
   "returned_callables": [],
   "calls": {
     "48:8-48:48": {
@@ -1278,7 +1278,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.typevar_self_extra_instance",
+  "callable": "Method{self.Foo.typevar_self_extra_instance}",
   "returned_callables": [],
   "calls": {
     "63:8-63:47": {
@@ -1291,7 +1291,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.typevar_self_instance",
+  "callable": "Method{self.Foo.typevar_self_instance}",
   "returned_callables": [],
   "calls": {
     "58:8-58:41": {
@@ -1304,7 +1304,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.typevar_self_not_tainted",
+  "callable": "Method{self.Foo.typevar_self_not_tainted}",
   "returned_callables": [],
   "calls": {
     "67:8-67:42": {
@@ -1331,7 +1331,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.untyped_self_class",
+  "callable": "Method{self.Foo.untyped_self_class}",
   "returned_callables": [],
   "calls": {
     "29:8-29:38": {
@@ -1344,7 +1344,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.untyped_self_class_direct",
+  "callable": "Method{self.Foo.untyped_self_class_direct}",
   "returned_callables": [],
   "calls": {
     "25:8-25:48": {
@@ -1392,7 +1392,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.untyped_self_extra_instance",
+  "callable": "Method{self.Foo.untyped_self_extra_instance}",
   "returned_callables": [],
   "calls": {
     "37:8-37:47": {
@@ -1405,7 +1405,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.untyped_self_instance",
+  "callable": "Method{self.Foo.untyped_self_instance}",
   "returned_callables": [],
   "calls": {
     "33:8-33:41": {
@@ -1418,7 +1418,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "self.Foo.untyped_self_not_tainted",
+  "callable": "Method{self.Foo.untyped_self_not_tainted}",
   "returned_callables": [],
   "calls": {
     "40:8-40:42": {

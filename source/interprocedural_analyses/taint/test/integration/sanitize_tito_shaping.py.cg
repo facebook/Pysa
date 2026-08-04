@@ -1,119 +1,115 @@
 @generated
 Call dependencies
 {
-  "sanitize_tito_shaping.issue_multiple_titos_different_input_output_paths (fun)": [
-    "sanitize_tito_shaping.a_sink (fun)",
-    "sanitize_tito_shaping.a_source (fun)",
-    "sanitize_tito_shaping.b_sink (fun)",
-    "sanitize_tito_shaping.b_source (fun)",
-    "sanitize_tito_shaping.multiple_titos_different_input_output_paths (fun)"
+  "Function{sanitize_tito_shaping.issue_multiple_titos_different_input_output_paths}": [
+    "Function{sanitize_tito_shaping.a_sink}",
+    "Function{sanitize_tito_shaping.a_source}",
+    "Function{sanitize_tito_shaping.b_sink}",
+    "Function{sanitize_tito_shaping.b_source}",
+    "Function{sanitize_tito_shaping.multiple_titos_different_input_output_paths}"
   ],
-  "sanitize_tito_shaping.issue_multiple_titos_different_input_paths (fun)": [
-    "sanitize_tito_shaping.a_sink (fun)",
-    "sanitize_tito_shaping.a_source (fun)",
-    "sanitize_tito_shaping.b_sink (fun)",
-    "sanitize_tito_shaping.b_source (fun)",
-    "sanitize_tito_shaping.multiple_titos_different_input_paths (fun)"
+  "Function{sanitize_tito_shaping.issue_multiple_titos_different_input_paths}": [
+    "Function{sanitize_tito_shaping.a_sink}",
+    "Function{sanitize_tito_shaping.a_source}",
+    "Function{sanitize_tito_shaping.b_sink}",
+    "Function{sanitize_tito_shaping.b_source}",
+    "Function{sanitize_tito_shaping.multiple_titos_different_input_paths}"
   ],
-  "sanitize_tito_shaping.issue_multiple_titos_different_output_paths (fun)": [
-    "sanitize_tito_shaping.a_sink (fun)",
-    "sanitize_tito_shaping.a_source (fun)",
-    "sanitize_tito_shaping.b_sink (fun)",
-    "sanitize_tito_shaping.b_source (fun)",
-    "sanitize_tito_shaping.multiple_titos_different_output_paths (fun)"
+  "Function{sanitize_tito_shaping.issue_multiple_titos_different_output_paths}": [
+    "Function{sanitize_tito_shaping.a_sink}",
+    "Function{sanitize_tito_shaping.a_source}",
+    "Function{sanitize_tito_shaping.b_sink}",
+    "Function{sanitize_tito_shaping.b_source}",
+    "Function{sanitize_tito_shaping.multiple_titos_different_output_paths}"
   ],
-  "sanitize_tito_shaping.issue_multiple_titos_same_path (fun)": [
-    "sanitize_tito_shaping.a_sink (fun)",
-    "sanitize_tito_shaping.a_source (fun)",
-    "sanitize_tito_shaping.b_sink (fun)",
-    "sanitize_tito_shaping.b_source (fun)",
-    "sanitize_tito_shaping.multiple_titos_same_path (fun)"
+  "Function{sanitize_tito_shaping.issue_multiple_titos_same_path_with_transform}": [
+    "Function{sanitize_tito_shaping.a_sink}",
+    "Function{sanitize_tito_shaping.a_source}",
+    "Function{sanitize_tito_shaping.b_sink}",
+    "Function{sanitize_tito_shaping.b_source}",
+    "Function{sanitize_tito_shaping.multiple_titos_same_path_with_transform}"
   ],
-  "sanitize_tito_shaping.issue_multiple_titos_same_path_with_transform (fun)": [
-    "sanitize_tito_shaping.a_sink (fun)",
-    "sanitize_tito_shaping.a_source (fun)",
-    "sanitize_tito_shaping.b_sink (fun)",
-    "sanitize_tito_shaping.b_source (fun)",
-    "sanitize_tito_shaping.multiple_titos_same_path_with_transform (fun)"
+  "Function{sanitize_tito_shaping.issue_multiple_titos_same_path}": [
+    "Function{sanitize_tito_shaping.a_sink}",
+    "Function{sanitize_tito_shaping.a_source}",
+    "Function{sanitize_tito_shaping.b_sink}",
+    "Function{sanitize_tito_shaping.b_source}",
+    "Function{sanitize_tito_shaping.multiple_titos_same_path}"
   ],
-  "sanitize_tito_shaping.loop_multiple_titos_different_input_output_paths (fun)": [
-    "builtins.object.__init__ (method)", "builtins.range.__iter__ (method)",
-    "builtins.range.__new__ (method)",
-    "sanitize_tito_shaping.multiple_titos_different_input_output_paths (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{sanitize_tito_shaping.loop_multiple_titos_different_input_output_paths}": [
+    "Function{sanitize_tito_shaping.multiple_titos_different_input_output_paths}",
+    "Method{builtins.object.__init__}", "Method{builtins.range.__iter__}",
+    "Method{builtins.range.__new__}", "Method{typing.Iterator.__next__}"
   ],
-  "sanitize_tito_shaping.loop_multiple_titos_different_input_paths (fun)": [
-    "builtins.object.__init__ (method)", "builtins.range.__iter__ (method)",
-    "builtins.range.__new__ (method)",
-    "sanitize_tito_shaping.multiple_titos_different_input_paths (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{sanitize_tito_shaping.loop_multiple_titos_different_input_paths}": [
+    "Function{sanitize_tito_shaping.multiple_titos_different_input_paths}",
+    "Method{builtins.object.__init__}", "Method{builtins.range.__iter__}",
+    "Method{builtins.range.__new__}", "Method{typing.Iterator.__next__}"
   ],
-  "sanitize_tito_shaping.loop_multiple_titos_different_output_paths (fun)": [
-    "builtins.object.__init__ (method)", "builtins.range.__iter__ (method)",
-    "builtins.range.__new__ (method)",
-    "sanitize_tito_shaping.multiple_titos_different_output_paths (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{sanitize_tito_shaping.loop_multiple_titos_different_output_paths}": [
+    "Function{sanitize_tito_shaping.multiple_titos_different_output_paths}",
+    "Method{builtins.object.__init__}", "Method{builtins.range.__iter__}",
+    "Method{builtins.range.__new__}", "Method{typing.Iterator.__next__}"
   ],
-  "sanitize_tito_shaping.loop_multiple_titos_same_path (fun)": [
-    "builtins.object.__init__ (method)", "builtins.range.__iter__ (method)",
-    "builtins.range.__new__ (method)",
-    "sanitize_tito_shaping.multiple_titos_same_path (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{sanitize_tito_shaping.loop_multiple_titos_same_path}": [
+    "Function{sanitize_tito_shaping.multiple_titos_same_path}",
+    "Method{builtins.object.__init__}", "Method{builtins.range.__iter__}",
+    "Method{builtins.range.__new__}", "Method{typing.Iterator.__next__}"
   ],
-  "sanitize_tito_shaping.multiple_titos_different_input_output_paths (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize_tito_shaping.add_feature (fun)",
-    "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)",
-    "sanitize_tito_shaping.sanitize_sink_b (fun)",
-    "sanitize_tito_shaping.sanitize_source_a (fun)",
-    "sanitize_tito_shaping.sanitize_source_b (fun)"
+  "Function{sanitize_tito_shaping.multiple_titos_different_input_output_paths}": [
+    "Function{sanitize_tito_shaping.add_feature}",
+    "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}",
+    "Function{sanitize_tito_shaping.sanitize_sink_b}",
+    "Function{sanitize_tito_shaping.sanitize_source_a}",
+    "Function{sanitize_tito_shaping.sanitize_source_b}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize_tito_shaping.multiple_titos_different_input_paths (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize_tito_shaping.add_feature (fun)",
-    "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)",
-    "sanitize_tito_shaping.sanitize_sink_b (fun)",
-    "sanitize_tito_shaping.sanitize_source_a (fun)",
-    "sanitize_tito_shaping.sanitize_source_b (fun)"
+  "Function{sanitize_tito_shaping.multiple_titos_different_input_paths}": [
+    "Function{sanitize_tito_shaping.add_feature}",
+    "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}",
+    "Function{sanitize_tito_shaping.sanitize_sink_b}",
+    "Function{sanitize_tito_shaping.sanitize_source_a}",
+    "Function{sanitize_tito_shaping.sanitize_source_b}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize_tito_shaping.multiple_titos_different_output_paths (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize_tito_shaping.add_feature (fun)",
-    "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)",
-    "sanitize_tito_shaping.sanitize_sink_b (fun)",
-    "sanitize_tito_shaping.sanitize_source_a (fun)",
-    "sanitize_tito_shaping.sanitize_source_b (fun)"
+  "Function{sanitize_tito_shaping.multiple_titos_different_output_paths}": [
+    "Function{sanitize_tito_shaping.add_feature}",
+    "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}",
+    "Function{sanitize_tito_shaping.sanitize_sink_b}",
+    "Function{sanitize_tito_shaping.sanitize_source_a}",
+    "Function{sanitize_tito_shaping.sanitize_source_b}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize_tito_shaping.multiple_titos_same_path (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize_tito_shaping.add_feature (fun)",
-    "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)",
-    "sanitize_tito_shaping.sanitize_sink_b (fun)",
-    "sanitize_tito_shaping.sanitize_source_a (fun)",
-    "sanitize_tito_shaping.sanitize_source_b (fun)"
+  "Function{sanitize_tito_shaping.multiple_titos_same_path_different_collapse_depth}": [
+    "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}",
+    "Function{sanitize_tito_shaping.sanitize_source_a}",
+    "Function{sanitize_tito_shaping.tito_collapse_one}",
+    "Function{sanitize_tito_shaping.tito_collapse_zero}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize_tito_shaping.multiple_titos_same_path_different_collapse_depth (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)",
-    "sanitize_tito_shaping.sanitize_source_a (fun)",
-    "sanitize_tito_shaping.tito_collapse_one (fun)",
-    "sanitize_tito_shaping.tito_collapse_zero (fun)"
+  "Function{sanitize_tito_shaping.multiple_titos_same_path_with_transform}": [
+    "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}",
+    "Function{sanitize_tito_shaping.sanitize_source_a}",
+    "Function{sanitize_tito_shaping.transform_x}",
+    "Function{sanitize_tito_shaping.transform_y}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize_tito_shaping.multiple_titos_same_path_with_transform (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)",
-    "sanitize_tito_shaping.sanitize_source_a (fun)",
-    "sanitize_tito_shaping.transform_x (fun)",
-    "sanitize_tito_shaping.transform_y (fun)"
+  "Function{sanitize_tito_shaping.multiple_titos_same_path}": [
+    "Function{sanitize_tito_shaping.add_feature}",
+    "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}",
+    "Function{sanitize_tito_shaping.sanitize_sink_b}",
+    "Function{sanitize_tito_shaping.sanitize_source_a}",
+    "Function{sanitize_tito_shaping.sanitize_source_b}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize_tito_shaping.sanitize_sink_a_depth_two (fun)": [
-    "sanitize_tito_shaping.sanitize_sink_a (fun)"
+  "Function{sanitize_tito_shaping.sanitize_sink_a_depth_two}": [
+    "Function{sanitize_tito_shaping.sanitize_sink_a}"
   ],
-  "sanitize_tito_shaping.sanitize_source_a_depth_two (fun)": [
-    "sanitize_tito_shaping.sanitize_source_a (fun)"
+  "Function{sanitize_tito_shaping.sanitize_source_a_depth_two}": [
+    "Function{sanitize_tito_shaping.sanitize_source_a}"
   ],
-  "sanitize_tito_shaping.tito_collapse_one (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "sanitize_tito_shaping.tito_collapse_one_append_a_b_c (fun)"
+  "Function{sanitize_tito_shaping.tito_collapse_one}": [
+    "Function{sanitize_tito_shaping.tito_collapse_one_append_a_b_c}",
+    "Method{builtins.dict.__getitem__}"
   ]
 }

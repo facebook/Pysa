@@ -31,7 +31,7 @@ let test_callables context =
     |> FetchCallables.get ~definitions:true ~stubs:true
     |> List.sort ~compare:Target.compare
     |> assert_equal
-         ~printer:(List.to_string ~f:Target.show_internal)
+         ~printer:(List.to_string ~f:(Format.asprintf "%a" Target.pp))
          ~cmp:(List.equal Target.equal)
          (expected pyrefly_api |> List.sort ~compare:Target.compare)
   in

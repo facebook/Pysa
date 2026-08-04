@@ -114,37 +114,6 @@ module Regular = struct
 
   let show = Format.asprintf "%a" pp
 
-  (* Structural (api-free) pretty-printers. Kept for debug/logging/test-printer sites; they render
-     the raw id, not a name. Golden-generating sites use the `*_with_display_api` variants below. *)
-  let pp_pretty formatter = function
-    | Function callable_id
-    | Method callable_id ->
-        Format.fprintf formatter "%a" CallableId.pp callable_id
-    | Override callable_id -> Format.fprintf formatter "Overrides{%a}" CallableId.pp callable_id
-    | GlobalVariable { module_id; name } ->
-        Format.fprintf formatter "Object{%a.%s}" ModuleId.pp module_id name
-    | ClassInstanceAttribute { class_id; name } ->
-        Format.fprintf formatter "Object{%a.%s}" ClassId.pp class_id name
-    | ClassTypeAttribute { class_id; name } ->
-        Format.fprintf formatter "Object{%a.__class__.%s}" ClassId.pp class_id name
-    | Artificial kind -> Format.fprintf formatter "Object{%s}" (ArtificialKind.name kind)
-    | UnknownCallee name -> Format.fprintf formatter "Object{unknown-callee:%s}" name
-
-
-  let pp_pretty_with_kind formatter = function
-    | Function callable_id -> Format.fprintf formatter "%a (fun)" CallableId.pp callable_id
-    | Method callable_id -> Format.fprintf formatter "%a (method)" CallableId.pp callable_id
-    | Override callable_id -> Format.fprintf formatter "%a (override)" CallableId.pp callable_id
-    | GlobalVariable { module_id; name } ->
-        Format.fprintf formatter "%a.%s (object)" ModuleId.pp module_id name
-    | ClassInstanceAttribute { class_id; name } ->
-        Format.fprintf formatter "%a.%s (object)" ClassId.pp class_id name
-    | ClassTypeAttribute { class_id; name } ->
-        Format.fprintf formatter "%a.__class__.%s (object)" ClassId.pp class_id name
-    | Artificial kind -> Format.fprintf formatter "%s (object)" (ArtificialKind.name kind)
-    | UnknownCallee name -> Format.fprintf formatter "unknown-callee:%s (object)" name
-
-
   (* Decode a callable id to its external (user-facing) name through the display api. The external
      name already includes the `@decorated` suffix for decorated callables. *)
   let callable_external_name ~display_api:{ DisplayApi.callable_external_name; _ } callable_id =
@@ -190,43 +159,27 @@ module Regular = struct
     | UnknownCallee name -> Format.fprintf formatter "Obj{unknown-callee:%s}" name
 
 
-  let pp_pretty_with_display_api
-      ~display_api:({ DisplayApi.module_name; class_name; _ } as display_api)
-      formatter
-    = function
-    | Function callable_id
-    | Method callable_id ->
-        Format.fprintf formatter "%s" (callable_external_name ~display_api callable_id)
-    | Override callable_id ->
-        Format.fprintf formatter "Overrides{%s}" (callable_external_name ~display_api callable_id)
-    | GlobalVariable { module_id; name } ->
-        Format.fprintf formatter "Object{%a.%s}" Reference.pp (module_name module_id) name
-    | ClassInstanceAttribute { class_id; name } ->
-        Format.fprintf formatter "Object{%a.%s}" Reference.pp (class_name class_id) name
-    | ClassTypeAttribute { class_id; name } ->
-        Format.fprintf formatter "Object{%a.__class__.%s}" Reference.pp (class_name class_id) name
-    | Artificial kind -> Format.fprintf formatter "Object{%s}" (ArtificialKind.name kind)
-    | UnknownCallee name -> Format.fprintf formatter "Object{unknown-callee:%s}" name
-
-
-  let pp_pretty_with_kind_with_display_api
-      ~display_api:({ DisplayApi.module_name; class_name; _ } as display_api)
-      formatter
+  let pp_pretty ~display_api:({ DisplayApi.module_name; class_name; _ } as display_api) formatter
     = function
     | Function callable_id ->
-        Format.fprintf formatter "%s (fun)" (callable_external_name ~display_api callable_id)
+        Format.fprintf formatter "Function{%s}" (callable_external_name ~display_api callable_id)
     | Method callable_id ->
-        Format.fprintf formatter "%s (method)" (callable_external_name ~display_api callable_id)
+        Format.fprintf formatter "Method{%s}" (callable_external_name ~display_api callable_id)
     | Override callable_id ->
-        Format.fprintf formatter "%s (override)" (callable_external_name ~display_api callable_id)
+        Format.fprintf formatter "Override{%s}" (callable_external_name ~display_api callable_id)
     | GlobalVariable { module_id; name } ->
-        Format.fprintf formatter "%a.%s (object)" Reference.pp (module_name module_id) name
+        Format.fprintf formatter "GlobalVariable{%a.%s}" Reference.pp (module_name module_id) name
     | ClassInstanceAttribute { class_id; name } ->
-        Format.fprintf formatter "%a.%s (object)" Reference.pp (class_name class_id) name
+        Format.fprintf
+          formatter
+          "ClassInstanceAttribute{%a.%s}"
+          Reference.pp
+          (class_name class_id)
+          name
     | ClassTypeAttribute { class_id; name } ->
-        Format.fprintf formatter "%a.__class__.%s (object)" Reference.pp (class_name class_id) name
-    | Artificial kind -> Format.fprintf formatter "%s (object)" (ArtificialKind.name kind)
-    | UnknownCallee name -> Format.fprintf formatter "unknown-callee:%s (object)" name
+        Format.fprintf formatter "ClassTypeAttribute{%a.%s}" Reference.pp (class_name class_id) name
+    | Artificial kind -> Format.fprintf formatter "Artificial{%s}" (ArtificialKind.name kind)
+    | UnknownCallee name -> Format.fprintf formatter "UnknownCallee{%s}" name
 
 
   let get_corresponding_method_exn = function
@@ -437,19 +390,9 @@ let rec pp_from_regular ~display_api ~pp_regular formatter = function
         (ParameterMap.to_alist parameters)
 
 
-let pp_internal = pp
+let pp_pretty ~display_api = pp_from_regular ~display_api ~pp_regular:Regular.pp_pretty
 
-let show_internal = Format.asprintf "%a" pp_internal
-
-(* Equivalent to pp_internal. Required by @@deriving. *)
-let pp = pp_internal
-
-let pp_pretty =
-  pp_from_regular ~display_api:DisplayApi.for_debug ~pp_regular:(fun ~display_api:_ ->
-      Regular.pp_pretty)
-
-
-let show_pretty = Format.asprintf "%a" pp_pretty
+let show_pretty ~display_api = Format.asprintf "%a" (pp_pretty ~display_api)
 
 module ParameterValue = struct
   type t = parameter_value = {
@@ -461,34 +404,14 @@ module ParameterValue = struct
 
   let target { target; _ } = target
 
-  let pp_pretty formatter { target; implicit_receiver } =
-    Format.fprintf formatter "%a%s" pp_pretty target (if implicit_receiver then " (bound)" else "")
+  let pp_pretty ~display_api formatter { target; implicit_receiver } =
+    Format.fprintf
+      formatter
+      "%a%s"
+      (pp_pretty ~display_api)
+      target
+      (if implicit_receiver then " (bound)" else "")
 end
-
-let pp_pretty_with_kind =
-  pp_from_regular ~display_api:DisplayApi.for_debug ~pp_regular:(fun ~display_api:_ ->
-      Regular.pp_pretty_with_kind)
-
-
-let show_pretty_with_kind = Format.asprintf "%a" pp_pretty_with_kind
-
-(* Api-aware pretty-printers used by golden-generating output sites (call/override graph dumps), so
-   those keep rendering names (not raw ids) after the payload swap. *)
-let pp_pretty_with_display_api ~display_api =
-  pp_from_regular ~display_api ~pp_regular:Regular.pp_pretty_with_display_api
-
-
-let show_pretty_with_display_api ~display_api =
-  Format.asprintf "%a" (pp_pretty_with_display_api ~display_api)
-
-
-let pp_pretty_with_kind_with_display_api ~display_api =
-  pp_from_regular ~display_api ~pp_regular:Regular.pp_pretty_with_kind_with_display_api
-
-
-let show_pretty_with_kind_with_display_api ~display_api =
-  Format.asprintf "%a" (pp_pretty_with_kind_with_display_api ~display_api)
-
 
 let pp_external ~display_api =
   pp_from_regular ~display_api ~pp_regular:(Regular.pp_external ?transform:None)
@@ -773,68 +696,8 @@ let to_undecorated_exn = function
       Parameterized { regular = Regular.to_undecorated_exn regular; parameters }
 
 
-module MakePrettyPrintContainer (Container : sig
-  type container
-
-  val pp : Format.formatter -> T.t -> unit
-
-  val elements : container -> T.t list
-
-  val separator : string
-
-  val left_bracket : string
-
-  val right_bracket : string
-end) =
-struct
-  let pp formatter container =
-    match Container.elements container with
-    | [] -> Format.fprintf formatter "%s%s" Container.left_bracket Container.right_bracket
-    | [element] ->
-        Format.fprintf
-          formatter
-          "%s%a%s"
-          Container.left_bracket
-          Container.pp
-          element
-          Container.right_bracket
-    | list ->
-        let pp_element formatter element =
-          Format.fprintf formatter "@%s%a" Container.separator Container.pp element
-        in
-        let pp_elements formatter = List.iter ~f:(pp_element formatter) in
-        Format.fprintf
-          formatter
-          "%s@[<v 2>%a@]@,%s"
-          Container.left_bracket
-          pp_elements
-          list
-          Container.right_bracket
-
-
-  let show = Format.asprintf "%a" pp
-end
-
 module Set = struct
   include Stdlib.Set.Make (T)
-
-  module PrettyPrintWithKind = MakePrettyPrintContainer (struct
-    type container = t
-
-    let elements = elements
-
-    let pp = pp_pretty_with_kind
-
-    let separator = ","
-
-    let left_bracket = "{"
-
-    let right_bracket = "}"
-  end)
-
-  let pp_pretty_with_kind = PrettyPrintWithKind.pp
-
-  let show_pretty_with_kind = PrettyPrintWithKind.show
 end
 
 module Hashable = Core.Hashable.Make (T)
@@ -895,26 +758,4 @@ module HashsetSharedMemory = struct
   module ReadOnly = T.ReadOnly
 
   let read_only = T.read_only
-end
-
-module List = struct
-  type t = T.t list
-
-  module PrettyPrintWithKind = MakePrettyPrintContainer (struct
-    type container = t
-
-    let elements = Fn.id
-
-    let pp = pp_pretty_with_kind
-
-    let separator = ";"
-
-    let left_bracket = "["
-
-    let right_bracket = "]"
-  end)
-
-  let pp_pretty_with_kind = PrettyPrintWithKind.pp
-
-  let show_pretty_with_kind = PrettyPrintWithKind.show
 end

@@ -1,39 +1,39 @@
 @generated
 Call dependencies
 {
-  "attach_features.HasMethods.method_with_optionals (method)": [
-    "pysa._test_sink (fun)"
+  "Function{attach_features.attach_to_parameter_source}": [
+    "Function{pysa._test_sink}"
   ],
-  "attach_features.attach_to_parameter_source (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{attach_features.attach_to_returned_sink}": [
+    "Function{pysa._test_source}"
   ],
-  "attach_features.attach_to_returned_sink (fun)": [
-    "pysa._test_source (fun)"
+  "Function{attach_features.attach_to_returned_with_captures.nested}": [
+    "Function{pysa._test_source}"
   ],
-  "attach_features.attach_to_returned_with_captures (fun)": [
-    "attach_features.attach_to_returned_with_captures.nested (fun)"
+  "Function{attach_features.attach_to_returned_with_captures}": [
+    "Function{attach_features.attach_to_returned_with_captures.nested}"
   ],
-  "attach_features.attach_to_returned_with_captures.nested (fun)": [
-    "pysa._test_source (fun)"
+  "Function{attach_features.inferred_is_propagated}": [
+    "Function{attach_features.source_with_inferred}"
   ],
-  "attach_features.inferred_is_propagated (fun)": [
-    "attach_features.source_with_inferred (fun)"
+  "Function{attach_features.inferred_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{attach_features.modeled_sink_with_optionals}": [
+    "Function{pysa._test_sink}"
   ],
-  "attach_features.inferred_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "attach_features.modeled_sink_with_optionals (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{attach_features.no_tito}": [
+    "Function{attach_features.attach_without_tito}"
   ],
-  "attach_features.no_tito (fun)": [
-    "attach_features.attach_without_tito (fun)"
+  "Function{attach_features.sink_is_propagated}": [
+    "Function{attach_features.inferred_sink}"
   ],
-  "attach_features.sink_is_propagated (fun)": [
-    "attach_features.inferred_sink (fun)"
+  "Function{attach_features.source_with_inferred}": [
+    "Function{attach_features.source}"
   ],
-  "attach_features.source_with_inferred (fun)": [
-    "attach_features.source (fun)"
+  "Function{attach_features.tito_and_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{attach_features.tito_is_propagated}": [
+    "Function{attach_features.taint_in_taint_out}"
   ],
-  "attach_features.tito_and_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "attach_features.tito_is_propagated (fun)": [
-    "attach_features.taint_in_taint_out (fun)"
+  "Method{attach_features.HasMethods.method_with_optionals}": [
+    "Function{pysa._test_sink}"
   ]
 }

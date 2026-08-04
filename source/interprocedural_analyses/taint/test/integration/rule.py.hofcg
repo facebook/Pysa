@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "rule.alarm",
+  "callable": "Function{rule.alarm}",
   "returned_callables": [],
   "calls": {
     "16:8-16:16": {

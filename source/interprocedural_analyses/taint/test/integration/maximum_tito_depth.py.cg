@@ -1,39 +1,42 @@
 @generated
 Call dependencies
 {
-  "maximum_tito_depth.issue (fun)": [
-    "maximum_tito_depth.tito_three (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{maximum_tito_depth.issue}": [
+    "Function{maximum_tito_depth.tito_three}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ],
-  "maximum_tito_depth.non_issue (fun)": [
-    "maximum_tito_depth.tito_four (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{maximum_tito_depth.non_issue}": [
+    "Function{maximum_tito_depth.tito_four}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ],
-  "maximum_tito_depth.tito_four (fun)": [
-    "maximum_tito_depth.tito_three (fun)"
+  "Function{maximum_tito_depth.tito_four}": [
+    "Function{maximum_tito_depth.tito_three}"
   ],
-  "maximum_tito_depth.tito_max_consecutive (fun)": [
-    "maximum_tito_depth.tito_one (fun)", "maximum_tito_depth.tito_two (fun)",
-    "maximum_tito_depth.tito_zero (fun)"
+  "Function{maximum_tito_depth.tito_max_consecutive}": [
+    "Function{maximum_tito_depth.tito_one}",
+    "Function{maximum_tito_depth.tito_two}",
+    "Function{maximum_tito_depth.tito_zero}"
   ],
-  "maximum_tito_depth.tito_min_disjoint (fun)": [
-    "maximum_tito_depth.tito_one (fun)", "maximum_tito_depth.tito_zero (fun)"
+  "Function{maximum_tito_depth.tito_min_disjoint_max_consecutive}": [
+    "Function{maximum_tito_depth.tito_one}",
+    "Function{maximum_tito_depth.tito_two}",
+    "Function{maximum_tito_depth.tito_zero}"
   ],
-  "maximum_tito_depth.tito_min_disjoint_max_consecutive (fun)": [
-    "maximum_tito_depth.tito_one (fun)", "maximum_tito_depth.tito_two (fun)",
-    "maximum_tito_depth.tito_zero (fun)"
+  "Function{maximum_tito_depth.tito_min_disjoint}": [
+    "Function{maximum_tito_depth.tito_one}",
+    "Function{maximum_tito_depth.tito_zero}"
   ],
-  "maximum_tito_depth.tito_obscure (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "maximum_tito_depth.C.tito (method)"
+  "Function{maximum_tito_depth.tito_obscure}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}",
+    "Method{maximum_tito_depth.C.tito}"
   ],
-  "maximum_tito_depth.tito_one (fun)": [
-    "maximum_tito_depth.tito_zero (fun)"
+  "Function{maximum_tito_depth.tito_one}": [
+    "Function{maximum_tito_depth.tito_zero}"
   ],
-  "maximum_tito_depth.tito_three (fun)": [
-    "maximum_tito_depth.tito_two (fun)"
+  "Function{maximum_tito_depth.tito_three}": [
+    "Function{maximum_tito_depth.tito_two}"
   ],
-  "maximum_tito_depth.tito_two (fun)": [
-    "maximum_tito_depth.tito_one (fun)"
+  "Function{maximum_tito_depth.tito_two}": [
+    "Function{maximum_tito_depth.tito_one}"
   ]
 }

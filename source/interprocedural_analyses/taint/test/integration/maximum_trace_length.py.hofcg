@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "maximum_trace_length.issue_source_one_sink_one",
+  "callable": "Function{maximum_trace_length.issue_source_one_sink_one}",
   "returned_callables": [],
   "calls": {
     "44:4-44:44": {
@@ -29,7 +29,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.issue_source_one_sink_two",
+  "callable": "Function{maximum_trace_length.issue_source_one_sink_two}",
   "returned_callables": [],
   "calls": {
     "54:4-54:44": {
@@ -57,7 +57,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.issue_source_one_sink_zero",
+  "callable": "Function{maximum_trace_length.issue_source_one_sink_zero}",
   "returned_callables": [],
   "calls": {
     "40:4-40:45": {
@@ -85,7 +85,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.issue_source_two_sink_one",
+  "callable": "Function{maximum_trace_length.issue_source_two_sink_one}",
   "returned_callables": [],
   "calls": {
     "49:4-49:44": {
@@ -113,7 +113,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.issue_source_zero_sink_zero",
+  "callable": "Function{maximum_trace_length.issue_source_zero_sink_zero}",
   "returned_callables": [],
   "calls": {
     "36:4-36:46": {
@@ -141,7 +141,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.multi_sink",
+  "callable": "Function{maximum_trace_length.multi_sink}",
   "returned_callables": [],
   "calls": {
     "58:8-58:23": {
@@ -165,7 +165,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.sink_distance_one",
+  "callable": "Function{maximum_trace_length.sink_distance_one}",
   "returned_callables": [],
   "calls": {
     "27:4-27:25": {
@@ -182,7 +182,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.sink_distance_two",
+  "callable": "Function{maximum_trace_length.sink_distance_two}",
   "returned_callables": [],
   "calls": {
     "32:4-32:24": {
@@ -199,7 +199,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.sink_distance_zero",
+  "callable": "Function{maximum_trace_length.sink_distance_zero}",
   "returned_callables": [],
   "calls": {
     "23:4-23:17": {
@@ -212,7 +212,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.source_distance_one",
+  "callable": "Function{maximum_trace_length.source_distance_one}",
   "returned_callables": [],
   "calls": {
     "14:11-14:33": {
@@ -229,7 +229,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.source_distance_two",
+  "callable": "Function{maximum_trace_length.source_distance_two}",
   "returned_callables": [],
   "calls": {
     "19:11-19:32": {
@@ -246,7 +246,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "maximum_trace_length.source_distance_zero",
+  "callable": "Function{maximum_trace_length.source_distance_zero}",
   "returned_callables": [],
   "calls": {
     "10:11-10:25": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "implicit_sinks.conditional_literal_sink",
+  "callable": "Function{implicit_sinks.conditional_literal_sink}",
   "returned_callables": [],
   "calls": {
     "89:8-89:22": {
@@ -25,14 +25,14 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.format_wrapper",
+  "callable": "Function{implicit_sinks.format_wrapper}",
   "returned_callables": [],
   "calls": {
     "85:4-85:15": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } }
   }
 }
 {
-  "callable": "implicit_sinks.implicit_sink_before_parameter",
+  "callable": "Function{implicit_sinks.implicit_sink_before_parameter}",
   "returned_callables": [],
   "calls": {
     "80:4-80:15": {
@@ -50,7 +50,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.implicit_sink_before_source",
+  "callable": "Function{implicit_sinks.implicit_sink_before_source}",
   "returned_callables": [],
   "calls": {
     "74:4-74:28": {
@@ -75,7 +75,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.inline_issue_dot_format",
+  "callable": "Function{implicit_sinks.inline_issue_dot_format}",
   "returned_callables": [],
   "calls": {
     "28:8-28:22": {
@@ -100,7 +100,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.inline_issue_format_string",
+  "callable": "Function{implicit_sinks.inline_issue_format_string}",
   "returned_callables": [],
   "calls": {
     "18:8-18:22": {
@@ -123,7 +123,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.inline_issue_format_string_proper_tito",
+  "callable": "Function{implicit_sinks.inline_issue_format_string_proper_tito}",
   "returned_callables": [],
   "calls": {
     "67:14-67:28": {
@@ -158,7 +158,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.inline_issue_lhs_add_literal",
+  "callable": "Function{implicit_sinks.inline_issue_lhs_add_literal}",
   "returned_callables": [],
   "calls": {
     "62:8-62:22": {
@@ -174,7 +174,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.inline_issue_percent_format",
+  "callable": "Function{implicit_sinks.inline_issue_percent_format}",
   "returned_callables": [],
   "calls": {
     "37:8-37:22": {
@@ -199,7 +199,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.inline_issue_rhs_add_literal",
+  "callable": "Function{implicit_sinks.inline_issue_rhs_add_literal}",
   "returned_callables": [],
   "calls": {
     "46:8-46:22": {
@@ -224,7 +224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.propagate_sink_add_global",
+  "callable": "Function{implicit_sinks.propagate_sink_add_global}",
   "returned_callables": [],
   "calls": {
     "54:4-54:15|identifier|https_start": {
@@ -250,7 +250,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.propagate_sink_dot_format",
+  "callable": "Function{implicit_sinks.propagate_sink_dot_format}",
   "returned_callables": [],
   "calls": {
     "24:4-24:20": {
@@ -268,7 +268,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.propagate_sink_format_string",
+  "callable": "Function{implicit_sinks.propagate_sink_format_string}",
   "returned_callables": [],
   "calls": {
     "14:4-14:12|format-string-artificial": {
@@ -279,7 +279,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.propagate_sink_lhs_add_literal",
+  "callable": "Function{implicit_sinks.propagate_sink_lhs_add_literal}",
   "returned_callables": [],
   "calls": {
     "58:14-58:25|artificial-call|binary": {
@@ -288,7 +288,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.propagate_sink_percent_format",
+  "callable": "Function{implicit_sinks.propagate_sink_percent_format}",
   "returned_callables": [],
   "calls": {
     "33:4-33:17|artificial-call|binary": {
@@ -306,7 +306,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.propagate_sink_rhs_add_literal",
+  "callable": "Function{implicit_sinks.propagate_sink_rhs_add_literal}",
   "returned_callables": [],
   "calls": {
     "42:4-42:18|artificial-call|binary": {
@@ -324,7 +324,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.string_literal_arguments_issue",
+  "callable": "Function{implicit_sinks.string_literal_arguments_issue}",
   "returned_callables": [],
   "calls": {
     "105:4-105:49": {
@@ -348,7 +348,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "implicit_sinks.string_literal_arguments_sink",
+  "callable": "Function{implicit_sinks.string_literal_arguments_sink}",
   "returned_callables": [],
   "calls": {
     "95:8-95:22": {

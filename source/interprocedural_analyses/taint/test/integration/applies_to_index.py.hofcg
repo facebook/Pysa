@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "applies_to_index.issue_only_with_a_key",
+  "callable": "Function{applies_to_index.issue_only_with_a_key}",
   "returned_callables": [],
   "calls": {
     "51:8-51:31": {
@@ -58,7 +58,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "applies_to_index.issue_only_with_first",
+  "callable": "Function{applies_to_index.issue_only_with_first}",
   "returned_callables": [],
   "calls": {
     "24:22-24:45": {
@@ -89,7 +89,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "applies_to_index.issue_only_with_nested_first",
+  "callable": "Function{applies_to_index.issue_only_with_nested_first}",
   "returned_callables": [],
   "calls": {
     "36:20-36:44": {
@@ -145,7 +145,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "applies_to_index.issue_only_with_second",
+  "callable": "Function{applies_to_index.issue_only_with_second}",
   "returned_callables": [],
   "calls": {
     "30:22-30:46": {
@@ -176,7 +176,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "applies_to_index.issue_with_member",
+  "callable": "Function{applies_to_index.issue_with_member}",
   "returned_callables": [],
   "calls": {
     "60:8-60:34": {

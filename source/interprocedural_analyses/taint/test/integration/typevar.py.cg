@@ -1,8 +1,11 @@
 @generated
 Call dependencies
 {
-  "typevar.Foo.__init__ (method)": [ "typevar.Foo.tainted (object)" ],
-  "typevar.issue (fun)": [
-    "pysa._test_sink (fun)", "typevar.Foo.tainted (object)"
+  "Function{typevar.issue}": [
+    "ClassInstanceAttribute{typevar.Foo.tainted}",
+    "Function{pysa._test_sink}"
+  ],
+  "Method{typevar.Foo.__init__}": [
+    "ClassInstanceAttribute{typevar.Foo.tainted}"
   ]
 }

@@ -1,145 +1,143 @@
 @generated
 Call dependencies
 {
-  "properties.Class.uses_other (method)": [
-    "properties.Class.my_property (override)"
+  "Function{properties.CollidePropertySetterName.collided_property.setter}": [
+    "Method{properties.CollidePropertySetterName.foo}"
   ],
-  "properties.Class.uses_property (method)": [
-    "properties.Class.my_property (override)", "pysa._test_source (fun)"
+  "Function{properties.PropertyDefinedByAssignment.$class_toplevel}": [
+    "Method{builtins.object.__new__}", "Method{builtins.property.__init__}",
+    "Method{properties.PropertyDefinedByAssignment._get_my_property}"
   ],
-  "properties.Class.uses_property_but_no_tito_taint (method)": [
-    "properties.Class.my_property (override)", "pysa._test_source (fun)"
+  "Function{properties.function_with_nested_properties.my_property@setter}": [
+    "Function{properties.bar}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}"
   ],
-  "properties.CollidePropertySetterName.collided_property (method)": [
-    "properties.CollidePropertySetterName.collided_property.setter (fun)"
+  "Function{properties.function_with_nested_properties.my_property}": [
+    "Function{properties.foo}"
   ],
-  "properties.CollidePropertySetterName.collided_property.setter (fun)": [
-    "properties.CollidePropertySetterName.foo (method)"
+  "Function{properties.property_setter_in_constructor}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{properties.PropertySetterInConstructor.__init__}",
+    "Method{properties.PropertySetterInConstructor.x}"
   ],
-  "properties.CollidePropertySetterName.collided_property@setter (method)": [
-    "properties.CollidePropertySetterName.bar (method)"
+  "Function{properties.sets_tainted_value}": [
+    "Function{pysa._test_source}",
+    "Override{properties.TaintedGetterAndSetter.my_property@setter}"
   ],
-  "properties.Derived.uses_property (method)": [
-    "properties.Class.my_property (method)", "pysa._test_source (fun)"
+  "Function{properties.setters_are_simulated}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{properties.SetterMutatesValue.__init__}",
+    "Method{properties.SetterMutatesValue.p@setter}",
+    "Method{properties.SetterMutatesValue.p}"
   ],
-  "properties.Derived.uses_property_but_no_tito_taint (method)": [
-    "properties.Class.my_property (method)", "pysa._test_source (fun)"
+  "Function{properties.string_source}": [ "Function{pysa._test_source}" ],
+  "Function{properties.test_getattr_on_property}": [
+    "Function{builtins.getattr}", "Function{pysa._test_sink}",
+    "Method{properties.TaintedGetterAndSetter.my_property}"
   ],
-  "properties.DerivedTaintedSetter.my_property@setter (method)": [
-    "pysa._test_sink (fun)"
+  "Function{properties.test_issue_in_class_property}": [
+    "Function{pysa._test_sink}",
+    "Method{properties.ClassProperty.my_class_property}"
   ],
-  "properties.OtherDerived.my_property (method)": [
-    "pysa._test_source (fun)"
+  "Function{properties.test_object_class}": [
+    "Function{properties.string_source}", "Function{pysa._test_sink}"
   ],
-  "properties.OtherDerived.uses_property_but_no_tito_taint (method)": [
-    "properties.OtherDerived.my_property (method)", "pysa._test_source (fun)"
+  "Function{properties.test_property_augmented_assign}": [
+    "Method{builtins.int.__ror__}",
+    "Method{properties.PropertySetterTitoModel.my_property@setter}"
   ],
-  "properties.PropertyCallable.attribute (method)": [
-    "builtins.object.__new__ (method)",
-    "properties.PropertyCallableReturn.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{properties.test_property_callable}": [
+    "Function{pysa._test_source}", "Method{builtins.object.__new__}",
+    "Method{properties.PropertyCallable.__init__}",
+    "Method{properties.PropertyCallable.attribute}",
+    "Method{properties.PropertyCallableReturn.__call__}"
   ],
-  "properties.PropertyCallableReturn.__call__ (method)": [
-    "pysa._test_sink (fun)"
+  "Function{properties.test_type_variable_properties_are_resolved}": [
+    "Method{properties.Class.my_property}"
   ],
-  "properties.PropertyDefinedByAssignment.$class_toplevel (fun)": [
-    "builtins.object.__new__ (method)",
-    "builtins.property.__init__ (method)",
-    "properties.PropertyDefinedByAssignment._get_my_property (method)"
+  "Function{properties.test_union_property_attribute_sink}": [
+    "Function{pysa._test_sink}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{properties.RegularAttribute.__init__}",
+    "Method{properties.TaintedGetterAndSetter.my_property}"
   ],
-  "properties.PropertyDefinedByAssignment.uses_property (method)": [
-    "properties.PropertyDefinedByAssignment._get_my_property (method)",
-    "pysa._test_source (fun)"
+  "Function{properties.test_union_property_attribute_source}": [
+    "Function{pysa._test_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{properties.RegularAttribute.__init__}",
+    "Method{properties.TaintedGetterAndSetter.my_property}"
   ],
-  "properties.PropertySetterInConstructor.__init__ (method)": [
-    "properties.PropertySetterInConstructor.x@setter (method)"
+  "Method{properties.Class.uses_other}": [
+    "Override{properties.Class.my_property}"
   ],
-  "properties.PropertySetterTitoModel.test_obscure_property (method)": [
-    "properties.PropertySetterTitoModel.obscure_property@setter (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{properties.Class.uses_property_but_no_tito_taint}": [
+    "Function{pysa._test_source}", "Override{properties.Class.my_property}"
   ],
-  "properties.PropertySetterTitoModel.test_tito_property (method)": [
-    "properties.PropertySetterTitoModel.my_property (method)",
-    "properties.PropertySetterTitoModel.my_property@setter (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{properties.Class.uses_property}": [
+    "Function{pysa._test_source}", "Override{properties.Class.my_property}"
   ],
-  "properties.TaintedGetterAndSetter.my_property (method)": [
-    "pysa._test_sink (fun)"
+  "Method{properties.CollidePropertySetterName.collided_property@setter}": [
+    "Method{properties.CollidePropertySetterName.bar}"
   ],
-  "properties.TaintedGetterAndSetter.uses_property (method)": [
-    "properties.TaintedGetterAndSetter.my_property (method)"
+  "Method{properties.CollidePropertySetterName.collided_property}": [
+    "Function{properties.CollidePropertySetterName.collided_property.setter}"
   ],
-  "properties.TaintedGetterAndSetter.writes_to_property (method)": [
-    "properties.TaintedGetterAndSetter.my_property@setter (override)",
-    "pysa._test_source (fun)"
+  "Method{properties.Derived.uses_property_but_no_tito_taint}": [
+    "Function{pysa._test_source}", "Method{properties.Class.my_property}"
   ],
-  "properties.TestTypeInferenceInSetter.my_property@setter (method)": [
-    "builtins.isinstance (fun)", "properties.A.foo (method)",
-    "properties.Base.foo (override)"
+  "Method{properties.Derived.uses_property}": [
+    "Function{pysa._test_source}", "Method{properties.Class.my_property}"
   ],
-  "properties.function_with_nested_properties.my_property (fun)": [
-    "properties.foo (fun)"
+  "Method{properties.DerivedTaintedSetter.my_property@setter}": [
+    "Function{pysa._test_sink}"
   ],
-  "properties.function_with_nested_properties.my_property@setter (fun)": [
-    "properties.bar (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Method{properties.OtherDerived.my_property}": [
+    "Function{pysa._test_source}"
   ],
-  "properties.property_setter_in_constructor (fun)": [
-    "builtins.object.__new__ (method)",
-    "properties.PropertySetterInConstructor.__init__ (method)",
-    "properties.PropertySetterInConstructor.x (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{properties.OtherDerived.uses_property_but_no_tito_taint}": [
+    "Function{pysa._test_source}",
+    "Method{properties.OtherDerived.my_property}"
   ],
-  "properties.sets_tainted_value (fun)": [
-    "properties.TaintedGetterAndSetter.my_property@setter (override)",
-    "pysa._test_source (fun)"
+  "Method{properties.PropertyCallable.attribute}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{properties.PropertyCallableReturn.__init__}"
   ],
-  "properties.setters_are_simulated (fun)": [
-    "builtins.object.__new__ (method)",
-    "properties.SetterMutatesValue.__init__ (method)",
-    "properties.SetterMutatesValue.p (method)",
-    "properties.SetterMutatesValue.p@setter (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{properties.PropertyCallableReturn.__call__}": [
+    "Function{pysa._test_sink}"
   ],
-  "properties.string_source (fun)": [ "pysa._test_source (fun)" ],
-  "properties.test_getattr_on_property (fun)": [
-    "builtins.getattr (fun)",
-    "properties.TaintedGetterAndSetter.my_property (method)",
-    "pysa._test_sink (fun)"
+  "Method{properties.PropertyDefinedByAssignment.uses_property}": [
+    "Function{pysa._test_source}",
+    "Method{properties.PropertyDefinedByAssignment._get_my_property}"
   ],
-  "properties.test_issue_in_class_property (fun)": [
-    "properties.ClassProperty.my_class_property (method)",
-    "pysa._test_sink (fun)"
+  "Method{properties.PropertySetterInConstructor.__init__}": [
+    "Method{properties.PropertySetterInConstructor.x@setter}"
   ],
-  "properties.test_object_class (fun)": [
-    "properties.string_source (fun)", "pysa._test_sink (fun)"
+  "Method{properties.PropertySetterTitoModel.test_obscure_property}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{properties.PropertySetterTitoModel.obscure_property@setter}"
   ],
-  "properties.test_property_augmented_assign (fun)": [
-    "builtins.int.__ror__ (method)",
-    "properties.PropertySetterTitoModel.my_property@setter (method)"
+  "Method{properties.PropertySetterTitoModel.test_tito_property}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{properties.PropertySetterTitoModel.my_property@setter}",
+    "Method{properties.PropertySetterTitoModel.my_property}"
   ],
-  "properties.test_property_callable (fun)": [
-    "builtins.object.__new__ (method)",
-    "properties.PropertyCallable.__init__ (method)",
-    "properties.PropertyCallable.attribute (method)",
-    "properties.PropertyCallableReturn.__call__ (method)",
-    "pysa._test_source (fun)"
+  "Method{properties.TaintedGetterAndSetter.my_property}": [
+    "Function{pysa._test_sink}"
   ],
-  "properties.test_type_variable_properties_are_resolved (fun)": [
-    "properties.Class.my_property (method)"
+  "Method{properties.TaintedGetterAndSetter.uses_property}": [
+    "Method{properties.TaintedGetterAndSetter.my_property}"
   ],
-  "properties.test_union_property_attribute_sink (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "properties.RegularAttribute.__init__ (method)",
-    "properties.TaintedGetterAndSetter.my_property (method)",
-    "pysa._test_sink (fun)"
+  "Method{properties.TaintedGetterAndSetter.writes_to_property}": [
+    "Function{pysa._test_source}",
+    "Override{properties.TaintedGetterAndSetter.my_property@setter}"
   ],
-  "properties.test_union_property_attribute_source (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "properties.RegularAttribute.__init__ (method)",
-    "properties.TaintedGetterAndSetter.my_property (method)",
-    "pysa._test_source (fun)"
+  "Method{properties.TestTypeInferenceInSetter.my_property@setter}": [
+    "Function{builtins.isinstance}", "Method{properties.A.foo}",
+    "Override{properties.Base.foo}"
   ]
 }

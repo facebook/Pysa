@@ -16,11 +16,11 @@ open Interprocedural
    so the same name is the same target -- needed by the recursion tests). *)
 let synthetic_callables = InterproceduralTest.SyntheticCallables.create ()
 
+let display_api = InterproceduralTest.SyntheticCallables.display_api synthetic_callables
+
 let function_id name = InterproceduralTest.SyntheticCallables.callable_id synthetic_callables name
 
 let function_regular name = Target.Regular.Function (function_id name)
-
-let show_function_id name = PyreflyTypes.CallableId.show (function_id name)
 
 let test_get_module_and_definition context =
   let assert_get_module_and_definition ~source ~target ~expected () =
@@ -90,29 +90,21 @@ let test_get_module_and_definition context =
 
 
 let test_pretty_print _ =
-  (* The structural `CallableId` rendering is verbose, so `Format` may wrap it across lines
-     depending on the surrounding width. Collapse continuation-line breaks before comparing, since
-     this test checks the `Parameterized` wrapper structure, not id-rendering line wrapping. *)
   let normalize string = String.split_lines string |> List.map ~f:String.lstrip |> String.concat in
   let assert_equal ~expected ~actual =
     assert_equal
       ~cmp:String.equal
       ~printer:Fn.id
       (normalize expected)
-      (normalize (Target.show_pretty actual))
+      (normalize ((Target.show_pretty ~display_api) actual))
   in
   assert_equal
-    ~expected:(show_function_id "foo" ^ "[]")
+    ~expected:"Function{foo}[]"
     ~actual:
       (Target.Parameterized
          { regular = function_regular "foo"; parameters = Target.ParameterMap.empty });
   assert_equal
-    ~expected:
-      (Format.sprintf
-         "%s[local(x)=%s, local(y)=%s]"
-         (show_function_id "foo")
-         (show_function_id "bar")
-         (show_function_id "baz"))
+    ~expected:"Function{foo}[local(x)=Function{bar}, local(y)=Function{baz}]"
     ~actual:
       (Target.Parameterized
          {
@@ -127,12 +119,7 @@ let test_pretty_print _ =
              |> Target.ParameterMap.of_alist_exn;
          });
   assert_equal
-    ~expected:
-      (Format.sprintf
-         "%s[local(x)=%s (bound), local(y)=%s]"
-         (show_function_id "foo")
-         (show_function_id "bar")
-         (show_function_id "baz"))
+    ~expected:"Function{foo}[local(x)=Function{bar} (bound), local(y)=Function{baz}]"
     ~actual:
       (Target.Parameterized
          {

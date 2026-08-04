@@ -1,221 +1,226 @@
 @generated
 Call dependencies
 {
-  "higher_order_functions.$toplevel (fun)": [
-    "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables (fun)[formal(f, position=0)=builtins.print (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.$toplevel}": [
+    "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables}[formal(f, position=0)=Function{builtins.print}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.C.method_to_sink (method)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.apply_skip_call}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]": [
+    "Function{higher_order_functions.goes_to_sink}"
   ],
-  "higher_order_functions.C.self_to_sink (method)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.apply_skip_call}[formal(f, position=0)=Function{higher_order_functions.has_tito}]": [
+    "Function{higher_order_functions.has_tito}"
   ],
-  "higher_order_functions.Cache.row_update (method)": [
-    "higher_order_functions.Connection.execute (method)",
-    "higher_order_functions.return_callable_as_any (fun)[formal(f, position=0)=higher_order_functions.Connection.execute (method) (bound)]"
+  "Function{higher_order_functions.apply_without_return}[formal(f, position=0)=Function{pysa._test_sink}]": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.CallableSource.__call__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.has_tito}]": [
+    "Function{higher_order_functions.has_tito}"
   ],
-  "higher_order_functions.CallableSourceSubclass.__call__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}]": [
+    "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}"
   ],
-  "higher_order_functions.Connection.execute (method)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_sink}]": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.apply (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]": [
-    "higher_order_functions.has_tito (fun)"
+  "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_source}]": [
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.apply (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2 (fun)]": [
-    "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2 (fun)"
+  "Function{higher_order_functions.callable_class}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{higher_order_functions.Callable.__call__}",
+    "Method{higher_order_functions.Callable.__init__}"
   ],
-  "higher_order_functions.apply (fun)[formal(f, position=0)=pysa._test_sink (fun)]": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{higher_order_functions.safe}, formal(g, position=1)=Function{pysa._test_sink}]": [
+    "Function{higher_order_functions.safe}", "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.apply (fun)[formal(f, position=0)=pysa._test_source (fun)]": [
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{higher_order_functions.safe}, formal(g, position=1)=Function{pysa._test_source}]": [
+    "Function{higher_order_functions.safe}", "Function{pysa._test_source}"
   ],
-  "higher_order_functions.apply_skip_call (fun)[formal(f, position=0)=higher_order_functions.goes_to_sink (fun)]": [
-    "higher_order_functions.goes_to_sink (fun)"
+  "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{pysa._test_sink}, formal(g, position=1)=Function{higher_order_functions.safe}]": [
+    "Function{higher_order_functions.safe}", "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.apply_skip_call (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]": [
-    "higher_order_functions.has_tito (fun)"
+  "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{pysa._test_source}, formal(g, position=1)=Function{higher_order_functions.safe}]": [
+    "Function{higher_order_functions.safe}", "Function{pysa._test_source}"
   ],
-  "higher_order_functions.apply_without_return (fun)[formal(f, position=0)=pysa._test_sink (fun)]": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.goes_to_sink}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.callable_class (fun)": [
-    "builtins.object.__new__ (method)",
-    "higher_order_functions.Callable.__call__ (method)",
-    "higher_order_functions.Callable.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{higher_order_functions.higher_order_function_and_sink}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=higher_order_functions.safe (fun), formal(g, position=1)=pysa._test_sink (fun)]": [
-    "higher_order_functions.safe (fun)", "pysa._test_sink (fun)"
+  "Function{higher_order_functions.higher_order_function_and_sink}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]": [
+    "Function{higher_order_functions.goes_to_sink}",
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=higher_order_functions.safe (fun), formal(g, position=1)=pysa._test_source (fun)]": [
-    "higher_order_functions.safe (fun)", "pysa._test_source (fun)"
+  "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]": [
+    "Function{higher_order_functions.goes_to_sink}"
   ],
-  "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=pysa._test_sink (fun), formal(g, position=1)=higher_order_functions.safe (fun)]": [
-    "higher_order_functions.safe (fun)", "pysa._test_sink (fun)"
+  "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Function{higher_order_functions.has_tito}]": [
+    "Function{higher_order_functions.has_tito}"
   ],
-  "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=pysa._test_source (fun), formal(g, position=1)=higher_order_functions.safe (fun)]": [
-    "higher_order_functions.safe (fun)", "pysa._test_source (fun)"
+  "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Method{higher_order_functions.C.method_to_sink} (bound)]": [
+    "Method{higher_order_functions.C.method_to_sink}"
   ],
-  "higher_order_functions.goes_to_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.C.method_to_sink (method) (bound)]": [
-    "higher_order_functions.C.method_to_sink (method)"
+  "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Method{higher_order_functions.C.self_to_sink} (bound)]": [
+    "Method{higher_order_functions.C.self_to_sink}"
   ],
-  "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.C.self_to_sink (method) (bound)]": [
-    "higher_order_functions.C.self_to_sink (method)"
+  "Function{higher_order_functions.higher_order_method}": [
+    "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Method{higher_order_functions.C.method_to_sink} (bound)]"
   ],
-  "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.goes_to_sink (fun)]": [
-    "higher_order_functions.goes_to_sink (fun)"
+  "Function{higher_order_functions.sink_after_apply}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]": [
-    "higher_order_functions.has_tito (fun)"
+  "Function{higher_order_functions.sink_after_apply}[formal(f, position=0)=Function{pysa._test_source}]": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "higher_order_functions.higher_order_function_and_sink (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.sink_args}": [
+    "Function{pysa._test_sink}", "Method{builtins.tuple.__iter__}",
+    "Method{typing.Iterator.__next__}"
   ],
-  "higher_order_functions.higher_order_function_and_sink (fun)[formal(f, position=0)=higher_order_functions.goes_to_sink (fun)]": [
-    "higher_order_functions.goes_to_sink (fun)", "pysa._test_sink (fun)"
+  "Function{higher_order_functions.source_through_tito}": [
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.has_tito}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.higher_order_method (fun)": [
-    "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.C.method_to_sink (method) (bound)]"
+  "Function{higher_order_functions.test_apply_source}": [
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_source}]"
   ],
-  "higher_order_functions.sink_after_apply (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.test_apply_tito}": [
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.has_tito}]"
   ],
-  "higher_order_functions.sink_after_apply (fun)[formal(f, position=0)=pysa._test_source (fun)]": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_apply_without_return}": [
+    "Function{higher_order_functions.apply_without_return}",
+    "Function{higher_order_functions.apply_without_return}[formal(f, position=0)=Function{pysa._test_sink}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.sink_args (fun)": [
-    "builtins.tuple.__iter__ (method)", "pysa._test_sink (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{higher_order_functions.test_bound_method_through_higher_order}": [
+    "Function{higher_order_functions.return_callable_as_any}[formal(f, position=0)=Method{higher_order_functions.Connection.execute} (bound)]",
+    "Function{pysa._test_source}",
+    "Method{higher_order_functions.Cache.row_update}",
+    "Method{higher_order_functions.Connection.execute}"
   ],
-  "higher_order_functions.source_through_tito (fun)": [
-    "higher_order_functions.apply (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_callable_class_to_obscure}": [
+    "Function{higher_order_functions.test_callable_class_to_obscure.obscure_tito}",
+    "Method{builtins.object.__new__}",
+    "Method{higher_order_functions.CallableSource.__init__}",
+    "Override{higher_order_functions.CallableSource.__call__}"
   ],
-  "higher_order_functions.test_apply_source (fun)": [
-    "higher_order_functions.apply (fun)[formal(f, position=0)=pysa._test_source (fun)]"
+  "Function{higher_order_functions.test_callable_class_to_perfect_tito}": [
+    "Function{higher_order_functions.test_callable_class_to_perfect_tito.perfect_tito}",
+    "Method{builtins.object.__new__}",
+    "Method{higher_order_functions.CallableSource.__init__}"
   ],
-  "higher_order_functions.test_apply_tito (fun)": [
-    "higher_order_functions.apply (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]"
+  "Function{higher_order_functions.test_callable_default_value}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_apply_without_return (fun)": [
-    "higher_order_functions.apply_without_return (fun)",
-    "higher_order_functions.apply_without_return (fun)[formal(f, position=0)=pysa._test_sink (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_callable_subclass_to_annotated_superclass}": [
+    "Function{higher_order_functions.test_callable_subclass_to_annotated_superclass.accept_callable_source}",
+    "Method{builtins.object.__new__}",
+    "Method{higher_order_functions.CallableSource.__init__}"
   ],
-  "higher_order_functions.test_bound_method_through_higher_order (fun)": [
-    "higher_order_functions.Cache.row_update (method)",
-    "higher_order_functions.Connection.execute (method)",
-    "higher_order_functions.return_callable_as_any (fun)[formal(f, position=0)=higher_order_functions.Connection.execute (method) (bound)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_conditional_apply_backward}": [
+    "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{higher_order_functions.safe}, formal(g, position=1)=Function{pysa._test_sink}]",
+    "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{pysa._test_sink}, formal(g, position=1)=Function{higher_order_functions.safe}]"
   ],
-  "higher_order_functions.test_callable_class_to_obscure (fun)": [
-    "builtins.object.__new__ (method)",
-    "higher_order_functions.CallableSource.__call__ (override)",
-    "higher_order_functions.CallableSource.__init__ (method)",
-    "higher_order_functions.test_callable_class_to_obscure.obscure_tito (fun)"
+  "Function{higher_order_functions.test_conditional_apply_forward}": [
+    "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{higher_order_functions.safe}, formal(g, position=1)=Function{pysa._test_source}]",
+    "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{pysa._test_source}, formal(g, position=1)=Function{higher_order_functions.safe}]",
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_callable_class_to_perfect_tito (fun)": [
-    "builtins.object.__new__ (method)",
-    "higher_order_functions.CallableSource.__init__ (method)",
-    "higher_order_functions.test_callable_class_to_perfect_tito.perfect_tito (fun)"
+  "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_callable_default_value (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_callable_subclass_to_annotated_superclass (fun)": [
-    "builtins.object.__new__ (method)",
-    "higher_order_functions.CallableSource.__init__ (method)",
-    "higher_order_functions.test_callable_subclass_to_annotated_superclass.accept_callable_source (fun)"
+  "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar}]": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_conditional_apply_backward (fun)": [
-    "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=higher_order_functions.safe (fun), formal(g, position=1)=pysa._test_sink (fun)]",
-    "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=pysa._test_sink (fun), formal(g, position=1)=higher_order_functions.safe (fun)]"
+  "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo}]": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_conditional_apply_forward (fun)": [
-    "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=higher_order_functions.safe (fun), formal(g, position=1)=pysa._test_source (fun)]",
-    "higher_order_functions.conditional_apply (fun)[formal(f, position=0)=pysa._test_source (fun), formal(g, position=1)=higher_order_functions.safe (fun)]",
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables}": [
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}]",
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_sink}]",
+    "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar}]",
+    "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables (fun)": [
-    "higher_order_functions.apply (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2 (fun)]",
-    "higher_order_functions.apply (fun)[formal(f, position=0)=pysa._test_sink (fun)]",
-    "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar (fun)]",
-    "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables}[formal(f, position=0)=Function{builtins.print}]": [
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}]",
+    "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_sink}]",
+    "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar}]",
+    "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables (fun)[formal(f, position=0)=builtins.print (fun)]": [
-    "higher_order_functions.apply (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2 (fun)]",
-    "higher_order_functions.apply (fun)[formal(f, position=0)=pysa._test_sink (fun)]",
-    "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar (fun)]",
-    "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_higher_order_function_and_sink}": [
+    "Function{higher_order_functions.higher_order_function_and_sink}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.test_higher_order_function}": [
+    "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar (fun)]": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.test_higher_order_method_self}": [
+    "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Method{higher_order_functions.C.self_to_sink} (bound)]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper (fun)[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo (fun)]": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.test_higher_order_method}": [
+    "Function{higher_order_functions.higher_order_method}",
+    "Function{pysa._test_source}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}"
   ],
-  "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2 (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{higher_order_functions.test_higher_order_tito}": [
+    "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Function{higher_order_functions.has_tito}]"
   ],
-  "higher_order_functions.test_higher_order_function (fun)": [
-    "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.goes_to_sink (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_location}": [
+    "Function{higher_order_functions.sink_args}",
+    "Method{higher_order_functions.Callable.__call__}"
   ],
-  "higher_order_functions.test_higher_order_function_and_sink (fun)": [
-    "higher_order_functions.higher_order_function_and_sink (fun)[formal(f, position=0)=higher_order_functions.goes_to_sink (fun)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_parameterized_target_in_issue_handle}": [
+    "Function{higher_order_functions.sink_after_apply}[formal(f, position=0)=Function{pysa._test_source}]"
   ],
-  "higher_order_functions.test_higher_order_method (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "higher_order_functions.higher_order_method (fun)",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_skip_both_higher_order_function}": [
+    "Function{higher_order_functions.apply_skip_both}",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_higher_order_method_self (fun)": [
-    "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.C.self_to_sink (method) (bound)]",
-    "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_skip_both_tito}": [
+    "Function{higher_order_functions.apply_skip_both}"
   ],
-  "higher_order_functions.test_higher_order_tito (fun)": [
-    "higher_order_functions.higher_order_function (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]"
+  "Function{higher_order_functions.test_skip_call_higher_order_function}": [
+    "Function{higher_order_functions.apply_skip_call}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_location (fun)": [
-    "higher_order_functions.Callable.__call__ (method)",
-    "higher_order_functions.sink_args (fun)"
+  "Function{higher_order_functions.test_skip_call_tito}": [
+    "Function{higher_order_functions.apply_skip_call}[formal(f, position=0)=Function{higher_order_functions.has_tito}]"
   ],
-  "higher_order_functions.test_parameterized_target_in_issue_handle (fun)": [
-    "higher_order_functions.sink_after_apply (fun)[formal(f, position=0)=pysa._test_source (fun)]"
+  "Function{higher_order_functions.test_skip_inlining_higher_order_function}": [
+    "Function{higher_order_functions.apply_skip_inlining}",
+    "Function{higher_order_functions.goes_to_sink}",
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_skip_both_higher_order_function (fun)": [
-    "higher_order_functions.apply_skip_both (fun)", "pysa._test_source (fun)"
+  "Function{higher_order_functions.test_skip_inlining_tito}": [
+    "Function{higher_order_functions.apply_skip_inlining}",
+    "Function{higher_order_functions.has_tito}"
   ],
-  "higher_order_functions.test_skip_both_tito (fun)": [
-    "higher_order_functions.apply_skip_both (fun)"
+  "Method{higher_order_functions.C.method_to_sink}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_skip_call_higher_order_function (fun)": [
-    "higher_order_functions.apply_skip_call (fun)[formal(f, position=0)=higher_order_functions.goes_to_sink (fun)]",
-    "pysa._test_source (fun)"
+  "Method{higher_order_functions.C.self_to_sink}": [
+    "Function{pysa._test_sink}"
   ],
-  "higher_order_functions.test_skip_call_tito (fun)": [
-    "higher_order_functions.apply_skip_call (fun)[formal(f, position=0)=higher_order_functions.has_tito (fun)]"
+  "Method{higher_order_functions.Cache.row_update}": [
+    "Function{higher_order_functions.return_callable_as_any}[formal(f, position=0)=Method{higher_order_functions.Connection.execute} (bound)]",
+    "Method{higher_order_functions.Connection.execute}"
   ],
-  "higher_order_functions.test_skip_inlining_higher_order_function (fun)": [
-    "higher_order_functions.apply_skip_inlining (fun)",
-    "higher_order_functions.goes_to_sink (fun)", "pysa._test_source (fun)"
+  "Method{higher_order_functions.CallableSource.__call__}": [
+    "Function{pysa._test_source}"
   ],
-  "higher_order_functions.test_skip_inlining_tito (fun)": [
-    "higher_order_functions.apply_skip_inlining (fun)",
-    "higher_order_functions.has_tito (fun)"
+  "Method{higher_order_functions.CallableSourceSubclass.__call__}": [
+    "Function{pysa._test_source}"
+  ],
+  "Method{higher_order_functions.Connection.execute}": [
+    "Function{pysa._test_sink}"
   ]
 }

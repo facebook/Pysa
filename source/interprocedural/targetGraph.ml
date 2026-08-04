@@ -38,7 +38,7 @@ let dump ~display_api ~path graph =
   path |> File.create ~content:(Buffer.contents buffer) |> File.write
 
 
-let show_target ~display_api = Target.show_pretty_with_kind_with_display_api ~display_api
+let show_target ~display_api = Target.show_pretty ~display_api
 
 let compare_target ~display_api left right =
   String.compare (show_target ~display_api left) (show_target ~display_api right)

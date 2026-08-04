@@ -1,3 +1,5 @@
 @generated
 Call dependencies
-{ "rule.alarm (fun)": [ "rule.sink (fun)", "rule.source (fun)" ] }
+{
+  "Function{rule.alarm}": [ "Function{rule.sink}", "Function{rule.source}" ]
+}

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "port.match_flows",
+  "callable": "Function{port.match_flows}",
   "returned_callables": [],
   "calls": {
     "20:8-20:22": {
@@ -21,7 +21,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.match_star_arg_directly",
+  "callable": "Function{port.match_star_arg_directly}",
   "returned_callables": [],
   "calls": {
     "38:4-38:51": {
@@ -45,7 +45,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.match_star_arg_with_star",
+  "callable": "Function{port.match_star_arg_with_star}",
   "returned_callables": [],
   "calls": {
     "33:15-33:29": {
@@ -69,7 +69,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.match_star_star_arg_directly",
+  "callable": "Function{port.match_star_star_arg_directly}",
   "returned_callables": [],
   "calls": {
     "56:4-56:55": {
@@ -93,7 +93,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.match_star_star_arg_with_star",
+  "callable": "Function{port.match_star_star_arg_with_star}",
   "returned_callables": [],
   "calls": {
     "50:27-50:41": {
@@ -117,7 +117,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.refer_to_method_as_field",
+  "callable": "Function{port.refer_to_method_as_field}",
   "returned_callables": [],
   "calls": {
     "67:12-67:27": {
@@ -144,7 +144,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.sink_field",
+  "callable": "Function{port.sink_field}",
   "returned_callables": [],
   "calls": {
     "16:4-16:21": {
@@ -157,7 +157,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.source_field",
+  "callable": "Function{port.source_field}",
   "returned_callables": [],
   "calls": {
     "11:15-11:29": {
@@ -170,7 +170,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.star_arg",
+  "callable": "Function{port.star_arg}",
   "returned_callables": [],
   "calls": {
     "25:4-25:23": {
@@ -196,7 +196,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.star_arg_wrapper",
+  "callable": "Function{port.star_arg_wrapper}",
   "returned_callables": [],
   "calls": {
     "29:4-29:32": {
@@ -209,7 +209,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.star_star_arg",
+  "callable": "Function{port.star_star_arg}",
   "returned_callables": [],
   "calls": {
     "42:4-42:29": {
@@ -235,7 +235,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.star_star_arg_wrapper",
+  "callable": "Function{port.star_star_arg_wrapper}",
   "returned_callables": [],
   "calls": {
     "46:4-46:30": {
@@ -248,7 +248,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "port.Foo.some_source",
+  "callable": "Method{port.Foo.some_source}",
   "returned_callables": [],
   "calls": {
     "62:15-62:29": {

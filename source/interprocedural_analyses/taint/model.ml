@@ -590,7 +590,7 @@ let remove_sinks model =
   { model with backward = { model.backward with sink_taint = BackwardState.empty } }
 
 
-let add_obscure_sink ~callables_to_definitions_map ~call_target model =
+let add_obscure_sink ~display_api ~callables_to_definitions_map ~call_target model =
   let real_target =
     match Target.get_regular call_target with
     | Target.Regular.Function _ -> Some call_target
@@ -630,7 +630,9 @@ let add_obscure_sink ~callables_to_definitions_map ~call_target model =
           in
           { model with backward = { model.backward with sink_taint } }
       | _ ->
-          let () = Log.warning "Found no definition for %a" Target.pp_pretty real_target in
+          let () =
+            Log.warning "Found no definition for %a" (Target.pp_pretty ~display_api) real_target
+          in
           model)
 
 

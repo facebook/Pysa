@@ -30,9 +30,20 @@ module type MODEL = sig
 
   val join : iteration:int -> t -> t -> t
 
-  val widen : iteration:int -> callable:Target.t -> previous:t -> next:t -> t
+  val widen
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
+    callable:Target.t ->
+    previous:t ->
+    next:t ->
+    t
 
-  val less_or_equal : callable:Target.t -> left:t -> right:t -> bool
+  val less_or_equal
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    callable:Target.t ->
+    left:t ->
+    right:t ->
+    bool
 
   (** Transform the model before joining into the override model. *)
   val for_override_model : callable:Target.t -> t -> t
@@ -61,11 +72,16 @@ module type LOGGER = sig
   val initial_models_stored : timer:Timer.t -> unit
 
   val reached_maximum_iteration_exception
-    :  iteration:int ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
     callables_to_analyze:Target.t list ->
     exn
 
-  val reached_maximum_iteration_exit : iteration:int -> callables_to_analyze:Target.t list -> unit
+  val reached_maximum_iteration_exit
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
+    callables_to_analyze:Target.t list ->
+    unit
 
   (** This is called at the beginning of each iteration. *)
   val iteration_start
@@ -91,12 +107,25 @@ module type LOGGER = sig
     number_of_callables:int ->
     unit
 
-  val is_expensive_callable : callable:Target.t -> timer:Timer.t -> bool
+  val is_expensive_callable
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    callable:Target.t ->
+    timer:Timer.t ->
+    bool
 
   (** This is called after analyzing an override target (i.e, joining models of overriding methods). *)
-  val override_analysis_end : callable:Target.t -> timer:Timer.t -> unit
+  val override_analysis_end
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    callable:Target.t ->
+    timer:Timer.t ->
+    unit
 
-  val on_analyze_define_exception : iteration:int -> callable:Target.t -> exn:exn -> unit
+  val on_analyze_define_exception
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
+    callable:Target.t ->
+    exn:exn ->
+    unit
 
   val on_approaching_max_iterations
     :  max_iterations:int ->
@@ -559,19 +588,32 @@ module Make (Analysis : ANALYSIS) = struct
     }
 
 
-  let widen_if_necessary ~step ~callable ~previous_model ~new_model ~result ~additional_dependencies
+  let widen_if_necessary
+      ~display_api
+      ~step
+      ~callable
+      ~previous_model
+      ~new_model
+      ~result
+      ~additional_dependencies
     =
     (* Check if we've reached a fixed point *)
-    if Model.less_or_equal ~callable ~left:new_model ~right:previous_model then
+    if Model.less_or_equal ~display_api ~callable ~left:new_model ~right:previous_model then
       State.{ is_partial = false; model = previous_model; result; additional_dependencies }
     else
       let model =
-        Model.widen ~iteration:step.iteration ~callable ~previous:previous_model ~next:new_model
+        Model.widen
+          ~display_api
+          ~iteration:step.iteration
+          ~callable
+          ~previous:previous_model
+          ~next:new_model
       in
       State.{ is_partial = true; model; result; additional_dependencies }
 
 
-  let analyze_define ~context ~shared_models ~step:({ iteration; _ } as step) ~callable =
+  let analyze_define ~display_api ~context ~shared_models ~step:({ iteration; _ } as step) ~callable
+    =
     let previous_model =
       match State.get_old_model shared_models callable with
       | Some model -> model
@@ -580,7 +622,8 @@ module Make (Analysis : ANALYSIS) = struct
              fixpoint analysis. That is, if the global fixpoint analysis discovers any model is not
              initialized, then it is better to be warned that something is wrong with the model
              initialization. *)
-          Format.asprintf "No initial model found for `%a`" Target.pp_pretty callable |> failwith
+          Format.asprintf "No initial model found for `%a`" (Target.pp_pretty ~display_api) callable
+          |> failwith
     in
     let { Analysis.AnalyzeDefineResult.result; model = new_model; additional_dependencies } =
       try
@@ -592,7 +635,7 @@ module Make (Analysis : ANALYSIS) = struct
       with
       | exn ->
           let wrapped_exn = Exception.wrap exn in
-          let () = Logger.on_analyze_define_exception ~iteration ~callable ~exn in
+          let () = Logger.on_analyze_define_exception ~display_api ~iteration ~callable ~exn in
           Exception.reraise wrapped_exn
     in
     let additional_dependencies =
@@ -601,10 +644,18 @@ module Make (Analysis : ANALYSIS) = struct
         ~f:(fun so_far callee -> DependencyGraph.add ~callee ~caller:callable so_far)
         ~init:DependencyGraph.empty
     in
-    widen_if_necessary ~step ~callable ~previous_model ~new_model ~result ~additional_dependencies
+    widen_if_necessary
+      ~display_api
+      ~step
+      ~callable
+      ~previous_model
+      ~new_model
+      ~result
+      ~additional_dependencies
 
 
   let analyze_overrides
+      ~display_api
       ~context
       ~max_iterations
       ~shared_models
@@ -630,18 +681,18 @@ module Make (Analysis : ANALYSIS) = struct
             ~max_iterations
             ~current_iteration:iteration
             "Finding model of overriding callable %a (whose base is %a)"
-            Target.pp_pretty
+            (Target.pp_pretty ~display_api)
             override
-            Target.pp_pretty
+            (Target.pp_pretty ~display_api)
             callable
         in
         match State.get_model shared_models override with
         | None ->
             Format.asprintf
               "During override analysis, can't find model for %a when analyzing %a"
-              Target.pp_pretty
+              (Target.pp_pretty ~display_api)
               override
-              Target.pp_pretty
+              (Target.pp_pretty ~display_api)
               callable
             |> failwith
         | Some model -> Model.for_override_model ~callable:override model
@@ -665,10 +716,12 @@ module Make (Analysis : ANALYSIS) = struct
       match State.get_old_model shared_models callable with
       | Some model -> model
       | None ->
-          Format.asprintf "No initial model found for `%a`" Target.pp_pretty callable |> failwith
+          Format.asprintf "No initial model found for `%a`" (Target.pp_pretty ~display_api) callable
+          |> failwith
     in
     let state =
       widen_if_necessary
+        ~display_api
         ~step
         ~callable
         ~previous_model
@@ -676,11 +729,12 @@ module Make (Analysis : ANALYSIS) = struct
         ~result:Result.empty
         ~additional_dependencies:DependencyGraph.empty
     in
-    let () = Logger.override_analysis_end ~callable ~timer in
+    let () = Logger.override_analysis_end ~display_api ~callable ~timer in
     state
 
 
   let analyze_callable
+      ~display_api
       ~shared_models
       ~shared_fixpoint
       ~max_iterations
@@ -697,7 +751,7 @@ module Make (Analysis : ANALYSIS) = struct
           Format.asprintf
             "Fixpoint inconsistency: callable %a analyzed during epoch %a, but stored metadata \
              from epoch %a"
-            Target.pp_pretty
+            (Target.pp_pretty ~display_api)
             callable
             Epoch.pp
             step.epoch
@@ -707,19 +761,33 @@ module Make (Analysis : ANALYSIS) = struct
       | _ -> ()
     in
     if Target.is_function_or_method callable then
-      analyze_define ~context ~shared_models ~step ~callable
+      analyze_define ~display_api ~context ~shared_models ~step ~callable
     else if Target.is_object callable then
-      Format.asprintf "Found object `%a` in fixpoint analysis" Target.pp_pretty callable |> failwith
+      Format.asprintf
+        "Found object `%a` in fixpoint analysis"
+        (Target.pp_pretty ~display_api)
+        callable
+      |> failwith
     else if Target.is_override callable then
       Alarm.with_alarm
         ~max_time_in_seconds:60
         ~event_name:"override analysis"
-        ~callable:(Target.show_pretty callable)
+        ~callable:((Target.show_pretty ~display_api) callable)
         (fun () ->
-          analyze_overrides ~context ~shared_models ~max_iterations ~override_graph ~step ~callable)
+          analyze_overrides
+            ~display_api
+            ~context
+            ~shared_models
+            ~max_iterations
+            ~override_graph
+            ~step
+            ~callable)
         ()
     else
-      Format.asprintf "Unknown type target `%a` in fixpoint analysis" Target.pp_pretty callable
+      Format.asprintf
+        "Unknown type target `%a` in fixpoint analysis"
+        (Target.pp_pretty ~display_api)
+        callable
       |> failwith
 
 
@@ -734,6 +802,7 @@ module Make (Analysis : ANALYSIS) = struct
 
   (* Called on a worker with a set of targets to analyze. *)
   let one_analysis_pass
+      ~display_api
       ~max_iterations
       ~shared_models
       ~shared_fixpoint
@@ -747,6 +816,7 @@ module Make (Analysis : ANALYSIS) = struct
       let timer = Timer.start () in
       let result =
         analyze_callable
+          ~display_api
           ~max_iterations
           ~shared_models
           ~shared_fixpoint
@@ -760,7 +830,7 @@ module Make (Analysis : ANALYSIS) = struct
           ~max_iterations
           ~current_iteration:iteration
           "Found new model for %a"
-          Target.pp_pretty
+          (Target.pp_pretty ~display_api)
           callable
       in
       let _ =
@@ -782,7 +852,7 @@ module Make (Analysis : ANALYSIS) = struct
           partial_callables
       in
       (* Log outliers. *)
-      if Logger.is_expensive_callable ~callable ~timer then
+      if Logger.is_expensive_callable ~display_api ~callable ~timer then
         ( { time_to_analyze_in_ms = Timer.stop_in_ms timer; callable } :: expensive_callables,
           additional_dependencies,
           partial_callables )
@@ -828,6 +898,7 @@ module Make (Analysis : ANALYSIS) = struct
   end
 
   let compute_callables_to_reanalyze
+      ~display_api
       ~shared_fixpoint
       ~dependency_graph
       ~all_callables
@@ -869,7 +940,7 @@ module Make (Analysis : ANALYSIS) = struct
                   "Re-analysis in iteration %d determined to analyze %a but it is not part of \
                    epoch %a (meta: %a)"
                   step.iteration
-                  Target.pp_pretty
+                  (Target.pp_pretty ~display_api)
                   callable
                   Epoch.pp
                   step.epoch
@@ -889,7 +960,7 @@ module Make (Analysis : ANALYSIS) = struct
     state: State.t;
   }
 
-  let filter_skip_analysis_targets ~skip_analysis_targets callables =
+  let filter_skip_analysis_targets ~display_api ~skip_analysis_targets callables =
     let skip, not_skip =
       List.partition_tf ~f:(Target.should_skip_analysis ~skip_analysis_targets) callables
     in
@@ -901,7 +972,7 @@ module Make (Analysis : ANALYSIS) = struct
            Log.log
              ~section:`SkipAnalysis
              "Skipping global fixpoint analysis of `%a` (and its parameterized variants)"
-             Target.pp_pretty
+             (Target.pp_pretty ~display_api)
              callable);
     not_skip
 
@@ -932,9 +1003,15 @@ module Make (Analysis : ANALYSIS) = struct
         state, iteration
       else if iteration >= max_iterations then
         if error_on_max_iterations then
-          raise (Logger.reached_maximum_iteration_exception ~iteration ~callables_to_analyze)
+          raise
+            (Logger.reached_maximum_iteration_exception
+               ~display_api
+               ~iteration
+               ~callables_to_analyze)
         else
-          let () = Logger.reached_maximum_iteration_exit ~iteration ~callables_to_analyze in
+          let () =
+            Logger.reached_maximum_iteration_exit ~display_api ~iteration ~callables_to_analyze
+          in
           state, iteration
       else
         let () =
@@ -946,6 +1023,7 @@ module Make (Analysis : ANALYSIS) = struct
         let shared_models_preserve_keys_handle = SharedModels.preserve_key_only shared_models in
         let map callables =
           one_analysis_pass
+            ~display_api
             ~max_iterations
             ~shared_models:shared_models_preserve_keys_handle
             ~shared_fixpoint
@@ -985,6 +1063,7 @@ module Make (Analysis : ANALYSIS) = struct
         let shared_models = State.remove_old state callables_to_analyze in
         let callables_to_analyze =
           compute_callables_to_reanalyze
+            ~display_api
             ~shared_fixpoint
             ~dependency_graph
             ~all_callables
@@ -997,7 +1076,7 @@ module Make (Analysis : ANALYSIS) = struct
             additional_dependencies
             |> DependencyGraph.keys
             |> List.filter ~f:(fun target -> not (TopologicalOrder.mem all_callables target))
-            |> filter_skip_analysis_targets ~skip_analysis_targets
+            |> filter_skip_analysis_targets ~display_api ~skip_analysis_targets
           else
             []
         in
@@ -1022,7 +1101,7 @@ module Make (Analysis : ANALYSIS) = struct
           (List.rev_append new_callables callables_to_analyze)
     in
     let initial_callables_to_analyze =
-      filter_skip_analysis_targets ~skip_analysis_targets initial_callables_to_analyze
+      filter_skip_analysis_targets ~display_api ~skip_analysis_targets initial_callables_to_analyze
     in
     let all_callables = TopologicalOrder.create initial_callables_to_analyze in
     let state, iterations =
@@ -1034,11 +1113,11 @@ end
 module WithoutLogging = struct
   let initial_models_stored ~timer:_ = ()
 
-  let reached_maximum_iteration_exception ~iteration ~callables_to_analyze:_ =
+  let reached_maximum_iteration_exception ~display_api:_ ~iteration ~callables_to_analyze:_ =
     Format.asprintf "Failed to reach a fixpoint after %d iterations" iteration |> failwith
 
 
-  let reached_maximum_iteration_exit ~iteration ~callables_to_analyze:_ =
+  let reached_maximum_iteration_exit ~display_api:_ ~iteration ~callables_to_analyze:_ =
     Log.info "Failed to reach a fixpoint after %d iterations. Terminate now." iteration
 
 
@@ -1058,11 +1137,11 @@ module WithoutLogging = struct
 
   let iteration_progress ~iteration:_ ~callables_processed:_ ~number_of_callables:_ = ()
 
-  let is_expensive_callable ~callable:_ ~timer:_ = false
+  let is_expensive_callable ~display_api:_ ~callable:_ ~timer:_ = false
 
-  let override_analysis_end ~callable:_ ~timer:_ = ()
+  let override_analysis_end ~display_api:_ ~callable:_ ~timer:_ = ()
 
-  let on_analyze_define_exception ~iteration:_ ~callable:_ ~exn:_ = ()
+  let on_analyze_define_exception ~display_api:_ ~iteration:_ ~callable:_ ~exn:_ = ()
 
   let on_approaching_max_iterations ~max_iterations:_ ~current_iteration:_ =
     Format.ifprintf Format.err_formatter
@@ -1080,8 +1159,12 @@ struct
       ()
 
 
-  let show_callables ~max_to_show callables =
-    let bucket = callables |> List.map ~f:Target.show_pretty |> List.sort ~compare:String.compare in
+  let show_callables ~display_api ~max_to_show callables =
+    let bucket =
+      callables
+      |> List.map ~f:(Target.show_pretty ~display_api)
+      |> List.sort ~compare:String.compare
+    in
     let bucket_len = List.length bucket in
     Format.sprintf
       "%s%s"
@@ -1089,29 +1172,27 @@ struct
       (if bucket_len > max_to_show then "..." else "")
 
 
-  let reached_maximum_iteration_exception ~iteration ~callables_to_analyze =
+  let reached_maximum_iteration_exception ~display_api ~iteration ~callables_to_analyze =
     Format.sprintf
       "Failed to reach a fixpoint after %d iterations (%d callables: %s)"
       iteration
       (List.length callables_to_analyze)
-      (show_callables ~max_to_show:15 callables_to_analyze)
+      (show_callables ~display_api ~max_to_show:15 callables_to_analyze)
     |> failwith
 
 
-  let reached_maximum_iteration_exit ~iteration ~callables_to_analyze =
+  let reached_maximum_iteration_exit ~display_api ~iteration ~callables_to_analyze =
     Log.info
       "Failed to reach a fixpoint after %d iterations. Terminate now  (%d callables: %s)"
       iteration
       (List.length callables_to_analyze)
-      (show_callables ~max_to_show:15 callables_to_analyze)
+      (show_callables ~display_api ~max_to_show:15 callables_to_analyze)
 
 
   let iteration_start ~display_api ~iteration ~callables_to_analyze ~number_of_callables =
     let witnesses =
       if number_of_callables <= 6 then
-        String.concat
-          ~sep:", "
-          (List.map ~f:(Target.show_pretty_with_display_api ~display_api) callables_to_analyze)
+        String.concat ~sep:", " (List.map ~f:(Target.show_pretty ~display_api) callables_to_analyze)
       else
         "..."
     in
@@ -1131,7 +1212,7 @@ struct
           |> List.map ~f:(fun { time_to_analyze_in_ms; callable } ->
                  Format.asprintf
                    "`%a`: %d ms"
-                   (Target.pp_pretty_with_display_api ~display_api)
+                   (Target.pp_pretty ~display_api)
                    callable
                    time_to_analyze_in_ms)
           |> String.concat ~sep:", ")
@@ -1152,7 +1233,7 @@ struct
       number_of_callables
 
 
-  let is_expensive_callable ~callable ~timer =
+  let is_expensive_callable ~display_api ~callable ~timer =
     let time_to_analyze_in_ms = Timer.stop_in_ms timer in
     let () =
       if time_to_analyze_in_ms >= Config.expensive_callable_ms then
@@ -1160,24 +1241,24 @@ struct
           ~name:"static analysis of expensive callable"
           ~timer
           ~section:`Interprocedural
-          ~normals:["callable", Target.show_pretty callable]
+          ~normals:["callable", (Target.show_pretty ~display_api) callable]
           ()
     in
     time_to_analyze_in_ms >= Config.expensive_callable_ms
 
 
-  let override_analysis_end ~callable ~timer =
+  let override_analysis_end ~display_api ~callable ~timer =
     Statistics.performance
       ~randomly_log_every:1000
       ~always_log_time_threshold:1.0 (* Seconds *)
       ~name:"Override analysis"
       ~section:`Interprocedural
-      ~normals:["callable", Target.show_pretty callable]
+      ~normals:["callable", (Target.show_pretty ~display_api) callable]
       ~timer
       ()
 
 
-  let on_analyze_define_exception ~iteration ~callable ~exn =
+  let on_analyze_define_exception ~display_api ~iteration ~callable ~exn =
     let message =
       match exn with
       | Stdlib.Sys.Break -> "Hit Ctrl+C"
@@ -1188,7 +1269,7 @@ struct
         "%s in iteration %d while analyzing `%a`."
         message
         iteration
-        Target.pp_pretty
+        (Target.pp_pretty ~display_api)
         callable
     in
     Log.log_exception message exn (Hack_parallel.Std.Worker.exception_backtrace exn)

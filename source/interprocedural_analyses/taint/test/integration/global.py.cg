@@ -1,37 +1,37 @@
 @generated
 Call dependencies
 {
-  "global.$toplevel (fun)": [
-    "builtins.object.__new__ (method)", "global.Object.__init__ (method)",
-    "global.create_global_source (fun)", "pysa._test_source (fun)"
+  "Function{global.$toplevel}": [
+    "Function{global.create_global_source}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{global.Object.__init__}"
   ],
-  "global.create_global_source (fun)": [ "pysa._test_source (fun)" ],
-  "global.obj1_flow (fun)": [
-    "global.obj1_sink (fun)", "global.obj1_source (fun)"
+  "Function{global.create_global_source}": [ "Function{pysa._test_source}" ],
+  "Function{global.obj1_flow}": [
+    "Function{global.obj1_sink}", "Function{global.obj1_source}"
   ],
-  "global.obj1_no_flow (fun)": [
-    "global.obj1_sink (fun)", "global.obj1_source (fun)"
+  "Function{global.obj1_no_flow}": [
+    "Function{global.obj1_sink}", "Function{global.obj1_source}"
   ],
-  "global.obj1_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "global.obj1_source (fun)": [ "pysa._test_source (fun)" ],
-  "global.obj2_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "global.obj3_flow (fun)": [
-    "global.obj3_return (fun)", "global.obj3_set (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{global.obj1_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{global.obj1_source}": [ "Function{pysa._test_source}" ],
+  "Function{global.obj2_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{global.obj3_flow}": [
+    "Function{global.obj3_return}", "Function{global.obj3_set}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "global.obj4_flow (fun)": [ "pysa._test_sink (fun)" ],
-  "global.obj6_flow (fun)": [
-    "global.obj6_sink (fun)", "global.obj6_source (fun)"
+  "Function{global.obj4_flow}": [ "Function{pysa._test_sink}" ],
+  "Function{global.obj6_flow}": [
+    "Function{global.obj6_sink}", "Function{global.obj6_source}"
   ],
-  "global.obj6_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "global.obj6_source (fun)": [ "pysa._test_source (fun)" ],
-  "global.obj7_flow (fun)": [
-    "global.obj7_sink (fun)", "global.obj7_source (fun)"
+  "Function{global.obj6_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{global.obj6_source}": [ "Function{pysa._test_source}" ],
+  "Function{global.obj7_flow}": [
+    "Function{global.obj7_sink}", "Function{global.obj7_source}"
   ],
-  "global.obj7_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "global.obj7_source (fun)": [ "pysa._test_source (fun)" ],
-  "global.obj8_flow (fun)": [
-    "global.obj8_return (fun)", "global.obj8_set (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{global.obj7_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{global.obj7_source}": [ "Function{pysa._test_source}" ],
+  "Function{global.obj8_flow}": [
+    "Function{global.obj8_return}", "Function{global.obj8_set}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ]
 }

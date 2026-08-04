@@ -1878,7 +1878,7 @@ module DefineCallGraph = struct
                   "Invariant error: When trying to add callees for expression %a in callable %a, \
                    found different existing callees. This bug in Pysa might introduce false \
                    positives."
-                  Target.pp_internal
+                  Target.pp
                   caller
                   ExpressionIdentifier.pp_json_key
                   expression_identifier;
@@ -1888,7 +1888,7 @@ module DefineCallGraph = struct
                 Format.asprintf
                   "Invariant error: When trying to add callees for expression %a in callable %a, \
                    found different existing callees."
-                  Target.pp_internal
+                  Target.pp
                   caller
                   ExpressionIdentifier.pp_json_key
                   expression_identifier

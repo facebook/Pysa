@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "skip_analysis.no_issue_due_to_skip",
+  "callable": "Function{skip_analysis.no_issue_due_to_skip}",
   "returned_callables": [],
   "calls": {
     "20:8-20:22": {

@@ -1,6 +1,6 @@
 @generated
 Call dependencies
 {
-  "conditional.issue1 (fun)": [ "conditional.some_source (fun)" ],
-  "conditional.issue2 (fun)": [ "conditional.some_source (fun)" ]
+  "Function{conditional.issue1}": [ "Function{conditional.some_source}" ],
+  "Function{conditional.issue2}": [ "Function{conditional.some_source}" ]
 }

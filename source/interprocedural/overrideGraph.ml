@@ -36,7 +36,7 @@ module Heap = struct
       Format.fprintf
         formatter
         "@,%a -> %s"
-        Target.pp_internal
+        Target.pp
         member
         (List.map ~f:PyreflyTypes.CallableId.show overrides |> String.concat ~sep:", ")
     in

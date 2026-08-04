@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "rule_with_filters.sink_distance_one",
+  "callable": "Function{rule_with_filters.sink_distance_one}",
   "returned_callables": [],
   "calls": {
     "18:4-18:17": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.sink_distance_three",
+  "callable": "Function{rule_with_filters.sink_distance_three}",
   "returned_callables": [],
   "calls": {
     "26:4-26:24": {
@@ -31,7 +31,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.sink_distance_two",
+  "callable": "Function{rule_with_filters.sink_distance_two}",
   "returned_callables": [],
   "calls": {
     "22:4-22:24": {
@@ -48,7 +48,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.source_distance_one",
+  "callable": "Function{rule_with_filters.source_distance_one}",
   "returned_callables": [],
   "calls": {
     "10:11-10:25": {
@@ -61,7 +61,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.source_distance_two",
+  "callable": "Function{rule_with_filters.source_distance_two}",
   "returned_callables": [],
   "calls": {
     "14:11-14:32": {
@@ -78,7 +78,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.test_source_one_sink_one",
+  "callable": "Function{rule_with_filters.test_source_one_sink_one}",
   "returned_callables": [],
   "calls": {
     "30:4-30:44": {
@@ -106,7 +106,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.test_source_one_sink_three",
+  "callable": "Function{rule_with_filters.test_source_one_sink_three}",
   "returned_callables": [],
   "calls": {
     "49:4-49:46": {
@@ -134,7 +134,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.test_source_one_sink_two",
+  "callable": "Function{rule_with_filters.test_source_one_sink_two}",
   "returned_callables": [],
   "calls": {
     "39:4-39:44": {
@@ -162,7 +162,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.test_source_two_sink_one",
+  "callable": "Function{rule_with_filters.test_source_two_sink_one}",
   "returned_callables": [],
   "calls": {
     "35:4-35:44": {
@@ -190,7 +190,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "rule_with_filters.test_source_two_sink_two",
+  "callable": "Function{rule_with_filters.test_source_two_sink_two}",
   "returned_callables": [],
   "calls": {
     "44:4-44:44": {

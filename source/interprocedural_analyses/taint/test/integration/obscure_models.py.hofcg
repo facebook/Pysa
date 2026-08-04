@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "obscure_models.should_collapse_depth_zero",
+  "callable": "Function{obscure_models.should_collapse_depth_zero}",
   "returned_callables": [],
   "calls": {
     "79:11-79:25": {
@@ -20,7 +20,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_collapse_depth",
+  "callable": "Function{obscure_models.test_collapse_depth}",
   "returned_callables": [],
   "calls": {
     "83:14-83:28": {
@@ -75,7 +75,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_collapse_source",
+  "callable": "Function{obscure_models.test_collapse_source}",
   "returned_callables": [],
   "calls": {
     "68:14-68:28": {
@@ -111,7 +111,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_issue",
+  "callable": "Function{obscure_models.test_issue}",
   "returned_callables": [],
   "calls": {
     "62:8-62:22": {
@@ -144,7 +144,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure",
+  "callable": "Function{obscure_models.test_obscure}",
   "returned_callables": [],
   "calls": {
     "30:11-30:39": {
@@ -170,7 +170,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_from_model",
+  "callable": "Function{obscure_models.test_obscure_from_model}",
   "returned_callables": [],
   "calls": {
     "96:4-96:50": {
@@ -201,7 +201,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_multiple_models",
+  "callable": "Function{obscure_models.test_obscure_with_multiple_models}",
   "returned_callables": [],
   "calls": {
     "54:11-54:60": {
@@ -227,7 +227,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_skip_inlining",
+  "callable": "Function{obscure_models.test_obscure_with_skip_inlining}",
   "returned_callables": [],
   "calls": {
     "38:11-38:58": {
@@ -253,7 +253,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_skip_obscure",
+  "callable": "Function{obscure_models.test_obscure_with_skip_obscure}",
   "returned_callables": [],
   "calls": {
     "46:11-46:57": {
@@ -279,7 +279,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_skip_obscure_and_tito",
+  "callable": "Function{obscure_models.test_obscure_with_skip_obscure_and_tito}",
   "returned_callables": [],
   "calls": {
     "50:11-50:66": {
@@ -305,7 +305,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_skip_overrides",
+  "callable": "Function{obscure_models.test_obscure_with_skip_overrides}",
   "returned_callables": [],
   "calls": {
     "34:11-34:59": {
@@ -331,7 +331,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_source",
+  "callable": "Function{obscure_models.test_obscure_with_source}",
   "returned_callables": [],
   "calls": {
     "42:11-42:51": {
@@ -357,7 +357,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_obscure_with_tito",
+  "callable": "Function{obscure_models.test_obscure_with_tito}",
   "returned_callables": [],
   "calls": {
     "58:4-58:51": {
@@ -390,7 +390,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "obscure_models.test_sink_collapse",
+  "callable": "Function{obscure_models.test_sink_collapse}",
   "returned_callables": [],
   "calls": {
     "74:8-74:22": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "unknown_callee.should_collapse_depth_zero",
+  "callable": "Function{unknown_callee.should_collapse_depth_zero}",
   "returned_callables": [],
   "calls": {
     "27:11-27:24": {
@@ -10,7 +10,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "unknown_callee.test_collapse_depth",
+  "callable": "Function{unknown_callee.test_collapse_depth}",
   "returned_callables": [],
   "calls": {
     "31:14-31:28": {
@@ -44,7 +44,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "unknown_callee.test_collapse_source",
+  "callable": "Function{unknown_callee.test_collapse_source}",
   "returned_callables": [],
   "calls": {
     "16:14-16:28": {
@@ -68,7 +68,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "unknown_callee.test_issue",
+  "callable": "Function{unknown_callee.test_issue}",
   "returned_callables": [],
   "calls": {
     "10:8-10:22": {
@@ -89,7 +89,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "unknown_callee.test_sink_collapse",
+  "callable": "Function{unknown_callee.test_sink_collapse}",
   "returned_callables": [],
   "calls": {
     "22:8-22:21": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } },

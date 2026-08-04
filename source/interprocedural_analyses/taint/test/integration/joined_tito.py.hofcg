@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "joined_tito.y_is_benign",
+  "callable": "Function{joined_tito.y_is_benign}",
   "returned_callables": [],
   "calls": {
     "23:14-23:44": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "top_level.$toplevel",
+  "callable": "Function{top_level.$toplevel}",
   "returned_callables": [],
   "calls": {
     "8:4-8:18": {
@@ -45,7 +45,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "top_level.foo",
+  "callable": "Function{top_level.foo}",
   "returned_callables": [],
   "calls": {
     "13:4-13:17": {

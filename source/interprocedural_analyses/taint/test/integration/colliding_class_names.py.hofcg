@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "colliding_class_names.C.foo",
+  "callable": "Method{colliding_class_names.C.foo}",
   "returned_callables": [],
   "calls": {
     "11:15-11:29": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "colliding_class_names.C$2.also_tainted_but_missing_from_analysis",
+  "callable": "Method{colliding_class_names.C$2.also_tainted_but_missing_from_analysis}",
   "returned_callables": [],
   "calls": {
     "16:15-16:29": {

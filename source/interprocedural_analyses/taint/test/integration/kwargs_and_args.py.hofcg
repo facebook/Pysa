@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "kwargs_and_args.args_sink",
+  "callable": "Function{kwargs_and_args.args_sink}",
   "returned_callables": [],
   "calls": {
     "31:4-31:23": {
@@ -27,7 +27,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "kwargs_and_args.async_distillery_render",
+  "callable": "Function{kwargs_and_args.async_distillery_render}",
   "returned_callables": [],
   "calls": {
     "21:4-21:38|artificial-call|subscript-set-item": {
@@ -97,7 +97,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "kwargs_and_args.async_render_to_response",
+  "callable": "Function{kwargs_and_args.async_render_to_response}",
   "returned_callables": [],
   "calls": {
     "15:4-15:23": {

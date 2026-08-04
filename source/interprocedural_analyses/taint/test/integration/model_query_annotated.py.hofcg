@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_annotated.$toplevel",
+  "callable": "Function{model_query_annotated.$toplevel}",
   "returned_callables": [],
   "calls": {
     "13:12-13:16|identifier|Enum": {
@@ -29,7 +29,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test1_alarm1",
+  "callable": "Function{model_query_annotated.test1_alarm1}",
   "returned_callables": [],
   "calls": {
     "27:4-27:7": {
@@ -78,7 +78,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test1_alarm2",
+  "callable": "Function{model_query_annotated.test1_alarm2}",
   "returned_callables": [],
   "calls": {
     "33:4-33:7": {
@@ -127,7 +127,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test1_alarm3",
+  "callable": "Function{model_query_annotated.test1_alarm3}",
   "returned_callables": [],
   "calls": {
     "39:4-39:7": {
@@ -164,7 +164,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test1_alarm4",
+  "callable": "Function{model_query_annotated.test1_alarm4}",
   "returned_callables": [],
   "calls": {
     "44:4-44:7": {
@@ -201,7 +201,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test2_alarm1",
+  "callable": "Function{model_query_annotated.test2_alarm1}",
   "returned_callables": [],
   "calls": {
     "55:4-55:7": {
@@ -238,7 +238,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test2_alarm2",
+  "callable": "Function{model_query_annotated.test2_alarm2}",
   "returned_callables": [],
   "calls": {
     "60:4-60:7": {
@@ -275,7 +275,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test2_noalarm1",
+  "callable": "Function{model_query_annotated.test2_noalarm1}",
   "returned_callables": [],
   "calls": {
     "66:4-66:19": {
@@ -288,7 +288,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test3_noalarm1",
+  "callable": "Function{model_query_annotated.test3_noalarm1}",
   "returned_callables": [],
   "calls": {
     "70:4-70:17": {
@@ -301,7 +301,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_annotated.test3_noalarm2",
+  "callable": "Function{model_query_annotated.test3_noalarm2}",
   "returned_callables": [],
   "calls": {
     "74:4-74:17": {

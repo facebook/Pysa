@@ -1,28 +1,29 @@
 @generated
 Call dependencies
 {
-  "iterators.CustomGetItem.__getitem__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{iterators.test_custom_getitem}": [
+    "Function{builtins.iter}", "Function{builtins.next}",
+    "Function{pysa._test_sink}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}", "Method{typing.Iterator.__next__}"
   ],
-  "iterators.CustomIter.__iter__ (method)": [
-    "builtins.iter (fun)", "builtins.list.__iter__ (method)",
-    "pysa._test_source (fun)"
+  "Function{iterators.test_custom_iter}": [
+    "Function{builtins.iter}", "Function{builtins.next}",
+    "Function{pysa._test_sink}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}",
+    "Method{iterators.CustomIter.__iter__}",
+    "Method{typing.Iterator.__next__}"
   ],
-  "iterators.test_custom_getitem (fun)": [
-    "builtins.iter (fun)", "builtins.next (fun)",
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "pysa._test_sink (fun)", "typing.Iterator.__next__ (method)"
+  "Function{iterators.test_next_iter}": [
+    "Function{builtins.iter}", "Function{builtins.next}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.dict.__getitem__}", "Method{builtins.dict.__iter__}",
+    "Method{builtins.list.__iter__}", "Method{typing.Iterator.__next__}"
   ],
-  "iterators.test_custom_iter (fun)": [
-    "builtins.iter (fun)", "builtins.next (fun)",
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "iterators.CustomIter.__iter__ (method)", "pysa._test_sink (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Method{iterators.CustomGetItem.__getitem__}": [
+    "Function{pysa._test_source}"
   ],
-  "iterators.test_next_iter (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.dict.__iter__ (method)",
-    "builtins.iter (fun)", "builtins.list.__iter__ (method)",
-    "builtins.next (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)", "typing.Iterator.__next__ (method)"
+  "Method{iterators.CustomIter.__iter__}": [
+    "Function{builtins.iter}", "Function{pysa._test_source}",
+    "Method{builtins.list.__iter__}"
   ]
 }

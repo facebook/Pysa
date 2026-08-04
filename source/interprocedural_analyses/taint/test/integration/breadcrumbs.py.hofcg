@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "breadcrumbs.bool_parameter",
+  "callable": "Function{breadcrumbs.bool_parameter}",
   "returned_callables": [],
   "calls": {
     "33:4-33:17": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.bool_source",
+  "callable": "Function{breadcrumbs.bool_source}",
   "returned_callables": [],
   "calls": {
     "21:11-21:25": {
@@ -27,7 +27,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.float_parameter",
+  "callable": "Function{breadcrumbs.float_parameter}",
   "returned_callables": [],
   "calls": {
     "29:4-29:17": {
@@ -40,7 +40,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.float_source",
+  "callable": "Function{breadcrumbs.float_source}",
   "returned_callables": [],
   "calls": {
     "17:11-17:25": {
@@ -53,7 +53,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.int_parameter",
+  "callable": "Function{breadcrumbs.int_parameter}",
   "returned_callables": [],
   "calls": {
     "25:4-25:17": {
@@ -66,7 +66,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.int_source",
+  "callable": "Function{breadcrumbs.int_source}",
   "returned_callables": [],
   "calls": {
     "13:11-13:25": {
@@ -79,7 +79,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.scalar_attribute_backward",
+  "callable": "Function{breadcrumbs.scalar_attribute_backward}",
   "returned_callables": [],
   "calls": {
     "53:7-53:22": {
@@ -255,7 +255,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "breadcrumbs.scalar_attribute_forward",
+  "callable": "Function{breadcrumbs.scalar_attribute_forward}",
   "returned_callables": [],
   "calls": {
     "67:14-67:27": {

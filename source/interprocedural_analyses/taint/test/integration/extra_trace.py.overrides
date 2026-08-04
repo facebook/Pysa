@@ -1,4 +1,4 @@
 @generated
 Overrides
-extra_trace.OverrideTransform.transform (override) -> [extra_trace.OverrideTransform.transform (method)]
-extra_trace.TransformBase.transform (override) -> [extra_trace.OverrideTransform.transform (override) extra_trace.TransformBase.transform (method)]
+Override{extra_trace.OverrideTransform.transform} -> [Method{extra_trace.OverrideTransform.transform}]
+Override{extra_trace.TransformBase.transform} -> [Method{extra_trace.TransformBase.transform} Override{extra_trace.OverrideTransform.transform}]

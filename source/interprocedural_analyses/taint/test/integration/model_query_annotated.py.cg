@@ -1,27 +1,39 @@
 @generated
 Call dependencies
 {
-  "model_query_annotated.test1_alarm1 (fun)": [
-    "model_query_annotated.Test1_C.a (object)",
-    "model_query_annotated.Test1_C.b (object)", "pysa._test_sink (fun)"
+  "Function{model_query_annotated.test1_alarm1}": [
+    "ClassInstanceAttribute{model_query_annotated.Test1_C.a}",
+    "ClassInstanceAttribute{model_query_annotated.Test1_C.b}",
+    "Function{pysa._test_sink}"
   ],
-  "model_query_annotated.test1_alarm2 (fun)": [
-    "model_query_annotated.Test1_C.a (object)",
-    "model_query_annotated.Test1_C.b (object)", "pysa._test_sink (fun)"
+  "Function{model_query_annotated.test1_alarm2}": [
+    "ClassInstanceAttribute{model_query_annotated.Test1_C.a}",
+    "ClassInstanceAttribute{model_query_annotated.Test1_C.b}",
+    "Function{pysa._test_sink}"
   ],
-  "model_query_annotated.test1_alarm3 (fun)": [
-    "model_query_annotated.Test1_C.x (object)", "pysa._test_sink (fun)"
+  "Function{model_query_annotated.test1_alarm3}": [
+    "ClassInstanceAttribute{model_query_annotated.Test1_C.x}",
+    "Function{pysa._test_sink}"
   ],
-  "model_query_annotated.test1_alarm4 (fun)": [
-    "model_query_annotated.Test1_C.y (object)", "pysa._test_sink (fun)"
+  "Function{model_query_annotated.test1_alarm4}": [
+    "ClassInstanceAttribute{model_query_annotated.Test1_C.y}",
+    "Function{pysa._test_sink}"
   ],
-  "model_query_annotated.test2_alarm1 (fun)": [
-    "model_query_annotated.Test2_C.a (object)", "pysa._test_sink (fun)"
+  "Function{model_query_annotated.test2_alarm1}": [
+    "ClassInstanceAttribute{model_query_annotated.Test2_C.a}",
+    "Function{pysa._test_sink}"
   ],
-  "model_query_annotated.test2_alarm2 (fun)": [
-    "model_query_annotated.Test2_C.x (object)", "pysa._test_sink (fun)"
+  "Function{model_query_annotated.test2_alarm2}": [
+    "ClassInstanceAttribute{model_query_annotated.Test2_C.x}",
+    "Function{pysa._test_sink}"
   ],
-  "model_query_annotated.test2_noalarm1 (fun)": [ "pysa._test_sink (fun)" ],
-  "model_query_annotated.test3_noalarm1 (fun)": [ "pysa._test_sink (fun)" ],
-  "model_query_annotated.test3_noalarm2 (fun)": [ "pysa._test_sink (fun)" ]
+  "Function{model_query_annotated.test2_noalarm1}": [
+    "Function{pysa._test_sink}"
+  ],
+  "Function{model_query_annotated.test3_noalarm1}": [
+    "Function{pysa._test_sink}"
+  ],
+  "Function{model_query_annotated.test3_noalarm2}": [
+    "Function{pysa._test_sink}"
+  ]
 }

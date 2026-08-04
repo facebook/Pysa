@@ -1,10 +1,10 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) combinatory_ports.A.__init__ (override) combinatory_ports.B.__init__ (override) combinatory_ports.C.__init__ (override)]
-combinatory_ports.A.__init__ (override) -> [combinatory_ports.A.__init__ (method)]
-combinatory_ports.A.method (override) -> [combinatory_ports.A.method (method)]
-combinatory_ports.B.__init__ (override) -> [combinatory_ports.B.__init__ (method)]
-combinatory_ports.B.method (override) -> [combinatory_ports.B.method (method)]
-combinatory_ports.Base.method (override) -> [combinatory_ports.A.method (override) combinatory_ports.B.method (override) combinatory_ports.Base.method (method) combinatory_ports.C.method (override)]
-combinatory_ports.C.__init__ (override) -> [combinatory_ports.C.__init__ (method)]
-combinatory_ports.C.method (override) -> [combinatory_ports.C.method (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{combinatory_ports.A.__init__} Override{combinatory_ports.B.__init__} Override{combinatory_ports.C.__init__}]
+Override{combinatory_ports.A.__init__} -> [Method{combinatory_ports.A.__init__}]
+Override{combinatory_ports.A.method} -> [Method{combinatory_ports.A.method}]
+Override{combinatory_ports.B.__init__} -> [Method{combinatory_ports.B.__init__}]
+Override{combinatory_ports.B.method} -> [Method{combinatory_ports.B.method}]
+Override{combinatory_ports.Base.method} -> [Method{combinatory_ports.Base.method} Override{combinatory_ports.A.method} Override{combinatory_ports.B.method} Override{combinatory_ports.C.method}]
+Override{combinatory_ports.C.__init__} -> [Method{combinatory_ports.C.__init__}]
+Override{combinatory_ports.C.method} -> [Method{combinatory_ports.C.method}]

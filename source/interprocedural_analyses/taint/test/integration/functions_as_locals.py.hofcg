@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "functions_as_locals.a_or_b",
+  "callable": "Function{functions_as_locals.a_or_b}",
   "returned_callables": [],
   "calls": {
     "54:7-54:22": {
@@ -105,7 +105,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.barA",
+  "callable": "Function{functions_as_locals.barA}",
   "returned_callables": [],
   "calls": {
     "46:4-46:20": {
@@ -118,7 +118,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.barB",
+  "callable": "Function{functions_as_locals.barB}",
   "returned_callables": [],
   "calls": {
     "50:4-50:20": {
@@ -131,7 +131,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.foo",
+  "callable": "Function{functions_as_locals.foo}",
   "returned_callables": [],
   "calls": {
     "13:4-13:19": {
@@ -144,7 +144,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.foo_as_local",
+  "callable": "Function{functions_as_locals.foo_as_local}",
   "returned_callables": [],
   "calls": {
     "17:8-17:22": {
@@ -192,7 +192,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.local_function_with_method_sink",
+  "callable": "Function{functions_as_locals.local_function_with_method_sink}",
   "returned_callables": [],
   "calls": {
     "34:8-34:11": {
@@ -246,7 +246,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.local_tito",
+  "callable": "Function{functions_as_locals.local_tito}",
   "returned_callables": [],
   "calls": {
     "24:8-24:11|identifier|foo": {
@@ -276,7 +276,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.method_tito",
+  "callable": "Function{functions_as_locals.method_tito}",
   "returned_callables": [],
   "calls": {
     "41:8-41:11": {
@@ -310,7 +310,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "functions_as_locals.C.m",
+  "callable": "Method{functions_as_locals.C.m}",
   "returned_callables": [],
   "calls": {
     "30:8-30:23": {

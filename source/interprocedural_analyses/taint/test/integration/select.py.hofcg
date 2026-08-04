@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "select.first_index",
+  "callable": "Function{select.first_index}",
   "returned_callables": [],
   "calls": {
     "21:8-21:22": {
@@ -17,7 +17,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "select.first_index_numeric",
+  "callable": "Function{select.first_index_numeric}",
   "returned_callables": [],
   "calls": {
     "26:8-26:22": {
@@ -33,7 +33,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "select.first_index_unknown",
+  "callable": "Function{select.first_index_unknown}",
   "returned_callables": [],
   "calls": {
     "31:8-31:22": {
@@ -49,7 +49,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "select.return_is_RCE",
+  "callable": "Function{select.return_is_RCE}",
   "returned_callables": [],
   "calls": {
     "41:11-41:22": {
@@ -80,7 +80,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "select.view_entry_field",
+  "callable": "Function{select.view_entry_field}",
   "returned_callables": [],
   "calls": {
     "13:4-13:25": {
@@ -93,7 +93,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "select.view_entry_get",
+  "callable": "Function{select.view_entry_get}",
   "returned_callables": [],
   "calls": {
     "37:4-37:47": {
@@ -131,7 +131,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "select.view_entry_index",
+  "callable": "Function{select.view_entry_index}",
   "returned_callables": [],
   "calls": {
     "17:4-17:32": {

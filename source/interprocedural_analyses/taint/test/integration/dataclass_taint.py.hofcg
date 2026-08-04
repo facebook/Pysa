@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "dataclass_taint.$toplevel",
+  "callable": "Function{dataclass_taint.$toplevel}",
   "returned_callables": [],
   "calls": {
     "12:1-12:10|identifier|dataclass": {
@@ -125,7 +125,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.bad_is_tainted",
+  "callable": "Function{dataclass_taint.bad_is_tainted}",
   "returned_callables": [],
   "calls": {
     "19:14-19:54": {
@@ -166,7 +166,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.benign_is_untainted",
+  "callable": "Function{dataclass_taint.benign_is_untainted}",
   "returned_callables": [],
   "calls": {
     "25:14-25:54": {
@@ -207,7 +207,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.issue_in_dataclass_constructor",
+  "callable": "Function{dataclass_taint.issue_in_dataclass_constructor}",
   "returned_callables": [],
   "calls": {
     "40:4-40:41": {
@@ -241,7 +241,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.issue_with_weird_dataclass",
+  "callable": "Function{dataclass_taint.issue_with_weird_dataclass}",
   "returned_callables": [],
   "calls": {
     "62:10-62:42": {
@@ -275,7 +275,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_class_attr_model_tainted_directly",
+  "callable": "Function{dataclass_taint.test_class_attr_model_tainted_directly}",
   "returned_callables": [],
   "calls": {
     "98:4-98:76": {
@@ -405,7 +405,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_class_attr_model_tainted_in_constructor",
+  "callable": "Function{dataclass_taint.test_class_attr_model_tainted_in_constructor}",
   "returned_callables": [],
   "calls": {
     "117:4-117:81": {
@@ -523,7 +523,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_constructor_tito",
+  "callable": "Function{dataclass_taint.test_constructor_tito}",
   "returned_callables": [],
   "calls": {
     "133:11-133:37": {
@@ -550,7 +550,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_dataclass_parameter_path",
+  "callable": "Function{dataclass_taint.test_dataclass_parameter_path}",
   "returned_callables": [],
   "calls": {
     "147:4-147:22": {
@@ -563,7 +563,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_dataclass_positional_parameter",
+  "callable": "Function{dataclass_taint.test_dataclass_positional_parameter}",
   "returned_callables": [],
   "calls": {
     "151:4-151:31": {
@@ -597,7 +597,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_dataclass_with_other_source",
+  "callable": "Function{dataclass_taint.test_dataclass_with_other_source}",
   "returned_callables": [],
   "calls": {
     "86:4-86:31": {
@@ -629,7 +629,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_dataclass_with_source",
+  "callable": "Function{dataclass_taint.test_dataclass_with_source}",
   "returned_callables": [],
   "calls": {
     "74:4-74:31": {
@@ -661,7 +661,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.test_weird_dataclass_taint",
+  "callable": "Function{dataclass_taint.test_weird_dataclass_taint}",
   "returned_callables": [],
   "calls": {
     "58:11-58:43": {
@@ -688,7 +688,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.DataClassWIthInit.__init__",
+  "callable": "Method{dataclass_taint.DataClassWIthInit.__init__}",
   "returned_callables": [],
   "calls": {
     "36:8-36:23": {
@@ -701,7 +701,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dataclass_taint.WeirdDataClass.__init__",
+  "callable": "Method{dataclass_taint.WeirdDataClass.__init__}",
   "returned_callables": [],
   "calls": {
     "53:8-53:14|identifier|object": {

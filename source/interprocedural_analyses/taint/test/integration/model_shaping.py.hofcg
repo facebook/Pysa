@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_shaping._asdict_inner",
+  "callable": "Function{model_shaping._asdict_inner}",
   "returned_callables": [],
   "calls": {
     "39:11-39:52": {
@@ -460,7 +460,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.asdict",
+  "callable": "Function{model_shaping.asdict}",
   "returned_callables": [],
   "calls": {
     "30:53-30:57|identifier|dict": {
@@ -500,7 +500,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.asdict_test",
+  "callable": "Function{model_shaping.asdict_test}",
   "returned_callables": [],
   "calls": {
     "76:11-76:22": {
@@ -513,7 +513,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.obscure_test",
+  "callable": "Function{model_shaping.obscure_test}",
   "returned_callables": [],
   "calls": {
     "80:11-80:20": {
@@ -551,7 +551,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.shape_multi_sink",
+  "callable": "Function{model_shaping.shape_multi_sink}",
   "returned_callables": [],
   "calls": {
     "84:4-84:17": {
@@ -577,7 +577,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.shape_multi_source",
+  "callable": "Function{model_shaping.shape_multi_source}",
   "returned_callables": [],
   "calls": {
     "91:7-91:22": {
@@ -649,7 +649,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.test_tito_shaping",
+  "callable": "Function{model_shaping.test_tito_shaping}",
   "returned_callables": [],
   "calls": {
     "112:10-112:58": {
@@ -837,7 +837,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_shaping.tito_shaping",
+  "callable": "Function{model_shaping.tito_shaping}",
   "returned_callables": [],
   "calls": {
     "105:15-105:36": {

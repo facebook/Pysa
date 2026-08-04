@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "constructor_inheritance.$toplevel",
+  "callable": "Function{constructor_inheritance.$toplevel}",
   "returned_callables": [],
   "calls": {
     "15:21-15:32|identifier|MyBaseClass": {
@@ -30,7 +30,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constructor_inheritance.test",
+  "callable": "Function{constructor_inheritance.test}",
   "returned_callables": [],
   "calls": {
     "21:14-21:44": {
@@ -64,7 +64,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "constructor_inheritance.MyBaseClass.__init__",
+  "callable": "Method{constructor_inheritance.MyBaseClass.__init__}",
   "returned_callables": [],
   "calls": {
     "12:8-12:28": {

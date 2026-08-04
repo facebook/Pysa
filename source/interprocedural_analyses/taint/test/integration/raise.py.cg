@@ -1,36 +1,36 @@
 @generated
 Call dependencies
 {
-  "raise.backward (fun)": [ "pysa._test_sink (fun)" ],
-  "raise.conditional_unreachability (fun)": [
-    "builtins.BaseException.__init__ (method)",
-    "builtins.BaseException.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{raise.backward}": [ "Function{pysa._test_sink}" ],
+  "Function{raise.conditional_unreachability}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.BaseException.__init__}",
+    "Method{builtins.BaseException.__new__}"
   ],
-  "raise.forward (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{raise.forward}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "raise.no_sink (fun)": [
-    "builtins.BaseException.__init__ (method)",
-    "builtins.BaseException.__new__ (method)", "pysa._test_sink (fun)"
+  "Function{raise.no_sink}": [
+    "Function{pysa._test_sink}", "Method{builtins.BaseException.__init__}",
+    "Method{builtins.BaseException.__new__}"
   ],
-  "raise.no_source (fun)": [
-    "builtins.BaseException.__init__ (method)",
-    "builtins.BaseException.__new__ (method)", "pysa._test_source (fun)"
+  "Function{raise.no_source}": [
+    "Function{pysa._test_source}", "Method{builtins.BaseException.__init__}",
+    "Method{builtins.BaseException.__new__}"
   ],
-  "raise.unreachable (fun)": [
-    "builtins.BaseException.__init__ (method)",
-    "builtins.BaseException.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{raise.unreachable_code_do_to_always_exception}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Function{raise.no_source}"
   ],
-  "raise.unreachable_code_do_to_always_exception (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)",
-    "raise.no_source (fun)"
+  "Function{raise.unreachable_through_function_call_sink}": [
+    "Function{pysa._test_source}", "Function{raise.no_sink}"
   ],
-  "raise.unreachable_through_function_call_sink (fun)": [
-    "pysa._test_source (fun)", "raise.no_sink (fun)"
+  "Function{raise.unreachable_through_function_call_source}": [
+    "Function{pysa._test_sink}", "Function{raise.no_source}"
   ],
-  "raise.unreachable_through_function_call_source (fun)": [
-    "pysa._test_sink (fun)", "raise.no_source (fun)"
+  "Function{raise.unreachable}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.BaseException.__init__}",
+    "Method{builtins.BaseException.__new__}"
   ]
 }

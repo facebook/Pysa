@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "access_path.indexes_and_attributes",
+  "callable": "Function{access_path.indexes_and_attributes}",
   "returned_callables": [],
   "calls": {
     "28:8-28:21": {
@@ -55,7 +55,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "access_path.indexes_are_attributes_for___dict__",
+  "callable": "Function{access_path.indexes_are_attributes_for___dict__}",
   "returned_callables": [],
   "calls": {
     "35:8-35:16": {
@@ -109,7 +109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "access_path.indexes_are_strings",
+  "callable": "Function{access_path.indexes_are_strings}",
   "returned_callables": [],
   "calls": {
     "13:4-13:25|artificial-call|subscript-set-item": {
@@ -155,7 +155,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "access_path.issue_positional_and_variadic",
+  "callable": "Function{access_path.issue_positional_and_variadic}",
   "returned_callables": [],
   "calls": {
     "50:4-50:50": {
@@ -233,7 +233,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "access_path.positional_and_variadic1",
+  "callable": "Function{access_path.positional_and_variadic1}",
   "returned_callables": [],
   "calls": {
     "42:4-42:17": {
@@ -246,7 +246,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "access_path.positional_and_variadic2",
+  "callable": "Function{access_path.positional_and_variadic2}",
   "returned_callables": [],
   "calls": {
     "46:4-46:17": {
@@ -259,7 +259,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "access_path.SpecialDict.__getitem__",
+  "callable": "Method{access_path.SpecialDict.__getitem__}",
   "returned_callables": [],
   "calls": {
     "24:15-24:37": {

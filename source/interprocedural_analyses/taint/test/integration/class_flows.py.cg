@@ -1,51 +1,55 @@
 @generated
 Call dependencies
 {
-  "class_flows.HasClassmethods._async_results_for_non_empty_query_from_db (method)": [
-    "class_flows.HasClassmethods._get_multi_word_results (method)",
-    "class_flows.HasClassmethods._get_single_word_results (method)"
+  "Function{class_flows.global_class_attribute_issue}": [
+    "ClassTypeAttribute{class_flows.C.tainted_class_attribute}",
+    "Function{pysa._test_source}"
   ],
-  "class_flows.HasClassmethods._get_multi_word_results (method)": [
-    "pysa._test_sink (fun)"
+  "Function{class_flows.tainted_attribute_flow_issue}": [
+    "ClassInstanceAttribute{class_flows.C.tainted_attribute}",
+    "Function{pysa._test_source}"
   ],
-  "class_flows.HasDecoratedClassmethod.to_sink (method)": [
-    "pysa._test_sink (fun)"
+  "Function{class_flows.tainted_attribute_for_class_not_issue}": [
+    "Function{pysa._test_source}"
   ],
-  "class_flows.global_class_attribute_issue (fun)": [
-    "class_flows.C.__class__.tainted_class_attribute (object)",
-    "pysa._test_source (fun)"
+  "Function{class_flows.tainted_attribute_through_inheritance_issue}": [
+    "ClassInstanceAttribute{class_flows.C.tainted_attribute}",
+    "Function{pysa._test_source}"
   ],
-  "class_flows.tainted_attribute_flow_issue (fun)": [
-    "class_flows.C.tainted_attribute (object)", "pysa._test_source (fun)"
+  "Function{class_flows.tainted_class_attribute_through_class_issue}": [
+    "ClassTypeAttribute{class_flows.C.tainted_class_attribute}",
+    "Function{pysa._test_source}"
   ],
-  "class_flows.tainted_attribute_for_class_not_issue (fun)": [
-    "pysa._test_source (fun)"
+  "Function{class_flows.tainted_class_attribute_through_double_underscore_class_issue}": [
+    "ClassTypeAttribute{class_flows.C.tainted_class_attribute}",
+    "Function{pysa._test_source}"
   ],
-  "class_flows.tainted_attribute_through_inheritance_issue (fun)": [
-    "class_flows.C.tainted_attribute (object)", "pysa._test_source (fun)"
+  "Function{class_flows.tainted_class_attribute_through_instance_not_issue}": [
+    "Function{pysa._test_source}"
   ],
-  "class_flows.tainted_class_attribute_through_class_issue (fun)": [
-    "class_flows.C.__class__.tainted_class_attribute (object)",
-    "pysa._test_source (fun)"
+  "Function{class_flows.tainted_class_attribute_through_optional_class_issue}": [
+    "ClassTypeAttribute{class_flows.C.tainted_class_attribute}",
+    "Function{pysa._test_source}"
   ],
-  "class_flows.tainted_class_attribute_through_double_underscore_class_issue (fun)": [
-    "class_flows.C.__class__.tainted_class_attribute (object)",
-    "pysa._test_source (fun)"
+  "Function{class_flows.test_classmethod}": [
+    "Function{pysa._test_source}",
+    "Method{class_flows.HasClassmethods._async_results_for_non_empty_query_from_db}"
   ],
-  "class_flows.tainted_class_attribute_through_instance_not_issue (fun)": [
-    "pysa._test_source (fun)"
+  "Function{class_flows.test_decorated_classmethod}": [
+    "Function{pysa._test_source}",
+    "Method{class_flows.HasDecoratedClassmethod.to_sink}"
   ],
-  "class_flows.tainted_class_attribute_through_optional_class_issue (fun)": [
-    "class_flows.C.__class__.tainted_class_attribute (object)",
-    "pysa._test_source (fun)"
+  "Function{class_flows.untainted_flow_not_issue}": [
+    "Function{pysa._test_source}"
   ],
-  "class_flows.test_classmethod (fun)": [
-    "class_flows.HasClassmethods._async_results_for_non_empty_query_from_db (method)",
-    "pysa._test_source (fun)"
+  "Method{class_flows.HasClassmethods._async_results_for_non_empty_query_from_db}": [
+    "Method{class_flows.HasClassmethods._get_multi_word_results}",
+    "Method{class_flows.HasClassmethods._get_single_word_results}"
   ],
-  "class_flows.test_decorated_classmethod (fun)": [
-    "class_flows.HasDecoratedClassmethod.to_sink (method)",
-    "pysa._test_source (fun)"
+  "Method{class_flows.HasClassmethods._get_multi_word_results}": [
+    "Function{pysa._test_sink}"
   ],
-  "class_flows.untainted_flow_not_issue (fun)": [ "pysa._test_source (fun)" ]
+  "Method{class_flows.HasDecoratedClassmethod.to_sink}": [
+    "Function{pysa._test_sink}"
+  ]
 }

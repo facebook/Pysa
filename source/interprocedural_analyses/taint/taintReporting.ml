@@ -400,7 +400,7 @@ let save_results_to_directory
             ( "skipped_overrides",
               `List
                 (List.map skipped_overrides ~f:(fun override ->
-                     `String (Target.show_pretty_with_display_api ~display_api override))) );
+                     `String (Target.show_pretty ~display_api override))) );
           ]
       in
       Yojson.Safe.Util.combine global_statistics (statistics ~model_verification_errors)

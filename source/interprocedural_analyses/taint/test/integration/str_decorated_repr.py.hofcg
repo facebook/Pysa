@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "str_decorated_repr.$toplevel",
+  "callable": "Function{str_decorated_repr.$toplevel}",
   "returned_callables": [],
   "calls": {
     "9:4-9:16": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } },
@@ -9,7 +9,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "str_decorated_repr.cachedmethod",
+  "callable": "Function{str_decorated_repr.cachedmethod}",
   "returned_callables": [
     {
       "target": "str_decorated_repr.cachedmethod.g",
@@ -61,7 +61,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "str_decorated_repr.cachedmethod.g",
+  "callable": "Function{str_decorated_repr.cachedmethod.g}",
   "returned_callables": [],
   "calls": {
     "26:11-26:31": {
@@ -153,7 +153,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "str_decorated_repr.test_str_of_decorated_repr",
+  "callable": "Function{str_decorated_repr.test_str_of_decorated_repr}",
   "returned_callables": [],
   "calls": {
     "44:4-44:22": {
@@ -202,7 +202,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "str_decorated_repr.MyClass.__repr__@decorated",
+  "callable": "Method{str_decorated_repr.MyClass.__repr__@decorated}",
   "returned_callables": [
     {
       "target": "str_decorated_repr.cachedmethod.g[captured_variable(f, str_decorated_repr.cachedmethod)=str_decorated_repr.MyClass.__repr__]",
@@ -238,7 +238,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "str_decorated_repr.cachedmethod[formal(f, position=0)=str_decorated_repr.MyClass.__repr__]",
+  "callable": "Function{str_decorated_repr.cachedmethod}[formal(f, position=0)=Method{str_decorated_repr.MyClass.__repr__}]",
   "returned_callables": [
     {
       "target": "str_decorated_repr.cachedmethod.g[captured_variable(f, str_decorated_repr.cachedmethod)=str_decorated_repr.MyClass.__repr__]",
@@ -290,7 +290,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "str_decorated_repr.cachedmethod.g[captured_variable(f, str_decorated_repr.cachedmethod)=str_decorated_repr.MyClass.__repr__]",
+  "callable": "Function{str_decorated_repr.cachedmethod.g}[captured_variable(f, str_decorated_repr.cachedmethod)=Method{str_decorated_repr.MyClass.__repr__}]",
   "returned_callables": [],
   "calls": {
     "26:11-26:31": {

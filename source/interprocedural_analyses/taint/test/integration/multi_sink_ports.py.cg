@@ -1,28 +1,33 @@
 @generated
 Call dependencies
 {
-  "multi_sink_ports.Query.send (method)": [
-    "multi_sink_ports.splitwrapper (fun)"
+  "Function{multi_sink_ports.issue2}": [
+    "Function{multi_sink_ports.source}",
+    "Function{multi_sink_ports.wrapper2}",
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}",
+    "Method{multi_sink_ports.Query.params}"
   ],
-  "multi_sink_ports.issue (fun)": [
-    "multi_sink_ports.source (fun)", "multi_sink_ports.wrapper (fun)"
+  "Function{multi_sink_ports.issue}": [
+    "Function{multi_sink_ports.source}", "Function{multi_sink_ports.wrapper}"
   ],
-  "multi_sink_ports.issue2 (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "multi_sink_ports.Query.params (method)",
-    "multi_sink_ports.source (fun)", "multi_sink_ports.wrapper2 (fun)"
+  "Function{multi_sink_ports.log_call}": [
+    "Function{multi_sink_ports.sinkA}"
   ],
-  "multi_sink_ports.log_call (fun)": [ "multi_sink_ports.sinkA (fun)" ],
-  "multi_sink_ports.split (fun)": [
-    "multi_sink_ports.sinkB (fun)", "multi_sink_ports.sinkC (fun)",
-    "multi_sink_ports.sinkD (fun)"
+  "Function{multi_sink_ports.splitwrapper}": [
+    "Function{multi_sink_ports.split}"
   ],
-  "multi_sink_ports.splitwrapper (fun)": [ "multi_sink_ports.split (fun)" ],
-  "multi_sink_ports.wrapper (fun)": [
-    "multi_sink_ports.sinkA (fun)", "multi_sink_ports.split (fun)"
+  "Function{multi_sink_ports.split}": [
+    "Function{multi_sink_ports.sinkB}", "Function{multi_sink_ports.sinkC}",
+    "Function{multi_sink_ports.sinkD}"
   ],
-  "multi_sink_ports.wrapper2 (fun)": [
-    "builtins.isinstance (fun)", "multi_sink_ports.Query.send (method)",
-    "multi_sink_ports.log_call (fun)"
+  "Function{multi_sink_ports.wrapper2}": [
+    "Function{builtins.isinstance}", "Function{multi_sink_ports.log_call}",
+    "Method{multi_sink_ports.Query.send}"
+  ],
+  "Function{multi_sink_ports.wrapper}": [
+    "Function{multi_sink_ports.sinkA}", "Function{multi_sink_ports.split}"
+  ],
+  "Method{multi_sink_ports.Query.send}": [
+    "Function{multi_sink_ports.splitwrapper}"
   ]
 }

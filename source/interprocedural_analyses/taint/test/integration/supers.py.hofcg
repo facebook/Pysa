@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "supers.$toplevel",
+  "callable": "Function{supers.$toplevel}",
   "returned_callables": [],
   "calls": {
     "31:8-31:9|identifier|A": {
@@ -122,7 +122,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B_overwrite_both",
+  "callable": "Function{supers.B_overwrite_both}",
   "returned_callables": [],
   "calls": {
     "93:8-93:11": {
@@ -162,7 +162,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B_overwrite_partial",
+  "callable": "Function{supers.B_overwrite_partial}",
   "returned_callables": [],
   "calls": {
     "98:8-98:11": {
@@ -202,7 +202,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B_standard",
+  "callable": "Function{supers.B_standard}",
   "returned_callables": [],
   "calls": {
     "103:8-103:11": {
@@ -242,7 +242,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_B_not_overwritten",
+  "callable": "Function{supers.attribute_B_not_overwritten}",
   "returned_callables": [],
   "calls": {
     "83:4-83:7": {
@@ -282,7 +282,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_B_overwritten",
+  "callable": "Function{supers.attribute_B_overwritten}",
   "returned_callables": [],
   "calls": {
     "87:8-87:11": {
@@ -322,7 +322,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_C_not_overwritten",
+  "callable": "Function{supers.attribute_C_not_overwritten}",
   "returned_callables": [],
   "calls": {
     "108:4-108:7": {
@@ -362,7 +362,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_C_overwritten",
+  "callable": "Function{supers.attribute_C_overwritten}",
   "returned_callables": [],
   "calls": {
     "112:8-112:11": {
@@ -402,7 +402,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_D_not_overwritten",
+  "callable": "Function{supers.attribute_D_not_overwritten}",
   "returned_callables": [],
   "calls": {
     "118:8-118:11": {
@@ -442,7 +442,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_D_overwritten",
+  "callable": "Function{supers.attribute_D_overwritten}",
   "returned_callables": [],
   "calls": {
     "123:8-123:11": {
@@ -482,7 +482,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_E_not_overwritten",
+  "callable": "Function{supers.attribute_E_not_overwritten}",
   "returned_callables": [],
   "calls": {
     "129:8-129:11": {
@@ -535,7 +535,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_E_not_overwritten_RCE",
+  "callable": "Function{supers.attribute_E_not_overwritten_RCE}",
   "returned_callables": [],
   "calls": {
     "135:8-135:11": {
@@ -575,7 +575,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.attribute_E_overwritten",
+  "callable": "Function{supers.attribute_E_overwritten}",
   "returned_callables": [],
   "calls": {
     "140:8-140:11": {
@@ -641,7 +641,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.A.__init__",
+  "callable": "Method{supers.A.__init__}",
   "returned_callables": [],
   "calls": {
     "13:25-13:39": {
@@ -654,7 +654,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.A.f1",
+  "callable": "Method{supers.A.f1}",
   "returned_callables": [],
   "calls": {
     "16:8-16:34": {
@@ -667,7 +667,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.A.f2",
+  "callable": "Method{supers.A.f2}",
   "returned_callables": [],
   "calls": {
     "19:8-19:21": {
@@ -680,7 +680,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.A.f3",
+  "callable": "Method{supers.A.f3}",
   "returned_callables": [],
   "calls": {
     "22:15-22:29": {
@@ -693,7 +693,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B.f4",
+  "callable": "Method{supers.B.f4}",
   "returned_callables": [],
   "calls": {
     "36:15-36:29": {
@@ -706,7 +706,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B.f5",
+  "callable": "Method{supers.B.f5}",
   "returned_callables": [],
   "calls": {
     "39:15-39:28": {
@@ -719,7 +719,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B.g1",
+  "callable": "Method{supers.B.g1}",
   "returned_callables": [],
   "calls": {
     "42:8-42:22": {
@@ -884,7 +884,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B.g2",
+  "callable": "Method{supers.B.g2}",
   "returned_callables": [],
   "calls": {
     "47:8-47:22": {
@@ -1072,7 +1072,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B.g3",
+  "callable": "Method{supers.B.g3}",
   "returned_callables": [],
   "calls": {
     "51:8-51:29": {
@@ -1172,7 +1172,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.B.g4",
+  "callable": "Method{supers.B.g4}",
   "returned_callables": [],
   "calls": {
     "55:8-55:26": {
@@ -1204,7 +1204,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.C.g1",
+  "callable": "Method{supers.C.g1}",
   "returned_callables": [],
   "calls": {
     "63:15-63:22": {
@@ -1244,7 +1244,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.D.g1",
+  "callable": "Method{supers.D.g1}",
   "returned_callables": [],
   "calls": {
     "68:8-68:15": {
@@ -1284,7 +1284,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.E.g1",
+  "callable": "Method{supers.E.g1}",
   "returned_callables": [],
   "calls": {
     "73:8-73:15": {
@@ -1324,7 +1324,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.E.g2",
+  "callable": "Method{supers.E.g2}",
   "returned_callables": [],
   "calls": {
     "76:8-76:22": {
@@ -1387,7 +1387,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "supers.E.g3",
+  "callable": "Method{supers.E.g3}",
   "returned_callables": [],
   "calls": {
     "79:8-79:22": {

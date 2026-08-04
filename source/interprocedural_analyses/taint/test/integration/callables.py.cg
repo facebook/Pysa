@@ -1,18 +1,19 @@
 @generated
 Call dependencies
 {
-  "callables.ConcreteEventProcessor.async_call_tainted (method)": [
-    "pysa._test_sink (fun)"
+  "Function{callables.async_execute_event_processor}": [
+    "Function{callables.get_event_processors}",
+    "Function{pysa._test_source}", "Method{builtins.list.__iter__}",
+    "Method{builtins.object.__new__}",
+    "Method{callables.AbstractEventProcessor.__init__}",
+    "Method{typing.Iterator.__next__}",
+    "Override{callables.AbstractEventProcessor.async_call_tainted}",
+    "Override{callables.AbstractEventProcessor.async_run}"
   ],
-  "callables.ConcreteEventProcessor.async_run (method)": [
-    "pysa._test_sink (fun)"
+  "Method{callables.ConcreteEventProcessor.async_call_tainted}": [
+    "Function{pysa._test_sink}"
   ],
-  "callables.async_execute_event_processor (fun)": [
-    "builtins.list.__iter__ (method)", "builtins.object.__new__ (method)",
-    "callables.AbstractEventProcessor.__init__ (method)",
-    "callables.AbstractEventProcessor.async_call_tainted (override)",
-    "callables.AbstractEventProcessor.async_run (override)",
-    "callables.get_event_processors (fun)", "pysa._test_source (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Method{callables.ConcreteEventProcessor.async_run}": [
+    "Function{pysa._test_sink}"
   ]
 }

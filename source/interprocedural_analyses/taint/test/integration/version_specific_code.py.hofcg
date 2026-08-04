@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "version_specific_code.$toplevel",
+  "callable": "Function{version_specific_code.$toplevel}",
   "returned_callables": [],
   "calls": {
     "10:3-10:25": {
@@ -33,7 +33,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "version_specific_code.normal_function",
+  "callable": "Function{version_specific_code.normal_function}",
   "returned_callables": [],
   "calls": {
     "21:4-21:17": {

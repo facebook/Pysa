@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "private_variables.test_access_from_other_class",
+  "callable": "Function{private_variables.test_access_from_other_class}",
   "returned_callables": [],
   "calls": {
     "90:4-90:9|identifier|Other": {
@@ -70,7 +70,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_access_private_with_explicit_mangled_form",
+  "callable": "Function{private_variables.test_access_private_with_explicit_mangled_form}",
   "returned_callables": [],
   "calls": {
     "153:4-153:48": {
@@ -83,7 +83,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_bypass_private",
+  "callable": "Function{private_variables.test_bypass_private}",
   "returned_callables": [],
   "calls": {
     "72:4-72:61": {
@@ -229,7 +229,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_expand_subexpression",
+  "callable": "Function{private_variables.test_expand_subexpression}",
   "returned_callables": [],
   "calls": {
     "51:4-51:10|identifier|Simple": {
@@ -382,7 +382,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_getattr",
+  "callable": "Function{private_variables.test_getattr}",
   "returned_callables": [],
   "calls": {
     "57:4-57:63": {
@@ -676,7 +676,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_private_attribute_sink_models",
+  "callable": "Function{private_variables.test_private_attribute_sink_models}",
   "returned_callables": [],
   "calls": {
     "138:4-138:32": {
@@ -805,7 +805,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_private_attribute_source_models",
+  "callable": "Function{private_variables.test_private_attribute_source_models}",
   "returned_callables": [],
   "calls": {
     "112:4-112:66": {
@@ -934,7 +934,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_private_public_different",
+  "callable": "Function{private_variables.test_private_public_different}",
   "returned_callables": [],
   "calls": {
     "44:4-44:34": {
@@ -1104,7 +1104,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.test_simple",
+  "callable": "Function{private_variables.test_simple}",
   "returned_callables": [],
   "calls": {
     "40:4-40:34": {
@@ -1151,7 +1151,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Other.private_into_sink",
+  "callable": "Method{private_variables.Other.private_into_sink}",
   "returned_callables": [],
   "calls": {
     "86:8-86:29": {
@@ -1164,7 +1164,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSinkModels.__init__",
+  "callable": "Method{private_variables.PrivateAttributeSinkModels.__init__}",
   "returned_callables": [],
   "calls": {
     "122:8-122:28": {
@@ -1206,7 +1206,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSinkModels.set_model_mangled",
+  "callable": "Method{private_variables.PrivateAttributeSinkModels.set_model_mangled}",
   "returned_callables": [],
   "calls": {
     "127:8-127:28": {
@@ -1224,7 +1224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSinkModels.set_model_query",
+  "callable": "Method{private_variables.PrivateAttributeSinkModels.set_model_query}",
   "returned_callables": [],
   "calls": {
     "133:8-133:26": {
@@ -1242,7 +1242,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSinkModels.set_model_unmangled",
+  "callable": "Method{private_variables.PrivateAttributeSinkModels.set_model_unmangled}",
   "returned_callables": [],
   "calls": {
     "130:8-130:30": {
@@ -1260,7 +1260,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSourceModels.__init__",
+  "callable": "Method{private_variables.PrivateAttributeSourceModels.__init__}",
   "returned_callables": [],
   "calls": {
     "96:8-96:28": {
@@ -1302,7 +1302,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSourceModels.get_model_mangled",
+  "callable": "Method{private_variables.PrivateAttributeSourceModels.get_model_mangled}",
   "returned_callables": [],
   "calls": {
     "101:15-101:35": {
@@ -1320,7 +1320,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSourceModels.get_model_query",
+  "callable": "Method{private_variables.PrivateAttributeSourceModels.get_model_query}",
   "returned_callables": [],
   "calls": {
     "107:15-107:33": {
@@ -1338,7 +1338,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.PrivateAttributeSourceModels.get_model_unmangled",
+  "callable": "Method{private_variables.PrivateAttributeSourceModels.get_model_unmangled}",
   "returned_callables": [],
   "calls": {
     "104:15-104:37": {
@@ -1356,7 +1356,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Simple.expand_subexpression",
+  "callable": "Method{private_variables.Simple.expand_subexpression}",
   "returned_callables": [],
   "calls": {
     "25:8-25:37": {
@@ -1382,7 +1382,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Simple.getattr_invalid",
+  "callable": "Method{private_variables.Simple.getattr_invalid}",
   "returned_callables": [],
   "calls": {
     "36:15-36:39": {
@@ -1395,7 +1395,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Simple.getattr_private",
+  "callable": "Method{private_variables.Simple.getattr_private}",
   "returned_callables": [],
   "calls": {
     "31:15-31:46": {
@@ -1408,7 +1408,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Simple.getattr_public",
+  "callable": "Method{private_variables.Simple.getattr_public}",
   "returned_callables": [],
   "calls": {
     "28:15-28:37": {
@@ -1421,7 +1421,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Simple.private_into_sink",
+  "callable": "Method{private_variables.Simple.private_into_sink}",
   "returned_callables": [],
   "calls": {
     "17:8-17:32": {
@@ -1434,7 +1434,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "private_variables.Simple.public_into_sink",
+  "callable": "Method{private_variables.Simple.public_into_sink}",
   "returned_callables": [],
   "calls": {
     "20:8-20:30": {

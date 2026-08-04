@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "function_class.test",
+  "callable": "Function{function_class.test}",
   "returned_callables": [],
   "calls": {
     "15:4-15:7": {
@@ -28,7 +28,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "function_class.test.A.__init__",
+  "callable": "Method{function_class.test.A.__init__}",
   "returned_callables": [],
   "calls": {
     "12:19-12:45": {

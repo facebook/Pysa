@@ -1,4 +1,4 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) closure_models.Reclassification.__init__ (override)]
-closure_models.Reclassification.__init__ (override) -> [closure_models.Reclassification.__init__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{closure_models.Reclassification.__init__}]
+Override{closure_models.Reclassification.__init__} -> [Method{closure_models.Reclassification.__init__}]

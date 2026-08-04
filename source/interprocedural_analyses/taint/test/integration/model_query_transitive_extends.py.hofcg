@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_transitive_extends.$toplevel",
+  "callable": "Function{model_query_transitive_extends.$toplevel}",
   "returned_callables": [],
   "calls": {
     "16:15-16:22|identifier|Test1_C": {
@@ -99,7 +99,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.misc_noalarm1",
+  "callable": "Function{model_query_transitive_extends.misc_noalarm1}",
   "returned_callables": [],
   "calls": {
     "111:4-111:27": {
@@ -112,7 +112,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.misc_noalarm2",
+  "callable": "Function{model_query_transitive_extends.misc_noalarm2}",
   "returned_callables": [],
   "calls": {
     "115:4-115:26": {
@@ -125,7 +125,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.misc_noalarm3",
+  "callable": "Function{model_query_transitive_extends.misc_noalarm3}",
   "returned_callables": [],
   "calls": {
     "119:4-119:25": {
@@ -151,7 +151,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_alarm1",
+  "callable": "Function{model_query_transitive_extends.test1_alarm1}",
   "returned_callables": [],
   "calls": {
     "63:4-63:27": {
@@ -181,7 +181,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_alarm2",
+  "callable": "Function{model_query_transitive_extends.test1_alarm2}",
   "returned_callables": [],
   "calls": {
     "67:4-67:26": {
@@ -211,7 +211,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_alarm3",
+  "callable": "Function{model_query_transitive_extends.test1_alarm3}",
   "returned_callables": [],
   "calls": {
     "71:4-71:27": {
@@ -246,7 +246,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_alarm4",
+  "callable": "Function{model_query_transitive_extends.test1_alarm4}",
   "returned_callables": [],
   "calls": {
     "75:4-75:26": {
@@ -281,7 +281,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_alarm5",
+  "callable": "Function{model_query_transitive_extends.test1_alarm5}",
   "returned_callables": [],
   "calls": {
     "79:4-79:27": {
@@ -306,7 +306,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_alarm6",
+  "callable": "Function{model_query_transitive_extends.test1_alarm6}",
   "returned_callables": [],
   "calls": {
     "83:4-83:26": {
@@ -331,7 +331,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_noalarm1",
+  "callable": "Function{model_query_transitive_extends.test1_noalarm1}",
   "returned_callables": [],
   "calls": {
     "87:4-87:27": {
@@ -344,7 +344,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test1_noalarm2",
+  "callable": "Function{model_query_transitive_extends.test1_noalarm2}",
   "returned_callables": [],
   "calls": {
     "91:4-91:26": {
@@ -357,7 +357,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test2_alarm1",
+  "callable": "Function{model_query_transitive_extends.test2_alarm1}",
   "returned_callables": [],
   "calls": {
     "95:4-95:25": {
@@ -383,7 +383,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test2_noalarm1",
+  "callable": "Function{model_query_transitive_extends.test2_noalarm1}",
   "returned_callables": [],
   "calls": {
     "99:4-99:25": {
@@ -409,7 +409,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test2_noalarm2",
+  "callable": "Function{model_query_transitive_extends.test2_noalarm2}",
   "returned_callables": [],
   "calls": {
     "103:4-103:25": {
@@ -435,7 +435,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.test2_noalarm3",
+  "callable": "Function{model_query_transitive_extends.test2_noalarm3}",
   "returned_callables": [],
   "calls": {
     "107:4-107:25": {
@@ -461,7 +461,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.Test1_C.__init__",
+  "callable": "Method{model_query_transitive_extends.Test1_C.__init__}",
   "returned_callables": [],
   "calls": {
     "13:8-13:21": {
@@ -479,7 +479,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.Test1_C1.__init__",
+  "callable": "Method{model_query_transitive_extends.Test1_C1.__init__}",
   "returned_callables": [],
   "calls": {
     "20:8-20:21": {
@@ -502,7 +502,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_transitive_extends.Test1_C2.__init__",
+  "callable": "Method{model_query_transitive_extends.Test1_C2.__init__}",
   "returned_callables": [],
   "calls": {
     "27:8-27:21": {

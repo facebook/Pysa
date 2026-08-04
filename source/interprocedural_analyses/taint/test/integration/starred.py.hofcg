@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "starred.sink",
+  "callable": "Function{starred.sink}",
   "returned_callables": [],
   "calls": {
     "11:4-11:20": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "starred.test",
+  "callable": "Function{starred.test}",
   "returned_callables": [],
   "calls": {
     "15:21-15:35": {

@@ -1,23 +1,25 @@
 @generated
 Call dependencies
 {
-  "functions_as_locals.C.m (method)": [ "pysa._test_sink (fun)" ],
-  "functions_as_locals.a_or_b (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "functions_as_locals.barA (fun)", "functions_as_locals.barB (fun)",
-    "pysa._test_source (fun)"
+  "Function{functions_as_locals.a_or_b}": [
+    "Function{functions_as_locals.barA}",
+    "Function{functions_as_locals.barB}", "Function{pysa._test_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "functions_as_locals.barA (fun)": [ "pysa._test_sink (fun)" ],
-  "functions_as_locals.barB (fun)": [ "pysa._test_sink (fun)" ],
-  "functions_as_locals.foo (fun)": [ "pysa._test_sink (fun)" ],
-  "functions_as_locals.foo_as_local (fun)": [
-    "functions_as_locals.foo (fun)", "pysa._test_source (fun)"
+  "Function{functions_as_locals.barA}": [ "Function{pysa._test_sink}" ],
+  "Function{functions_as_locals.barB}": [ "Function{pysa._test_sink}" ],
+  "Function{functions_as_locals.foo_as_local}": [
+    "Function{functions_as_locals.foo}", "Function{pysa._test_source}"
   ],
-  "functions_as_locals.local_function_with_method_sink (fun)": [
-    "functions_as_locals.C.m (method)", "pysa._test_source (fun)"
+  "Function{functions_as_locals.foo}": [ "Function{pysa._test_sink}" ],
+  "Function{functions_as_locals.local_function_with_method_sink}": [
+    "Function{pysa._test_source}", "Method{functions_as_locals.C.m}"
   ],
-  "functions_as_locals.local_tito (fun)": [ "functions_as_locals.foo (fun)" ],
-  "functions_as_locals.method_tito (fun)": [
-    "functions_as_locals.C.m (method)"
-  ]
+  "Function{functions_as_locals.local_tito}": [
+    "Function{functions_as_locals.foo}"
+  ],
+  "Function{functions_as_locals.method_tito}": [
+    "Method{functions_as_locals.C.m}"
+  ],
+  "Method{functions_as_locals.C.m}": [ "Function{pysa._test_sink}" ]
 }

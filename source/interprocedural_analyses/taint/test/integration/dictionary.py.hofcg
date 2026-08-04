@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "dictionary.$toplevel",
+  "callable": "Function{dictionary.$toplevel}",
   "returned_callables": [],
   "calls": {
     "190:25-190:29|identifier|Dict": {
@@ -157,7 +157,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.analyze_getitem_index_backward",
+  "callable": "Function{dictionary.analyze_getitem_index_backward}",
   "returned_callables": [],
   "calls": {
     "474:8-474:24|artificial-call|subscript-get-item": {
@@ -183,7 +183,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.analyze_getitem_index_issue",
+  "callable": "Function{dictionary.analyze_getitem_index_issue}",
   "returned_callables": [],
   "calls": {
     "467:8-467:22": {
@@ -216,7 +216,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.backward_weak_update",
+  "callable": "Function{dictionary.backward_weak_update}",
   "returned_callables": [],
   "calls": {
     "447:4-447:14|artificial-call|subscript-set-item": {
@@ -255,7 +255,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.backwards_field_assignment",
+  "callable": "Function{dictionary.backwards_field_assignment}",
   "returned_callables": [],
   "calls": {
     "297:4-297:25|artificial-call|subscript-set-item": {
@@ -274,7 +274,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.backwards_model_for_dictionary_comprehension",
+  "callable": "Function{dictionary.backwards_model_for_dictionary_comprehension}",
   "returned_callables": [],
   "calls": {
     "268:19-268:23|artificial-call|subscript-get-item": {
@@ -300,7 +300,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.big_dict_update_arg",
+  "callable": "Function{dictionary.big_dict_update_arg}",
   "returned_callables": [],
   "calls": {
     "141:50-141:60": {
@@ -385,7 +385,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.copy_untainted_values_with_tainted_keys",
+  "callable": "Function{dictionary.copy_untainted_values_with_tainted_keys}",
   "returned_callables": [],
   "calls": {
     "231:9-231:23": {
@@ -450,7 +450,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_get_foo",
+  "callable": "Function{dictionary.dict_get_foo}",
   "returned_callables": [],
   "calls": {
     "533:11-533:23": {
@@ -469,7 +469,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_get_foo_with_default",
+  "callable": "Function{dictionary.dict_get_foo_with_default}",
   "returned_callables": [],
   "calls": {
     "537:11-537:32": {
@@ -488,7 +488,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_getitem_mutate",
+  "callable": "Function{dictionary.dict_getitem_mutate}",
   "returned_callables": [],
   "calls": {
     "563:40-563:49": {
@@ -592,7 +592,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_only_key_of_parameter_sink",
+  "callable": "Function{dictionary.dict_only_key_of_parameter_sink}",
   "returned_callables": [],
   "calls": {
     "149:4-149:27": {
@@ -651,7 +651,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_keys",
+  "callable": "Function{dictionary.dict_update_keys}",
   "returned_callables": [],
   "calls": {
     "523:43-523:54": {
@@ -696,7 +696,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_sinks_cycle",
+  "callable": "Function{dictionary.dict_update_sinks_cycle}",
   "returned_callables": [],
   "calls": {
     "111:4-111:40": {
@@ -748,7 +748,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_source_cycle",
+  "callable": "Function{dictionary.dict_update_source_cycle}",
   "returned_callables": [],
   "calls": {
     "116:14-116:28": {
@@ -787,7 +787,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_expression_add_source",
+  "callable": "Function{dictionary.dict_update_with_expression_add_source}",
   "returned_callables": [],
   "calls": {
     "166:13-166:27": {
@@ -820,7 +820,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_expression_erase_source",
+  "callable": "Function{dictionary.dict_update_with_expression_erase_source}",
   "returned_callables": [],
   "calls": {
     "156:13-156:27": {
@@ -853,7 +853,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_expression_tito",
+  "callable": "Function{dictionary.dict_update_with_expression_tito}",
   "returned_callables": [],
   "calls": {
     "180:4-180:15": {
@@ -872,7 +872,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_literal_flows_to_sink",
+  "callable": "Function{dictionary.dict_update_with_literal_flows_to_sink}",
   "returned_callables": [],
   "calls": {
     "102:4-102:35": {
@@ -951,7 +951,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_literal_multiple",
+  "callable": "Function{dictionary.dict_update_with_literal_multiple}",
   "returned_callables": [],
   "calls": {
     "123:13-123:27": {
@@ -1005,7 +1005,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_literal_safe_source",
+  "callable": "Function{dictionary.dict_update_with_literal_safe_source}",
   "returned_callables": [],
   "calls": {
     "87:13-87:27": {
@@ -1038,7 +1038,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_update_with_literal_source",
+  "callable": "Function{dictionary.dict_update_with_literal_source}",
   "returned_callables": [],
   "calls": {
     "96:4-96:35": {
@@ -1064,7 +1064,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_with_tainted_key_flows_to_sink",
+  "callable": "Function{dictionary.dict_with_tainted_key_flows_to_sink}",
   "returned_callables": [],
   "calls": {
     "239:9-239:23": {
@@ -1084,7 +1084,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dict_with_tainted_key_flows_to_sink_via_setitem",
+  "callable": "Function{dictionary.dict_with_tainted_key_flows_to_sink_via_setitem}",
   "returned_callables": [],
   "calls": {
     "245:4-245:25|artificial-call|subscript-set-item": {
@@ -1117,7 +1117,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_assign_to_index",
+  "callable": "Function{dictionary.dictionary_assign_to_index}",
   "returned_callables": [],
   "calls": {
     "39:4-39:27|artificial-call|subscript-set-item": {
@@ -1143,7 +1143,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_assignment_source",
+  "callable": "Function{dictionary.dictionary_assignment_source}",
   "returned_callables": [],
   "calls": {
     "27:4-27:27|artificial-call|subscript-set-item": {
@@ -1182,7 +1182,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_bool_key",
+  "callable": "Function{dictionary.dictionary_bool_key}",
   "returned_callables": [],
   "calls": {
     "495:38-495:52": {
@@ -1235,7 +1235,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_entry_sink",
+  "callable": "Function{dictionary.dictionary_entry_sink}",
   "returned_callables": [],
   "calls": {
     "17:19-17:34": {
@@ -1248,7 +1248,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_int_key",
+  "callable": "Function{dictionary.dictionary_int_key}",
   "returned_callables": [],
   "calls": {
     "489:12-489:26": {
@@ -1301,7 +1301,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_keys_and_any_index_bug",
+  "callable": "Function{dictionary.dictionary_keys_and_any_index_bug}",
   "returned_callables": [],
   "calls": {
     "527:8-527:29": {
@@ -1338,7 +1338,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_nested_assignment_1",
+  "callable": "Function{dictionary.dictionary_nested_assignment_1}",
   "returned_callables": [],
   "calls": {
     "45:4-45:10|artificial-call|subscript-get-item": {
@@ -1383,7 +1383,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_nested_assignment_2",
+  "callable": "Function{dictionary.dictionary_nested_assignment_2}",
   "returned_callables": [],
   "calls": {
     "51:4-51:10|artificial-call|subscript-get-item": {
@@ -1425,7 +1425,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_nested_non_source_assignment",
+  "callable": "Function{dictionary.dictionary_nested_non_source_assignment}",
   "returned_callables": [],
   "calls": {
     "57:4-57:10|artificial-call|subscript-get-item": {
@@ -1470,7 +1470,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_non_source",
+  "callable": "Function{dictionary.dictionary_non_source}",
   "returned_callables": [],
   "calls": {
     "33:4-33:27|artificial-call|subscript-set-item": {
@@ -1509,7 +1509,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_source",
+  "callable": "Function{dictionary.dictionary_source}",
   "returned_callables": [],
   "calls": {
     "12:19-12:33": {
@@ -1522,7 +1522,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_tito_any_index",
+  "callable": "Function{dictionary.dictionary_tito_any_index}",
   "returned_callables": [],
   "calls": {
     "485:28-485:37": {
@@ -1574,7 +1574,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_update_iterable",
+  "callable": "Function{dictionary.dictionary_update_iterable}",
   "returned_callables": [],
   "calls": {
     "511:4-511:37": {
@@ -1720,7 +1720,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.dictionary_update_keyword",
+  "callable": "Function{dictionary.dictionary_update_keyword}",
   "returned_callables": [],
   "calls": {
     "502:4-502:37": {
@@ -1799,7 +1799,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.flow_through_keywords",
+  "callable": "Function{dictionary.flow_through_keywords}",
   "returned_callables": [],
   "calls": {
     "185:24-185:38": {
@@ -1832,7 +1832,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.forward_comprehension_key_sink",
+  "callable": "Function{dictionary.forward_comprehension_key_sink}",
   "returned_callables": [],
   "calls": {
     "215:9-215:22": {
@@ -1871,7 +1871,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.forward_comprehension_key_source",
+  "callable": "Function{dictionary.forward_comprehension_key_source}",
   "returned_callables": [],
   "calls": {
     "206:9-206:23": {
@@ -1910,7 +1910,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.forward_comprehension_value_sink",
+  "callable": "Function{dictionary.forward_comprehension_value_sink}",
   "returned_callables": [],
   "calls": {
     "211:14-211:27": {
@@ -1949,7 +1949,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.forward_comprehension_value_source",
+  "callable": "Function{dictionary.forward_comprehension_value_source}",
   "returned_callables": [],
   "calls": {
     "201:14-201:28": {
@@ -1988,7 +1988,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.forward_weak_update",
+  "callable": "Function{dictionary.forward_weak_update}",
   "returned_callables": [],
   "calls": {
     "461:4-461:25|artificial-call|subscript-set-item": {
@@ -2027,7 +2027,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.get_keys",
+  "callable": "Function{dictionary.get_keys}",
   "returned_callables": [],
   "calls": {
     "254:23-254:24|artificial-call|generator-iter": {
@@ -2059,7 +2059,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.indirect_flow_from_source_to_global_dictionary",
+  "callable": "Function{dictionary.indirect_flow_from_source_to_global_dictionary}",
   "returned_callables": [],
   "calls": {
     "78:4-78:55": {
@@ -2083,7 +2083,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.issue_in_keys",
+  "callable": "Function{dictionary.issue_in_keys}",
   "returned_callables": [],
   "calls": {
     "479:4-479:29|artificial-call|subscript-set-item": {
@@ -2140,7 +2140,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.lists_of_dictionary_iteration_is_precise",
+  "callable": "Function{dictionary.lists_of_dictionary_iteration_is_precise}",
   "returned_callables": [],
   "calls": {
     "219:38-219:52": {
@@ -2245,7 +2245,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.reassignment_removes_backwards_taint",
+  "callable": "Function{dictionary.reassignment_removes_backwards_taint}",
   "returned_callables": [],
   "calls": {
     "226:4-226:14|artificial-call|subscript-set-item": {
@@ -2264,7 +2264,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.return_comprehension_with_tained_keys",
+  "callable": "Function{dictionary.return_comprehension_with_tained_keys}",
   "returned_callables": [],
   "calls": {
     "258:9-258:23": {
@@ -2303,7 +2303,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.return_comprehension_with_untainted_keys",
+  "callable": "Function{dictionary.return_comprehension_with_untainted_keys}",
   "returned_callables": [],
   "calls": {
     "263:12-263:26": {
@@ -2342,7 +2342,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.setitem_models",
+  "callable": "Function{dictionary.setitem_models}",
   "returned_callables": [],
   "calls": {
     "431:9-431:17": {
@@ -2408,7 +2408,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.sink_dictionary_through_keys",
+  "callable": "Function{dictionary.sink_dictionary_through_keys}",
   "returned_callables": [],
   "calls": {
     "250:5-250:18": {
@@ -2447,7 +2447,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.taint_dict_keys",
+  "callable": "Function{dictionary.taint_dict_keys}",
   "returned_callables": [],
   "calls": {
     "414:4-414:26": {
@@ -2473,7 +2473,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.taint_dict_keys_no_issue",
+  "callable": "Function{dictionary.taint_dict_keys_no_issue}",
   "returned_callables": [],
   "calls": {
     "418:14-418:28": {
@@ -2497,7 +2497,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.tainted_setitem",
+  "callable": "Function{dictionary.tainted_setitem}",
   "returned_callables": [],
   "calls": {
     "196:4-196:25|artificial-call|subscript-set-item": {
@@ -2523,7 +2523,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_dict_get_foo_tito",
+  "callable": "Function{dictionary.test_dict_get_foo_tito}",
   "returned_callables": [],
   "calls": {
     "541:4-541:53": {
@@ -2579,7 +2579,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_dict_get_source",
+  "callable": "Function{dictionary.test_dict_get_source}",
   "returned_callables": [],
   "calls": {
     "546:16-546:30": {
@@ -2632,7 +2632,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_dict_getitem_mutate",
+  "callable": "Function{dictionary.test_dict_getitem_mutate}",
   "returned_callables": [],
   "calls": {
     "569:4-569:54": {
@@ -2663,7 +2663,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_dict_multiple_targets",
+  "callable": "Function{dictionary.test_dict_multiple_targets}",
   "returned_callables": [],
   "calls": {
     "554:4-554:12|artificial-call|subscript-get-item": {
@@ -2815,7 +2815,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_dict_sanitize_get",
+  "callable": "Function{dictionary.test_dict_sanitize_get}",
   "returned_callables": [],
   "calls": {
     "390:4-390:37": {
@@ -2848,7 +2848,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_dict_sanitize_getitem",
+  "callable": "Function{dictionary.test_dict_sanitize_getitem}",
   "returned_callables": [],
   "calls": {
     "394:4-394:33": {
@@ -2881,7 +2881,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_index_from_tito",
+  "callable": "Function{dictionary.test_index_from_tito}",
   "returned_callables": [],
   "calls": {
     "344:14-344:28": {
@@ -2919,7 +2919,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_items",
+  "callable": "Function{dictionary.test_items}",
   "returned_callables": [],
   "calls": {
     "349:22-349:36": {
@@ -3045,7 +3045,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_items_backward_keys",
+  "callable": "Function{dictionary.test_items_backward_keys}",
   "returned_callables": [],
   "calls": {
     "367:16-367:38": {
@@ -3143,7 +3143,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_items_backward_values",
+  "callable": "Function{dictionary.test_items_backward_values}",
   "returned_callables": [],
   "calls": {
     "377:16-377:38": {
@@ -3241,7 +3241,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_keys_and_values",
+  "callable": "Function{dictionary.test_keys_and_values}",
   "returned_callables": [],
   "calls": {
     "273:43-273:57": {
@@ -3486,7 +3486,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_mapping_sanitize_get",
+  "callable": "Function{dictionary.test_mapping_sanitize_get}",
   "returned_callables": [],
   "calls": {
     "398:4-398:37": {
@@ -3519,7 +3519,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_mapping_sanitize_getitem",
+  "callable": "Function{dictionary.test_mapping_sanitize_getitem}",
   "returned_callables": [],
   "calls": {
     "402:4-402:33": {
@@ -3552,7 +3552,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_service_with_dict",
+  "callable": "Function{dictionary.test_service_with_dict}",
   "returned_callables": [],
   "calls": {
     "329:14-329:23": {
@@ -3606,7 +3606,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_service_with_mapping",
+  "callable": "Function{dictionary.test_service_with_mapping}",
   "returned_callables": [],
   "calls": {
     "334:14-334:23": {
@@ -3660,7 +3660,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_setitem_with_parenthesized_target",
+  "callable": "Function{dictionary.test_setitem_with_parenthesized_target}",
   "returned_callables": [],
   "calls": {
     "578:5-578:22|artificial-call|subscript-set-item": {
@@ -3679,7 +3679,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_type_comments",
+  "callable": "Function{dictionary.test_type_comments}",
   "returned_callables": [],
   "calls": {
     "574:4-574:15|artificial-call|subscript-set-item": {
@@ -3698,7 +3698,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_with_issue_in_dict_comprehension",
+  "callable": "Function{dictionary.test_with_issue_in_dict_comprehension}",
   "returned_callables": [],
   "calls": {
     "306:15-306:29": {
@@ -3744,7 +3744,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.test_with_issue_in_dict_items_comprehension",
+  "callable": "Function{dictionary.test_with_issue_in_dict_items_comprehension}",
   "returned_callables": [],
   "calls": {
     "385:20-385:34": {
@@ -3796,7 +3796,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.tito_with_index",
+  "callable": "Function{dictionary.tito_with_index}",
   "returned_callables": [],
   "calls": {
     "339:13-339:19|artificial-call|subscript-get-item": {
@@ -3815,7 +3815,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.update_dictionary_indirectly",
+  "callable": "Function{dictionary.update_dictionary_indirectly}",
   "returned_callables": [],
   "calls": {
     "74:4-74:22|identifier|tainted_dictionary": {
@@ -3841,7 +3841,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.update_parameter",
+  "callable": "Function{dictionary.update_parameter}",
   "returned_callables": [],
   "calls": {
     "82:4-82:37": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } },
@@ -3855,7 +3855,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.update_tainted_dictionary",
+  "callable": "Function{dictionary.update_tainted_dictionary}",
   "returned_callables": [],
   "calls": {
     "65:4-65:22|identifier|tainted_dictionary": {
@@ -3888,7 +3888,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.update_tainted_dictionary_sink",
+  "callable": "Function{dictionary.update_tainted_dictionary_sink}",
   "returned_callables": [],
   "calls": {
     "69:4-69:22|identifier|tainted_dictionary": {
@@ -3928,7 +3928,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.walrus_operator",
+  "callable": "Function{dictionary.walrus_operator}",
   "returned_callables": [],
   "calls": {
     "453:4-453:39|artificial-call|subscript-set-item": {
@@ -3954,7 +3954,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.Service.async_get_dict",
+  "callable": "Method{dictionary.Service.async_get_dict}",
   "returned_callables": [],
   "calls": {
     "322:15-322:68": {
@@ -3986,7 +3986,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.Service.async_get_many_dict",
+  "callable": "Method{dictionary.Service.async_get_many_dict}",
   "returned_callables": [],
   "calls": {
     "319:21-319:34": {
@@ -4025,7 +4025,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.Service.async_get_mapping",
+  "callable": "Method{dictionary.Service.async_get_mapping}",
   "returned_callables": [],
   "calls": {
     "325:15-325:65": {
@@ -4064,7 +4064,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "dictionary.SpecialSetitemDict.__setitem__",
+  "callable": "Method{dictionary.SpecialSetitemDict.__setitem__}",
   "returned_callables": [],
   "calls": {
     "192:8-192:23": {

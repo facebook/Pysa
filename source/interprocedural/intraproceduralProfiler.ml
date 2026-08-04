@@ -143,8 +143,8 @@ module Make (Analysis : Analysis) = struct
   (* A profiler that does nothing. *)
   let disabled = None
 
-  let start ~enable_perf ~callable () =
-    Log.dump "Starting to profile the analysis of %a" Target.pp_pretty callable;
+  let start ~display_api ~enable_perf ~callable () =
+    Log.dump "Starting to profile the analysis of %a" (Target.pp_pretty ~display_api) callable;
 
     let perf_profiler =
       if enable_perf then
@@ -154,7 +154,7 @@ module Make (Analysis : Analysis) = struct
                (Format.asprintf
                   "perf.%s.%a.%d.data"
                   Analysis.perf_data_file_name
-                  Target.pp_pretty
+                  (Target.pp_pretty ~display_api)
                   callable
                   (Int.of_float (CamlUnix.time ())))
              ())
@@ -248,7 +248,7 @@ module Make (Analysis : Analysis) = struct
         result
 
 
-  let stop ~max_number_expressions ~max_number_apply_call_steps = function
+  let stop ~display_api ~max_number_expressions ~max_number_apply_call_steps = function
     | None -> ()
     | Some
         {
@@ -451,7 +451,7 @@ module Make (Analysis : Analysis) = struct
             seconds
             (seconds /. total_seconds *. 100.0)
             average_size
-            Target.pp_pretty
+            (Target.pp_pretty ~display_api)
             target
         in
         List.iter fetch_model_events ~f:display_model_row;
@@ -497,7 +497,7 @@ module Make (Analysis : Analysis) = struct
             iterations
             seconds
             (seconds /. total_seconds *. 100.0)
-            (pp_option Target.pp_pretty)
+            (pp_option (Target.pp_pretty ~display_api))
             target
             Analysis.ApplyCallStep.pp_short
             step

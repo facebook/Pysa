@@ -1,4 +1,4 @@
 @generated
 Overrides
-breadcrumbs.TpmRequest.__init__ (override) -> [breadcrumbs.TpmRequest.__init__ (method)]
-builtins.object.__init__ (override) -> [breadcrumbs.TpmRequest.__init__ (override) builtins.object.__init__ (method)]
+Override{breadcrumbs.TpmRequest.__init__} -> [Method{breadcrumbs.TpmRequest.__init__}]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{breadcrumbs.TpmRequest.__init__}]

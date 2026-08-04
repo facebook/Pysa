@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "deadcode.$toplevel",
+  "callable": "Function{deadcode.$toplevel}",
   "returned_callables": [],
   "calls": {
     "95:1-95:10|identifier|dataclass": {
@@ -20,7 +20,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.dead_code_by_type_refinement",
+  "callable": "Function{deadcode.dead_code_by_type_refinement}",
   "returned_callables": [],
   "calls": {
     "101:7-101:20|artificial-call|comparison": {
@@ -111,7 +111,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_break_no_issue_for",
+  "callable": "Function{deadcode.early_break_no_issue_for}",
   "returned_callables": [],
   "calls": {
     "56:13-56:21": {
@@ -177,7 +177,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_break_no_issue_while",
+  "callable": "Function{deadcode.early_break_no_issue_while}",
   "returned_callables": [],
   "calls": {
     "64:8-64:34": {
@@ -197,7 +197,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_continue_no_issue_for",
+  "callable": "Function{deadcode.early_continue_no_issue_for}",
   "returned_callables": [],
   "calls": {
     "68:13-68:21": {
@@ -263,7 +263,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_raise_no_issue",
+  "callable": "Function{deadcode.early_raise_no_issue}",
   "returned_callables": [],
   "calls": {
     "74:10-74:31": {
@@ -304,7 +304,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_issue",
+  "callable": "Function{deadcode.early_return_no_issue}",
   "returned_callables": [],
   "calls": {
     "28:4-28:30": {
@@ -324,7 +324,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_issue_class",
+  "callable": "Function{deadcode.early_return_no_issue_class}",
   "returned_callables": [],
   "calls": {
     "86:13-86:41": {
@@ -365,7 +365,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_issue_for_else",
+  "callable": "Function{deadcode.early_return_no_issue_for_else}",
   "returned_callables": [],
   "calls": {
     "40:13-40:14|artificial-call|for-iter": {
@@ -391,7 +391,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_issue_if",
+  "callable": "Function{deadcode.early_return_no_issue_if}",
   "returned_callables": [],
   "calls": {
     "36:4-36:30": {
@@ -411,7 +411,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_issue_while",
+  "callable": "Function{deadcode.early_return_no_issue_while}",
   "returned_callables": [],
   "calls": {
     "52:4-52:30": {
@@ -431,7 +431,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_sink",
+  "callable": "Function{deadcode.early_return_no_sink}",
   "returned_callables": [],
   "calls": {
     "16:4-16:17": {
@@ -444,7 +444,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.early_return_no_source",
+  "callable": "Function{deadcode.early_return_no_source}",
   "returned_callables": [],
   "calls": {
     "20:8-20:22": {
@@ -457,7 +457,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "deadcode.EarlyReturns.__init__",
+  "callable": "Method{deadcode.EarlyReturns.__init__}",
   "returned_callables": [],
   "calls": {
     "81:17-81:31": {

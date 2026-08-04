@@ -3670,7 +3670,7 @@ module ReadOnly = struct
               let unknown_callee =
                 Format.asprintf
                   "%a:%a"
-                  Target.pp_pretty
+                  (Target.pp_pretty ~display_api)
                   (Target.strip_parameters callable)
                   Location.pp
                   location

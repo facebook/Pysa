@@ -1,160 +1,155 @@
 @generated
 Call dependencies
 {
-  "multiple_sources.Node.get (method)": [
-    "builtins.object.__new__ (method)",
-    "multiple_sources.Node.__init__ (method)"
+  "Function{multiple_sources.combine_c_d_and_c_e}": [
+    "Function{multiple_sources.c_source}",
+    "Function{multiple_sources.d_source}",
+    "Function{multiple_sources.e_source}",
+    "Function{multiple_sources.multi_sink_share_both_sinks}"
   ],
-  "multiple_sources.combine_c_d_and_c_e (fun)": [
-    "multiple_sources.c_source (fun)", "multiple_sources.d_source (fun)",
-    "multiple_sources.e_source (fun)",
-    "multiple_sources.multi_sink_share_both_sinks (fun)"
+  "Function{multiple_sources.combine_tainted_user_and_dangerous_vc}": [
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.user_controlled_input}",
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.combine_tainted_user_and_dangerous_vc (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)",
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.user_controlled_input (fun)"
+  "Function{multiple_sources.demonstrate_triggered_c_from_d_and_e}": [
+    "Function{multiple_sources.d_source}",
+    "Function{multiple_sources.e_source}",
+    "Function{multiple_sources.multi_sink_share_both_sinks}"
   ],
-  "multiple_sources.demonstrate_triggered_c_from_d (fun)": [
-    "multiple_sources.d_source (fun)",
-    "multiple_sources.multi_sink_share_both_sinks (fun)"
+  "Function{multiple_sources.demonstrate_triggered_c_from_d_or_e}": [
+    "Function{multiple_sources.d_source}",
+    "Function{multiple_sources.e_source}",
+    "Function{multiple_sources.multi_sink_share_both_sinks}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "multiple_sources.demonstrate_triggered_c_from_d_and_e (fun)": [
-    "multiple_sources.d_source (fun)", "multiple_sources.e_source (fun)",
-    "multiple_sources.multi_sink_share_both_sinks (fun)"
+  "Function{multiple_sources.demonstrate_triggered_c_from_d}": [
+    "Function{multiple_sources.d_source}",
+    "Function{multiple_sources.multi_sink_share_both_sinks}"
   ],
-  "multiple_sources.demonstrate_triggered_c_from_d_or_e (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "multiple_sources.d_source (fun)", "multiple_sources.e_source (fun)",
-    "multiple_sources.multi_sink_share_both_sinks (fun)"
+  "Function{multiple_sources.demonstrate_triggered_context_more_hops}": [
+    "Function{multiple_sources.user_controlled_input_wrapper}",
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.demonstrate_triggered_context (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)",
-    "multiple_sources.user_controlled_input (fun)"
+  "Function{multiple_sources.demonstrate_triggered_context}": [
+    "Function{multiple_sources.user_controlled_input}",
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.demonstrate_triggered_context_more_hops (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)",
-    "multiple_sources.user_controlled_input_wrapper (fun)"
+  "Function{multiple_sources.demonstrate_triggered_d_and_e}": [
+    "Function{multiple_sources.c_source}",
+    "Function{multiple_sources.multi_sink_share_both_sinks}"
   ],
-  "multiple_sources.demonstrate_triggered_d_and_e (fun)": [
-    "multiple_sources.c_source (fun)",
-    "multiple_sources.multi_sink_share_both_sinks (fun)"
+  "Function{multiple_sources.demonstrate_triggered_input}": [
+    "Function{multiple_sources.permissive_context}",
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.demonstrate_triggered_input (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)",
-    "multiple_sources.permissive_context (fun)"
+  "Function{multiple_sources.issue_with_sanitizer}": [
+    "Function{multiple_sources.a_source}",
+    "Function{multiple_sources.combines_tests_and_context}",
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.sanitize_sink_a_tito}"
   ],
-  "multiple_sources.issue_with_sanitizer (fun)": [
-    "multiple_sources.a_source (fun)",
-    "multiple_sources.combines_tests_and_context (fun)",
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.sanitize_sink_a_tito (fun)"
+  "Function{multiple_sources.issue_with_test_a_and_b}": [
+    "Function{multiple_sources.a_source}",
+    "Function{multiple_sources.b_source}",
+    "Function{multiple_sources.combines_tests_and_context}",
+    "Function{multiple_sources.permissive_context}"
   ],
-  "multiple_sources.issue_with_test_a_and_b (fun)": [
-    "multiple_sources.a_source (fun)", "multiple_sources.b_source (fun)",
-    "multiple_sources.combines_tests_and_context (fun)",
-    "multiple_sources.permissive_context (fun)"
+  "Function{multiple_sources.issue_with_triggered_c_from_d_and_e}": [
+    "Function{multiple_sources.c_source}",
+    "Function{multiple_sources.demonstrate_triggered_c_from_d_and_e}"
   ],
-  "multiple_sources.issue_with_triggered_c_from_d (fun)": [
-    "multiple_sources.c_source (fun)",
-    "multiple_sources.demonstrate_triggered_c_from_d (fun)"
+  "Function{multiple_sources.issue_with_triggered_c_from_d_or_e}": [
+    "Function{multiple_sources.c_source}",
+    "Function{multiple_sources.demonstrate_triggered_c_from_d_or_e}"
   ],
-  "multiple_sources.issue_with_triggered_c_from_d_and_e (fun)": [
-    "multiple_sources.c_source (fun)",
-    "multiple_sources.demonstrate_triggered_c_from_d_and_e (fun)"
+  "Function{multiple_sources.issue_with_triggered_c_from_d}": [
+    "Function{multiple_sources.c_source}",
+    "Function{multiple_sources.demonstrate_triggered_c_from_d}"
   ],
-  "multiple_sources.issue_with_triggered_c_from_d_or_e (fun)": [
-    "multiple_sources.c_source (fun)",
-    "multiple_sources.demonstrate_triggered_c_from_d_or_e (fun)"
+  "Function{multiple_sources.issue_with_triggered_context_more_hops}": [
+    "Function{multiple_sources.demonstrate_triggered_context_more_hops}",
+    "Function{multiple_sources.permissive_context}"
   ],
-  "multiple_sources.issue_with_triggered_context (fun)": [
-    "multiple_sources.demonstrate_triggered_context (fun)",
-    "multiple_sources.permissive_context (fun)"
+  "Function{multiple_sources.issue_with_triggered_context}": [
+    "Function{multiple_sources.demonstrate_triggered_context}",
+    "Function{multiple_sources.permissive_context}"
   ],
-  "multiple_sources.issue_with_triggered_context_more_hops (fun)": [
-    "multiple_sources.demonstrate_triggered_context_more_hops (fun)",
-    "multiple_sources.permissive_context (fun)"
+  "Function{multiple_sources.issue_with_triggered_d_and_e}": [
+    "Function{multiple_sources.d_source}",
+    "Function{multiple_sources.demonstrate_triggered_d_and_e}",
+    "Function{multiple_sources.e_source}"
   ],
-  "multiple_sources.issue_with_triggered_d_and_e (fun)": [
-    "multiple_sources.d_source (fun)",
-    "multiple_sources.demonstrate_triggered_d_and_e (fun)",
-    "multiple_sources.e_source (fun)"
+  "Function{multiple_sources.issue_with_triggered_input}": [
+    "Function{multiple_sources.demonstrate_triggered_input}",
+    "Function{multiple_sources.user_controlled_input}"
   ],
-  "multiple_sources.issue_with_triggered_input (fun)": [
-    "multiple_sources.demonstrate_triggered_input (fun)",
-    "multiple_sources.user_controlled_input (fun)"
+  "Function{multiple_sources.issue_with_wrapper_node_get_send_triggered_context}": [
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.wrapper_node_get_send_triggered_context}"
   ],
-  "multiple_sources.issue_with_wrapper_node_get_send (fun)": [
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.user_controlled_input (fun)",
-    "multiple_sources.wrapper_node_get_send (fun)"
+  "Function{multiple_sources.issue_with_wrapper_node_get_send}": [
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.user_controlled_input}",
+    "Function{multiple_sources.wrapper_node_get_send}"
   ],
-  "multiple_sources.issue_with_wrapper_node_get_send_triggered_context (fun)": [
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.wrapper_node_get_send_triggered_context (fun)"
+  "Function{multiple_sources.muliple_main_issues_1}": [
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.user_controlled_input}",
+    "Method{multiple_sources.A.multi_sink}",
+    "Method{multiple_sources.B.multi_sink}"
   ],
-  "multiple_sources.muliple_main_issues_1 (fun)": [
-    "multiple_sources.A.multi_sink (method)",
-    "multiple_sources.B.multi_sink (method)",
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.user_controlled_input (fun)"
+  "Function{multiple_sources.muliple_main_issues_2}": [
+    "Function{multiple_sources.multiple_triggered_context}",
+    "Function{multiple_sources.permissive_context}"
   ],
-  "multiple_sources.muliple_main_issues_2 (fun)": [
-    "multiple_sources.multiple_triggered_context (fun)",
-    "multiple_sources.permissive_context (fun)"
+  "Function{multiple_sources.multiple_triggered_context}": [
+    "Function{multiple_sources.user_controlled_input}",
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.multiple_triggered_context (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)",
-    "multiple_sources.user_controlled_input (fun)"
+  "Function{multiple_sources.no_issue_with_transform}": [
+    "Function{multiple_sources.a_source}",
+    "Function{multiple_sources.combines_tests_and_context}",
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.transform_t}"
   ],
-  "multiple_sources.no_issue_with_transform (fun)": [
-    "multiple_sources.a_source (fun)",
-    "multiple_sources.combines_tests_and_context (fun)",
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.transform_t (fun)"
+  "Function{multiple_sources.no_issue_with_wrong_label}": [
+    "Function{multiple_sources.demonstrate_triggered_input}",
+    "Function{multiple_sources.permissive_context}"
   ],
-  "multiple_sources.no_issue_with_wrong_label (fun)": [
-    "multiple_sources.demonstrate_triggered_input (fun)",
-    "multiple_sources.permissive_context (fun)"
+  "Function{multiple_sources.no_sink_with_sanitizer}": [
+    "Function{multiple_sources.combines_tests_and_context}",
+    "Function{multiple_sources.permissive_context}",
+    "Function{multiple_sources.sanitize_source_a_tito}",
+    "Function{multiple_sources.sanitize_source_b_tito}"
   ],
-  "multiple_sources.no_sink_with_sanitizer (fun)": [
-    "multiple_sources.combines_tests_and_context (fun)",
-    "multiple_sources.permissive_context (fun)",
-    "multiple_sources.sanitize_source_a_tito (fun)",
-    "multiple_sources.sanitize_source_b_tito (fun)"
+  "Function{multiple_sources.no_sink_with_transform}": [
+    "Function{multiple_sources.a_source}",
+    "Function{multiple_sources.combines_tests_and_context}",
+    "Function{multiple_sources.transform_t}"
   ],
-  "multiple_sources.no_sink_with_transform (fun)": [
-    "multiple_sources.a_source (fun)",
-    "multiple_sources.combines_tests_and_context (fun)",
-    "multiple_sources.transform_t (fun)"
+  "Function{multiple_sources.user_controlled_input_wrapper}": [
+    "Function{multiple_sources.user_controlled_input}"
   ],
-  "multiple_sources.user_controlled_input_wrapper (fun)": [
-    "multiple_sources.user_controlled_input (fun)"
+  "Function{multiple_sources.wrapper_combined_node_get_send}": [
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}",
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.wrapper_combined_node_get_send (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)"
+  "Function{multiple_sources.wrapper_mismatched_partial_sinks}": [
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.wrapper_mismatched_partial_sinks (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)"
+  "Function{multiple_sources.wrapper_node_get_send_triggered_context}": [
+    "Function{multiple_sources.user_controlled_input}",
+    "Function{multiple_sources.wrapper_node_get_send}"
   ],
-  "multiple_sources.wrapper_node_get_send (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)"
+  "Function{multiple_sources.wrapper_node_get_send}": [
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.wrapper_node_get_send_triggered_context (fun)": [
-    "multiple_sources.user_controlled_input (fun)",
-    "multiple_sources.wrapper_node_get_send (fun)"
+  "Function{multiple_sources.wrapper_node_send}": [
+    "Method{multiple_sources.Node.get}", "Method{multiple_sources.Node.send}"
   ],
-  "multiple_sources.wrapper_node_send (fun)": [
-    "multiple_sources.Node.get (method)",
-    "multiple_sources.Node.send (method)"
+  "Method{multiple_sources.Node.get}": [
+    "Method{builtins.object.__new__}",
+    "Method{multiple_sources.Node.__init__}"
   ]
 }

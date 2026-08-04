@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "partial.NestedDefineDecorator.__get__.wrapper",
+  "callable": "Function{partial.NestedDefineDecorator.__get__.wrapper}",
   "returned_callables": [],
   "calls": {
     "141:12-141:41|artificial-call|subscript-set-item": {
@@ -55,7 +55,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.a_flows_to_sink",
+  "callable": "Function{partial.a_flows_to_sink}",
   "returned_callables": [],
   "calls": {
     "31:4-31:17": {
@@ -68,7 +68,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.dunder_call_nested_define_constructor",
+  "callable": "Function{partial.dunder_call_nested_define_constructor}",
   "returned_callables": [],
   "calls": {
     "159:11-159:40": {
@@ -94,7 +94,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.dunder_call_partial_constructor",
+  "callable": "Function{partial.dunder_call_partial_constructor}",
   "returned_callables": [],
   "calls": {
     "132:11-132:35": {
@@ -120,7 +120,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_bound_method_issue",
+  "callable": "Function{partial.multiprocessing_bound_method_issue}",
   "returned_callables": [],
   "calls": {
     "76:12-76:26": {
@@ -186,7 +186,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_bound_method_sink",
+  "callable": "Function{partial.multiprocessing_bound_method_sink}",
   "returned_callables": [],
   "calls": {
     "83:4-83:58": {
@@ -245,7 +245,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_infer_sinks",
+  "callable": "Function{partial.multiprocessing_infer_sinks}",
   "returned_callables": [],
   "calls": {
     "72:4-72:64": {
@@ -315,7 +315,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_nested_sink",
+  "callable": "Function{partial.multiprocessing_nested_sink}",
   "returned_callables": [],
   "calls": {
     "95:14-95:28": {
@@ -412,7 +412,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_no_sink",
+  "callable": "Function{partial.multiprocessing_no_sink}",
   "returned_callables": [],
   "calls": {
     "100:14-100:28": {
@@ -509,7 +509,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_not_tainted",
+  "callable": "Function{partial.multiprocessing_not_tainted}",
   "returned_callables": [],
   "calls": {
     "68:4-68:77": {
@@ -586,7 +586,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_shim_fail",
+  "callable": "Function{partial.multiprocessing_shim_fail}",
   "returned_callables": [],
   "calls": {
     "88:12-88:26": {
@@ -645,7 +645,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_tainted",
+  "callable": "Function{partial.multiprocessing_tainted}",
   "returned_callables": [],
   "calls": {
     "64:4-64:77": {
@@ -722,7 +722,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.multiprocessing_tainted_access_path",
+  "callable": "Function{partial.multiprocessing_tainted_access_path}",
   "returned_callables": [],
   "calls": {
     "106:4-106:86": {
@@ -912,7 +912,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.partial_application_bound_method_sink",
+  "callable": "Function{partial.partial_application_bound_method_sink}",
   "returned_callables": [],
   "calls": {
     "55:4-55:39": {
@@ -970,7 +970,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.partial_application_bound_method_tito",
+  "callable": "Function{partial.partial_application_bound_method_tito}",
   "returned_callables": [],
   "calls": {
     "59:4-59:48": {
@@ -1035,7 +1035,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.partial_application_with_benign",
+  "callable": "Function{partial.partial_application_with_benign}",
   "returned_callables": [],
   "calls": {
     "41:4-41:41": {
@@ -1089,7 +1089,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.partial_application_with_named_a",
+  "callable": "Function{partial.partial_application_with_named_a}",
   "returned_callables": [],
   "calls": {
     "45:8-45:22": {
@@ -1152,7 +1152,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.partial_application_with_named_b",
+  "callable": "Function{partial.partial_application_with_named_b}",
   "returned_callables": [],
   "calls": {
     "50:8-50:22": {
@@ -1215,7 +1215,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.partial_application_with_tainted",
+  "callable": "Function{partial.partial_application_with_tainted}",
   "returned_callables": [],
   "calls": {
     "35:8-35:22": {
@@ -1276,7 +1276,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.sink_on_foo",
+  "callable": "Function{partial.sink_on_foo}",
   "returned_callables": [],
   "calls": {
     "27:4-27:21": {
@@ -1289,7 +1289,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.MyClass.sink_on_foo",
+  "callable": "Method{partial.MyClass.sink_on_foo}",
   "returned_callables": [],
   "calls": {
     "20:8-20:28": {
@@ -1302,7 +1302,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.NestedDefineConstructor.__init__@decorated",
+  "callable": "Method{partial.NestedDefineConstructor.__init__@decorated}",
   "returned_callables": [],
   "calls": {
     "152:5-152:26|artificial-call|for-decorated-target": {
@@ -1342,7 +1342,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.NestedDefineDecorator.__call__",
+  "callable": "Method{partial.NestedDefineDecorator.__call__}",
   "returned_callables": [],
   "calls": {
     "147:19-147:41": {
@@ -1364,7 +1364,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.NestedDefineDecorator.__get__",
+  "callable": "Method{partial.NestedDefineDecorator.__get__}",
   "returned_callables": [
     {
       "target": "partial.NestedDefineDecorator.__get__.wrapper",
@@ -1400,7 +1400,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.PartialConstructor.__init__@decorated",
+  "callable": "Method{partial.PartialConstructor.__init__@decorated}",
   "returned_callables": [],
   "calls": {
     "124:5-124:21|artificial-call|for-decorated-target": {
@@ -1440,7 +1440,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.PartialDecorator.__call__",
+  "callable": "Method{partial.PartialDecorator.__call__}",
   "returned_callables": [],
   "calls": {
     "119:19-119:41": {
@@ -1462,7 +1462,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "partial.PartialDecorator.__get__",
+  "callable": "Method{partial.PartialDecorator.__get__}",
   "returned_callables": [],
   "calls": {
     "116:15-116:66": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "class_level_taint.test",
+  "callable": "Function{class_level_taint.test}",
   "returned_callables": [],
   "calls": {
     "18:4-18:42": {

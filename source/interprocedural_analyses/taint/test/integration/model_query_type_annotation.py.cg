@@ -1,13 +1,13 @@
 @generated
 Call dependencies
 {
-  "model_query_type_annotation.test5_no_taint_1 (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)"
+  "Function{model_query_type_annotation.test5_no_taint_1}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "model_query_type_annotation.test5_taint_1 (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)"
+  "Function{model_query_type_annotation.test5_taint_1}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "model_query_type_annotation.test5_taint_2 (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)"
+  "Function{model_query_type_annotation.test5_taint_2}": [
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ]
 }

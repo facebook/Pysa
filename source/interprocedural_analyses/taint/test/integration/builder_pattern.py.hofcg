@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "builder_pattern.$toplevel",
+  "callable": "Function{builder_pattern.$toplevel}",
   "returned_callables": [],
   "calls": {
     "10:4-10:16": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } },
@@ -31,7 +31,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_chained_class_setter",
+  "callable": "Function{builder_pattern.test_chained_class_setter}",
   "returned_callables": [],
   "calls": {
     "71:14-71:23": {
@@ -105,7 +105,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_class_setter",
+  "callable": "Function{builder_pattern.test_class_setter}",
   "returned_callables": [],
   "calls": {
     "78:14-78:23": {
@@ -166,7 +166,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_issue",
+  "callable": "Function{builder_pattern.test_issue}",
   "returned_callables": [],
   "calls": {
     "50:14-50:23": {
@@ -239,7 +239,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_issue_with_sub_builder",
+  "callable": "Function{builder_pattern.test_issue_with_sub_builder}",
   "returned_callables": [],
   "calls": {
     "108:14-108:26": {
@@ -312,7 +312,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_issue_with_type_var",
+  "callable": "Function{builder_pattern.test_issue_with_type_var}",
   "returned_callables": [],
   "calls": {
     "62:14-62:23": {
@@ -385,7 +385,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_no_issue",
+  "callable": "Function{builder_pattern.test_no_issue}",
   "returned_callables": [],
   "calls": {
     "45:14-45:23": {
@@ -458,7 +458,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_no_issue_with_sub_builder",
+  "callable": "Function{builder_pattern.test_no_issue_with_sub_builder}",
   "returned_callables": [],
   "calls": {
     "101:14-101:26": {
@@ -531,7 +531,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_no_issue_with_type_var",
+  "callable": "Function{builder_pattern.test_no_issue_with_type_var}",
   "returned_callables": [],
   "calls": {
     "55:14-55:23": {
@@ -604,7 +604,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.test_taint_update_receiver_declaration",
+  "callable": "Function{builder_pattern.test_taint_update_receiver_declaration}",
   "returned_callables": [],
   "calls": {
     "89:14-89:23": {
@@ -698,7 +698,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "builder_pattern.Builder.async_save",
+  "callable": "Method{builder_pattern.Builder.async_save}",
   "returned_callables": [],
   "calls": {
     "27:8-27:31": {

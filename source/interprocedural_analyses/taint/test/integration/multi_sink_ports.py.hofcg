@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "multi_sink_ports.$toplevel",
+  "callable": "Function{multi_sink_ports.$toplevel}",
   "returned_callables": [],
   "calls": {
     "54:12-54:21|identifier|QueryBase": {
@@ -30,7 +30,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.issue",
+  "callable": "Function{multi_sink_ports.issue}",
   "returned_callables": [],
   "calls": {
     "41:8-41:16": {
@@ -58,7 +58,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.issue2",
+  "callable": "Function{multi_sink_ports.issue2}",
   "returned_callables": [],
   "calls": {
     "81:12-81:20": {
@@ -120,7 +120,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.log_call",
+  "callable": "Function{multi_sink_ports.log_call}",
   "returned_callables": [],
   "calls": {
     "66:4-66:17": {
@@ -148,7 +148,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.split",
+  "callable": "Function{multi_sink_ports.split}",
   "returned_callables": [],
   "calls": {
     "29:4-29:12": {
@@ -187,7 +187,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.splitwrapper",
+  "callable": "Function{multi_sink_ports.splitwrapper}",
   "returned_callables": [],
   "calls": {
     "46:11-46:19": {
@@ -204,7 +204,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.wrapper",
+  "callable": "Function{multi_sink_ports.wrapper}",
   "returned_callables": [],
   "calls": {
     "36:8-36:16": {
@@ -232,7 +232,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.wrapper2",
+  "callable": "Function{multi_sink_ports.wrapper2}",
   "returned_callables": [],
   "calls": {
     "74:19-74:27": {
@@ -292,7 +292,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "multi_sink_ports.Query.send",
+  "callable": "Method{multi_sink_ports.Query.send}",
   "returned_callables": [],
   "calls": {
     "58:15-58:33": {

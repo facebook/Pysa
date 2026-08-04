@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "always_in_none.test",
+  "callable": "Function{always_in_none.test}",
   "returned_callables": [],
   "calls": {
     "21:17-21:60": {
@@ -40,7 +40,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "always_in_none.test_none_clears_taint",
+  "callable": "Function{always_in_none.test_none_clears_taint}",
   "returned_callables": [],
   "calls": {
     "37:8-37:22": {

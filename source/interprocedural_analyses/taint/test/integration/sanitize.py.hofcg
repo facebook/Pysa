@@ -1,14 +1,14 @@
 @generated
 Higher order call graphs
 {
-  "callable": "sanitize.$toplevel",
+  "callable": "Function{sanitize.$toplevel}",
   "returned_callables": [],
   "calls": {
     "12:4-12:16": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } }
   }
 }
 {
-  "callable": "sanitize.combine_sanitize_a_sink_b_sink_in_source_trace",
+  "callable": "Function{sanitize.combine_sanitize_a_sink_b_sink_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "270:8-270:56": {
@@ -36,7 +36,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.combine_sanitize_a_source_a_sink_tito",
+  "callable": "Function{sanitize.combine_sanitize_a_source_a_sink_tito}",
   "returned_callables": [],
   "calls": {
     "243:8-243:33": {
@@ -64,7 +64,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.combine_sanitize_a_source_b_source_in_sink_trace",
+  "callable": "Function{sanitize.combine_sanitize_a_source_b_source_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "224:8-224:33": {
@@ -92,7 +92,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_propagation_of_sanitize_all_parameters_no_user_controlled",
+  "callable": "Function{sanitize.issue_propagation_of_sanitize_all_parameters_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "787:8-787:18": {
@@ -116,7 +116,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace",
+  "callable": "Function{sanitize.issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "676:8-676:71": {
@@ -138,7 +138,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled",
+  "callable": "Function{sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "584:8-584:18": {
@@ -162,7 +162,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace",
+  "callable": "Function{sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "640:8-640:18": {
@@ -186,7 +186,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_propagation_of_sanitize_return_no_rce",
+  "callable": "Function{sanitize.issue_propagation_of_sanitize_return_no_rce}",
   "returned_callables": [],
   "calls": {
     "752:8-752:47": {
@@ -208,7 +208,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_propagation_of_sanitize_return_no_sql_in_source_trace",
+  "callable": "Function{sanitize.issue_propagation_of_sanitize_return_no_sql_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "718:8-718:63": {
@@ -230,7 +230,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_sanitize_a_sink_attribute_in_source_trace",
+  "callable": "Function{sanitize.issue_sanitize_a_sink_attribute_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "458:8-458:51": {
@@ -254,7 +254,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.issue_sanitize_test_a_source_attribute_in_sink_trace",
+  "callable": "Function{sanitize.issue_sanitize_test_a_source_attribute_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "363:8-363:18": {
@@ -278,7 +278,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_fixpoint_sanitize",
+  "callable": "Function{sanitize.no_issue_fixpoint_sanitize}",
   "returned_callables": [],
   "calls": {
     "316:8-316:44": {
@@ -306,7 +306,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_fixpoint_sanitize_sinks",
+  "callable": "Function{sanitize.no_issue_fixpoint_sanitize_sinks}",
   "returned_callables": [],
   "calls": {
     "305:7-305:22": {
@@ -363,7 +363,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_fixpoint_sanitize_sources",
+  "callable": "Function{sanitize.no_issue_fixpoint_sanitize_sources}",
   "returned_callables": [],
   "calls": {
     "295:7-295:22": {
@@ -442,7 +442,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_a_sink_in_source_trace",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_a_sink_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "261:8-261:56": {
@@ -466,7 +466,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_a_source_in_sink_trace",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_a_source_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "211:8-211:18": {
@@ -490,7 +490,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_all_parameters_no_user_controlled",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_all_parameters_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "782:8-782:26": {
@@ -518,7 +518,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "671:8-671:71": {
@@ -540,7 +540,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "579:8-579:26": {
@@ -568,7 +568,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "635:8-635:26": {
@@ -596,7 +596,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_return_no_rce",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_return_no_rce}",
   "returned_callables": [],
   "calls": {
     "747:8-747:47": {
@@ -618,7 +618,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_return_no_sql_in_source_trace",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_return_no_sql_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "713:8-713:63": {
@@ -640,7 +640,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_propagation_of_sanitize_sql_tito_in_source_trace",
+  "callable": "Function{sanitize.no_issue_propagation_of_sanitize_sql_tito_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "851:8-851:58": {
@@ -662,7 +662,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_sanitize_a_sink_attribute_in_source_trace",
+  "callable": "Function{sanitize.no_issue_sanitize_a_sink_attribute_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "453:8-453:51": {
@@ -686,7 +686,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_sanitize_test_a_source_attribute_in_sink_trace",
+  "callable": "Function{sanitize.no_issue_sanitize_test_a_source_attribute_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "358:8-358:18": {
@@ -710,7 +710,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_through_combine_sanitize_a_source_a_sink_tito",
+  "callable": "Function{sanitize.no_issue_through_combine_sanitize_a_source_a_sink_tito}",
   "returned_callables": [],
   "calls": {
     "249:8-249:18": {
@@ -741,7 +741,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_issue_through_propagation_of_sanitize_a_source_tito",
+  "callable": "Function{sanitize.no_issue_through_propagation_of_sanitize_a_source_tito}",
   "returned_callables": [],
   "calls": {
     "200:8-200:18": {
@@ -772,7 +772,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_of_a_sink",
+  "callable": "Function{sanitize.no_propagation_of_a_sink}",
   "returned_callables": [],
   "calls": {
     "233:8-233:31": {
@@ -796,7 +796,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_of_cookies_with_sanitize_all_parameters_no_cookies_sql_tito",
+  "callable": "Function{sanitize.no_propagation_of_cookies_with_sanitize_all_parameters_no_cookies_sql_tito}",
   "returned_callables": [],
   "calls": {
     "860:8-860:18": {
@@ -820,7 +820,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_of_sql_with_sanitize_all_parameters_no_cookies_sql_tito",
+  "callable": "Function{sanitize.no_propagation_of_sql_with_sanitize_all_parameters_no_cookies_sql_tito}",
   "returned_callables": [],
   "calls": {
     "872:8-872:54": {
@@ -842,7 +842,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_with_sanitize_a_source_tito",
+  "callable": "Function{sanitize.no_propagation_with_sanitize_a_source_tito}",
   "returned_callables": [],
   "calls": {
     "184:8-184:18": {
@@ -866,7 +866,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_with_sanitize_all_parameters_no_sql_tito",
+  "callable": "Function{sanitize.no_propagation_with_sanitize_all_parameters_no_sql_tito}",
   "returned_callables": [],
   "calls": {
     "835:8-835:46": {
@@ -888,7 +888,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_with_sanitize_all_parameters_no_user_controlled_tito",
+  "callable": "Function{sanitize.no_propagation_with_sanitize_all_parameters_no_user_controlled_tito}",
   "returned_callables": [],
   "calls": {
     "814:8-814:26": {
@@ -916,7 +916,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_with_sanitize_parameter_no_sql_tito",
+  "callable": "Function{sanitize.no_propagation_with_sanitize_parameter_no_sql_tito}",
   "returned_callables": [],
   "calls": {
     "652:8-652:44": {
@@ -938,7 +938,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.no_propagation_with_sanitize_parameter_no_user_controlled_tito",
+  "callable": "Function{sanitize.no_propagation_with_sanitize_parameter_no_user_controlled_tito}",
   "returned_callables": [],
   "calls": {
     "614:8-614:26": {
@@ -966,7 +966,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.partial_issue_sanitize",
+  "callable": "Function{sanitize.partial_issue_sanitize}",
   "returned_callables": [],
   "calls": {
     "339:8-339:31": {
@@ -994,7 +994,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.partial_issue_sinks",
+  "callable": "Function{sanitize.partial_issue_sinks}",
   "returned_callables": [],
   "calls": {
     "329:7-329:22": {
@@ -1051,7 +1051,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.partial_issue_sources",
+  "callable": "Function{sanitize.partial_issue_sources}",
   "returned_callables": [],
   "calls": {
     "321:7-321:22": {
@@ -1108,7 +1108,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_b_sink",
+  "callable": "Function{sanitize.propagation_of_b_sink}",
   "returned_callables": [],
   "calls": {
     "238:8-238:31": {
@@ -1132,7 +1132,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_b_with_sanitize_a_source_tito",
+  "callable": "Function{sanitize.propagation_of_b_with_sanitize_a_source_tito}",
   "returned_callables": [],
   "calls": {
     "190:8-190:18": {
@@ -1156,7 +1156,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_cookies_with_sanitize_all_parameters_no_user_controlled_tito",
+  "callable": "Function{sanitize.propagation_of_cookies_with_sanitize_all_parameters_no_user_controlled_tito}",
   "returned_callables": [],
   "calls": {
     "820:8-820:18": {
@@ -1180,7 +1180,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_cookies_with_sanitize_parameter_no_user_controlled_tito",
+  "callable": "Function{sanitize.propagation_of_cookies_with_sanitize_parameter_no_user_controlled_tito}",
   "returned_callables": [],
   "calls": {
     "620:8-620:18": {
@@ -1204,7 +1204,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_rce_with_sanitize_all_parameters_no_cookies_sql_tito",
+  "callable": "Function{sanitize.propagation_of_rce_with_sanitize_all_parameters_no_cookies_sql_tito}",
   "returned_callables": [],
   "calls": {
     "877:8-877:54": {
@@ -1226,7 +1226,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_rce_with_sanitize_all_parameters_no_sql_tito",
+  "callable": "Function{sanitize.propagation_of_rce_with_sanitize_all_parameters_no_sql_tito}",
   "returned_callables": [],
   "calls": {
     "840:8-840:46": {
@@ -1248,7 +1248,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_rce_with_sanitize_parameter_no_sql_tito",
+  "callable": "Function{sanitize.propagation_of_rce_with_sanitize_parameter_no_sql_tito}",
   "returned_callables": [],
   "calls": {
     "657:8-657:44": {
@@ -1270,7 +1270,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_a_sink_in_source_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_a_sink_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "255:8-255:18": {
@@ -1294,7 +1294,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_a_source_in_sink_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_a_source_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "206:8-206:48": {
@@ -1318,7 +1318,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_a_source_tito",
+  "callable": "Function{sanitize.propagation_of_sanitize_a_source_tito}",
   "returned_callables": [],
   "calls": {
     "196:11-196:36": {
@@ -1335,7 +1335,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_all_parameters_no_user_controlled",
+  "callable": "Function{sanitize.propagation_of_sanitize_all_parameters_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "778:4-778:49": {
@@ -1352,7 +1352,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_parameter_no_sql_tito",
+  "callable": "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito}",
   "returned_callables": [],
   "calls": {
     "662:11-662:47": {
@@ -1369,7 +1369,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "666:8-666:26": {
@@ -1397,7 +1397,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_parameter_no_user_controlled",
+  "callable": "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "575:4-575:47": {
@@ -1414,7 +1414,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito",
+  "callable": "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito}",
   "returned_callables": [],
   "calls": {
     "626:11-626:59": {
@@ -1431,7 +1431,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "630:8-630:71": {
@@ -1453,7 +1453,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_return_no_rce",
+  "callable": "Function{sanitize.propagation_of_sanitize_return_no_rce}",
   "returned_callables": [],
   "calls": {
     "743:11-743:35": {
@@ -1470,7 +1470,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_return_no_sql",
+  "callable": "Function{sanitize.propagation_of_sanitize_return_no_sql}",
   "returned_callables": [],
   "calls": {
     "703:11-703:36": {
@@ -1487,7 +1487,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_return_no_sql_in_source_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_return_no_sql_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "707:8-707:26": {
@@ -1515,7 +1515,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_sql_tito_in_source_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_sql_tito_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "845:8-845:26": {
@@ -1543,7 +1543,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_sanitize_user_controlled_tito_in_sink_trace",
+  "callable": "Function{sanitize.propagation_of_sanitize_user_controlled_tito_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "826:8-826:58": {
@@ -1565,7 +1565,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.propagation_of_user_controlled_with_sanitize_all_parameters_no_cookies_sql_tito",
+  "callable": "Function{sanitize.propagation_of_user_controlled_with_sanitize_all_parameters_no_cookies_sql_tito}",
   "returned_callables": [],
   "calls": {
     "866:8-866:26": {
@@ -1593,7 +1593,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_and_b_sinks",
+  "callable": "Function{sanitize.sanitize_a_and_b_sinks}",
   "returned_callables": [],
   "calls": {
     "173:7-173:22": {
@@ -1639,7 +1639,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_and_b_source",
+  "callable": "Function{sanitize.sanitize_a_and_b_source}",
   "returned_callables": [],
   "calls": {
     "145:7-145:22": {
@@ -1685,7 +1685,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_sink",
+  "callable": "Function{sanitize.sanitize_a_sink}",
   "returned_callables": [],
   "calls": {
     "159:7-159:22": {
@@ -1731,7 +1731,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_sink_attribute",
+  "callable": "Function{sanitize.sanitize_a_sink_attribute}",
   "returned_callables": [],
   "calls": {
     "440:7-440:22": {
@@ -1801,7 +1801,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_sink_attribute_in_source_trace",
+  "callable": "Function{sanitize.sanitize_a_sink_attribute_in_source_trace}",
   "returned_callables": [],
   "calls": {
     "447:8-447:18": {
@@ -1847,7 +1847,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_sink_instance",
+  "callable": "Function{sanitize.sanitize_a_sink_instance}",
   "returned_callables": [],
   "calls": {
     "486:7-486:22": {
@@ -1917,7 +1917,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_a_source_tito_with_sink",
+  "callable": "Function{sanitize.sanitize_a_source_tito_with_sink}",
   "returned_callables": [],
   "calls": {
     "276:4-276:13": {
@@ -1930,7 +1930,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_ab_sinks_attribute",
+  "callable": "Function{sanitize.sanitize_ab_sinks_attribute}",
   "returned_callables": [],
   "calls": {
     "470:7-470:22": {
@@ -2000,7 +2000,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_ab_sinks_instance",
+  "callable": "Function{sanitize.sanitize_ab_sinks_instance}",
   "returned_callables": [],
   "calls": {
     "500:7-500:22": {
@@ -2070,7 +2070,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_parameters",
+  "callable": "Function{sanitize.sanitize_all_parameters}",
   "returned_callables": [],
   "calls": {
     "761:4-761:17": {
@@ -2115,7 +2115,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_parameters_all_tito",
+  "callable": "Function{sanitize.sanitize_all_parameters_all_tito}",
   "returned_callables": [],
   "calls": {
     "767:4-767:17": {
@@ -2160,7 +2160,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_parameters_no_rce",
+  "callable": "Function{sanitize.sanitize_all_parameters_no_rce}",
   "returned_callables": [],
   "calls": {
     "801:7-801:22": {
@@ -2228,7 +2228,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_parameters_no_sql",
+  "callable": "Function{sanitize.sanitize_all_parameters_no_sql}",
   "returned_callables": [],
   "calls": {
     "792:7-792:22": {
@@ -2296,7 +2296,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_parameters_no_user_controlled",
+  "callable": "Function{sanitize.sanitize_all_parameters_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "773:4-773:17": {
@@ -2309,7 +2309,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_sinks_attribute",
+  "callable": "Function{sanitize.sanitize_all_sinks_attribute}",
   "returned_callables": [],
   "calls": {
     "477:7-477:22": {
@@ -2424,7 +2424,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_all_sinks_instance",
+  "callable": "Function{sanitize.sanitize_all_sinks_instance}",
   "returned_callables": [],
   "calls": {
     "507:7-507:22": {
@@ -2539,7 +2539,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_b_sink",
+  "callable": "Function{sanitize.sanitize_b_sink}",
   "returned_callables": [],
   "calls": {
     "166:7-166:22": {
@@ -2585,7 +2585,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_b_sink_attribute",
+  "callable": "Function{sanitize.sanitize_b_sink_attribute}",
   "returned_callables": [],
   "calls": {
     "463:7-463:22": {
@@ -2655,7 +2655,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_b_sink_instance",
+  "callable": "Function{sanitize.sanitize_b_sink_instance}",
   "returned_callables": [],
   "calls": {
     "493:7-493:22": {
@@ -2725,7 +2725,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter",
+  "callable": "Function{sanitize.sanitize_parameter}",
   "returned_callables": [],
   "calls": {
     "552:4-552:17": {
@@ -2770,7 +2770,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter_all_tito",
+  "callable": "Function{sanitize.sanitize_parameter_all_tito}",
   "returned_callables": [],
   "calls": {
     "558:4-558:17": {
@@ -2815,7 +2815,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter_no_rce",
+  "callable": "Function{sanitize.sanitize_parameter_no_rce}",
   "returned_callables": [],
   "calls": {
     "598:7-598:22": {
@@ -2883,7 +2883,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter_no_sql",
+  "callable": "Function{sanitize.sanitize_parameter_no_sql}",
   "returned_callables": [],
   "calls": {
     "589:7-589:22": {
@@ -2951,7 +2951,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter_no_sql_tito",
+  "callable": "Function{sanitize.sanitize_parameter_no_sql_tito}",
   "returned_callables": [],
   "calls": {
     "645:7-645:22": {
@@ -2983,7 +2983,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter_no_user_controlled",
+  "callable": "Function{sanitize.sanitize_parameter_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "564:7-564:22": {
@@ -3077,7 +3077,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_parameter_no_user_controlled_tito",
+  "callable": "Function{sanitize.sanitize_parameter_no_user_controlled_tito}",
   "returned_callables": [],
   "calls": {
     "607:7-607:22": {
@@ -3109,7 +3109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_return",
+  "callable": "Function{sanitize.sanitize_return}",
   "returned_callables": [],
   "calls": {
     "685:4-685:17": {
@@ -3133,7 +3133,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_return_no_cookies",
+  "callable": "Function{sanitize.sanitize_return_no_cookies}",
   "returned_callables": [],
   "calls": {
     "723:7-723:22": {
@@ -3183,7 +3183,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_return_no_rce",
+  "callable": "Function{sanitize.sanitize_return_no_rce}",
   "returned_callables": [],
   "calls": {
     "739:11-739:29": {
@@ -3200,7 +3200,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_return_no_user_controlled",
+  "callable": "Function{sanitize.sanitize_return_no_user_controlled}",
   "returned_callables": [],
   "calls": {
     "690:7-690:22": {
@@ -3276,7 +3276,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_return_no_user_controlled_cookies",
+  "callable": "Function{sanitize.sanitize_return_no_user_controlled_cookies}",
   "returned_callables": [],
   "calls": {
     "731:7-731:22": {
@@ -3326,7 +3326,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_single_argument_tito",
+  "callable": "Function{sanitize.sanitize_single_argument_tito}",
   "returned_callables": [],
   "calls": {
     "919:7-919:22": {
@@ -3358,7 +3358,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_sinks",
+  "callable": "Function{sanitize.sanitize_sinks}",
   "returned_callables": [],
   "calls": {
     "113:4-113:17": {
@@ -3382,7 +3382,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_sources",
+  "callable": "Function{sanitize.sanitize_sources}",
   "returned_callables": [],
   "calls": {
     "108:4-108:17": {
@@ -3406,7 +3406,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_sink_attribute",
+  "callable": "Function{sanitize.sanitize_test_a_sink_attribute}",
   "returned_callables": [],
   "calls": {
     "516:4-516:45": {
@@ -3430,7 +3430,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_sink_instance",
+  "callable": "Function{sanitize.sanitize_test_a_sink_instance}",
   "returned_callables": [],
   "calls": {
     "534:4-534:44": {
@@ -3454,7 +3454,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_source",
+  "callable": "Function{sanitize.sanitize_test_a_source}",
   "returned_callables": [],
   "calls": {
     "129:7-129:22": {
@@ -3500,7 +3500,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_source_attribute",
+  "callable": "Function{sanitize.sanitize_test_a_source_attribute}",
   "returned_callables": [],
   "calls": {
     "344:7-344:22": {
@@ -3586,7 +3586,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_source_attribute_in_sink_trace",
+  "callable": "Function{sanitize.sanitize_test_a_source_attribute_in_sink_trace}",
   "returned_callables": [],
   "calls": {
     "353:8-353:31": {
@@ -3632,7 +3632,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_source_attribute_in_tito",
+  "callable": "Function{sanitize.sanitize_test_a_source_attribute_in_tito}",
   "returned_callables": [],
   "calls": {
     "368:8-368:31": {
@@ -3671,7 +3671,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_a_source_instance",
+  "callable": "Function{sanitize.sanitize_test_a_source_instance}",
   "returned_callables": [],
   "calls": {
     "402:7-402:22": {
@@ -3757,7 +3757,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_ab_sinks_attribute",
+  "callable": "Function{sanitize.sanitize_test_ab_sinks_attribute}",
   "returned_callables": [],
   "calls": {
     "524:4-524:47": {
@@ -3781,7 +3781,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_ab_sinks_instance",
+  "callable": "Function{sanitize.sanitize_test_ab_sinks_instance}",
   "returned_callables": [],
   "calls": {
     "542:4-542:46": {
@@ -3805,7 +3805,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_ab_sources_attribute",
+  "callable": "Function{sanitize.sanitize_test_ab_sources_attribute}",
   "returned_callables": [],
   "calls": {
     "382:7-382:22": {
@@ -3891,7 +3891,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_ab_sources_instance",
+  "callable": "Function{sanitize.sanitize_test_ab_sources_instance}",
   "returned_callables": [],
   "calls": {
     "420:7-420:22": {
@@ -3977,7 +3977,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_all_sinks_attribute",
+  "callable": "Function{sanitize.sanitize_test_all_sinks_attribute}",
   "returned_callables": [],
   "calls": {
     "528:4-528:48": {
@@ -4041,7 +4041,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_all_sinks_instance",
+  "callable": "Function{sanitize.sanitize_test_all_sinks_instance}",
   "returned_callables": [],
   "calls": {
     "546:4-546:47": {
@@ -4105,7 +4105,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_all_sources_attribute",
+  "callable": "Function{sanitize.sanitize_test_all_sources_attribute}",
   "returned_callables": [],
   "calls": {
     "391:7-391:22": {
@@ -4224,7 +4224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_all_sources_instance",
+  "callable": "Function{sanitize.sanitize_test_all_sources_instance}",
   "returned_callables": [],
   "calls": {
     "429:7-429:22": {
@@ -4343,7 +4343,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_b_sink_attribute",
+  "callable": "Function{sanitize.sanitize_test_b_sink_attribute}",
   "returned_callables": [],
   "calls": {
     "520:4-520:45": {
@@ -4367,7 +4367,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_b_sink_instance",
+  "callable": "Function{sanitize.sanitize_test_b_sink_instance}",
   "returned_callables": [],
   "calls": {
     "538:4-538:44": {
@@ -4391,7 +4391,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_b_source",
+  "callable": "Function{sanitize.sanitize_test_b_source}",
   "returned_callables": [],
   "calls": {
     "137:7-137:22": {
@@ -4437,7 +4437,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_b_source_attribute",
+  "callable": "Function{sanitize.sanitize_test_b_source_attribute}",
   "returned_callables": [],
   "calls": {
     "373:7-373:22": {
@@ -4523,7 +4523,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_test_b_source_instance",
+  "callable": "Function{sanitize.sanitize_test_b_source_instance}",
   "returned_callables": [],
   "calls": {
     "411:7-411:22": {
@@ -4609,7 +4609,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sanitize_tito",
+  "callable": "Function{sanitize.sanitize_tito}",
   "returned_callables": [],
   "calls": {
     "118:4-118:17": {
@@ -4633,7 +4633,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sink_taint_sanitize_a",
+  "callable": "Function{sanitize.sink_taint_sanitize_a}",
   "returned_callables": [],
   "calls": {
     "889:10-889:37": {
@@ -4655,7 +4655,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sink_taint_sanitize_a_sanitize_b",
+  "callable": "Function{sanitize.sink_taint_sanitize_a_sanitize_b}",
   "returned_callables": [],
   "calls": {
     "894:10-894:37": {
@@ -4683,7 +4683,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sink_taint_sanitize_a_sanitize_b_santize_test",
+  "callable": "Function{sanitize.sink_taint_sanitize_a_sanitize_b_santize_test}",
   "returned_callables": [],
   "calls": {
     "899:10-899:40": {
@@ -4711,7 +4711,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sink_taint_sanitize_b",
+  "callable": "Function{sanitize.sink_taint_sanitize_b}",
   "returned_callables": [],
   "calls": {
     "904:10-904:37": {
@@ -4733,7 +4733,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sink_taint_sanitize_b_sanitize_a",
+  "callable": "Function{sanitize.sink_taint_sanitize_b_sanitize_a}",
   "returned_callables": [],
   "calls": {
     "909:10-909:37": {
@@ -4761,7 +4761,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.sink_taint_sanitize_b_sanitize_a_santize_test",
+  "callable": "Function{sanitize.sink_taint_sanitize_b_sanitize_a_santize_test}",
   "returned_callables": [],
   "calls": {
     "914:10-914:40": {
@@ -4789,7 +4789,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.test1",
+  "callable": "Function{sanitize.test1}",
   "returned_callables": [],
   "calls": {
     "87:14-87:22": {
@@ -4837,7 +4837,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.test2",
+  "callable": "Function{sanitize.test2}",
   "returned_callables": [],
   "calls": {
     "94:14-94:50": {
@@ -4861,7 +4861,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.test3",
+  "callable": "Function{sanitize.test3}",
   "returned_callables": [],
   "calls": {
     "99:21-99:58": {
@@ -4885,7 +4885,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.test4",
+  "callable": "Function{sanitize.test4}",
   "returned_callables": [],
   "calls": {
     "289:8-289:18": {
@@ -4916,7 +4916,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_a_sink.__init__",
+  "callable": "Method{sanitize.C_sanitized_a_sink.__init__}",
   "returned_callables": [],
   "calls": {
     "51:8-51:21": {
@@ -4946,7 +4946,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_a_source.__init__",
+  "callable": "Method{sanitize.C_sanitized_a_source.__init__}",
   "returned_callables": [],
   "calls": {
     "19:8-19:21": {
@@ -4976,7 +4976,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_ab_sinks.__init__",
+  "callable": "Method{sanitize.C_sanitized_ab_sinks.__init__}",
   "returned_callables": [],
   "calls": {
     "67:8-67:21": {
@@ -5006,7 +5006,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_ab_sources.__init__",
+  "callable": "Method{sanitize.C_sanitized_ab_sources.__init__}",
   "returned_callables": [],
   "calls": {
     "35:8-35:21": {
@@ -5036,7 +5036,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_all_sinks.__init__",
+  "callable": "Method{sanitize.C_sanitized_all_sinks.__init__}",
   "returned_callables": [],
   "calls": {
     "75:8-75:21": {
@@ -5066,7 +5066,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_all_sources.__init__",
+  "callable": "Method{sanitize.C_sanitized_all_sources.__init__}",
   "returned_callables": [],
   "calls": {
     "43:8-43:21": {
@@ -5096,7 +5096,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_b_sink.__init__",
+  "callable": "Method{sanitize.C_sanitized_b_sink.__init__}",
   "returned_callables": [],
   "calls": {
     "59:8-59:21": {
@@ -5126,7 +5126,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.C_sanitized_b_source.__init__",
+  "callable": "Method{sanitize.C_sanitized_b_source.__init__}",
   "returned_callables": [],
   "calls": {
     "27:8-27:21": {
@@ -5156,7 +5156,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_all_parameters",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_all_parameters}",
   "returned_callables": [],
   "calls": {
     "945:19-945:33": {
@@ -5169,7 +5169,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_all_parameters_test_a_source",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_all_parameters_test_a_source}",
   "returned_callables": [],
   "calls": {
     "948:11-948:26": {
@@ -5215,7 +5215,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_parameter",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_parameter}",
   "returned_callables": [],
   "calls": {
     "936:19-936:33": {
@@ -5228,7 +5228,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_parameter_test_a_source",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_parameter_test_a_source}",
   "returned_callables": [],
   "calls": {
     "939:11-939:26": {
@@ -5274,7 +5274,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_return",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_return}",
   "returned_callables": [],
   "calls": {
     "954:19-954:33": {
@@ -5287,7 +5287,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_sources",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_sources}",
   "returned_callables": [],
   "calls": {
     "927:19-927:33": {
@@ -5300,7 +5300,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.GenerationOnSelf.sanitize_test_a_source",
+  "callable": "Method{sanitize.GenerationOnSelf.sanitize_test_a_source}",
   "returned_callables": [],
   "calls": {
     "930:11-930:26": {
@@ -5346,7 +5346,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize.TitoSelf.sanitize_self",
+  "callable": "Method{sanitize.TitoSelf.sanitize_self}",
   "returned_callables": [],
   "calls": {
     "959:15-959:55": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "sanitize_discard_flows.test_sink_a_sanitize_a_discarded",
+  "callable": "Function{sanitize_discard_flows.test_sink_a_sanitize_a_discarded}",
   "returned_callables": [],
   "calls": {
     "39:4-39:37": {
@@ -29,7 +29,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_discard_flows.test_source_a_sanitize_a_b_discarded",
+  "callable": "Function{sanitize_discard_flows.test_source_a_sanitize_a_b_discarded}",
   "returned_callables": [],
   "calls": {
     "35:11-35:65": {
@@ -68,7 +68,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_discard_flows.test_source_a_sanitize_a_kept",
+  "callable": "Function{sanitize_discard_flows.test_source_a_sanitize_a_kept}",
   "returned_callables": [],
   "calls": {
     "31:11-31:43": {

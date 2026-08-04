@@ -1,35 +1,37 @@
 @generated
 Call dependencies
 {
-  "model_shaping._asdict_inner (fun)": [
-    "builtins.dict.items (method)", "builtins.getattr (fun)",
-    "builtins.isinstance (fun)", "builtins.list.__iter__ (method)",
-    "builtins.list.append (method)", "builtins.tuple.__iter__ (method)",
-    "builtins.type.__init__ (method)", "builtins.type.__new__ (method)",
-    "model_shaping._asdict_inner (fun)",
-    "model_shaping._is_dataclass_instance (fun)",
-    "model_shaping.fields (fun)", "typing.ItemsView.__iter__ (method)",
-    "typing.Iterator.__next__ (method)", "typing.cast (fun)"
+  "Function{model_shaping._asdict_inner}": [
+    "Function{builtins.getattr}", "Function{builtins.isinstance}",
+    "Function{model_shaping._asdict_inner}",
+    "Function{model_shaping._is_dataclass_instance}",
+    "Function{model_shaping.fields}", "Function{typing.cast}",
+    "Method{builtins.dict.items}", "Method{builtins.list.__iter__}",
+    "Method{builtins.list.append}", "Method{builtins.tuple.__iter__}",
+    "Method{builtins.type.__init__}", "Method{builtins.type.__new__}",
+    "Method{typing.ItemsView.__iter__}", "Method{typing.Iterator.__next__}"
   ],
-  "model_shaping.asdict (fun)": [ "model_shaping._asdict_inner (fun)" ],
-  "model_shaping.asdict_test (fun)": [ "model_shaping.asdict (fun)" ],
-  "model_shaping.obscure_test (fun)": [
-    "builtins.type.__init__ (method)", "builtins.type.__new__ (method)",
-    "pysa._test_source (fun)"
+  "Function{model_shaping.asdict_test}": [ "Function{model_shaping.asdict}" ],
+  "Function{model_shaping.asdict}": [
+    "Function{model_shaping._asdict_inner}"
   ],
-  "model_shaping.shape_multi_sink (fun)": [
-    "pysa._rce (fun)", "pysa._sql (fun)"
+  "Function{model_shaping.obscure_test}": [
+    "Function{pysa._test_source}", "Method{builtins.type.__init__}",
+    "Method{builtins.type.__new__}"
   ],
-  "model_shaping.shape_multi_source (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._cookies (fun)", "pysa._user_controlled (fun)"
+  "Function{model_shaping.shape_multi_sink}": [
+    "Function{pysa._rce}", "Function{pysa._sql}"
   ],
-  "model_shaping.test_tito_shaping (fun)": [
-    "builtins.dict.__getitem__ (method)", "model_shaping.tito_shaping (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{model_shaping.shape_multi_source}": [
+    "Function{pysa._cookies}", "Function{pysa._user_controlled}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "model_shaping.tito_shaping (fun)": [
-    "builtins.dict.get (method)", "builtins.object.__init__ (method)",
-    "builtins.object.__repr__ (method)", "builtins.str.__new__ (method)"
+  "Function{model_shaping.test_tito_shaping}": [
+    "Function{model_shaping.tito_shaping}", "Function{pysa._test_sink}",
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}"
+  ],
+  "Function{model_shaping.tito_shaping}": [
+    "Method{builtins.dict.get}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__repr__}", "Method{builtins.str.__new__}"
   ]
 }

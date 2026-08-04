@@ -1,116 +1,114 @@
 @generated
 Call dependencies
 {
-  "constructors.BaseConstructor.__init__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{constructors.SomeAPI.$class_toplevel}": [
+    "Method{builtins.str.__format__}"
   ],
-  "constructors.BothNewAndInit.__init__ (method)": [
-    "pysa._test_sink (fun)"
+  "Function{constructors.test_both_new_and_init_callgraph}": [
+    "Method{constructors.BothNewAndInit.__init__}",
+    "Method{constructors.BothNewAndInit.__new__}"
   ],
-  "constructors.BothNewAndInit.__new__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)",
-    "pysa._test_source (fun)"
+  "Function{constructors.test_class_stub}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "constructors.ChildWithNew.__new__ (method)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)"
+  "Function{constructors.test_construction}": [
+    "Method{builtins.dict.__getitem__}",
+    "Method{constructors.SomeAPI.async_get_authenticated_user}",
+    "Method{constructors.SomeAPI.from_default_keys}"
   ],
-  "constructors.DerivedConstructor.__init__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)",
-    "constructors.BaseConstructor.__init__ (method)"
+  "Function{constructors.test_constructor_with_source_model}": [
+    "Function{pysa._test_sink}", "Method{builtins.object.__new__}",
+    "Method{constructors.ConstructorWithSourceModel.__init__}"
   ],
-  "constructors.DerivedConstructorTitoModelQuery.__init__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)",
-    "constructors.ConstructorTitoModelQuery.__init__ (method)"
+  "Function{constructors.test_constructor_with_tito_model_query}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{constructors.DerivedConstructorTitoModelQuery.__init__}"
   ],
-  "constructors.DerivedConstructorWithTitoModel.__init__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)",
-    "constructors.ConstructorWithTitoModel.__init__ (method)"
+  "Function{constructors.test_constructor_with_tito_model}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{constructors.DerivedConstructorWithTitoModel.__init__}"
   ],
-  "constructors.ParentWithNoConstructor.__init__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)"
+  "Function{constructors.test_init_model}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{constructors.InitWithModel.__init__}"
   ],
-  "constructors.ParentWithObscureConstructor.__init__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)",
-    "constructors.ConstructorObscure.__init__ (method)"
+  "Function{constructors.test_new_model}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__init__}",
+    "Method{constructors.NewWithModel.__new__}"
   ],
-  "constructors.SanitizeReturn.__init__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{constructors.test_new_thing}": [
+    "Function{pysa._test_source}",
+    "Method{constructors.ChildWithNew.__new__}",
+    "Method{constructors.ParentWithInit.__init__}"
   ],
-  "constructors.SanitizeSingleTraceSource.__init__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{constructors.test_parent_with_no_constructor}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{constructors.ParentWithNoConstructor.__init__}"
   ],
-  "constructors.SanitizeTitoKindSpecific.__init__ (method)": [
-    "pysa._test_source (fun)"
+  "Function{constructors.test_parent_with_obscure_constructor}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{constructors.ParentWithObscureConstructor.__init__}"
   ],
-  "constructors.SomeAPI.$class_toplevel (fun)": [
-    "builtins.str.__format__ (method)"
+  "Function{constructors.test_source_in_constructor}": [
+    "Function{pysa._test_sink}", "Method{builtins.object.__new__}",
+    "Method{constructors.SourceInConstructor.__init__}"
   ],
-  "constructors.SomeAPI.async_get_authenticated_user (method)": [
-    "builtins.eval (fun)"
+  "Method{constructors.BaseConstructor.__init__}": [
+    "Function{pysa._test_source}"
   ],
-  "constructors.SomeAPI.from_default_keys (method)": [
-    "builtins.object.__new__ (method)",
-    "constructors.SomeAPI.__init__ (method)"
+  "Method{constructors.BothNewAndInit.__init__}": [
+    "Function{pysa._test_sink}"
   ],
-  "constructors.SourceInConstructor.__init__ (method)": [
-    "pysa._test_source (fun)"
+  "Method{constructors.BothNewAndInit.__new__}": [
+    "Function{pysa._test_source}", "Method{builtins.object.__new__}",
+    "Method{builtins.super.__init__}"
   ],
-  "constructors.test_both_new_and_init_callgraph (fun)": [
-    "constructors.BothNewAndInit.__init__ (method)",
-    "constructors.BothNewAndInit.__new__ (method)"
+  "Method{constructors.ChildWithNew.__new__}": [
+    "Function{pysa._test_sink}", "Method{builtins.object.__new__}"
   ],
-  "constructors.test_class_stub (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{constructors.DerivedConstructor.__init__}": [
+    "Method{builtins.object.__new__}", "Method{builtins.super.__init__}",
+    "Method{constructors.BaseConstructor.__init__}"
   ],
-  "constructors.test_construction (fun)": [
-    "builtins.dict.__getitem__ (method)",
-    "constructors.SomeAPI.async_get_authenticated_user (method)",
-    "constructors.SomeAPI.from_default_keys (method)"
+  "Method{constructors.DerivedConstructorTitoModelQuery.__init__}": [
+    "Method{builtins.object.__new__}", "Method{builtins.super.__init__}",
+    "Method{constructors.ConstructorTitoModelQuery.__init__}"
   ],
-  "constructors.test_constructor_with_source_model (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.ConstructorWithSourceModel.__init__ (method)",
-    "pysa._test_sink (fun)"
+  "Method{constructors.DerivedConstructorWithTitoModel.__init__}": [
+    "Method{builtins.object.__new__}", "Method{builtins.super.__init__}",
+    "Method{constructors.ConstructorWithTitoModel.__init__}"
   ],
-  "constructors.test_constructor_with_tito_model (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.DerivedConstructorWithTitoModel.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{constructors.ParentWithNoConstructor.__init__}": [
+    "Method{builtins.object.__new__}", "Method{builtins.super.__init__}"
   ],
-  "constructors.test_constructor_with_tito_model_query (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.DerivedConstructorTitoModelQuery.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{constructors.ParentWithObscureConstructor.__init__}": [
+    "Method{builtins.object.__new__}", "Method{builtins.super.__init__}",
+    "Method{constructors.ConstructorObscure.__init__}"
   ],
-  "constructors.test_init_model (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.InitWithModel.__init__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Method{constructors.SanitizeReturn.__init__}": [
+    "Function{pysa._test_source}"
   ],
-  "constructors.test_new_model (fun)": [
-    "builtins.object.__init__ (method)",
-    "constructors.NewWithModel.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Method{constructors.SanitizeSingleTraceSource.__init__}": [
+    "Function{pysa._test_source}"
   ],
-  "constructors.test_new_thing (fun)": [
-    "constructors.ChildWithNew.__new__ (method)",
-    "constructors.ParentWithInit.__init__ (method)",
-    "pysa._test_source (fun)"
+  "Method{constructors.SanitizeTitoKindSpecific.__init__}": [
+    "Function{pysa._test_source}"
   ],
-  "constructors.test_parent_with_no_constructor (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.ParentWithNoConstructor.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{constructors.SomeAPI.async_get_authenticated_user}": [
+    "Function{builtins.eval}"
   ],
-  "constructors.test_parent_with_obscure_constructor (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.ParentWithObscureConstructor.__init__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{constructors.SomeAPI.from_default_keys}": [
+    "Method{builtins.object.__new__}",
+    "Method{constructors.SomeAPI.__init__}"
   ],
-  "constructors.test_source_in_constructor (fun)": [
-    "builtins.object.__new__ (method)",
-    "constructors.SourceInConstructor.__init__ (method)",
-    "pysa._test_sink (fun)"
+  "Method{constructors.SourceInConstructor.__init__}": [
+    "Function{pysa._test_source}"
   ]
 }

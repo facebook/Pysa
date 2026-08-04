@@ -41,13 +41,13 @@ module Analysis = struct
 
     let join ~iteration:_ left right = Model.join left right
 
-    let widen ~iteration ~callable ~previous ~next =
+    let widen ~display_api ~iteration ~callable ~previous ~next =
       let result = Model.widen ~iteration ~previous ~next in
       let () =
         Log.log
           ~section:`Interprocedural
           "Widened fixpoint for `%a`\nold: %anew: %a\nwidened: %a"
-          Target.pp_pretty
+          (Target.pp_pretty ~display_api)
           callable
           Model.pp
           previous
@@ -59,14 +59,14 @@ module Analysis = struct
       result
 
 
-    let less_or_equal ~callable ~left ~right =
+    let less_or_equal ~display_api ~callable ~left ~right =
       let result = Model.less_or_equal ~left ~right in
       let () =
         if result then
           Log.log
             ~section:`Interprocedural
             "Reached fixpoint for `%a`\n%a"
-            Target.pp_pretty
+            (Target.pp_pretty ~display_api)
             callable
             Model.pp
             right
@@ -123,6 +123,7 @@ module Analysis = struct
       ~previous_model
       ~get_callee_model
     =
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
     let taint_configuration = TaintConfiguration.SharedMemory.get taint_configuration in
     let profiler =
       if
@@ -131,7 +132,7 @@ module Analysis = struct
           ~define:(Ast.Node.value define)
           ~callable
       then
-        TaintProfiler.start ~enable_perf:true ~callable ()
+        TaintProfiler.start ~display_api ~enable_perf:true ~callable ()
       else
         TaintProfiler.disabled
     in
@@ -213,7 +214,11 @@ module Analysis = struct
       TaintProfiler.track_duration ~profiler ~name:"Sanitize" ~f:(fun () ->
           Model.apply_sanitizers ~taint_configuration model)
     in
-    TaintProfiler.stop ~max_number_expressions:50 ~max_number_apply_call_steps:50 profiler;
+    TaintProfiler.stop
+      ~display_api
+      ~max_number_expressions:50
+      ~max_number_apply_call_steps:50
+      profiler;
     { AnalyzeDefineResult.result; model; additional_dependencies = [] }
 
 
@@ -231,13 +236,20 @@ module Analysis = struct
       ~previous_model:({ Model.modes; sanitizers; _ } as previous_model)
       ~get_callee_model
     =
-    let () = Log.log ~section:`Interprocedural "Analyzing %a" Target.pp_pretty callable in
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
+    let () =
+      Log.log ~section:`Interprocedural "Analyzing %a" (Target.pp_pretty ~display_api) callable
+    in
     let { Interprocedural.CallablesSharedMemory.DefineAndModule.module_id; define } =
       callable
       |> Target.strip_parameters
       |> Interprocedural.CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
       |> AstResult.value_exn
-           ~message:(Format.asprintf "No definition found for `%a`" Target.pp_pretty callable)
+           ~message:
+             (Format.asprintf
+                "No definition found for `%a`"
+                (Target.pp_pretty ~display_api)
+                callable)
     in
     let string_combine_partial_sink_tree =
       taint_configuration
@@ -245,7 +257,10 @@ module Analysis = struct
       |> CallModel.StringFormatCall.declared_partial_sink_tree
     in
     if Model.ModeSet.contains Model.Mode.SkipAnalysis modes then
-      failwithf "Expect the global fixpoint to skip analyzing %s" (Target.show_pretty callable) ()
+      failwithf
+        "Expect the global fixpoint to skip analyzing %s"
+        ((Target.show_pretty ~display_api) callable)
+        ()
     else
       analyze_define_with_sanitizers_and_modes
         ~taint_configuration

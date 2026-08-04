@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "raise.backward",
+  "callable": "Function{raise.backward}",
   "returned_callables": [],
   "calls": {
     "16:10-16:23": {
@@ -14,7 +14,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.conditional_unreachability",
+  "callable": "Function{raise.conditional_unreachability}",
   "returned_callables": [],
   "calls": {
     "55:12-55:26": {
@@ -55,7 +55,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.forward",
+  "callable": "Function{raise.forward}",
   "returned_callables": [],
   "calls": {
     "11:10-11:36": {
@@ -75,7 +75,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.no_sink",
+  "callable": "Function{raise.no_sink}",
   "returned_callables": [],
   "calls": {
     "31:10-31:21": {
@@ -109,7 +109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.no_source",
+  "callable": "Function{raise.no_source}",
   "returned_callables": [],
   "calls": {
     "36:10-36:21": {
@@ -143,7 +143,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.unreachable",
+  "callable": "Function{raise.unreachable}",
   "returned_callables": [],
   "calls": {
     "20:8-20:22": {
@@ -184,7 +184,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.unreachable_code_do_to_always_exception",
+  "callable": "Function{raise.unreachable_code_do_to_always_exception}",
   "returned_callables": [],
   "calls": {
     "48:4-48:15": {
@@ -211,7 +211,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.unreachable_through_function_call_sink",
+  "callable": "Function{raise.unreachable_through_function_call_sink}",
   "returned_callables": [],
   "calls": {
     "26:8-26:22": {
@@ -231,7 +231,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "raise.unreachable_through_function_call_source",
+  "callable": "Function{raise.unreachable_through_function_call_source}",
   "returned_callables": [],
   "calls": {
     "42:8-42:19": {

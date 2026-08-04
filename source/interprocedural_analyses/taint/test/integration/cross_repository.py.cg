@@ -1,26 +1,27 @@
 @generated
 Call dependencies
 {
-  "cross_repository.cross_repository_source (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{cross_repository.cross_repository_source}": [
+    "Function{pysa._test_sink}"
   ],
-  "cross_repository.test (fun)": [
-    "cross_repository.returns_crtex_source (fun)", "pysa._test_sink (fun)"
+  "Function{cross_repository.test_cross_repository_anchor}": [
+    "Function{cross_repository.cross_repository_anchor_sink}",
+    "Function{pysa._test_source}"
   ],
-  "cross_repository.test_cross_repository_anchor (fun)": [
-    "cross_repository.cross_repository_anchor_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{cross_repository.test_propagate_cross_repository_sink_once}": [
+    "Function{cross_repository.reaches_crtex_sink}"
   ],
-  "cross_repository.test_propagate_cross_repository_sink_once (fun)": [
-    "cross_repository.reaches_crtex_sink (fun)"
+  "Function{cross_repository.test_propagate_cross_repository_sink_twice}": [
+    "Function{cross_repository.test_propagate_cross_repository_sink_once}"
   ],
-  "cross_repository.test_propagate_cross_repository_sink_twice (fun)": [
-    "cross_repository.test_propagate_cross_repository_sink_once (fun)"
+  "Function{cross_repository.test_propagate_cross_repository_source_once}": [
+    "Function{cross_repository.returns_crtex_source}"
   ],
-  "cross_repository.test_propagate_cross_repository_source_once (fun)": [
-    "cross_repository.returns_crtex_source (fun)"
+  "Function{cross_repository.test_propagate_cross_repository_source_twice}": [
+    "Function{cross_repository.test_propagate_cross_repository_source_once}"
   ],
-  "cross_repository.test_propagate_cross_repository_source_twice (fun)": [
-    "cross_repository.test_propagate_cross_repository_source_once (fun)"
+  "Function{cross_repository.test}": [
+    "Function{cross_repository.returns_crtex_source}",
+    "Function{pysa._test_sink}"
   ]
 }

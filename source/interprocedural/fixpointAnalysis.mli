@@ -14,9 +14,20 @@ module type MODEL = sig
 
   val join : iteration:int -> t -> t -> t
 
-  val widen : iteration:int -> callable:Target.t -> previous:t -> next:t -> t
+  val widen
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
+    callable:Target.t ->
+    previous:t ->
+    next:t ->
+    t
 
-  val less_or_equal : callable:Target.t -> left:t -> right:t -> bool
+  val less_or_equal
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    callable:Target.t ->
+    left:t ->
+    right:t ->
+    bool
 
   (** Transform the model before joining into the override model. *)
   val for_override_model : callable:Target.t -> t -> t
@@ -45,11 +56,16 @@ module type LOGGER = sig
   val initial_models_stored : timer:Timer.t -> unit
 
   val reached_maximum_iteration_exception
-    :  iteration:int ->
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
     callables_to_analyze:Target.t list ->
     exn
 
-  val reached_maximum_iteration_exit : iteration:int -> callables_to_analyze:Target.t list -> unit
+  val reached_maximum_iteration_exit
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
+    callables_to_analyze:Target.t list ->
+    unit
 
   (** This is called at the beginning of each iteration. *)
   val iteration_start
@@ -75,12 +91,25 @@ module type LOGGER = sig
     number_of_callables:int ->
     unit
 
-  val is_expensive_callable : callable:Target.t -> timer:Timer.t -> bool
+  val is_expensive_callable
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    callable:Target.t ->
+    timer:Timer.t ->
+    bool
 
   (** This is called after analyzing an override target (i.e, joining models of overriding methods). *)
-  val override_analysis_end : callable:Target.t -> timer:Timer.t -> unit
+  val override_analysis_end
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    callable:Target.t ->
+    timer:Timer.t ->
+    unit
 
-  val on_analyze_define_exception : iteration:int -> callable:Target.t -> exn:exn -> unit
+  val on_analyze_define_exception
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    iteration:int ->
+    callable:Target.t ->
+    exn:exn ->
+    unit
 
   val on_approaching_max_iterations
     :  max_iterations:int ->

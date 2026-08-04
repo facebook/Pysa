@@ -31,11 +31,11 @@ module CallGraphAnalysis = struct
     (* TODO(T218941022): The current widening is not sound, since we only return the right hand
        side. This can lead to unsoundness (missing call edges), although we haven't seen concrete
        examples yet. It will also lead to nondeterminism. *)
-    let widen ~iteration:_ ~callable:_ ~previous:_ ~next = next
+    let widen ~display_api:_ ~iteration:_ ~callable:_ ~previous:_ ~next = next
 
     (* Since this is only used to determine if we have reached a fixpoint, it is fine to only check
        the equality. *)
-    let less_or_equal ~callable:_ ~left ~right =
+    let less_or_equal ~display_api:_ ~callable:_ ~left ~right =
       CallGraphBuilder.HigherOrderCallGraph.equal left right
 
 
@@ -107,12 +107,17 @@ module CallGraphAnalysis = struct
       ~previous_model:_
       ~get_callee_model
     =
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
     if
       callable
       |> Target.strip_parameters
       |> CallablesSharedMemory.ReadOnly.is_stub_like callables_to_definitions_map
       |> Option.value_exn
-           ~message:(Format.asprintf "Found no definition for `%a`" Target.pp_pretty callable)
+           ~message:
+             (Format.asprintf
+                "Found no definition for `%a`"
+                (Target.pp_pretty ~display_api)
+                callable)
     then
       (* Skip analyzing stubs, which do not have initial call graphs. Otherwise we would fail to get
          their initial call graphs below, when analyzing them in the next iteration. *)
@@ -123,7 +128,11 @@ module CallGraphAnalysis = struct
         |> Target.strip_parameters
         |> CallablesSharedMemory.ReadOnly.get_define callables_to_definitions_map
         |> PyreflyApi.AstResult.value_exn
-             ~message:(Format.asprintf "Found no definition for `%a`" Target.pp_pretty callable)
+             ~message:
+               (Format.asprintf
+                  "Found no definition for `%a`"
+                  (Target.pp_pretty ~display_api)
+                  callable)
       in
       let define_call_graph =
         define_call_graphs
@@ -140,7 +149,7 @@ module CallGraphAnalysis = struct
             ~define:(Ast.Node.value define)
             ~callable
         then (* Higher order call graph perf profiling is kept in-memory only. *)
-          CallGraphProfiler.start ~enable_perf:false ~callable ()
+          CallGraphProfiler.start ~display_api ~enable_perf:false ~callable ()
         else
           CallGraphProfiler.disabled
       in
@@ -148,7 +157,7 @@ module CallGraphAnalysis = struct
         Alarm.with_alarm
           ~max_time_in_seconds:60
           ~event_name:"Building higher order call graph"
-          ~callable:(Target.show_pretty callable)
+          ~callable:((Target.show_pretty ~display_api) callable)
           (fun () ->
             CallGraphBuilder.higher_order_call_graph_of_define
               ~define_call_graph
@@ -170,7 +179,11 @@ module CallGraphAnalysis = struct
               ~maximum_parameterized_targets_at_call_site)
           ()
       in
-      CallGraphProfiler.stop ~max_number_expressions:50 ~max_number_apply_call_steps:50 profiler;
+      CallGraphProfiler.stop
+        ~display_api
+        ~max_number_expressions:50
+        ~max_number_apply_call_steps:50
+        profiler;
       let dependencies call_graph =
         call_graph
         |> CallGraph.DefineCallGraph.all_targets
@@ -199,15 +212,20 @@ module CallGraphAnalysis = struct
       then (
         Log.dump
           "Returned callables for `%a`: `%a`"
-          Target.pp_pretty_with_kind
+          (Target.pp_pretty ~display_api)
           callable
           CallGraph.CallTarget.Set.pp
           model.CallGraphBuilder.HigherOrderCallGraph.returned_callables;
         Log.dump
           "Additional dependencies for `%a`: `%a`"
-          Target.pp_pretty_with_kind
+          (Target.pp_pretty ~display_api)
           callable
-          Target.Set.pp_pretty_with_kind
+          (fun formatter targets ->
+            Format.pp_print_list
+              ~pp_sep:(fun formatter () -> Format.fprintf formatter ",@ ")
+              (Target.pp_pretty ~display_api)
+              formatter
+              (Target.Set.elements targets))
           additional_dependencies);
       {
         AnalyzeDefineResult.result = ();
@@ -313,6 +331,7 @@ let build_whole_program_call_graph ~scheduler ~scheduler_policy state =
 let analyzed_callables { Fixpoint.state; _ } = Fixpoint.State.targets state
 
 let log_decorated_targets_if_no_returned_callables
+    ~display_api
     ~scheduler
     ~scheduler_policy
     ~callables_to_decorators_map
@@ -343,7 +362,7 @@ let log_decorated_targets_if_no_returned_callables
                 ~section:`DecoratorError
                 "Failed to apply decorators for `%a`, which may lead to false negatives. Consider \
                  skipping one of these decorators: [%s]"
-                Target.pp_pretty
+                (Target.pp_pretty ~display_api)
                 callable
                 (String.concat ~sep:"; " decorator_expressions);
               decorator_expressions
@@ -386,7 +405,7 @@ let log_decorated_targets_if_no_returned_callables
              Log.log ~section:`DecoratorError "Decorator %s: %d times" decorator count))
 
 
-let log_most_common_parameterized_target_base state =
+let log_most_common_parameterized_target_base ~display_api state =
   if not (Log.is_enabled `ParameterizedTarget) then
     ()
   else
@@ -395,7 +414,7 @@ let log_most_common_parameterized_target_base state =
     List.iter targets ~f:(fun target ->
         if Target.is_parameterized target then begin
           let base = Target.strip_parameters target in
-          let target_string = Target.show_pretty target in
+          let target_string = (Target.show_pretty ~display_api) target in
           Hashtbl.update parameterized_versions base ~f:(function
               | None -> String.Set.singleton target_string
               | Some set -> Set.add set target_string)
@@ -412,7 +431,7 @@ let log_most_common_parameterized_target_base state =
            Log.log
              ~section:`ParameterizedTarget
              "  %a: %d parameterized versions"
-             Target.pp_pretty
+             (Target.pp_pretty ~display_api)
              base
              count;
            Set.to_list versions
@@ -553,8 +572,9 @@ let compute
       ~filename_prefix:"higher-order-call-graph"
       ~callables:(analyzed_callables fixpoint)
   in
-  log_most_common_parameterized_target_base state;
+  log_most_common_parameterized_target_base ~display_api state;
   log_decorated_targets_if_no_returned_callables
+    ~display_api
     ~scheduler
     ~scheduler_policy
     ~callables_to_decorators_map:

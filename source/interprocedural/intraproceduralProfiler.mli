@@ -27,7 +27,12 @@ module Make (Analysis : Analysis) : sig
   (* A profiler that does nothing. *)
   val disabled : t
 
-  val start : enable_perf:bool -> callable:Target.t -> unit -> t
+  val start
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    enable_perf:bool ->
+    callable:Target.t ->
+    unit ->
+    t
 
   val track_duration : profiler:t -> name:string -> f:(unit -> 'a) -> 'a
 
@@ -62,5 +67,10 @@ module Make (Analysis : Analysis) : sig
     f:(unit -> 'a) ->
     'a
 
-  val stop : max_number_expressions:int -> max_number_apply_call_steps:int -> t -> unit
+  val stop
+    :  display_api:PyreflyTypes.DisplayApi.t ->
+    max_number_expressions:int ->
+    max_number_apply_call_steps:int ->
+    t ->
+    unit
 end

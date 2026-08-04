@@ -1,25 +1,25 @@
 @generated
 Call dependencies
 {
-  "dictionary_delete.dict_into_sink (fun)": [
-    "builtins.dict.__getitem__ (method)", "pysa._test_sink (fun)"
+  "Function{dictionary_delete.dict_into_sink}": [
+    "Function{pysa._test_sink}", "Method{builtins.dict.__getitem__}"
   ],
-  "dictionary_delete.pop_dict_with_bad_key (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.dict.pop (method)"
+  "Function{dictionary_delete.pop_dict_with_bad_key}": [
+    "Method{builtins.dict.__getitem__}", "Method{builtins.dict.pop}"
   ],
-  "dictionary_delete.pop_key (fun)": [ "builtins.dict.pop (method)" ],
-  "dictionary_delete.return_dict_with_bad_key (fun)": [
-    "builtins.dict.__getitem__ (method)", "pysa._test_source (fun)"
+  "Function{dictionary_delete.pop_key}": [ "Method{builtins.dict.pop}" ],
+  "Function{dictionary_delete.return_dict_with_bad_key}": [
+    "Function{pysa._test_source}", "Method{builtins.dict.__getitem__}"
   ],
-  "dictionary_delete.take_dict_with_bad_key (fun)": [
-    "builtins.dict.__getitem__ (method)"
+  "Function{dictionary_delete.take_dict_with_bad_key}": [
+    "Method{builtins.dict.__getitem__}"
   ],
-  "dictionary_delete.test_del_keyword (fun)": [
-    "builtins.dict.__getitem__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{dictionary_delete.test_del_keyword}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.dict.__getitem__}"
   ],
-  "dictionary_delete.test_pop_method (fun)": [
-    "builtins.dict.__getitem__ (method)", "builtins.dict.pop (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{dictionary_delete.test_pop_method}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.dict.__getitem__}", "Method{builtins.dict.pop}"
   ]
 }

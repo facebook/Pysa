@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "global.$toplevel",
+  "callable": "Function{global.$toplevel}",
   "returned_callables": [],
   "calls": {
     "18:7-18:15": {
@@ -130,7 +130,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.create_global_source",
+  "callable": "Function{global.create_global_source}",
   "returned_callables": [],
   "calls": {
     "78:4-78:5|identifier|z": {
@@ -148,7 +148,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj1_flow",
+  "callable": "Function{global.obj1_flow}",
   "returned_callables": [],
   "calls": {
     "31:4-31:17": {
@@ -168,7 +168,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj1_no_flow",
+  "callable": "Function{global.obj1_no_flow}",
   "returned_callables": [],
   "calls": {
     "36:4-36:15": {
@@ -188,7 +188,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj1_sink",
+  "callable": "Function{global.obj1_sink}",
   "returned_callables": [],
   "calls": {
     "26:4-26:22": {
@@ -201,7 +201,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj1_source",
+  "callable": "Function{global.obj1_source}",
   "returned_callables": [],
   "calls": {
     "22:13-22:27": {
@@ -214,7 +214,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj2_sink",
+  "callable": "Function{global.obj2_sink}",
   "returned_callables": [],
   "calls": {
     "44:4-44:20": {
@@ -227,7 +227,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj3_flow",
+  "callable": "Function{global.obj3_flow}",
   "returned_callables": [],
   "calls": {
     "60:4-60:28": {
@@ -261,7 +261,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj4_flow",
+  "callable": "Function{global.obj4_flow}",
   "returned_callables": [],
   "calls": {
     "70:4-70:20": {
@@ -279,7 +279,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj6_flow",
+  "callable": "Function{global.obj6_flow}",
   "returned_callables": [],
   "calls": {
     "104:4-104:17": {
@@ -299,7 +299,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj6_sink",
+  "callable": "Function{global.obj6_sink}",
   "returned_callables": [],
   "calls": {
     "99:4-99:20": {
@@ -312,7 +312,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj6_source",
+  "callable": "Function{global.obj6_source}",
   "returned_callables": [],
   "calls": {
     "95:11-95:25": {
@@ -325,7 +325,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj7_flow",
+  "callable": "Function{global.obj7_flow}",
   "returned_callables": [],
   "calls": {
     "123:4-123:17": {
@@ -345,7 +345,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj7_sink",
+  "callable": "Function{global.obj7_sink}",
   "returned_callables": [],
   "calls": {
     "118:4-118:20": {
@@ -358,7 +358,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj7_source",
+  "callable": "Function{global.obj7_source}",
   "returned_callables": [],
   "calls": {
     "113:11-113:25": {
@@ -371,7 +371,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.obj8_flow",
+  "callable": "Function{global.obj8_flow}",
   "returned_callables": [],
   "calls": {
     "141:4-141:28": {
@@ -405,7 +405,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "global.return_global_source",
+  "callable": "Function{global.return_global_source}",
   "returned_callables": [],
   "calls": {
     "87:11-87:12|identifier|z": {

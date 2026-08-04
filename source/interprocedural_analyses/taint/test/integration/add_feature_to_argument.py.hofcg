@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_tito_feature",
+  "callable": "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_tito_feature}",
   "returned_callables": [],
   "calls": {
     "80:8-80:28": {
@@ -29,7 +29,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb",
+  "callable": "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb}",
   "returned_callables": [],
   "calls": {
     "98:8-98:27": {
@@ -57,7 +57,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb",
+  "callable": "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb}",
   "returned_callables": [],
   "calls": {
     "115:8-115:29": {
@@ -85,7 +85,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.adds_and_taints",
+  "callable": "Function{add_feature_to_argument.adds_and_taints}",
   "returned_callables": [],
   "calls": {
     "20:8-20:22": {
@@ -109,7 +109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.dict_test_add_via_value_of_second",
+  "callable": "Function{add_feature_to_argument.dict_test_add_via_value_of_second}",
   "returned_callables": [],
   "calls": {
     "40:8-40:22": {
@@ -136,7 +136,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.propagate_add_feature",
+  "callable": "Function{add_feature_to_argument.propagate_add_feature}",
   "returned_callables": [],
   "calls": {
     "26:11-26:45": {
@@ -153,7 +153,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.propagate_multiple_add_feature",
+  "callable": "Function{add_feature_to_argument.propagate_multiple_add_feature}",
   "returned_callables": [],
   "calls": {
     "62:7-62:22": {
@@ -207,7 +207,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_tito_feature",
+  "callable": "Function{add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_tito_feature}",
   "returned_callables": [],
   "calls": {
     "85:8-85:22": {
@@ -231,7 +231,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb",
+  "callable": "Function{add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb}",
   "returned_callables": [],
   "calls": {
     "103:8-103:22": {
@@ -255,7 +255,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb",
+  "callable": "Function{add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb}",
   "returned_callables": [],
   "calls": {
     "120:8-120:22": {
@@ -279,7 +279,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.test_add_feature_in_comprehension",
+  "callable": "Function{add_feature_to_argument.test_add_feature_in_comprehension}",
   "returned_callables": [],
   "calls": {
     "51:15-51:29": {
@@ -349,7 +349,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.test_add_feature_to_sink",
+  "callable": "Function{add_feature_to_argument.test_add_feature_to_sink}",
   "returned_callables": [],
   "calls": {
     "46:4-46:39": {
@@ -373,7 +373,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.test_add_feature_to_sink_in_comprehension",
+  "callable": "Function{add_feature_to_argument.test_add_feature_to_sink_in_comprehension}",
   "returned_callables": [],
   "calls": {
     "57:20-57:29|artificial-call|generator-iter": {
@@ -423,7 +423,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.test_add_multiple_feature",
+  "callable": "Function{add_feature_to_argument.test_add_multiple_feature}",
   "returned_callables": [],
   "calls": {
     "69:4-69:45": {
@@ -447,7 +447,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "add_feature_to_argument.test_add_via_value_of_second",
+  "callable": "Function{add_feature_to_argument.test_add_via_value_of_second}",
   "returned_callables": [],
   "calls": {
     "34:8-34:22": {

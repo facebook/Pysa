@@ -1129,7 +1129,7 @@ module ReadWriteCache = struct
   let show_set set =
     set
     |> Target.Set.elements
-    |> List.map ~f:(fun target -> Format.asprintf "%a" Target.pp_internal target)
+    |> List.map ~f:(fun target -> Format.asprintf "%a" Target.pp target)
     |> String.concat ~sep:", "
     |> Format.sprintf "{%s}"
 
@@ -1251,6 +1251,7 @@ module MakeQueryExecutor (QueryKind : QUERY_KIND) = struct
       ~modelable
       { ModelQuery.find; where; name = query_name; _ }
     =
+    let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
     let result =
       Modelable.matches_find modelable find
       && List.for_all
@@ -1267,7 +1268,7 @@ module MakeQueryExecutor (QueryKind : QUERY_KIND) = struct
       if verbose && result then
         Log.info
           "Target `%a` matches all constraints for the model query `%s`."
-          Target.pp_pretty
+          (Target.pp_pretty ~display_api)
           (Modelable.target modelable)
           query_name
     in

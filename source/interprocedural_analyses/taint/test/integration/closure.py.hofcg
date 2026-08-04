@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "closure.$toplevel",
+  "callable": "Function{closure.$toplevel}",
   "returned_callables": [],
   "calls": {
     "420:4-420:16": {
@@ -90,7 +90,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_nonlocal_closure_tito_ignore_decorator",
+  "callable": "Function{closure.async_nonlocal_closure_tito_ignore_decorator}",
   "returned_callables": [],
   "calls": {
     "465:8-465:22": {
@@ -145,7 +145,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_nonlocal_closure_tito_ignore_decorator.inner",
+  "callable": "Function{closure.async_nonlocal_closure_tito_ignore_decorator.inner}",
   "returned_callables": [],
   "calls": {
     "469:16-469:17|identifier|x": {
@@ -182,7 +182,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_nonlocal_closure_tito_with_decorator",
+  "callable": "Function{closure.async_nonlocal_closure_tito_with_decorator}",
   "returned_callables": [],
   "calls": {
     "451:8-451:22": {
@@ -225,7 +225,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_nonlocal_closure_tito_with_decorator.inner",
+  "callable": "Function{closure.async_nonlocal_closure_tito_with_decorator.inner}",
   "returned_callables": [],
   "calls": {
     "456:16-456:17|identifier|x": {
@@ -262,7 +262,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_nonlocal_closure_tito_with_decorator.inner@decorated",
+  "callable": "Function{closure.async_nonlocal_closure_tito_with_decorator.inner@decorated}",
   "returned_callables": [
     {
       "target": "closure.decorator.wrapper[captured_variable(function, closure.decorator)=closure.async_nonlocal_closure_tito_with_decorator.inner]",
@@ -298,7 +298,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_tito",
+  "callable": "Function{closure.async_tito}",
   "returned_callables": [],
   "calls": {
     "445:17-445:27": {
@@ -307,7 +307,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure",
+  "callable": "Function{closure.closure}",
   "returned_callables": [],
   "calls": {
     "110:10-110:18": {
@@ -378,7 +378,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure.sink",
+  "callable": "Function{closure.closure.sink}",
   "returned_callables": [],
   "calls": {
     "116:8-116:25": {
@@ -398,7 +398,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure.source",
+  "callable": "Function{closure.closure.source}",
   "returned_callables": [],
   "calls": {
     "113:8-113:11|identifier|obj": {
@@ -418,7 +418,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_flow",
+  "callable": "Function{closure.closure_flow}",
   "returned_callables": [],
   "calls": {
     "123:19-123:28": {
@@ -449,7 +449,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_nested_sink_flow",
+  "callable": "Function{closure.closure_nested_sink_flow}",
   "returned_callables": [],
   "calls": {
     "289:4-298:25": {
@@ -484,7 +484,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_nested_sink_flow.sink1",
+  "callable": "Function{closure.closure_nested_sink_flow.sink1}",
   "returned_callables": [],
   "calls": {
     "290:8-295:29": {
@@ -530,7 +530,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_nested_sink_flow.sink1.sink2",
+  "callable": "Function{closure.closure_nested_sink_flow.sink1.sink2}",
   "returned_callables": [],
   "calls": {
     "291:12-292:33": {
@@ -576,7 +576,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_nested_sink_flow.sink1.sink2.sink3",
+  "callable": "Function{closure.closure_nested_sink_flow.sink1.sink2.sink3}",
   "returned_callables": [],
   "calls": {
     "292:16-292:33": {
@@ -600,7 +600,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_no_flow",
+  "callable": "Function{closure.closure_no_flow}",
   "returned_callables": [],
   "calls": {
     "129:19-129:28": {
@@ -631,7 +631,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_wrapper_sink_flow",
+  "callable": "Function{closure.closure_wrapper_sink_flow}",
   "returned_callables": [],
   "calls": {
     "321:4-322:23": {
@@ -690,7 +690,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_wrapper_sink_flow.sink",
+  "callable": "Function{closure.closure_wrapper_sink_flow.sink}",
   "returned_callables": [],
   "calls": {
     "322:8-322:23": {
@@ -713,7 +713,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.closure_wrapper_sink_flow.wrapper",
+  "callable": "Function{closure.closure_wrapper_sink_flow.wrapper}",
   "returned_callables": [],
   "calls": {
     "325:8-325:14": {
@@ -730,7 +730,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.decorator",
+  "callable": "Function{closure.decorator}",
   "returned_callables": [
     { "target": "closure.decorator.wrapper", "index": 0, "return_type": [] }
   ],
@@ -762,7 +762,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.decorator.wrapper",
+  "callable": "Function{closure.decorator.wrapper}",
   "returned_callables": [],
   "calls": {
     "432:21-432:29|identifier|function": {
@@ -779,14 +779,14 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.higher_order_function",
+  "callable": "Function{closure.higher_order_function}",
   "returned_callables": [],
   "calls": {
     "51:4-51:8": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } }
   }
 }
 {
-  "callable": "closure.ignored_decorator",
+  "callable": "Function{closure.ignored_decorator}",
   "returned_callables": [
     {
       "target": "closure.ignored_decorator.wrapper",
@@ -822,7 +822,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.ignored_decorator.wrapper",
+  "callable": "Function{closure.ignored_decorator.wrapper}",
   "returned_callables": [],
   "calls": {
     "439:21-439:29|identifier|function": {
@@ -842,7 +842,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_conditional_write",
+  "callable": "Function{closure.nonlocal_closure_conditional_write}",
   "returned_callables": [],
   "calls": {
     "335:10-335:24": {
@@ -920,7 +920,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_conditional_write.clear",
+  "callable": "Function{closure.nonlocal_closure_conditional_write.clear}",
   "returned_callables": [],
   "calls": {
     "344:8-344:11|identifier|obj": {
@@ -936,7 +936,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_conditional_write.conditional_write",
+  "callable": "Function{closure.nonlocal_closure_conditional_write.conditional_write}",
   "returned_callables": [],
   "calls": {
     "340:12-340:15|identifier|obj": {
@@ -963,7 +963,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_define_before_variable_initialization",
+  "callable": "Function{closure.nonlocal_closure_define_before_variable_initialization}",
   "returned_callables": [],
   "calls": {
     "97:4-98:21": {
@@ -998,7 +998,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_define_before_variable_initialization.read",
+  "callable": "Function{closure.nonlocal_closure_define_before_variable_initialization.read}",
   "returned_callables": [],
   "calls": {
     "98:8-98:21": {
@@ -1022,7 +1022,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_flow",
+  "callable": "Function{closure.nonlocal_closure_flow}",
   "returned_callables": [],
   "calls": {
     "200:4-202:28": {
@@ -1072,7 +1072,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_flow.sink",
+  "callable": "Function{closure.nonlocal_closure_flow.sink}",
   "returned_callables": [],
   "calls": {
     "205:8-205:23": {
@@ -1095,7 +1095,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_flow.source",
+  "callable": "Function{closure.nonlocal_closure_flow.source}",
   "returned_callables": [],
   "calls": {
     "202:8-202:11|identifier|obj": {
@@ -1118,7 +1118,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_inner_flow",
+  "callable": "Function{closure.nonlocal_closure_inner_flow}",
   "returned_callables": [],
   "calls": {
     "228:4-231:23": {
@@ -1146,7 +1146,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_inner_flow.flow",
+  "callable": "Function{closure.nonlocal_closure_inner_flow.flow}",
   "returned_callables": [],
   "calls": {
     "230:8-230:11|identifier|obj": {
@@ -1187,7 +1187,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_multiple_reads",
+  "callable": "Function{closure.nonlocal_closure_multiple_reads}",
   "returned_callables": [],
   "calls": {
     "75:8-75:22": {
@@ -1255,7 +1255,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_multiple_reads.conditional_read",
+  "callable": "Function{closure.nonlocal_closure_multiple_reads.conditional_read}",
   "returned_callables": [],
   "calls": {
     "79:12-79:25": {
@@ -1286,7 +1286,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_multiple_reads.overread",
+  "callable": "Function{closure.nonlocal_closure_multiple_reads.overread}",
   "returned_callables": [],
   "calls": {
     "86:12-86:13|identifier|x": {
@@ -1310,7 +1310,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_multiple_writes",
+  "callable": "Function{closure.nonlocal_closure_multiple_writes}",
   "returned_callables": [],
   "calls": {
     "176:4-181:17": {
@@ -1374,7 +1374,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_multiple_writes.conditional_write",
+  "callable": "Function{closure.nonlocal_closure_multiple_writes.conditional_write}",
   "returned_callables": [],
   "calls": {
     "179:12-179:13|identifier|x": {
@@ -1407,7 +1407,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_multiple_writes.overwrite",
+  "callable": "Function{closure.nonlocal_closure_multiple_writes.overwrite}",
   "returned_callables": [],
   "calls": {
     "189:8-189:9|identifier|x": {
@@ -1440,7 +1440,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_nested_source_flow",
+  "callable": "Function{closure.nonlocal_closure_nested_source_flow}",
   "returned_callables": [],
   "calls": {
     "266:4-280:21": {
@@ -1475,7 +1475,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_nested_source_flow.source1",
+  "callable": "Function{closure.nonlocal_closure_nested_source_flow.source1}",
   "returned_callables": [],
   "calls": {
     "269:8-275:29": {
@@ -1520,7 +1520,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_nested_source_flow.source1.source2",
+  "callable": "Function{closure.nonlocal_closure_nested_source_flow.source1.source2}",
   "returned_callables": [],
   "calls": {
     "270:12-272:38": {
@@ -1565,7 +1565,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_nested_source_flow.source1.source2.source3",
+  "callable": "Function{closure.nonlocal_closure_nested_source_flow.source1.source2.source3}",
   "returned_callables": [],
   "calls": {
     "272:16-272:21|identifier|inner": {
@@ -1588,7 +1588,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_no_flow",
+  "callable": "Function{closure.nonlocal_closure_no_flow}",
   "returned_callables": [],
   "calls": {
     "214:4-216:28": {
@@ -1638,7 +1638,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_no_flow.sink",
+  "callable": "Function{closure.nonlocal_closure_no_flow.sink}",
   "returned_callables": [],
   "calls": {
     "219:8-219:23": {
@@ -1661,7 +1661,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_no_flow.source",
+  "callable": "Function{closure.nonlocal_closure_no_flow.source}",
   "returned_callables": [],
   "calls": {
     "216:8-216:11|identifier|obj": {
@@ -1684,7 +1684,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_obscure",
+  "callable": "Function{closure.nonlocal_closure_obscure}",
   "returned_callables": [],
   "calls": {
     "239:4-241:28": {
@@ -1738,7 +1738,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_obscure.sink",
+  "callable": "Function{closure.nonlocal_closure_obscure.sink}",
   "returned_callables": [],
   "calls": {
     "244:8-244:23": {
@@ -1761,7 +1761,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_obscure.source",
+  "callable": "Function{closure.nonlocal_closure_obscure.source}",
   "returned_callables": [],
   "calls": {
     "241:8-241:11|identifier|obj": {
@@ -1784,7 +1784,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_read_reduction",
+  "callable": "Function{closure.nonlocal_closure_read_reduction}",
   "returned_callables": [],
   "calls": {
     "12:8-12:22": {
@@ -1826,7 +1826,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_read_reduction.inner",
+  "callable": "Function{closure.nonlocal_closure_read_reduction.inner}",
   "returned_callables": [],
   "calls": {
     "16:8-16:21": {
@@ -1857,7 +1857,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_reduction",
+  "callable": "Function{closure.nonlocal_closure_reduction}",
   "returned_callables": [],
   "calls": {
     "151:4-155:19": {
@@ -1929,7 +1929,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_reduction.sink",
+  "callable": "Function{closure.nonlocal_closure_reduction.sink}",
   "returned_callables": [],
   "calls": {
     "166:8-166:24": {
@@ -1976,7 +1976,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_reduction.source",
+  "callable": "Function{closure.nonlocal_closure_reduction.source}",
   "returned_callables": [],
   "calls": {
     "153:8-153:12|identifier|obj1": {
@@ -2006,7 +2006,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_reduction.tito",
+  "callable": "Function{closure.nonlocal_closure_reduction.tito}",
   "returned_callables": [],
   "calls": {
     "158:21-158:25|identifier|obj1": {
@@ -2022,7 +2022,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_tito",
+  "callable": "Function{closure.nonlocal_closure_tito}",
   "returned_callables": [],
   "calls": {
     "357:8-357:22": {
@@ -2064,7 +2064,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_tito.inner",
+  "callable": "Function{closure.nonlocal_closure_tito.inner}",
   "returned_callables": [],
   "calls": {
     "360:15-360:16|identifier|x": {
@@ -2081,7 +2081,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_flow",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_flow}",
   "returned_callables": [],
   "calls": {
     "307:4-309:28": {
@@ -2127,7 +2127,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_flow.source",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_flow.source}",
   "returned_callables": [],
   "calls": {
     "309:8-309:11|identifier|obj": {
@@ -2150,7 +2150,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_flow.wrapper",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_flow.wrapper}",
   "returned_callables": [],
   "calls": {
     "312:8-312:16": {
@@ -2167,7 +2167,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_max_trace_length",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_max_trace_length}",
   "returned_callables": [],
   "calls": {
     "402:4-404:28": {
@@ -2235,7 +2235,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_max_trace_length.f1",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_max_trace_length.f1}",
   "returned_callables": [],
   "calls": {
     "407:8-407:16": {
@@ -2252,7 +2252,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_max_trace_length.f2",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_max_trace_length.f2}",
   "returned_callables": [],
   "calls": {
     "410:8-410:12": {
@@ -2269,7 +2269,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_max_trace_length.f3",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_max_trace_length.f3}",
   "returned_callables": [],
   "calls": {
     "413:8-413:12": {
@@ -2286,7 +2286,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_wrapper_source_max_trace_length.source",
+  "callable": "Function{closure.nonlocal_closure_wrapper_source_max_trace_length.source}",
   "returned_callables": [],
   "calls": {
     "404:8-404:11|identifier|obj": {
@@ -2309,7 +2309,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_write_reduction",
+  "callable": "Function{closure.nonlocal_closure_write_reduction}",
   "returned_callables": [],
   "calls": {
     "138:4-141:29": {
@@ -2351,7 +2351,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_closure_write_reduction.source",
+  "callable": "Function{closure.nonlocal_closure_write_reduction.source}",
   "returned_callables": [],
   "calls": {
     "140:8-140:9|identifier|x": {
@@ -2381,7 +2381,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_obscure_flow",
+  "callable": "Function{closure.nonlocal_obscure_flow}",
   "returned_callables": [],
   "calls": {
     "252:19-252:45": {
@@ -2420,7 +2420,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.nonlocal_obscure_no_flow",
+  "callable": "Function{closure.nonlocal_obscure_no_flow}",
   "returned_callables": [],
   "calls": {
     "258:19-258:45": {
@@ -2459,7 +2459,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.parameter_order_swap",
+  "callable": "Function{closure.parameter_order_swap}",
   "returned_callables": [],
   "calls": {
     "55:4-58:21": {
@@ -2487,7 +2487,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.parameter_order_swap.inner",
+  "callable": "Function{closure.parameter_order_swap.inner}",
   "returned_callables": [],
   "calls": {
     "56:8-56:21": {
@@ -2547,7 +2547,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.parameter_order_swap_different_variable_names",
+  "callable": "Function{closure.parameter_order_swap_different_variable_names}",
   "returned_callables": [],
   "calls": {
     "66:4-69:21": {
@@ -2575,7 +2575,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.parameter_order_swap_different_variable_names.inner",
+  "callable": "Function{closure.parameter_order_swap_different_variable_names.inner}",
   "returned_callables": [],
   "calls": {
     "67:8-67:21": {
@@ -2635,7 +2635,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.parameter_order_swap_tito",
+  "callable": "Function{closure.parameter_order_swap_tito}",
   "returned_callables": [],
   "calls": {
     "393:4-394:22": {
@@ -2683,7 +2683,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.parameter_order_swap_tito.inner",
+  "callable": "Function{closure.parameter_order_swap_tito.inner}",
   "returned_callables": [],
   "calls": {
     "394:15-394:16|identifier|y": {
@@ -2722,7 +2722,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.taint_propagation",
+  "callable": "Function{closure.taint_propagation}",
   "returned_callables": [],
   "calls": {
     "23:8-23:22": {
@@ -2753,7 +2753,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.taint_propagation_hof",
+  "callable": "Function{closure.taint_propagation_hof}",
   "returned_callables": [],
   "calls": {
     "37:8-37:22": {
@@ -2784,7 +2784,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.tito_hof",
+  "callable": "Function{closure.tito_hof}",
   "returned_callables": [],
   "calls": {
     "389:4-389:19": {
@@ -2800,7 +2800,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.tito_propagation",
+  "callable": "Function{closure.tito_propagation}",
   "returned_callables": [],
   "calls": {
     "367:4-367:48": {
@@ -2824,7 +2824,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.tito_propagation_hof",
+  "callable": "Function{closure.tito_propagation_hof}",
   "returned_callables": [],
   "calls": {
     "378:4-378:52": {
@@ -2848,7 +2848,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_taint_propagation",
+  "callable": "Function{closure.wrapper_for_taint_propagation}",
   "returned_callables": [],
   "calls": {
     "29:4-31:21": {
@@ -2876,7 +2876,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_taint_propagation.inner",
+  "callable": "Function{closure.wrapper_for_taint_propagation.inner}",
   "returned_callables": [],
   "calls": {
     "30:8-30:21": {
@@ -2907,7 +2907,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_taint_propagation_hof",
+  "callable": "Function{closure.wrapper_for_taint_propagation_hof}",
   "returned_callables": [],
   "calls": {
     "43:4-45:21": {
@@ -2948,7 +2948,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_taint_propagation_hof.inner",
+  "callable": "Function{closure.wrapper_for_taint_propagation_hof.inner}",
   "returned_callables": [],
   "calls": {
     "44:8-44:21": {
@@ -2979,7 +2979,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_tito_propagation",
+  "callable": "Function{closure.wrapper_for_tito_propagation}",
   "returned_callables": [],
   "calls": {
     "371:4-372:16": {
@@ -3014,7 +3014,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_tito_propagation.inner",
+  "callable": "Function{closure.wrapper_for_tito_propagation.inner}",
   "returned_callables": [],
   "calls": {
     "372:15-372:16|identifier|x": {
@@ -3031,7 +3031,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_tito_propagation_hof",
+  "callable": "Function{closure.wrapper_for_tito_propagation_hof}",
   "returned_callables": [],
   "calls": {
     "382:4-383:16": {
@@ -3072,7 +3072,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.wrapper_for_tito_propagation_hof.inner",
+  "callable": "Function{closure.wrapper_for_tito_propagation_hof.inner}",
   "returned_callables": [],
   "calls": {
     "383:15-383:16|identifier|x": {
@@ -3089,7 +3089,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_tito[formal(function, position=0)=closure.async_nonlocal_closure_tito_ignore_decorator.inner]",
+  "callable": "Function{closure.async_tito}[formal(function, position=0)=Function{closure.async_nonlocal_closure_tito_ignore_decorator.inner}]",
   "returned_callables": [],
   "calls": {
     "445:17-445:27": {
@@ -3106,7 +3106,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.async_tito[formal(function, position=0)=closure.decorator.wrapper[captured_variable(function, closure.decorator)=closure.async_nonlocal_closure_tito_with_decorator.inner]]",
+  "callable": "Function{closure.async_tito}[formal(function, position=0)=Function{closure.decorator.wrapper}[captured_variable(function, closure.decorator)=Function{closure.async_nonlocal_closure_tito_with_decorator.inner}]]",
   "returned_callables": [],
   "calls": {
     "445:17-445:27": {
@@ -3123,7 +3123,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.decorator[formal(function, position=0)=closure.async_nonlocal_closure_tito_with_decorator.inner]",
+  "callable": "Function{closure.decorator}[formal(function, position=0)=Function{closure.async_nonlocal_closure_tito_with_decorator.inner}]",
   "returned_callables": [
     {
       "target": "closure.decorator.wrapper[captured_variable(function, closure.decorator)=closure.async_nonlocal_closure_tito_with_decorator.inner]",
@@ -3159,7 +3159,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.decorator.wrapper[captured_variable(function, closure.decorator)=closure.async_nonlocal_closure_tito_with_decorator.inner]",
+  "callable": "Function{closure.decorator.wrapper}[captured_variable(function, closure.decorator)=Function{closure.async_nonlocal_closure_tito_with_decorator.inner}]",
   "returned_callables": [],
   "calls": {
     "432:21-432:29|identifier|function": {
@@ -3184,7 +3184,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.higher_order_function[formal(f, position=0)=closure.wrapper_for_taint_propagation_hof.inner]",
+  "callable": "Function{closure.higher_order_function}[formal(f, position=0)=Function{closure.wrapper_for_taint_propagation_hof.inner}]",
   "returned_callables": [],
   "calls": {
     "51:4-51:8": {
@@ -3201,7 +3201,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure.tito_hof[formal(f, position=0)=closure.wrapper_for_tito_propagation_hof.inner]",
+  "callable": "Function{closure.tito_hof}[formal(f, position=0)=Function{closure.wrapper_for_tito_propagation_hof.inner}]",
   "returned_callables": [],
   "calls": {
     "389:4-389:19": {

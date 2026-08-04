@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_global_variable.$toplevel",
+  "callable": "Function{model_query_global_variable.$toplevel}",
   "returned_callables": [],
   "calls": {
     "34:0-34:26": {
@@ -124,7 +124,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_global_variable.f",
+  "callable": "Function{model_query_global_variable.f}",
   "returned_callables": [],
   "calls": {
     "15:4-15:23": {
@@ -142,7 +142,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_global_variable.fun",
+  "callable": "Function{model_query_global_variable.fun}",
   "returned_callables": [],
   "calls": {
     "49:11-49:21|artificial-call|binary": {
@@ -181,7 +181,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_global_variable.g",
+  "callable": "Function{model_query_global_variable.g}",
   "returned_callables": [],
   "calls": {
     "27:4-27:7|identifier|foo": {
@@ -207,7 +207,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_global_variable.h",
+  "callable": "Function{model_query_global_variable.h}",
   "returned_callables": [],
   "calls": {
     "31:4-31:19": {
@@ -243,7 +243,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_global_variable.returns_any",
+  "callable": "Function{model_query_global_variable.returns_any}",
   "returned_callables": [],
   "calls": {
     "38:21-38:26": {

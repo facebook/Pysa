@@ -1,4 +1,4 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) side_effects.Object.__init__ (override)]
-side_effects.Object.__init__ (override) -> [side_effects.Object.__init__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{side_effects.Object.__init__}]
+Override{side_effects.Object.__init__} -> [Method{side_effects.Object.__init__}]

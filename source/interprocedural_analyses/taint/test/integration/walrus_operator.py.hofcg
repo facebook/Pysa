@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "walrus_operator.walrus_operator_forward",
+  "callable": "Function{walrus_operator.walrus_operator_forward}",
   "returned_callables": [],
   "calls": {
     "10:10-10:24": {

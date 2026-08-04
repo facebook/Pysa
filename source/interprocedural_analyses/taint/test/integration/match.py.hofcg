@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "match.$toplevel",
+  "callable": "Function{match.$toplevel}",
   "returned_callables": [],
   "calls": {
     "79:1-79:10|identifier|dataclass": {
@@ -20,7 +20,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "match.test_match_class_pattern",
+  "callable": "Function{match.test_match_class_pattern}",
   "returned_callables": [],
   "calls": {
     "87:8-87:22": {
@@ -303,7 +303,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "match.test_match_equality",
+  "callable": "Function{match.test_match_equality}",
   "returned_callables": [],
   "calls": {
     "12:8-12:22": {
@@ -333,7 +333,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "match.test_match_list_pattern",
+  "callable": "Function{match.test_match_list_pattern}",
   "returned_callables": [],
   "calls": {
     "21:8-21:22": {
@@ -513,7 +513,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "match.test_match_list_pattern_with_condition",
+  "callable": "Function{match.test_match_list_pattern_with_condition}",
   "returned_callables": [],
   "calls": {
     "48:8-48:22": {
@@ -553,7 +553,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "match.test_match_mapping_pattern",
+  "callable": "Function{match.test_match_mapping_pattern}",
   "returned_callables": [],
   "calls": {
     "55:8-55:22": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "all_static_fields.$toplevel",
+  "callable": "Function{all_static_fields.$toplevel}",
   "returned_callables": [],
   "calls": {
     "38:1-38:10|identifier|dataclass": {
@@ -89,7 +89,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_b",
+  "callable": "Function{all_static_fields.return_source_b}",
   "returned_callables": [],
   "calls": {
     "124:11-124:22": {
@@ -116,7 +116,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_c",
+  "callable": "Function{all_static_fields.return_source_c}",
   "returned_callables": [],
   "calls": {
     "132:11-132:22": {
@@ -143,7 +143,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_d",
+  "callable": "Function{all_static_fields.return_source_d}",
   "returned_callables": [],
   "calls": {
     "140:11-140:22": {
@@ -170,7 +170,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_dataclass",
+  "callable": "Function{all_static_fields.return_source_dataclass}",
   "returned_callables": [],
   "calls": {
     "49:11-49:31": {
@@ -197,7 +197,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_empty",
+  "callable": "Function{all_static_fields.return_source_empty}",
   "returned_callables": [],
   "calls": {
     "169:11-169:18": {
@@ -224,7 +224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_regular_class",
+  "callable": "Function{all_static_fields.return_source_regular_class}",
   "returned_callables": [],
   "calls": {
     "27:11-27:34": {
@@ -251,7 +251,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_type",
+  "callable": "Function{all_static_fields.return_source_type}",
   "returned_callables": [],
   "calls": {
     "156:11-156:12|identifier|A": {
@@ -280,7 +280,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_union_c_d",
+  "callable": "Function{all_static_fields.return_source_union_c_d}",
   "returned_callables": [],
   "calls": {
     "148:11-148:22": {
@@ -307,7 +307,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.return_source_union_dataclass_regular",
+  "callable": "Function{all_static_fields.return_source_union_dataclass_regular}",
   "returned_callables": [],
   "calls": {
     "67:11-67:34": {
@@ -334,7 +334,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.C.__init__",
+  "callable": "Method{all_static_fields.C.__init__}",
   "returned_callables": [],
   "calls": {
     "107:8-107:15": {
@@ -374,7 +374,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "all_static_fields.D.__init__",
+  "callable": "Method{all_static_fields.D.__init__}",
   "returned_callables": [],
   "calls": {
     "115:8-115:15": {

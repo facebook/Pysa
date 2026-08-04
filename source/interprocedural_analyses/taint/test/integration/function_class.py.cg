@@ -1,11 +1,11 @@
 @generated
 Call dependencies
 {
-  "function_class.test (fun)": [
-    "builtins.object.__new__ (method)",
-    "function_class.test.A.__init__ (method)"
+  "Function{function_class.test}": [
+    "Method{builtins.object.__new__}",
+    "Method{function_class.test.A.__init__}"
   ],
-  "function_class.test.A.__init__ (method)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{function_class.test.A.__init__}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ]
 }

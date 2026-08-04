@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "exception_test.none_throws",
+  "callable": "Function{exception_test.none_throws}",
   "returned_callables": [],
   "calls": {
     "26:7-26:16|artificial-call|comparison": {
@@ -33,7 +33,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_before_try_to_finally",
+  "callable": "Function{exception_test.test_before_try_to_finally}",
   "returned_callables": [],
   "calls": {
     "39:8-39:22": {
@@ -64,7 +64,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_caught_exception",
+  "callable": "Function{exception_test.test_caught_exception}",
   "returned_callables": [],
   "calls": {
     "21:11-21:20|artificial-call|try-handler-isinstance": {
@@ -133,7 +133,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_constructed_exception",
+  "callable": "Function{exception_test.test_constructed_exception}",
   "returned_callables": [],
   "calls": {
     "14:9-14:29": {
@@ -193,7 +193,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_except_to_finally",
+  "callable": "Function{exception_test.test_except_to_finally}",
   "returned_callables": [],
   "calls": {
     "59:15-59:29": {
@@ -224,7 +224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_parameter_flow",
+  "callable": "Function{exception_test.test_parameter_flow}",
   "returned_callables": [],
   "calls": {
     "10:11-10:18": {
@@ -263,7 +263,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_return_finally",
+  "callable": "Function{exception_test.test_return_finally}",
   "returned_callables": [],
   "calls": {
     "68:8-68:21": {
@@ -283,7 +283,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_return_overrides_finally",
+  "callable": "Function{exception_test.test_return_overrides_finally}",
   "returned_callables": [],
   "calls": {
     "85:15-85:29": {
@@ -296,7 +296,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_return_twice_finally",
+  "callable": "Function{exception_test.test_return_twice_finally}",
   "returned_callables": [],
   "calls": {
     "78:15-78:29": {
@@ -309,7 +309,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_sink_in_finally",
+  "callable": "Function{exception_test.test_sink_in_finally}",
   "returned_callables": [],
   "calls": {
     "33:15-33:29": {
@@ -333,7 +333,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "exception_test.test_within_try_to_finally",
+  "callable": "Function{exception_test.test_within_try_to_finally}",
   "returned_callables": [],
   "calls": {
     "49:12-49:26": {

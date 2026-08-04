@@ -1,11 +1,11 @@
 @generated
 Call dependencies
 {
-  "multi_subkind.issue (fun)": [
-    "builtins.dict.__setitem__ (method)", "multi_subkind.multi_sink (fun)",
-    "multi_subkind.source_a (fun)", "multi_subkind.source_b (fun)"
+  "Function{multi_subkind.issue}": [
+    "Function{multi_subkind.multi_sink}", "Function{multi_subkind.source_a}",
+    "Function{multi_subkind.source_b}", "Method{builtins.dict.__setitem__}"
   ],
-  "multi_subkind.multi_sink (fun)": [
-    "multi_subkind.sink_a (fun)", "multi_subkind.sink_b (fun)"
+  "Function{multi_subkind.multi_sink}": [
+    "Function{multi_subkind.sink_a}", "Function{multi_subkind.sink_b}"
   ]
 }

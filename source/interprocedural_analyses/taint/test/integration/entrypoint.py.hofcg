@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "entrypoint.$toplevel",
+  "callable": "Function{entrypoint.$toplevel}",
   "returned_callables": [],
   "calls": {
     "81:3-81:25|artificial-call|comparison": {
@@ -26,7 +26,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.entrypoint_into_lambda",
+  "callable": "Function{entrypoint.entrypoint_into_lambda}",
   "returned_callables": [],
   "calls": {
     "61:4-63:22": {
@@ -54,7 +54,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator",
+  "callable": "Function{entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator}",
   "returned_callables": [],
   "calls": {
     "63:8-63:12|identifier|glob": {
@@ -78,7 +78,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator@decorated",
+  "callable": "Function{entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator@decorated}",
   "returned_callables": [
     {
       "target": "entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator",
@@ -114,7 +114,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.function_entrypoint_with_decorator",
+  "callable": "Function{entrypoint.function_entrypoint_with_decorator}",
   "returned_callables": [],
   "calls": {
     "57:4-57:8|identifier|glob": {
@@ -138,7 +138,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.function_entrypoint_with_decorator@decorated",
+  "callable": "Function{entrypoint.function_entrypoint_with_decorator@decorated}",
   "returned_callables": [
     {
       "target": "entrypoint.function_entrypoint_with_decorator",
@@ -174,7 +174,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.get_these",
+  "callable": "Function{entrypoint.get_these}",
   "returned_callables": [],
   "calls": {
     "69:4-69:24": {
@@ -224,7 +224,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.immediate_examples",
+  "callable": "Function{entrypoint.immediate_examples}",
   "returned_callables": [],
   "calls": {
     "32:4-32:8|identifier|glob": {
@@ -248,7 +248,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.leak_globals_by_passing_in",
+  "callable": "Function{entrypoint.leak_globals_by_passing_in}",
   "returned_callables": [],
   "calls": {
     "48:4-48:48": {
@@ -270,7 +270,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.leak_globals_by_transitive_call",
+  "callable": "Function{entrypoint.leak_globals_by_transitive_call}",
   "returned_callables": [],
   "calls": {
     "52:4-52:39": {
@@ -287,7 +287,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.main",
+  "callable": "Function{entrypoint.main}",
   "returned_callables": [],
   "calls": {
     "76:4-76:15": {
@@ -345,7 +345,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.nested_run",
+  "callable": "Function{entrypoint.nested_run}",
   "returned_callables": [],
   "calls": {
     "25:4-26:22": {
@@ -373,7 +373,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.nested_run.do_the_thing",
+  "callable": "Function{entrypoint.nested_run.do_the_thing}",
   "returned_callables": [],
   "calls": {
     "26:8-26:12|identifier|glob": {
@@ -397,7 +397,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.this_one_shouldnt_be_found",
+  "callable": "Function{entrypoint.this_one_shouldnt_be_found}",
   "returned_callables": [],
   "calls": {
     "36:4-36:8|identifier|glob": {
@@ -421,7 +421,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.transitive_call_accessing_globals",
+  "callable": "Function{entrypoint.transitive_call_accessing_globals}",
   "returned_callables": [],
   "calls": {
     "44:4-44:8|identifier|glob": {
@@ -445,7 +445,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.transitive_call_with_globals_passed_in",
+  "callable": "Function{entrypoint.transitive_call_with_globals_passed_in}",
   "returned_callables": [],
   "calls": {
     "40:4-40:24": {
@@ -464,7 +464,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.MyClass.method_entrypoint_with_decorator",
+  "callable": "Method{entrypoint.MyClass.method_entrypoint_with_decorator}",
   "returned_callables": [],
   "calls": {
     "21:8-21:12|identifier|glob": {
@@ -488,7 +488,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.MyClass.method_entrypoint_with_decorator@decorated",
+  "callable": "Method{entrypoint.MyClass.method_entrypoint_with_decorator@decorated}",
   "returned_callables": [
     {
       "target": "entrypoint.MyClass.method_entrypoint_with_decorator",
@@ -524,7 +524,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.MyClass.some_entrypoint_function",
+  "callable": "Method{entrypoint.MyClass.some_entrypoint_function}",
   "returned_callables": [],
   "calls": {
     "17:8-17:12|identifier|glob": {
@@ -548,7 +548,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "entrypoint.MyEntrypoint[formal(f, position=0)=entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator]",
+  "callable": "Function{entrypoint.MyEntrypoint}[formal(f, position=0)=Function{entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator}]",
   "returned_callables": [
     {
       "target": "entrypoint.entrypoint_into_lambda.lambda_entrypoint_with_decorator",
@@ -559,7 +559,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "entrypoint.MyEntrypoint[formal(f, position=0)=entrypoint.function_entrypoint_with_decorator]",
+  "callable": "Function{entrypoint.MyEntrypoint}[formal(f, position=0)=Function{entrypoint.function_entrypoint_with_decorator}]",
   "returned_callables": [
     {
       "target": "entrypoint.function_entrypoint_with_decorator",
@@ -570,7 +570,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "entrypoint.MyEntrypoint[formal(f, position=0)=entrypoint.MyClass.method_entrypoint_with_decorator]",
+  "callable": "Function{entrypoint.MyEntrypoint}[formal(f, position=0)=Method{entrypoint.MyClass.method_entrypoint_with_decorator}]",
   "returned_callables": [
     {
       "target": "entrypoint.MyClass.method_entrypoint_with_decorator",

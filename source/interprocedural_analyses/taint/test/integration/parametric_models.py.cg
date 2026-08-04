@@ -1,17 +1,18 @@
 @generated
 Call dependencies
 {
-  "parametric_models.f_and_g_to_test (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "parametric_models.f (fun)", "parametric_models.g (fun)",
-    "parametric_models.sink (fun)"
+  "Function{parametric_models.f_and_g_to_test}": [
+    "Function{parametric_models.f}", "Function{parametric_models.g}",
+    "Function{parametric_models.sink}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}"
   ],
-  "parametric_models.inferred_sink (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "parametric_models.sink_subkind_a (fun)",
-    "parametric_models.sink_subkind_b (fun)"
+  "Function{parametric_models.inferred_sink}": [
+    "Function{parametric_models.sink_subkind_a}",
+    "Function{parametric_models.sink_subkind_b}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "parametric_models.test_to_subkind_sink (fun)": [
-    "parametric_models.inferred_sink (fun)", "pysa._test_source (fun)"
+  "Function{parametric_models.test_to_subkind_sink}": [
+    "Function{parametric_models.inferred_sink}",
+    "Function{pysa._test_source}"
   ]
 }

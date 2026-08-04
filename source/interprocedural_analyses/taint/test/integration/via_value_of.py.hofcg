@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "via_value_of.$toplevel",
+  "callable": "Function{via_value_of.$toplevel}",
   "returned_callables": [],
   "calls": {
     "15:13-15:22": {
@@ -30,7 +30,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.attach_to_sink",
+  "callable": "Function{via_value_of.attach_to_sink}",
   "returned_callables": [],
   "calls": {
     "101:4-101:25": {
@@ -43,7 +43,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.attach_to_source",
+  "callable": "Function{via_value_of.attach_to_source}",
   "returned_callables": [],
   "calls": {
     "93:11-93:25": {
@@ -56,7 +56,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.meta",
+  "callable": "Function{via_value_of.meta}",
   "returned_callables": [],
   "calls": {
     "40:11-40:47": {
@@ -73,7 +73,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.meta_named",
+  "callable": "Function{via_value_of.meta_named}",
   "returned_callables": [],
   "calls": {
     "44:11-44:57": {
@@ -90,7 +90,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.meta_sink",
+  "callable": "Function{via_value_of.meta_sink}",
   "returned_callables": [],
   "calls": {
     "73:4-73:39": {
@@ -107,7 +107,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.meta_sink_args",
+  "callable": "Function{via_value_of.meta_sink_args}",
   "returned_callables": [],
   "calls": {
     "77:4-77:42": {
@@ -124,7 +124,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.meta_sink_kwargs",
+  "callable": "Function{via_value_of.meta_sink_kwargs}",
   "returned_callables": [],
   "calls": {
     "81:4-81:53": {
@@ -141,7 +141,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.meta_sink_positional_kwargs",
+  "callable": "Function{via_value_of.meta_sink_positional_kwargs}",
   "returned_callables": [],
   "calls": {
     "85:4-85:42": {
@@ -158,7 +158,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_args_kwargs_parameter",
+  "callable": "Function{via_value_of.test_args_kwargs_parameter}",
   "returned_callables": [],
   "calls": {
     "142:11-142:55": {
@@ -175,7 +175,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_args_parameter",
+  "callable": "Function{via_value_of.test_args_parameter}",
   "returned_callables": [],
   "calls": {
     "130:11-130:45": {
@@ -192,7 +192,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_attach_to_sink",
+  "callable": "Function{via_value_of.test_attach_to_sink}",
   "returned_callables": [],
   "calls": {
     "105:4-105:49": {
@@ -209,7 +209,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_attach_to_source",
+  "callable": "Function{via_value_of.test_attach_to_source}",
   "returned_callables": [],
   "calls": {
     "97:11-97:49": {
@@ -226,7 +226,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_backwards_tito",
+  "callable": "Function{via_value_of.test_backwards_tito}",
   "returned_callables": [],
   "calls": {
     "69:11-69:42": {
@@ -239,7 +239,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_bool",
+  "callable": "Function{via_value_of.test_bool}",
   "returned_callables": [],
   "calls": {
     "28:11-28:43": {
@@ -256,7 +256,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_enums",
+  "callable": "Function{via_value_of.test_enums}",
   "returned_callables": [],
   "calls": {
     "32:11-32:48": {
@@ -295,7 +295,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_kwargs_parameter",
+  "callable": "Function{via_value_of.test_kwargs_parameter}",
   "returned_callables": [],
   "calls": {
     "135:11-135:48": {
@@ -312,7 +312,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_missing",
+  "callable": "Function{via_value_of.test_missing}",
   "returned_callables": [],
   "calls": {
     "36:11-36:38": {
@@ -329,7 +329,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_named_kwargs_parameter",
+  "callable": "Function{via_value_of.test_named_kwargs_parameter}",
   "returned_callables": [],
   "calls": {
     "152:11-152:60": {
@@ -346,7 +346,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_numerals",
+  "callable": "Function{via_value_of.test_numerals}",
   "returned_callables": [],
   "calls": {
     "24:11-24:39": {
@@ -363,7 +363,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_positional_kwargs_parameter",
+  "callable": "Function{via_value_of.test_positional_kwargs_parameter}",
   "returned_callables": [],
   "calls": {
     "147:11-147:53": {
@@ -380,7 +380,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_return_including_name",
+  "callable": "Function{via_value_of.test_return_including_name}",
   "returned_callables": [],
   "calls": {
     "113:11-113:51": {
@@ -397,7 +397,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_return_second_parameter",
+  "callable": "Function{via_value_of.test_return_second_parameter}",
   "returned_callables": [],
   "calls": {
     "121:11-121:44": {
@@ -414,7 +414,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_return_second_parameter_keyword",
+  "callable": "Function{via_value_of.test_return_second_parameter_keyword}",
   "returned_callables": [],
   "calls": {
     "125:11-125:57": {
@@ -431,7 +431,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_return_via_keyword_only",
+  "callable": "Function{via_value_of.test_return_via_keyword_only}",
   "returned_callables": [],
   "calls": {
     "219:11-219:48": {
@@ -448,7 +448,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_sink",
+  "callable": "Function{via_value_of.test_sink}",
   "returned_callables": [],
   "calls": {
     "65:11-65:47": {
@@ -465,7 +465,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_sinks_do_not_propagate",
+  "callable": "Function{via_value_of.test_sinks_do_not_propagate}",
   "returned_callables": [],
   "calls": {
     "89:4-89:41": {
@@ -482,7 +482,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_string_literals",
+  "callable": "Function{via_value_of.test_string_literals}",
   "returned_callables": [],
   "calls": {
     "20:11-20:41": {
@@ -499,7 +499,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_tito",
+  "callable": "Function{via_value_of.test_tito}",
   "returned_callables": [],
   "calls": {
     "56:8-56:38": {
@@ -519,7 +519,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_named_args",
+  "callable": "Function{via_value_of.test_unknown_named_args}",
   "returned_callables": [],
   "calls": {
     "158:11-158:55": {
@@ -536,7 +536,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_named_args_kwargs",
+  "callable": "Function{via_value_of.test_unknown_named_args_kwargs}",
   "returned_callables": [],
   "calls": {
     "204:11-204:65": {
@@ -553,7 +553,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_named_kwargs",
+  "callable": "Function{via_value_of.test_unknown_named_kwargs}",
   "returned_callables": [],
   "calls": {
     "164:11-164:58": {
@@ -570,7 +570,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_args",
+  "callable": "Function{via_value_of.test_unknown_positional_args}",
   "returned_callables": [],
   "calls": {
     "169:11-169:51": {
@@ -587,7 +587,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_kwargs",
+  "callable": "Function{via_value_of.test_unknown_positional_kwargs}",
   "returned_callables": [],
   "calls": {
     "174:11-174:54": {
@@ -604,7 +604,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_named_args1",
+  "callable": "Function{via_value_of.test_unknown_positional_named_args1}",
   "returned_callables": [],
   "calls": {
     "180:11-180:58": {
@@ -621,7 +621,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_named_args2",
+  "callable": "Function{via_value_of.test_unknown_positional_named_args2}",
   "returned_callables": [],
   "calls": {
     "186:11-186:61": {
@@ -638,7 +638,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_named_args_kwargs1",
+  "callable": "Function{via_value_of.test_unknown_positional_named_args_kwargs1}",
   "returned_callables": [],
   "calls": {
     "211:11-211:68": {
@@ -655,7 +655,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_named_kwargs1",
+  "callable": "Function{via_value_of.test_unknown_positional_named_kwargs1}",
   "returned_callables": [],
   "calls": {
     "191:11-191:61": {
@@ -672,7 +672,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_unknown_positional_named_kwargs2",
+  "callable": "Function{via_value_of.test_unknown_positional_named_kwargs2}",
   "returned_callables": [],
   "calls": {
     "197:11-197:64": {
@@ -689,7 +689,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "via_value_of.test_via_value_of_does_not_propagate",
+  "callable": "Function{via_value_of.test_via_value_of_does_not_propagate}",
   "returned_callables": [],
   "calls": {
     "48:11-48:23": {

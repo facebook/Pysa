@@ -1,6 +1,6 @@
 @generated
 Call dependencies
 {
-  "if_sinks.no_if (fun)": [ "pysa._test_sink (fun)" ],
-  "if_sinks.with_if (fun)": [ "pysa._test_sink (fun)" ]
+  "Function{if_sinks.no_if}": [ "Function{pysa._test_sink}" ],
+  "Function{if_sinks.with_if}": [ "Function{pysa._test_sink}" ]
 }

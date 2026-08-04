@@ -1,58 +1,58 @@
 @generated
 Call dependencies
 {
-  "obscure_models.should_collapse_depth_zero (fun)": [
-    "obscure_models.C.obscure (method)"
+  "Function{obscure_models.should_collapse_depth_zero}": [
+    "Method{obscure_models.C.obscure}"
   ],
-  "obscure_models.test_collapse_depth (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "obscure_models.should_collapse_depth_zero (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{obscure_models.test_collapse_depth}": [
+    "Function{obscure_models.should_collapse_depth_zero}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
   ],
-  "obscure_models.test_collapse_source (fun)": [
-    "obscure_models.C.obscure (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_collapse_source}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure}"
   ],
-  "obscure_models.test_issue (fun)": [
-    "obscure_models.C.obscure (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_issue}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure}"
   ],
-  "obscure_models.test_obscure (fun)": [
-    "obscure_models.C.obscure (method)", "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_from_model}": [
+    "Function{obscure_models.obscure_from_model}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "obscure_models.test_obscure_from_model (fun)": [
-    "obscure_models.obscure_from_model (fun)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_multiple_models}": [
+    "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_multiple_models}"
   ],
-  "obscure_models.test_obscure_with_multiple_models (fun)": [
-    "obscure_models.C.obscure_with_multiple_models (method)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_skip_inlining}": [
+    "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_skip_inlining}"
   ],
-  "obscure_models.test_obscure_with_skip_inlining (fun)": [
-    "obscure_models.C.obscure_with_skip_inlining (method)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_skip_obscure_and_tito}": [
+    "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_skip_obscure_and_tito}"
   ],
-  "obscure_models.test_obscure_with_skip_obscure (fun)": [
-    "obscure_models.C.obscure_with_skip_obscure (method)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_skip_obscure}": [
+    "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_skip_obscure}"
   ],
-  "obscure_models.test_obscure_with_skip_obscure_and_tito (fun)": [
-    "obscure_models.C.obscure_with_skip_obscure_and_tito (method)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_skip_overrides}": [
+    "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_skip_overrides}"
   ],
-  "obscure_models.test_obscure_with_skip_overrides (fun)": [
-    "obscure_models.C.obscure_with_skip_overrides (method)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_source}": [
+    "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_source}"
   ],
-  "obscure_models.test_obscure_with_source (fun)": [
-    "obscure_models.C.obscure_with_source (method)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure_with_tito}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{obscure_models.C.obscure_with_tito}"
   ],
-  "obscure_models.test_obscure_with_tito (fun)": [
-    "obscure_models.C.obscure_with_tito (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{obscure_models.test_obscure}": [
+    "Function{pysa._test_source}", "Method{obscure_models.C.obscure}"
   ],
-  "obscure_models.test_sink_collapse (fun)": [
-    "obscure_models.C.obscure (method)", "pysa._test_sink (fun)"
+  "Function{obscure_models.test_sink_collapse}": [
+    "Function{pysa._test_sink}", "Method{obscure_models.C.obscure}"
   ]
 }

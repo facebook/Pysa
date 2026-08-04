@@ -1,14 +1,14 @@
 @generated
 Higher order call graphs
 {
-  "callable": "sanitize_obscure.$toplevel",
+  "callable": "Function{sanitize_obscure.$toplevel}",
   "returned_callables": [],
   "calls": {
     "11:4-11:16": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } }
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_sink",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_sink}",
   "returned_callables": [],
   "calls": {
     "77:8-77:31": {
@@ -36,7 +36,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_sink_via_parameter",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_sink_via_parameter}",
   "returned_callables": [],
   "calls": {
     "178:8-178:36": {
@@ -64,7 +64,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_sink_via_parameter_tito",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_sink_via_parameter_tito}",
   "returned_callables": [],
   "calls": {
     "121:8-121:44": {
@@ -92,7 +92,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_sink_via_return",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_sink_via_return}",
   "returned_callables": [],
   "calls": {
     "204:8-204:33": {
@@ -120,7 +120,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_sink_via_return_tito",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_sink_via_return_tito}",
   "returned_callables": [],
   "calls": {
     "152:8-152:38": {
@@ -148,7 +148,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_source",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_source}",
   "returned_callables": [],
   "calls": {
     "90:8-90:18": {
@@ -176,7 +176,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_source_via_parameter",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_source_via_parameter}",
   "returned_callables": [],
   "calls": {
     "165:8-165:18": {
@@ -204,7 +204,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_source_via_parameter_tito",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_source_via_parameter_tito}",
   "returned_callables": [],
   "calls": {
     "103:8-103:18": {
@@ -232,7 +232,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_source_via_return",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_source_via_return}",
   "returned_callables": [],
   "calls": {
     "191:8-191:18": {
@@ -260,7 +260,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_of_a_source_via_return_tito",
+  "callable": "Function{sanitize_obscure.no_propagation_of_a_source_via_return_tito}",
   "returned_callables": [],
   "calls": {
     "139:8-139:18": {
@@ -288,7 +288,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.no_propagation_with_sanitize_a_tito",
+  "callable": "Function{sanitize_obscure.no_propagation_with_sanitize_a_tito}",
   "returned_callables": [],
   "calls": {
     "62:8-62:18": {
@@ -316,7 +316,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_a_sink_via_other_parameter_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_a_sink_via_other_parameter_tito}",
   "returned_callables": [],
   "calls": {
     "126:8-126:48": {
@@ -344,7 +344,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_a_source_via_other_parameter_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_a_source_via_other_parameter_tito}",
   "returned_callables": [],
   "calls": {
     "108:8-108:18": {
@@ -372,7 +372,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_sink",
+  "callable": "Function{sanitize_obscure.propagation_of_b_sink}",
   "returned_callables": [],
   "calls": {
     "82:8-82:31": {
@@ -400,7 +400,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_sink_via_parameter",
+  "callable": "Function{sanitize_obscure.propagation_of_b_sink_via_parameter}",
   "returned_callables": [],
   "calls": {
     "183:8-183:36": {
@@ -428,7 +428,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_sink_via_parameter_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_b_sink_via_parameter_tito}",
   "returned_callables": [],
   "calls": {
     "131:8-131:44": {
@@ -456,7 +456,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_sink_via_return",
+  "callable": "Function{sanitize_obscure.propagation_of_b_sink_via_return}",
   "returned_callables": [],
   "calls": {
     "209:8-209:33": {
@@ -484,7 +484,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_sink_via_return_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_b_sink_via_return_tito}",
   "returned_callables": [],
   "calls": {
     "157:8-157:38": {
@@ -512,7 +512,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_source",
+  "callable": "Function{sanitize_obscure.propagation_of_b_source}",
   "returned_callables": [],
   "calls": {
     "95:8-95:18": {
@@ -540,7 +540,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_source_via_parameter",
+  "callable": "Function{sanitize_obscure.propagation_of_b_source_via_parameter}",
   "returned_callables": [],
   "calls": {
     "170:8-170:18": {
@@ -568,7 +568,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_source_via_parameter_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_b_source_via_parameter_tito}",
   "returned_callables": [],
   "calls": {
     "113:8-113:18": {
@@ -596,7 +596,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_source_via_return",
+  "callable": "Function{sanitize_obscure.propagation_of_b_source_via_return}",
   "returned_callables": [],
   "calls": {
     "196:8-196:18": {
@@ -624,7 +624,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_source_via_return_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_b_source_via_return_tito}",
   "returned_callables": [],
   "calls": {
     "144:8-144:18": {
@@ -652,7 +652,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.propagation_of_b_with_sanitize_a_tito",
+  "callable": "Function{sanitize_obscure.propagation_of_b_with_sanitize_a_tito}",
   "returned_callables": [],
   "calls": {
     "68:8-68:18": {
@@ -680,7 +680,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.sanitize_obscure_single_argument_tito",
+  "callable": "Function{sanitize_obscure.sanitize_obscure_single_argument_tito}",
   "returned_callables": [],
   "calls": {
     "217:11-217:49": {
@@ -697,7 +697,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.test1",
+  "callable": "Function{sanitize_obscure.test1}",
   "returned_callables": [],
   "calls": {
     "18:8-18:23": {
@@ -721,7 +721,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.test2",
+  "callable": "Function{sanitize_obscure.test2}",
   "returned_callables": [],
   "calls": {
     "23:8-23:22": {
@@ -752,7 +752,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.test3",
+  "callable": "Function{sanitize_obscure.test3}",
   "returned_callables": [],
   "calls": {
     "32:8-32:24": {
@@ -776,7 +776,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "sanitize_obscure.test4",
+  "callable": "Function{sanitize_obscure.test4}",
   "returned_callables": [],
   "calls": {
     "37:8-37:22": {

@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query.$toplevel",
+  "callable": "Function{model_query.$toplevel}",
   "returned_callables": [],
   "calls": {
     "53:12-53:16|identifier|Base": {
@@ -145,7 +145,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_1",
+  "callable": "Function{model_query.alarm_1}",
   "returned_callables": [],
   "calls": {
     "128:4-128:27": {
@@ -170,7 +170,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_10",
+  "callable": "Function{model_query.alarm_10}",
   "returned_callables": [],
   "calls": {
     "173:4-173:30": {
@@ -195,7 +195,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_11",
+  "callable": "Function{model_query.alarm_11}",
   "returned_callables": [],
   "calls": {
     "178:4-178:31": {
@@ -220,7 +220,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_12",
+  "callable": "Function{model_query.alarm_12}",
   "returned_callables": [],
   "calls": {
     "183:4-183:30": {
@@ -245,7 +245,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_2",
+  "callable": "Function{model_query.alarm_2}",
   "returned_callables": [],
   "calls": {
     "133:4-133:26": {
@@ -270,7 +270,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_3",
+  "callable": "Function{model_query.alarm_3}",
   "returned_callables": [],
   "calls": {
     "138:4-138:27": {
@@ -295,7 +295,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_4",
+  "callable": "Function{model_query.alarm_4}",
   "returned_callables": [],
   "calls": {
     "143:4-143:26": {
@@ -320,7 +320,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_5",
+  "callable": "Function{model_query.alarm_5}",
   "returned_callables": [],
   "calls": {
     "148:4-148:15": {
@@ -338,7 +338,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_6",
+  "callable": "Function{model_query.alarm_6}",
   "returned_callables": [],
   "calls": {
     "153:4-153:14": {
@@ -363,7 +363,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_7",
+  "callable": "Function{model_query.alarm_7}",
   "returned_callables": [],
   "calls": {
     "158:11-158:22": {
@@ -381,7 +381,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_8",
+  "callable": "Function{model_query.alarm_8}",
   "returned_callables": [],
   "calls": {
     "163:4-163:26": {
@@ -406,7 +406,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.alarm_9",
+  "callable": "Function{model_query.alarm_9}",
   "returned_callables": [],
   "calls": {
     "168:4-168:31": {
@@ -431,7 +431,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.no_alarm_1",
+  "callable": "Function{model_query.no_alarm_1}",
   "returned_callables": [],
   "calls": {
     "187:4-187:36": {
@@ -451,7 +451,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.no_alarm_2",
+  "callable": "Function{model_query.no_alarm_2}",
   "returned_callables": [],
   "calls": {
     "192:4-192:35": {
@@ -471,7 +471,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.AttributeTestClass1.__init__",
+  "callable": "Method{model_query.AttributeTestClass1.__init__}",
   "returned_callables": [],
   "calls": {
     "74:8-74:21": {
@@ -489,7 +489,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.AttributeTestClass2.__init__",
+  "callable": "Method{model_query.AttributeTestClass2.__init__}",
   "returned_callables": [],
   "calls": {
     "81:8-81:21": {
@@ -507,7 +507,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.AttributeTestClass3.__init__",
+  "callable": "Method{model_query.AttributeTestClass3.__init__}",
   "returned_callables": [],
   "calls": {
     "88:8-88:21": {
@@ -525,7 +525,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.AttributeTestClass4.__init__",
+  "callable": "Method{model_query.AttributeTestClass4.__init__}",
   "returned_callables": [],
   "calls": {
     "95:8-95:21": {
@@ -543,7 +543,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.AttributeTestClass5.__init__",
+  "callable": "Method{model_query.AttributeTestClass5.__init__}",
   "returned_callables": [],
   "calls": {
     "102:8-102:25": {
@@ -561,7 +561,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query.AttributeTestClass6.__init__",
+  "callable": "Method{model_query.AttributeTestClass6.__init__}",
   "returned_callables": [],
   "calls": {
     "109:8-109:25": {

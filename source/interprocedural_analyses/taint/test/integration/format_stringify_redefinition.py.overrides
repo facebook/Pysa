@@ -1,5 +1,5 @@
 @generated
 Overrides
-builtins.BaseException.__str__ (override) -> [builtins.BaseException.__str__ (method) format_stringify_redefinition.Base.__str__ (override) format_stringify_redefinition.Base.__str__$2 (override)]
-format_stringify_redefinition.Base.__str__ (override) -> [format_stringify_redefinition.Base.__str__ (method)]
-format_stringify_redefinition.Base.__str__$2 (override) -> [format_stringify_redefinition.Base.__str__$2 (method)]
+Override{builtins.BaseException.__str__} -> [Method{builtins.BaseException.__str__} Override{format_stringify_redefinition.Base.__str__$2} Override{format_stringify_redefinition.Base.__str__}]
+Override{format_stringify_redefinition.Base.__str__$2} -> [Method{format_stringify_redefinition.Base.__str__$2}]
+Override{format_stringify_redefinition.Base.__str__} -> [Method{format_stringify_redefinition.Base.__str__}]

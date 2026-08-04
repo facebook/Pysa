@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "lists.create_zipped_source",
+  "callable": "Function{lists.create_zipped_source}",
   "returned_callables": [],
   "calls": {
     "14:20-14:34": {
@@ -34,7 +34,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.create_zipped_source_with_all_tainted",
+  "callable": "Function{lists.create_zipped_source_with_all_tainted}",
   "returned_callables": [],
   "calls": {
     "27:9-27:23": {
@@ -81,7 +81,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.inconsistent_redirect_expressions_in_condition",
+  "callable": "Function{lists.inconsistent_redirect_expressions_in_condition}",
   "returned_callables": [],
   "calls": {
     "125:16-125:17|artificial-call|generator-iter": {
@@ -158,7 +158,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.inconsistent_type_context",
+  "callable": "Function{lists.inconsistent_type_context}",
   "returned_callables": [],
   "calls": {
     "139:5-139:11": {
@@ -293,7 +293,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.list_append_wrapper",
+  "callable": "Function{lists.list_append_wrapper}",
   "returned_callables": [],
   "calls": {
     "104:4-104:15": {
@@ -312,7 +312,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.list_setitem_local",
+  "callable": "Function{lists.list_setitem_local}",
   "returned_callables": [],
   "calls": {
     "82:4-82:25|artificial-call|subscript-set-item": {
@@ -338,7 +338,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.list_setitem_source",
+  "callable": "Function{lists.list_setitem_source}",
   "returned_callables": [],
   "calls": {
     "77:4-77:25|artificial-call|subscript-set-item": {
@@ -364,7 +364,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.list_setitem_wrapper",
+  "callable": "Function{lists.list_setitem_wrapper}",
   "returned_callables": [],
   "calls": {
     "93:4-93:12|artificial-call|subscript-set-item": {
@@ -383,7 +383,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.push_pop_no_taint",
+  "callable": "Function{lists.push_pop_no_taint}",
   "returned_callables": [],
   "calls": {
     "55:4-55:28": {
@@ -422,7 +422,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.push_pop_taint",
+  "callable": "Function{lists.push_pop_taint}",
   "returned_callables": [],
   "calls": {
     "62:4-62:28": {
@@ -474,7 +474,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.test_list_append_wrapper",
+  "callable": "Function{lists.test_list_append_wrapper}",
   "returned_callables": [],
   "calls": {
     "109:4-109:42": {
@@ -551,7 +551,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.test_list_setitem_wrapper",
+  "callable": "Function{lists.test_list_setitem_wrapper}",
   "returned_callables": [],
   "calls": {
     "98:4-98:46": {
@@ -615,7 +615,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.test_setitem",
+  "callable": "Function{lists.test_setitem}",
   "returned_callables": [],
   "calls": {
     "69:8-69:17|artificial-call|binary": {
@@ -694,7 +694,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.test_setitem_source",
+  "callable": "Function{lists.test_setitem_source}",
   "returned_callables": [],
   "calls": {
     "88:4-88:26": {
@@ -731,7 +731,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.zipped_element_not_flowing_to_sink",
+  "callable": "Function{lists.zipped_element_not_flowing_to_sink}",
   "returned_callables": [],
   "calls": {
     "45:16-45:27": {
@@ -790,7 +790,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.zipped_element_to_sink",
+  "callable": "Function{lists.zipped_element_to_sink}",
   "returned_callables": [],
   "calls": {
     "37:16-37:27": {
@@ -849,7 +849,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "lists.zipped_source_access_path",
+  "callable": "Function{lists.zipped_source_access_path}",
   "returned_callables": [],
   "calls": {
     "21:9-21:23": {

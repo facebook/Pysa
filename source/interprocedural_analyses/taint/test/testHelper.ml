@@ -782,6 +782,7 @@ let initialize
         let models =
           MissingFlow.add_obscure_models
             ~scheduler
+            ~display_api:(Interprocedural.PyreflyApi.ReadOnly.display_api pyrefly_api)
             ~static_analysis_configuration
             ~callables_to_definitions_map:
               (Interprocedural.CallablesSharedMemory.ReadOnly.read_only
@@ -1097,8 +1098,7 @@ let end_to_end_integration_test path context =
                  when not (CallGraphBuilder.HigherOrderCallGraph.is_empty call_graph) ->
                    let json =
                      `Assoc
-                       (( "callable",
-                          `String (Target.show_pretty_with_display_api ~display_api callable) )
+                       (("callable", `String (Target.show_pretty ~display_api callable))
                        :: CallGraphBuilder.HigherOrderCallGraph.to_json_alist
                             ~display_api
                             call_graph)

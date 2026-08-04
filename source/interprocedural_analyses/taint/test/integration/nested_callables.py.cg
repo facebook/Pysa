@@ -1,80 +1,82 @@
 @generated
 Call dependencies
 {
-  "nested_callables.access_parameter_in_inner_scope_sink (fun)": [
-    "nested_callables.access_parameter_in_inner_scope_sink.inner (fun)"
+  "Function{nested_callables.access_parameter_in_inner_scope_sink.inner}": [
+    "Function{pysa._test_sink}"
   ],
-  "nested_callables.access_parameter_in_inner_scope_sink.inner (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{nested_callables.access_parameter_in_inner_scope_sink}": [
+    "Function{nested_callables.access_parameter_in_inner_scope_sink.inner}"
   ],
-  "nested_callables.access_parameter_in_inner_scope_tito (fun)": [
-    "nested_callables.access_parameter_in_inner_scope_tito.inner (fun)"
+  "Function{nested_callables.access_parameter_in_inner_scope_tito}": [
+    "Function{nested_callables.access_parameter_in_inner_scope_tito.inner}"
   ],
-  "nested_callables.access_variables_in_outer_scope_issue (fun)": [
-    "nested_callables.access_variables_in_outer_scope_issue.inner (fun)",
-    "pysa._test_source (fun)"
+  "Function{nested_callables.access_variables_in_outer_scope_issue.inner}": [
+    "Function{pysa._test_sink}"
   ],
-  "nested_callables.access_variables_in_outer_scope_issue.inner (fun)": [
-    "pysa._test_sink (fun)"
+  "Function{nested_callables.access_variables_in_outer_scope_issue}": [
+    "Function{nested_callables.access_variables_in_outer_scope_issue.inner}",
+    "Function{pysa._test_source}"
   ],
-  "nested_callables.access_variables_in_outer_scope_source (fun)": [
-    "nested_callables.access_variables_in_outer_scope_source.inner (fun)",
-    "pysa._test_source (fun)"
+  "Function{nested_callables.access_variables_in_outer_scope_source}": [
+    "Function{nested_callables.access_variables_in_outer_scope_source.inner}",
+    "Function{pysa._test_source}"
   ],
-  "nested_callables.call_outer (fun)": [
-    "nested_callables.outer (fun)", "pysa._test_source (fun)"
+  "Function{nested_callables.call_outer}": [
+    "Function{nested_callables.outer}", "Function{pysa._test_source}"
   ],
-  "nested_callables.duplicate_function (fun)": [
-    "nested_callables.foo (fun)"
+  "Function{nested_callables.duplicate_function$2}": [
+    "Function{nested_callables.foo}"
   ],
-  "nested_callables.duplicate_function$2 (fun)": [
-    "nested_callables.foo (fun)"
+  "Function{nested_callables.duplicate_function}": [
+    "Function{nested_callables.foo}"
   ],
-  "nested_callables.foo.inner (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{nested_callables.foo.inner_with_model}": [
+    "Function{pysa._test_source}"
   ],
-  "nested_callables.foo.inner_with_model (fun)": [
-    "pysa._test_source (fun)"
+  "Function{nested_callables.foo.inner}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "nested_callables.nested_global_function (fun)": [
-    "nested_callables.nested_global_function.g (fun)"
+  "Function{nested_callables.nested_global_function.g}": [
+    "Method{builtins.str.__add__}"
   ],
-  "nested_callables.nested_global_function.g (fun)": [
-    "builtins.str.__add__ (method)"
+  "Function{nested_callables.nested_global_function}": [
+    "Function{nested_callables.nested_global_function.g}"
   ],
-  "nested_callables.outer (fun)": [ "nested_callables.outer.inner (fun)" ],
-  "nested_callables.outer.inner (fun)": [ "pysa._test_sink (fun)" ],
-  "nested_callables.outer_calling_other_function (fun)": [
-    "nested_callables.outer_calling_other_function.inner_calling_other_function (fun)"
+  "Function{nested_callables.outer.inner}": [ "Function{pysa._test_sink}" ],
+  "Function{nested_callables.outer_calling_other_function.inner_calling_other_function}": [
+    "Function{nested_callables.some_sink}"
   ],
-  "nested_callables.outer_calling_other_function.inner_calling_other_function (fun)": [
-    "nested_callables.some_sink (fun)"
+  "Function{nested_callables.outer_calling_other_function}": [
+    "Function{nested_callables.outer_calling_other_function.inner_calling_other_function}"
   ],
-  "nested_callables.parameter_function (fun)": [
-    "nested_callables.parameter_function.add (fun)"
+  "Function{nested_callables.outer}": [
+    "Function{nested_callables.outer.inner}"
   ],
-  "nested_callables.parameter_function.add (fun)": [
-    "builtins.str.__add__ (method)"
+  "Function{nested_callables.parameter_function.add}": [
+    "Method{builtins.str.__add__}"
   ],
-  "nested_callables.some_sink (fun)": [ "pysa._test_sink (fun)" ],
-  "nested_callables.test_access_parameter_in_inner_scope_sink (fun)": [
-    "nested_callables.access_parameter_in_inner_scope_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{nested_callables.parameter_function}": [
+    "Function{nested_callables.parameter_function.add}"
   ],
-  "nested_callables.test_access_parameter_in_inner_scope_tito (fun)": [
-    "nested_callables.access_parameter_in_inner_scope_tito (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{nested_callables.some_sink}": [ "Function{pysa._test_sink}" ],
+  "Function{nested_callables.test_access_parameter_in_inner_scope_sink}": [
+    "Function{nested_callables.access_parameter_in_inner_scope_sink}",
+    "Function{pysa._test_source}"
   ],
-  "nested_callables.test_access_variables_in_outer_scope_source (fun)": [
-    "nested_callables.access_variables_in_outer_scope_source (fun)",
-    "pysa._test_sink (fun)"
+  "Function{nested_callables.test_access_parameter_in_inner_scope_tito}": [
+    "Function{nested_callables.access_parameter_in_inner_scope_tito}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "nested_callables.test_mutation_of_class (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "nested_callables.test_mutation_of_class.set_a (fun)",
-    "pysa._test_sink (fun)"
+  "Function{nested_callables.test_access_variables_in_outer_scope_source}": [
+    "Function{nested_callables.access_variables_in_outer_scope_source}",
+    "Function{pysa._test_sink}"
   ],
-  "nested_callables.test_mutation_of_class.set_a (fun)": [
-    "pysa._test_source (fun)"
+  "Function{nested_callables.test_mutation_of_class.set_a}": [
+    "Function{pysa._test_source}"
+  ],
+  "Function{nested_callables.test_mutation_of_class}": [
+    "Function{nested_callables.test_mutation_of_class.set_a}",
+    "Function{pysa._test_sink}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}"
   ]
 }

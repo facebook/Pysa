@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "parametric_models.f_and_g_to_test",
+  "callable": "Function{parametric_models.f_and_g_to_test}",
   "returned_callables": [],
   "calls": {
     "24:7-24:22": {
@@ -58,7 +58,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "parametric_models.inferred_sink",
+  "callable": "Function{parametric_models.inferred_sink}",
   "returned_callables": [],
   "calls": {
     "39:7-39:22": {
@@ -112,7 +112,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "parametric_models.test_to_subkind_sink",
+  "callable": "Function{parametric_models.test_to_subkind_sink}",
   "returned_callables": [],
   "calls": {
     "46:8-46:22": {

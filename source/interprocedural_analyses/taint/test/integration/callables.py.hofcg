@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "callables.$toplevel",
+  "callable": "Function{callables.$toplevel}",
   "returned_callables": [],
   "calls": {
     "13:14-13:36": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } },
@@ -43,7 +43,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "callables.async_execute_event_processor",
+  "callable": "Function{callables.async_execute_event_processor}",
   "returned_callables": [],
   "calls": {
     "55:18-55:40": {
@@ -140,7 +140,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "callables.ConcreteEventProcessor.async_call_tainted",
+  "callable": "Method{callables.ConcreteEventProcessor.async_call_tainted}",
   "returned_callables": [],
   "calls": {
     "34:8-34:32": {
@@ -153,7 +153,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "callables.ConcreteEventProcessor.async_run",
+  "callable": "Method{callables.ConcreteEventProcessor.async_run}",
   "returned_callables": [],
   "calls": {
     "31:8-31:31": {
@@ -166,7 +166,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "callables.ProcessorInfo.__init__",
+  "callable": "Method{callables.ProcessorInfo.__init__}",
   "returned_callables": [],
   "calls": {
     "46:8-46:27": {

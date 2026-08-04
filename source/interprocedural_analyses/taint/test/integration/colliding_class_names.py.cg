@@ -1,8 +1,8 @@
 @generated
 Call dependencies
 {
-  "colliding_class_names.C$2.also_tainted_but_missing_from_analysis (method)": [
-    "pysa._test_source (fun)"
+  "Method{colliding_class_names.C$2.also_tainted_but_missing_from_analysis}": [
+    "Function{pysa._test_source}"
   ],
-  "colliding_class_names.C.foo (method)": [ "pysa._test_source (fun)" ]
+  "Method{colliding_class_names.C.foo}": [ "Function{pysa._test_source}" ]
 }

@@ -1,566 +1,584 @@
 @generated
 Call dependencies
 {
-  "sanitize.C_sanitized_a_sink.__init__ (method)": [
-    "sanitize.C_sanitized_a_sink.attribute (object)",
-    "sanitize.C_sanitized_a_sink.instance (object)"
+  "Function{sanitize.combine_sanitize_a_sink_b_sink_in_source_trace}": [
+    "Function{sanitize.propagation_of_sanitize_a_sink_in_source_trace}",
+    "Function{sanitize.sanitize_b_sink_tito}"
+  ],
+  "Function{sanitize.combine_sanitize_a_source_a_sink_tito}": [
+    "Function{sanitize.sanitize_a_sink_tito}",
+    "Function{sanitize.sanitize_a_source_tito}"
+  ],
+  "Function{sanitize.combine_sanitize_a_source_b_source_in_sink_trace}": [
+    "Function{sanitize.propagation_of_sanitize_a_source_in_sink_trace}",
+    "Function{sanitize.sanitize_b_source_tito}"
+  ],
+  "Function{sanitize.issue_propagation_of_sanitize_all_parameters_no_user_controlled}": [
+    "Function{pysa._cookies}",
+    "Function{sanitize.propagation_of_sanitize_all_parameters_no_user_controlled}"
+  ],
+  "Function{sanitize.issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}": [
+    "Function{pysa._rce}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}"
+  ],
+  "Function{sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}": [
+    "Function{pysa._cookies}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}"
+  ],
+  "Function{sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled}": [
+    "Function{pysa._cookies}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled}"
+  ],
+  "Function{sanitize.issue_propagation_of_sanitize_return_no_rce}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.propagation_of_sanitize_return_no_rce}"
+  ],
+  "Function{sanitize.issue_propagation_of_sanitize_return_no_sql_in_source_trace}": [
+    "Function{pysa._rce}",
+    "Function{sanitize.propagation_of_sanitize_return_no_sql_in_source_trace}"
+  ],
+  "Function{sanitize.issue_sanitize_a_sink_attribute_in_source_trace}": [
+    "Function{sanitize.b_sink}",
+    "Function{sanitize.sanitize_a_sink_attribute_in_source_trace}"
+  ],
+  "Function{sanitize.issue_sanitize_test_a_source_attribute_in_sink_trace}": [
+    "Function{sanitize.b_source}",
+    "Function{sanitize.sanitize_test_a_source_attribute_in_sink_trace}"
+  ],
+  "Function{sanitize.no_issue_fixpoint_sanitize_sinks}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Function{sanitize.sanitize_a_source_tito}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.no_issue_fixpoint_sanitize_sources}": [
+    "Function{pysa._test_source}", "Function{sanitize.a_source}",
+    "Function{sanitize.sanitize_a_sink_tito}",
+    "Function{sanitize.sanitize_b_sink_tito}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.no_issue_fixpoint_sanitize}": [
+    "Function{sanitize.no_issue_fixpoint_sanitize_sinks}",
+    "Function{sanitize.no_issue_fixpoint_sanitize_sources}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_a_sink_in_source_trace}": [
+    "Function{sanitize.a_sink}",
+    "Function{sanitize.propagation_of_sanitize_a_sink_in_source_trace}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_a_source_in_sink_trace}": [
+    "Function{sanitize.a_source}",
+    "Function{sanitize.propagation_of_sanitize_a_source_in_sink_trace}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_all_parameters_no_user_controlled}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.propagation_of_sanitize_all_parameters_no_user_controlled}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_return_no_rce}": [
+    "Function{pysa._rce}",
+    "Function{sanitize.propagation_of_sanitize_return_no_rce}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_return_no_sql_in_source_trace}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.propagation_of_sanitize_return_no_sql_in_source_trace}"
+  ],
+  "Function{sanitize.no_issue_propagation_of_sanitize_sql_tito_in_source_trace}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.propagation_of_sanitize_sql_tito_in_source_trace}"
   ],
-  "sanitize.C_sanitized_a_source.__init__ (method)": [
-    "sanitize.C_sanitized_a_source.attribute (object)",
-    "sanitize.C_sanitized_a_source.instance (object)"
+  "Function{sanitize.no_issue_sanitize_a_sink_attribute_in_source_trace}": [
+    "Function{sanitize.a_sink}",
+    "Function{sanitize.sanitize_a_sink_attribute_in_source_trace}"
   ],
-  "sanitize.C_sanitized_ab_sinks.__init__ (method)": [
-    "sanitize.C_sanitized_ab_sinks.attribute (object)",
-    "sanitize.C_sanitized_ab_sinks.instance (object)"
+  "Function{sanitize.no_issue_sanitize_test_a_source_attribute_in_sink_trace}": [
+    "Function{sanitize.a_source}",
+    "Function{sanitize.sanitize_test_a_source_attribute_in_sink_trace}"
   ],
-  "sanitize.C_sanitized_ab_sources.__init__ (method)": [
-    "sanitize.C_sanitized_ab_sources.attribute (object)",
-    "sanitize.C_sanitized_ab_sources.instance (object)"
+  "Function{sanitize.no_issue_through_combine_sanitize_a_source_a_sink_tito}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.combine_sanitize_a_source_a_sink_tito}"
   ],
-  "sanitize.C_sanitized_all_sinks.__init__ (method)": [
-    "sanitize.C_sanitized_all_sinks.attribute (object)",
-    "sanitize.C_sanitized_all_sinks.instance (object)"
+  "Function{sanitize.no_issue_through_propagation_of_sanitize_a_source_tito}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.propagation_of_sanitize_a_source_tito}"
   ],
-  "sanitize.C_sanitized_all_sources.__init__ (method)": [
-    "sanitize.C_sanitized_all_sources.attribute (object)",
-    "sanitize.C_sanitized_all_sources.instance (object)"
+  "Function{sanitize.no_propagation_of_a_sink}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.sanitize_a_sink_tito}"
   ],
-  "sanitize.C_sanitized_b_sink.__init__ (method)": [
-    "sanitize.C_sanitized_b_sink.attribute (object)",
-    "sanitize.C_sanitized_b_sink.instance (object)"
+  "Function{sanitize.no_propagation_of_cookies_with_sanitize_all_parameters_no_cookies_sql_tito}": [
+    "Function{pysa._cookies}",
+    "Function{sanitize.sanitize_all_parameters_no_cookies_sql_tito}"
   ],
-  "sanitize.C_sanitized_b_source.__init__ (method)": [
-    "sanitize.C_sanitized_b_source.attribute (object)",
-    "sanitize.C_sanitized_b_source.instance (object)"
+  "Function{sanitize.no_propagation_of_sql_with_sanitize_all_parameters_no_cookies_sql_tito}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.sanitize_all_parameters_no_cookies_sql_tito}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_all_parameters (method)": [
-    "pysa._test_source (fun)"
+  "Function{sanitize.no_propagation_with_sanitize_a_source_tito}": [
+    "Function{sanitize.a_source}",
+    "Function{sanitize.sanitize_a_source_tito}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_all_parameters_test_a_source (method)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
+  "Function{sanitize.no_propagation_with_sanitize_all_parameters_no_sql_tito}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.sanitize_all_parameters_no_sql_tito}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_parameter (method)": [
-    "pysa._test_source (fun)"
+  "Function{sanitize.no_propagation_with_sanitize_all_parameters_no_user_controlled_tito}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.sanitize_all_parameters_no_user_controlled_tito}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_parameter_test_a_source (method)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
+  "Function{sanitize.no_propagation_with_sanitize_parameter_no_sql_tito}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.sanitize_parameter_no_sql_tito}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_return (method)": [
-    "pysa._test_source (fun)"
+  "Function{sanitize.no_propagation_with_sanitize_parameter_no_user_controlled_tito}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.sanitize_parameter_no_user_controlled_tito}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_sources (method)": [
-    "pysa._test_source (fun)"
+  "Function{sanitize.partial_issue_sanitize}": [
+    "Function{sanitize.partial_issue_sinks}",
+    "Function{sanitize.partial_issue_sources}"
   ],
-  "sanitize.GenerationOnSelf.sanitize_test_a_source (method)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
+  "Function{sanitize.partial_issue_sinks}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.sanitize_a_source_tito}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.TitoSelf.sanitize_self (method)": [
-    "sanitize.sanitize_return_no_user_controlled (fun)"
+  "Function{sanitize.partial_issue_sources}": [
+    "Function{sanitize.a_source}", "Function{sanitize.sanitize_a_sink_tito}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.combine_sanitize_a_sink_b_sink_in_source_trace (fun)": [
-    "sanitize.propagation_of_sanitize_a_sink_in_source_trace (fun)",
-    "sanitize.sanitize_b_sink_tito (fun)"
+  "Function{sanitize.propagation_of_b_sink}": [
+    "Function{sanitize.b_sink}", "Function{sanitize.sanitize_a_sink_tito}"
   ],
-  "sanitize.combine_sanitize_a_source_a_sink_tito (fun)": [
-    "sanitize.sanitize_a_sink_tito (fun)",
-    "sanitize.sanitize_a_source_tito (fun)"
+  "Function{sanitize.propagation_of_b_with_sanitize_a_source_tito}": [
+    "Function{sanitize.b_source}",
+    "Function{sanitize.sanitize_a_source_tito}"
   ],
-  "sanitize.combine_sanitize_a_source_b_source_in_sink_trace (fun)": [
-    "sanitize.propagation_of_sanitize_a_source_in_sink_trace (fun)",
-    "sanitize.sanitize_b_source_tito (fun)"
+  "Function{sanitize.propagation_of_cookies_with_sanitize_all_parameters_no_user_controlled_tito}": [
+    "Function{pysa._cookies}",
+    "Function{sanitize.sanitize_all_parameters_no_user_controlled_tito}"
   ],
-  "sanitize.issue_propagation_of_sanitize_all_parameters_no_user_controlled (fun)": [
-    "pysa._cookies (fun)",
-    "sanitize.propagation_of_sanitize_all_parameters_no_user_controlled (fun)"
+  "Function{sanitize.propagation_of_cookies_with_sanitize_parameter_no_user_controlled_tito}": [
+    "Function{pysa._cookies}",
+    "Function{sanitize.sanitize_parameter_no_user_controlled_tito}"
   ],
-  "sanitize.issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace (fun)": [
-    "pysa._rce (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace (fun)"
+  "Function{sanitize.propagation_of_rce_with_sanitize_all_parameters_no_cookies_sql_tito}": [
+    "Function{pysa._rce}",
+    "Function{sanitize.sanitize_all_parameters_no_cookies_sql_tito}"
   ],
-  "sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled (fun)": [
-    "pysa._cookies (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_user_controlled (fun)"
+  "Function{sanitize.propagation_of_rce_with_sanitize_all_parameters_no_sql_tito}": [
+    "Function{pysa._rce}",
+    "Function{sanitize.sanitize_all_parameters_no_sql_tito}"
   ],
-  "sanitize.issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace (fun)": [
-    "pysa._cookies (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace (fun)"
+  "Function{sanitize.propagation_of_rce_with_sanitize_parameter_no_sql_tito}": [
+    "Function{pysa._rce}",
+    "Function{sanitize.sanitize_parameter_no_sql_tito}"
   ],
-  "sanitize.issue_propagation_of_sanitize_return_no_rce (fun)": [
-    "pysa._sql (fun)", "sanitize.propagation_of_sanitize_return_no_rce (fun)"
+  "Function{sanitize.propagation_of_sanitize_a_sink_in_source_trace}": [
+    "Function{sanitize.a_source}", "Function{sanitize.sanitize_a_sink_tito}"
   ],
-  "sanitize.issue_propagation_of_sanitize_return_no_sql_in_source_trace (fun)": [
-    "pysa._rce (fun)",
-    "sanitize.propagation_of_sanitize_return_no_sql_in_source_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_a_source_in_sink_trace}": [
+    "Function{sanitize.a_sink}",
+    "Function{sanitize.propagation_of_sanitize_a_source_tito}"
   ],
-  "sanitize.issue_sanitize_a_sink_attribute_in_source_trace (fun)": [
-    "sanitize.b_sink (fun)",
-    "sanitize.sanitize_a_sink_attribute_in_source_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_a_source_tito}": [
+    "Function{sanitize.sanitize_a_source_tito}"
   ],
-  "sanitize.issue_sanitize_test_a_source_attribute_in_sink_trace (fun)": [
-    "sanitize.b_source (fun)",
-    "sanitize.sanitize_test_a_source_attribute_in_sink_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_all_parameters_no_user_controlled}": [
+    "Function{sanitize.sanitize_all_parameters_no_user_controlled}"
   ],
-  "sanitize.no_issue_fixpoint_sanitize (fun)": [
-    "sanitize.no_issue_fixpoint_sanitize_sinks (fun)",
-    "sanitize.no_issue_fixpoint_sanitize_sources (fun)"
+  "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito}"
   ],
-  "sanitize.no_issue_fixpoint_sanitize_sinks (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)",
-    "sanitize.sanitize_a_source_tito (fun)"
+  "Function{sanitize.propagation_of_sanitize_parameter_no_sql_tito}": [
+    "Function{sanitize.sanitize_parameter_no_sql_tito}"
   ],
-  "sanitize.no_issue_fixpoint_sanitize_sources (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._test_source (fun)", "sanitize.a_source (fun)",
-    "sanitize.sanitize_a_sink_tito (fun)",
-    "sanitize.sanitize_b_sink_tito (fun)"
+  "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_a_sink_in_source_trace (fun)": [
-    "sanitize.a_sink (fun)",
-    "sanitize.propagation_of_sanitize_a_sink_in_source_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito}": [
+    "Function{sanitize.sanitize_parameter_no_user_controlled_tito}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_a_source_in_sink_trace (fun)": [
-    "sanitize.a_source (fun)",
-    "sanitize.propagation_of_sanitize_a_source_in_sink_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_parameter_no_user_controlled}": [
+    "Function{sanitize.sanitize_parameter_no_user_controlled}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_all_parameters_no_user_controlled (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.propagation_of_sanitize_all_parameters_no_user_controlled (fun)"
+  "Function{sanitize.propagation_of_sanitize_return_no_rce}": [
+    "Function{sanitize.sanitize_return_no_rce}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_parameter_no_sql_tito_in_source_trace (fun)": [
-    "pysa._sql (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_return_no_sql_in_source_trace}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.propagation_of_sanitize_return_no_sql}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_user_controlled (fun)"
+  "Function{sanitize.propagation_of_sanitize_return_no_sql}": [
+    "Function{sanitize.sanitize_return_no_sql}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace (fun)"
+  "Function{sanitize.propagation_of_sanitize_sql_tito_in_source_trace}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.sanitize_all_parameters_no_sql_tito}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_return_no_rce (fun)": [
-    "pysa._rce (fun)", "sanitize.propagation_of_sanitize_return_no_rce (fun)"
+  "Function{sanitize.propagation_of_sanitize_user_controlled_tito_in_sink_trace}": [
+    "Function{pysa._sql}",
+    "Function{sanitize.sanitize_all_parameters_no_user_controlled_tito}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_return_no_sql_in_source_trace (fun)": [
-    "pysa._sql (fun)",
-    "sanitize.propagation_of_sanitize_return_no_sql_in_source_trace (fun)"
+  "Function{sanitize.propagation_of_user_controlled_with_sanitize_all_parameters_no_cookies_sql_tito}": [
+    "Function{pysa._user_controlled}",
+    "Function{sanitize.sanitize_all_parameters_no_cookies_sql_tito}"
   ],
-  "sanitize.no_issue_propagation_of_sanitize_sql_tito_in_source_trace (fun)": [
-    "pysa._sql (fun)",
-    "sanitize.propagation_of_sanitize_sql_tito_in_source_trace (fun)"
+  "Function{sanitize.sanitize_a_and_b_sinks}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_issue_sanitize_a_sink_attribute_in_source_trace (fun)": [
-    "sanitize.a_sink (fun)",
-    "sanitize.sanitize_a_sink_attribute_in_source_trace (fun)"
+  "Function{sanitize.sanitize_a_and_b_source}": [
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_issue_sanitize_test_a_source_attribute_in_sink_trace (fun)": [
-    "sanitize.a_source (fun)",
-    "sanitize.sanitize_test_a_source_attribute_in_sink_trace (fun)"
+  "Function{sanitize.sanitize_a_sink_attribute_in_source_trace}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_sink.attribute}",
+    "Function{sanitize.a_source}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_a_sink.__init__}"
   ],
-  "sanitize.no_issue_through_combine_sanitize_a_source_a_sink_tito (fun)": [
-    "sanitize.a_sink (fun)", "sanitize.a_source (fun)",
-    "sanitize.combine_sanitize_a_source_a_sink_tito (fun)"
+  "Function{sanitize.sanitize_a_sink_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_sink.attribute}",
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_issue_through_propagation_of_sanitize_a_source_tito (fun)": [
-    "sanitize.a_sink (fun)", "sanitize.a_source (fun)",
-    "sanitize.propagation_of_sanitize_a_source_tito (fun)"
+  "Function{sanitize.sanitize_a_sink_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_sink.instance}",
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_propagation_of_a_sink (fun)": [
-    "sanitize.a_sink (fun)", "sanitize.sanitize_a_sink_tito (fun)"
+  "Function{sanitize.sanitize_a_sink}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_propagation_of_cookies_with_sanitize_all_parameters_no_cookies_sql_tito (fun)": [
-    "pysa._cookies (fun)",
-    "sanitize.sanitize_all_parameters_no_cookies_sql_tito (fun)"
+  "Function{sanitize.sanitize_a_source_tito_with_sink}": [
+    "Function{sanitize.a_sink}"
   ],
-  "sanitize.no_propagation_of_sql_with_sanitize_all_parameters_no_cookies_sql_tito (fun)": [
-    "pysa._sql (fun)",
-    "sanitize.sanitize_all_parameters_no_cookies_sql_tito (fun)"
+  "Function{sanitize.sanitize_ab_sinks_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sinks.attribute}",
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_propagation_with_sanitize_a_source_tito (fun)": [
-    "sanitize.a_source (fun)", "sanitize.sanitize_a_source_tito (fun)"
+  "Function{sanitize.sanitize_ab_sinks_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sinks.instance}",
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_propagation_with_sanitize_all_parameters_no_sql_tito (fun)": [
-    "pysa._sql (fun)", "sanitize.sanitize_all_parameters_no_sql_tito (fun)"
+  "Function{sanitize.sanitize_all_parameters_all_tito}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
   ],
-  "sanitize.no_propagation_with_sanitize_all_parameters_no_user_controlled_tito (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.sanitize_all_parameters_no_user_controlled_tito (fun)"
+  "Function{sanitize.sanitize_all_parameters_no_rce}": [
+    "Function{pysa._rce}", "Function{pysa._sql}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_propagation_with_sanitize_parameter_no_sql_tito (fun)": [
-    "pysa._sql (fun)", "sanitize.sanitize_parameter_no_sql_tito (fun)"
+  "Function{sanitize.sanitize_all_parameters_no_sql}": [
+    "Function{pysa._rce}", "Function{pysa._sql}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.no_propagation_with_sanitize_parameter_no_user_controlled_tito (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.sanitize_parameter_no_user_controlled_tito (fun)"
+  "Function{sanitize.sanitize_all_parameters_no_user_controlled}": [
+    "Function{pysa._test_sink}"
   ],
-  "sanitize.partial_issue_sanitize (fun)": [
-    "sanitize.partial_issue_sinks (fun)",
-    "sanitize.partial_issue_sources (fun)"
+  "Function{sanitize.sanitize_all_parameters}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
   ],
-  "sanitize.partial_issue_sinks (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_sink (fun)", "sanitize.sanitize_a_source_tito (fun)"
+  "Function{sanitize.sanitize_all_sinks_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sinks.attribute}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_sink}",
+    "Function{sanitize.b_sink}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}"
   ],
-  "sanitize.partial_issue_sources (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.sanitize_a_sink_tito (fun)"
+  "Function{sanitize.sanitize_all_sinks_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sinks.instance}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_sink}",
+    "Function{sanitize.b_sink}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}"
   ],
-  "sanitize.propagation_of_b_sink (fun)": [
-    "sanitize.b_sink (fun)", "sanitize.sanitize_a_sink_tito (fun)"
+  "Function{sanitize.sanitize_b_sink_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_sink.attribute}",
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.propagation_of_b_with_sanitize_a_source_tito (fun)": [
-    "sanitize.b_source (fun)", "sanitize.sanitize_a_source_tito (fun)"
+  "Function{sanitize.sanitize_b_sink_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_sink.instance}",
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.propagation_of_cookies_with_sanitize_all_parameters_no_user_controlled_tito (fun)": [
-    "pysa._cookies (fun)",
-    "sanitize.sanitize_all_parameters_no_user_controlled_tito (fun)"
+  "Function{sanitize.sanitize_b_sink}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.b_sink}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "sanitize.propagation_of_cookies_with_sanitize_parameter_no_user_controlled_tito (fun)": [
-    "pysa._cookies (fun)",
-    "sanitize.sanitize_parameter_no_user_controlled_tito (fun)"
+  "Function{sanitize.sanitize_parameter_all_tito}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
   ],
-  "sanitize.propagation_of_rce_with_sanitize_all_parameters_no_cookies_sql_tito (fun)": [
-    "pysa._rce (fun)",
-    "sanitize.sanitize_all_parameters_no_cookies_sql_tito (fun)"
-  ],
-  "sanitize.propagation_of_rce_with_sanitize_all_parameters_no_sql_tito (fun)": [
-    "pysa._rce (fun)", "sanitize.sanitize_all_parameters_no_sql_tito (fun)"
-  ],
-  "sanitize.propagation_of_rce_with_sanitize_parameter_no_sql_tito (fun)": [
-    "pysa._rce (fun)", "sanitize.sanitize_parameter_no_sql_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_a_sink_in_source_trace (fun)": [
-    "sanitize.a_source (fun)", "sanitize.sanitize_a_sink_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_a_source_in_sink_trace (fun)": [
-    "sanitize.a_sink (fun)",
-    "sanitize.propagation_of_sanitize_a_source_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_a_source_tito (fun)": [
-    "sanitize.sanitize_a_source_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_all_parameters_no_user_controlled (fun)": [
-    "sanitize.sanitize_all_parameters_no_user_controlled (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_parameter_no_sql_tito (fun)": [
-    "sanitize.sanitize_parameter_no_sql_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_parameter_no_sql_tito_in_source_trace (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_sql_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_parameter_no_user_controlled (fun)": [
-    "sanitize.sanitize_parameter_no_user_controlled (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito (fun)": [
-    "sanitize.sanitize_parameter_no_user_controlled_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito_in_sink_trace (fun)": [
-    "pysa._sql (fun)",
-    "sanitize.propagation_of_sanitize_parameter_no_user_controlled_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_return_no_rce (fun)": [
-    "sanitize.sanitize_return_no_rce (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_return_no_sql (fun)": [
-    "sanitize.sanitize_return_no_sql (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_return_no_sql_in_source_trace (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.propagation_of_sanitize_return_no_sql (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_sql_tito_in_source_trace (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.sanitize_all_parameters_no_sql_tito (fun)"
-  ],
-  "sanitize.propagation_of_sanitize_user_controlled_tito_in_sink_trace (fun)": [
-    "pysa._sql (fun)",
-    "sanitize.sanitize_all_parameters_no_user_controlled_tito (fun)"
-  ],
-  "sanitize.propagation_of_user_controlled_with_sanitize_all_parameters_no_cookies_sql_tito (fun)": [
-    "pysa._user_controlled (fun)",
-    "sanitize.sanitize_all_parameters_no_cookies_sql_tito (fun)"
-  ],
-  "sanitize.sanitize_a_and_b_sinks (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_a_and_b_source (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_a_sink (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_a_sink_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.C_sanitized_a_sink.attribute (object)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_a_sink_attribute_in_source_trace (fun)": [
-    "builtins.object.__new__ (method)",
-    "sanitize.C_sanitized_a_sink.__init__ (method)",
-    "sanitize.C_sanitized_a_sink.attribute (object)",
-    "sanitize.a_source (fun)"
-  ],
-  "sanitize.sanitize_a_sink_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.C_sanitized_a_sink.instance (object)", "sanitize.a_sink (fun)",
-    "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_a_source_tito_with_sink (fun)": [
-    "sanitize.a_sink (fun)"
-  ],
-  "sanitize.sanitize_ab_sinks_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.C_sanitized_ab_sinks.attribute (object)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_ab_sinks_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.C_sanitized_ab_sinks.instance (object)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_all_parameters (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_all_parameters_all_tito (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_all_parameters_no_rce (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._rce (fun)", "pysa._sql (fun)"
-  ],
-  "sanitize.sanitize_all_parameters_no_sql (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._rce (fun)", "pysa._sql (fun)"
-  ],
-  "sanitize.sanitize_all_parameters_no_user_controlled (fun)": [
-    "pysa._test_sink (fun)"
-  ],
-  "sanitize.sanitize_all_sinks_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_all_sinks.attribute (object)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_all_sinks_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_all_sinks.instance (object)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_b_sink (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_b_sink_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.C_sanitized_b_sink.attribute (object)",
-    "sanitize.a_sink (fun)", "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_b_sink_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.C_sanitized_b_sink.instance (object)", "sanitize.a_sink (fun)",
-    "sanitize.b_sink (fun)"
-  ],
-  "sanitize.sanitize_parameter (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_parameter_all_tito (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_parameter_no_rce (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._rce (fun)", "pysa._sql (fun)"
-  ],
-  "sanitize.sanitize_parameter_no_sql (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._rce (fun)", "pysa._sql (fun)"
-  ],
-  "sanitize.sanitize_parameter_no_sql_tito (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)"
-  ],
-  "sanitize.sanitize_parameter_no_user_controlled (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._rce (fun)", "pysa._sql (fun)"
-  ],
-  "sanitize.sanitize_parameter_no_user_controlled_tito (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)"
-  ],
-  "sanitize.sanitize_return (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_return_no_cookies (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._cookies (fun)", "pysa._user_controlled (fun)"
-  ],
-  "sanitize.sanitize_return_no_rce (fun)": [ "pysa._user_controlled (fun)" ],
-  "sanitize.sanitize_return_no_user_controlled (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._cookies (fun)", "pysa._user_controlled (fun)"
-  ],
-  "sanitize.sanitize_return_no_user_controlled_cookies (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "pysa._cookies (fun)", "pysa._user_controlled (fun)"
-  ],
-  "sanitize.sanitize_single_argument_tito (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)"
-  ],
-  "sanitize.sanitize_sinks (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_sources (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sanitize_test_a_sink_attribute (fun)": [
-    "pysa._test_source (fun)", "sanitize.sanitize_a_sink_attribute (fun)"
-  ],
-  "sanitize.sanitize_test_a_sink_instance (fun)": [
-    "pysa._test_source (fun)", "sanitize.sanitize_a_sink_instance (fun)"
-  ],
-  "sanitize.sanitize_test_a_source (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_a_source_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_a_source.__init__ (method)",
-    "sanitize.C_sanitized_a_source.attribute (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_a_source_attribute_in_sink_trace (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_a_source.__init__ (method)",
-    "sanitize.C_sanitized_a_source.attribute (object)"
-  ],
-  "sanitize.sanitize_test_a_source_attribute_in_tito (fun)": [
-    "builtins.object.__new__ (method)",
-    "sanitize.C_sanitized_a_source.__init__ (method)",
-    "sanitize.C_sanitized_a_source.attribute (object)"
-  ],
-  "sanitize.sanitize_test_a_source_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_a_source.__init__ (method)",
-    "sanitize.C_sanitized_a_source.instance (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_ab_sinks_attribute (fun)": [
-    "pysa._test_source (fun)", "sanitize.sanitize_ab_sinks_attribute (fun)"
-  ],
-  "sanitize.sanitize_test_ab_sinks_instance (fun)": [
-    "pysa._test_source (fun)", "sanitize.sanitize_ab_sinks_instance (fun)"
-  ],
-  "sanitize.sanitize_test_ab_sources_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_ab_sources.__init__ (method)",
-    "sanitize.C_sanitized_ab_sources.attribute (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_ab_sources_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_ab_sources.__init__ (method)",
-    "sanitize.C_sanitized_ab_sources.instance (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_all_sinks_attribute (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_source (fun)",
-    "sanitize.C_sanitized_all_sinks.__init__ (method)",
-    "sanitize.C_sanitized_all_sinks.attribute (object)",
-    "sanitize.sanitize_all_sinks_attribute (fun)"
-  ],
-  "sanitize.sanitize_test_all_sinks_instance (fun)": [
-    "builtins.object.__new__ (method)", "pysa._test_source (fun)",
-    "sanitize.C_sanitized_all_sinks.__init__ (method)",
-    "sanitize.C_sanitized_all_sinks.instance (object)",
-    "sanitize.sanitize_all_sinks_instance (fun)"
-  ],
-  "sanitize.sanitize_test_all_sources_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "sanitize.C_sanitized_all_sources.__init__ (method)",
-    "sanitize.C_sanitized_all_sources.attribute (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_all_sources_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)",
-    "sanitize.C_sanitized_all_sources.__init__ (method)",
-    "sanitize.C_sanitized_all_sources.instance (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_b_sink_attribute (fun)": [
-    "pysa._test_source (fun)", "sanitize.sanitize_b_sink_attribute (fun)"
-  ],
-  "sanitize.sanitize_test_b_sink_instance (fun)": [
-    "pysa._test_source (fun)", "sanitize.sanitize_b_sink_instance (fun)"
-  ],
-  "sanitize.sanitize_test_b_source (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_b_source_attribute (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_b_source.__init__ (method)",
-    "sanitize.C_sanitized_b_source.attribute (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_test_b_source_instance (fun)": [
-    "_random.Random.random (method)", "builtins.float.__gt__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "sanitize.C_sanitized_b_source.__init__ (method)",
-    "sanitize.C_sanitized_b_source.instance (object)",
-    "sanitize.a_source (fun)", "sanitize.b_source (fun)"
-  ],
-  "sanitize.sanitize_tito (fun)": [
-    "pysa._test_sink (fun)", "sanitize.source_with_tito (fun)"
-  ],
-  "sanitize.sink_taint_sanitize_a (fun)": [
-    "pysa._rce (fun)", "sanitize.sanitize_a_source_tito (fun)"
-  ],
-  "sanitize.sink_taint_sanitize_a_sanitize_b (fun)": [
-    "sanitize.sanitize_b_source_tito (fun)",
-    "sanitize.sink_taint_sanitize_a (fun)"
-  ],
-  "sanitize.sink_taint_sanitize_a_sanitize_b_santize_test (fun)": [
-    "sanitize.sanitize_test_source_tito (fun)",
-    "sanitize.sink_taint_sanitize_a_sanitize_b (fun)"
-  ],
-  "sanitize.sink_taint_sanitize_b (fun)": [
-    "pysa._rce (fun)", "sanitize.sanitize_b_source_tito (fun)"
-  ],
-  "sanitize.sink_taint_sanitize_b_sanitize_a (fun)": [
-    "sanitize.sanitize_a_source_tito (fun)",
-    "sanitize.sink_taint_sanitize_b (fun)"
-  ],
-  "sanitize.sink_taint_sanitize_b_sanitize_a_santize_test (fun)": [
-    "sanitize.sanitize_test_source_tito (fun)",
-    "sanitize.sink_taint_sanitize_b_sanitize_a (fun)"
-  ],
-  "sanitize.test1 (fun)": [
-    "builtins.object.__init__ (method)", "builtins.object.__new__ (method)",
-    "pysa._test_source (fun)", "sanitize.test2 (fun)", "sanitize.test3 (fun)"
-  ],
-  "sanitize.test2 (fun)": [
-    "pysa._test_sink (fun)", "sanitize.return_taint_sanitize (fun)"
-  ],
-  "sanitize.test3 (fun)": [
-    "pysa._test_sink (fun)", "sanitize.return_taint_sanitize (fun)"
-  ],
-  "sanitize.test4 (fun)": [
-    "sanitize.a_sink (fun)", "sanitize.a_source (fun)",
-    "sanitize.sanitize_a_source_tito_with_sink (fun)"
+  "Function{sanitize.sanitize_parameter_no_rce}": [
+    "Function{pysa._rce}", "Function{pysa._sql}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_parameter_no_sql_tito}": [
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_parameter_no_sql}": [
+    "Function{pysa._rce}", "Function{pysa._sql}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_parameter_no_user_controlled_tito}": [
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_parameter_no_user_controlled}": [
+    "Function{pysa._rce}", "Function{pysa._sql}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_parameter}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
+  ],
+  "Function{sanitize.sanitize_return_no_cookies}": [
+    "Function{pysa._cookies}", "Function{pysa._user_controlled}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_return_no_rce}": [
+    "Function{pysa._user_controlled}"
+  ],
+  "Function{sanitize.sanitize_return_no_user_controlled_cookies}": [
+    "Function{pysa._cookies}", "Function{pysa._user_controlled}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_return_no_user_controlled}": [
+    "Function{pysa._cookies}", "Function{pysa._user_controlled}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_return}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
+  ],
+  "Function{sanitize.sanitize_single_argument_tito}": [
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_sinks}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
+  ],
+  "Function{sanitize.sanitize_sources}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
+  ],
+  "Function{sanitize.sanitize_test_a_sink_attribute}": [
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_a_sink_attribute}"
+  ],
+  "Function{sanitize.sanitize_test_a_sink_instance}": [
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_a_sink_instance}"
+  ],
+  "Function{sanitize.sanitize_test_a_source_attribute_in_sink_trace}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_source.attribute}",
+    "Function{pysa._test_sink}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_a_source.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_a_source_attribute_in_tito}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_source.attribute}",
+    "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_a_source.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_a_source_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_source.attribute}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.b_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_a_source.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_a_source_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_source.instance}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.b_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_a_source.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_a_source}": [
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_test_ab_sinks_attribute}": [
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_ab_sinks_attribute}"
+  ],
+  "Function{sanitize.sanitize_test_ab_sinks_instance}": [
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_ab_sinks_instance}"
+  ],
+  "Function{sanitize.sanitize_test_ab_sources_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sources.attribute}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.b_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_ab_sources.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_ab_sources_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sources.instance}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.b_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_ab_sources.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_all_sinks_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sinks.attribute}",
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_all_sinks_attribute}",
+    "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_all_sinks.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_all_sinks_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sinks.instance}",
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_all_sinks_instance}",
+    "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_all_sinks.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_all_sources_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sources.attribute}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}",
+    "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_all_sources.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_all_sources_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sources.instance}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}",
+    "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_all_sources.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_b_sink_attribute}": [
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_b_sink_attribute}"
+  ],
+  "Function{sanitize.sanitize_test_b_sink_instance}": [
+    "Function{pysa._test_source}",
+    "Function{sanitize.sanitize_b_sink_instance}"
+  ],
+  "Function{sanitize.sanitize_test_b_source_attribute}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_source.attribute}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.b_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_b_source.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_b_source_instance}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_source.instance}",
+    "Function{pysa._test_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.b_source}", "Method{_random.Random.random}",
+    "Method{builtins.float.__gt__}", "Method{builtins.object.__new__}",
+    "Method{sanitize.C_sanitized_b_source.__init__}"
+  ],
+  "Function{sanitize.sanitize_test_b_source}": [
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Function{sanitize.sanitize_tito}": [
+    "Function{pysa._test_sink}", "Function{sanitize.source_with_tito}"
+  ],
+  "Function{sanitize.sink_taint_sanitize_a_sanitize_b_santize_test}": [
+    "Function{sanitize.sanitize_test_source_tito}",
+    "Function{sanitize.sink_taint_sanitize_a_sanitize_b}"
+  ],
+  "Function{sanitize.sink_taint_sanitize_a_sanitize_b}": [
+    "Function{sanitize.sanitize_b_source_tito}",
+    "Function{sanitize.sink_taint_sanitize_a}"
+  ],
+  "Function{sanitize.sink_taint_sanitize_a}": [
+    "Function{pysa._rce}", "Function{sanitize.sanitize_a_source_tito}"
+  ],
+  "Function{sanitize.sink_taint_sanitize_b_sanitize_a_santize_test}": [
+    "Function{sanitize.sanitize_test_source_tito}",
+    "Function{sanitize.sink_taint_sanitize_b_sanitize_a}"
+  ],
+  "Function{sanitize.sink_taint_sanitize_b_sanitize_a}": [
+    "Function{sanitize.sanitize_a_source_tito}",
+    "Function{sanitize.sink_taint_sanitize_b}"
+  ],
+  "Function{sanitize.sink_taint_sanitize_b}": [
+    "Function{pysa._rce}", "Function{sanitize.sanitize_b_source_tito}"
+  ],
+  "Function{sanitize.test1}": [
+    "Function{pysa._test_source}", "Function{sanitize.test2}",
+    "Function{sanitize.test3}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}"
+  ],
+  "Function{sanitize.test2}": [
+    "Function{pysa._test_sink}", "Function{sanitize.return_taint_sanitize}"
+  ],
+  "Function{sanitize.test3}": [
+    "Function{pysa._test_sink}", "Function{sanitize.return_taint_sanitize}"
+  ],
+  "Function{sanitize.test4}": [
+    "Function{sanitize.a_sink}", "Function{sanitize.a_source}",
+    "Function{sanitize.sanitize_a_source_tito_with_sink}"
+  ],
+  "Method{sanitize.C_sanitized_a_sink.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_sink.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_sink.instance}"
+  ],
+  "Method{sanitize.C_sanitized_a_source.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_source.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_a_source.instance}"
+  ],
+  "Method{sanitize.C_sanitized_ab_sinks.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sinks.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sinks.instance}"
+  ],
+  "Method{sanitize.C_sanitized_ab_sources.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sources.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_ab_sources.instance}"
+  ],
+  "Method{sanitize.C_sanitized_all_sinks.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sinks.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sinks.instance}"
+  ],
+  "Method{sanitize.C_sanitized_all_sources.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sources.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_all_sources.instance}"
+  ],
+  "Method{sanitize.C_sanitized_b_sink.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_sink.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_sink.instance}"
+  ],
+  "Method{sanitize.C_sanitized_b_source.__init__}": [
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_source.attribute}",
+    "ClassInstanceAttribute{sanitize.C_sanitized_b_source.instance}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_all_parameters_test_a_source}": [
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_all_parameters}": [
+    "Function{pysa._test_source}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_parameter_test_a_source}": [
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_parameter}": [
+    "Function{pysa._test_source}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_return}": [
+    "Function{pysa._test_source}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_sources}": [
+    "Function{pysa._test_source}"
+  ],
+  "Method{sanitize.GenerationOnSelf.sanitize_test_a_source}": [
+    "Function{sanitize.a_source}", "Function{sanitize.b_source}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
+  ],
+  "Method{sanitize.TitoSelf.sanitize_self}": [
+    "Function{sanitize.sanitize_return_no_user_controlled}"
   ]
 }

@@ -1,11 +1,11 @@
 @generated
 Call dependencies
 {
-  "always_in_none.test (fun)": [
-    "always_in_none.ComplicatedService.serve_tainted_request (method)",
-    "pysa._test_sink (fun)"
+  "Function{always_in_none.test_none_clears_taint}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "always_in_none.test_none_clears_taint (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{always_in_none.test}": [
+    "Function{pysa._test_sink}",
+    "Method{always_in_none.ComplicatedService.serve_tainted_request}"
   ]
 }

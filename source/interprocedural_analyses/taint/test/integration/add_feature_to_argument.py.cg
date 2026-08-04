@@ -1,68 +1,67 @@
 @generated
 Call dependencies
 {
-  "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_tito_feature (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "add_feature_to_argument.tito_with_feature (fun)"
+  "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_tito_feature}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{add_feature_to_argument.tito_with_feature}"
   ],
-  "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "add_feature_to_argument.tito_returns_int (fun)"
+  "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{add_feature_to_argument.tito_returns_int}"
   ],
-  "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "add_feature_to_argument.add_via_breadcrumb (fun)"
+  "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{add_feature_to_argument.add_via_breadcrumb}"
   ],
-  "add_feature_to_argument.adds_and_taints (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_feature_to_argument.adds_and_taints}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{pysa._test_source}"
   ],
-  "add_feature_to_argument.dict_test_add_via_value_of_second (fun)": [
-    "add_feature_to_argument.add_via_value_of (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_feature_to_argument.dict_test_add_via_value_of_second}": [
+    "Function{add_feature_to_argument.add_via_value_of}",
+    "Function{pysa._test_source}"
   ],
-  "add_feature_to_argument.propagate_add_feature (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)"
+  "Function{add_feature_to_argument.propagate_add_feature}": [
+    "Function{add_feature_to_argument.add_feature_to_first}"
   ],
-  "add_feature_to_argument.propagate_multiple_add_feature (fun)": [
-    "_random.Random.random (method)",
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "add_feature_to_argument.add_feature_to_second (fun)",
-    "builtins.float.__gt__ (method)"
+  "Function{add_feature_to_argument.propagate_multiple_add_feature}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{add_feature_to_argument.add_feature_to_second}",
+    "Method{_random.Random.random}", "Method{builtins.float.__gt__}"
   ],
-  "add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_tito_feature (fun)": [
-    "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_tito_feature (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_tito_feature}": [
+    "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_tito_feature}",
+    "Function{pysa._test_source}"
   ],
-  "add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb (fun)": [
-    "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb}": [
+    "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_type_breadcrumb}",
+    "Function{pysa._test_source}"
   ],
-  "add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb (fun)": [
-    "add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_feature_to_argument.source_add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb}": [
+    "Function{add_feature_to_argument.add_feature_to_argument_does_not_propagate_inferred_via_breadcrumb}",
+    "Function{pysa._test_source}"
   ],
-  "add_feature_to_argument.test_add_feature_in_comprehension (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "builtins.list.__getitem__ (method)", "builtins.list.__iter__ (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{add_feature_to_argument.test_add_feature_in_comprehension}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.list.__getitem__}", "Method{builtins.list.__iter__}",
+    "Method{typing.Iterator.__next__}"
   ],
-  "add_feature_to_argument.test_add_feature_to_sink (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "pysa._test_sink (fun)"
+  "Function{add_feature_to_argument.test_add_feature_to_sink_in_comprehension}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{pysa._test_sink}", "Method{builtins.list.__iter__}",
+    "Method{typing.Iterator.__next__}"
   ],
-  "add_feature_to_argument.test_add_feature_to_sink_in_comprehension (fun)": [
-    "add_feature_to_argument.add_feature_to_first (fun)",
-    "builtins.list.__iter__ (method)", "pysa._test_sink (fun)",
-    "typing.Iterator.__next__ (method)"
+  "Function{add_feature_to_argument.test_add_feature_to_sink}": [
+    "Function{add_feature_to_argument.add_feature_to_first}",
+    "Function{pysa._test_sink}"
   ],
-  "add_feature_to_argument.test_add_multiple_feature (fun)": [
-    "add_feature_to_argument.propagate_multiple_add_feature (fun)",
-    "pysa._test_sink (fun)"
+  "Function{add_feature_to_argument.test_add_multiple_feature}": [
+    "Function{add_feature_to_argument.propagate_multiple_add_feature}",
+    "Function{pysa._test_sink}"
   ],
-  "add_feature_to_argument.test_add_via_value_of_second (fun)": [
-    "add_feature_to_argument.add_via_value_of (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_feature_to_argument.test_add_via_value_of_second}": [
+    "Function{add_feature_to_argument.add_via_value_of}",
+    "Function{pysa._test_source}"
   ]
 }

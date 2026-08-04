@@ -1,11 +1,14 @@
 @generated
 Call dependencies
 {
-  "source_sink_flow.bad (fun)": [ "source_sink_flow.qux (fun)" ],
-  "source_sink_flow.bar (fun)": [ "pysa._test_source (fun)" ],
-  "source_sink_flow.match_flows (fun)": [
-    "source_sink_flow.bad (fun)", "source_sink_flow.some_source (fun)"
+  "Function{source_sink_flow.bad}": [ "Function{source_sink_flow.qux}" ],
+  "Function{source_sink_flow.bar}": [ "Function{pysa._test_source}" ],
+  "Function{source_sink_flow.match_flows}": [
+    "Function{source_sink_flow.bad}",
+    "Function{source_sink_flow.some_source}"
   ],
-  "source_sink_flow.qux (fun)": [ "pysa._test_sink (fun)" ],
-  "source_sink_flow.some_source (fun)": [ "source_sink_flow.bar (fun)" ]
+  "Function{source_sink_flow.qux}": [ "Function{pysa._test_sink}" ],
+  "Function{source_sink_flow.some_source}": [
+    "Function{source_sink_flow.bar}"
+  ]
 }

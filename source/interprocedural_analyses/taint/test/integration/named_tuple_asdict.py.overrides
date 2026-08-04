@@ -1,10 +1,10 @@
 @generated
 Overrides
-_typeshed._type_checker_internals.NamedTupleFallback.__init__ (override) -> [_typeshed._type_checker_internals.NamedTupleFallback.__init__ (method) named_tuple_asdict.ConnectionParams.__init__ (override)]
-_typeshed._type_checker_internals.NamedTupleFallback._replace (override) -> [_typeshed._type_checker_internals.NamedTupleFallback._replace (method) named_tuple_asdict.ConnectionParams._replace (override)]
-builtins.tuple.__iter__ (override) -> [builtins.tuple.__iter__ (method) named_tuple_asdict.ConnectionParams.__iter__ (override)]
-builtins.tuple.__new__ (override) -> [builtins.tuple.__new__ (method) named_tuple_asdict.ConnectionParams.__new__ (override)]
-named_tuple_asdict.ConnectionParams.__init__ (override) -> [named_tuple_asdict.ConnectionParams.__init__ (method)]
-named_tuple_asdict.ConnectionParams.__iter__ (override) -> [named_tuple_asdict.ConnectionParams.__iter__ (method)]
-named_tuple_asdict.ConnectionParams.__new__ (override) -> [named_tuple_asdict.ConnectionParams.__new__ (method)]
-named_tuple_asdict.ConnectionParams._replace (override) -> [named_tuple_asdict.ConnectionParams._replace (method)]
+Override{_typeshed._type_checker_internals.NamedTupleFallback.__init__} -> [Method{_typeshed._type_checker_internals.NamedTupleFallback.__init__} Override{named_tuple_asdict.ConnectionParams.__init__}]
+Override{_typeshed._type_checker_internals.NamedTupleFallback._replace} -> [Method{_typeshed._type_checker_internals.NamedTupleFallback._replace} Override{named_tuple_asdict.ConnectionParams._replace}]
+Override{builtins.tuple.__iter__} -> [Method{builtins.tuple.__iter__} Override{named_tuple_asdict.ConnectionParams.__iter__}]
+Override{builtins.tuple.__new__} -> [Method{builtins.tuple.__new__} Override{named_tuple_asdict.ConnectionParams.__new__}]
+Override{named_tuple_asdict.ConnectionParams.__init__} -> [Method{named_tuple_asdict.ConnectionParams.__init__}]
+Override{named_tuple_asdict.ConnectionParams.__iter__} -> [Method{named_tuple_asdict.ConnectionParams.__iter__}]
+Override{named_tuple_asdict.ConnectionParams.__new__} -> [Method{named_tuple_asdict.ConnectionParams.__new__}]
+Override{named_tuple_asdict.ConnectionParams._replace} -> [Method{named_tuple_asdict.ConnectionParams._replace}]

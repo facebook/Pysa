@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "closure_models.captured_variable_model_both_generation_parameter_source",
+  "callable": "Function{closure_models.captured_variable_model_both_generation_parameter_source}",
   "returned_callables": [],
   "calls": {
     "166:4-167:36": {
@@ -36,7 +36,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_both_generation_parameter_source.model_all_captured_as_generation_and_parameter_sources",
+  "callable": "Function{closure_models.captured_variable_model_both_generation_parameter_source.model_all_captured_as_generation_and_parameter_sources}",
   "returned_callables": [],
   "calls": {
     "167:8-167:36": {
@@ -59,7 +59,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_generation_source",
+  "callable": "Function{closure_models.captured_variable_model_generation_source}",
   "returned_callables": [],
   "calls": {
     "154:4-156:36": {
@@ -94,7 +94,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_generation_source.model_all_captured_as_generation_sources",
+  "callable": "Function{closure_models.captured_variable_model_generation_source.model_all_captured_as_generation_sources}",
   "returned_callables": [],
   "calls": {
     "155:8-155:24|identifier|complicated_name": {
@@ -127,7 +127,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_parameter_source",
+  "callable": "Function{closure_models.captured_variable_model_parameter_source}",
   "returned_callables": [],
   "calls": {
     "140:4-140:32": {
@@ -169,7 +169,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_parameter_source.model_all_captured_as_parameter_sources",
+  "callable": "Function{closure_models.captured_variable_model_parameter_source.model_all_captured_as_parameter_sources}",
   "returned_callables": [],
   "calls": {
     "144:8-144:36": {
@@ -192,7 +192,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_sink",
+  "callable": "Function{closure_models.captured_variable_model_sink}",
   "returned_callables": [],
   "calls": {
     "174:23-174:37": {
@@ -227,7 +227,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_sink.model_all_captured_as_sinks",
+  "callable": "Function{closure_models.captured_variable_model_sink.model_all_captured_as_sinks}",
   "returned_callables": [],
   "calls": {
     "178:8-178:24|identifier|complicated_name": {
@@ -244,7 +244,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_tito",
+  "callable": "Function{closure_models.captured_variable_model_tito}",
   "returned_callables": [],
   "calls": {
     "128:23-128:37": {
@@ -286,7 +286,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.captured_variable_model_tito.model_all_captured_as_tito",
+  "callable": "Function{closure_models.captured_variable_model_tito.model_all_captured_as_tito}",
   "returned_callables": [],
   "calls": {
     "132:8-132:24|identifier|complicated_name": {
@@ -303,7 +303,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.inner_sink_wrapper",
+  "callable": "Function{closure_models.inner_sink_wrapper}",
   "returned_callables": [],
   "calls": {
     "12:4-13:16": {
@@ -338,7 +338,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.some_decorator",
+  "callable": "Function{closure_models.some_decorator}",
   "returned_callables": [
     {
       "target": "closure_models.some_decorator.wrapper_func",
@@ -374,7 +374,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.some_decorator.wrapper_func",
+  "callable": "Function{closure_models.some_decorator.wrapper_func}",
   "returned_callables": [],
   "calls": {
     "111:8-111:12|identifier|func": {
@@ -394,7 +394,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test",
+  "callable": "Function{closure_models.test}",
   "returned_callables": [],
   "calls": {
     "41:4-42:29": {
@@ -696,7 +696,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test.return_model_query_tito",
+  "callable": "Function{closure_models.test.return_model_query_tito}",
   "returned_callables": [],
   "calls": {
     "53:8-53:26": {
@@ -721,7 +721,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test.return_model_taint",
+  "callable": "Function{closure_models.test.return_model_taint}",
   "returned_callables": [],
   "calls": {
     "45:15-45:20|identifier|value": {
@@ -734,7 +734,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test.return_model_taint_tito",
+  "callable": "Function{closure_models.test.return_model_taint_tito}",
   "returned_callables": [],
   "calls": {
     "50:8-50:26": {
@@ -759,7 +759,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test.return_taint",
+  "callable": "Function{closure_models.test.return_taint}",
   "returned_callables": [],
   "calls": {
     "42:15-42:29": {
@@ -772,7 +772,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_dsl_decorator_source",
+  "callable": "Function{closure_models.test_dsl_decorator_source}",
   "returned_callables": [],
   "calls": {
     "122:4-124:29": {
@@ -789,7 +789,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable",
+  "callable": "Function{closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable}",
   "returned_callables": [],
   "calls": {
     "124:8-124:29": {
@@ -812,7 +812,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable@decorated",
+  "callable": "Function{closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable@decorated}",
   "returned_callables": [
     {
       "target": "closure_models.some_decorator.wrapper_func[captured_variable(func, closure_models.some_decorator)=closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable]",
@@ -848,7 +848,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_dsl_source",
+  "callable": "Function{closure_models.test_dsl_source}",
   "returned_callables": [],
   "calls": {
     "117:4-118:29": {
@@ -865,7 +865,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_dsl_source.local_function_capturing_local_variable",
+  "callable": "Function{closure_models.test_dsl_source.local_function_capturing_local_variable}",
   "returned_callables": [],
   "calls": {
     "118:8-118:29": {
@@ -888,7 +888,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_tito_transform",
+  "callable": "Function{closure_models.test_tito_transform}",
   "returned_callables": [],
   "calls": {
     "88:13-88:27": {
@@ -1021,7 +1021,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_tito_transform.return_model_query_tito",
+  "callable": "Function{closure_models.test_tito_transform.return_model_query_tito}",
   "returned_callables": [],
   "calls": {
     "94:8-94:26": {
@@ -1049,7 +1049,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.test_tito_transform.return_model_taint_tito",
+  "callable": "Function{closure_models.test_tito_transform.return_model_taint_tito}",
   "returned_callables": [],
   "calls": {
     "91:8-91:26": {
@@ -1077,7 +1077,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.Reclassification.reclassify",
+  "callable": "Method{closure_models.Reclassification.reclassify}",
   "returned_callables": [],
   "calls": {
     "25:15-25:27": {
@@ -1086,7 +1086,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "closure_models.some_decorator[formal(func, position=0)=closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable]",
+  "callable": "Function{closure_models.some_decorator}[formal(func, position=0)=Function{closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable}]",
   "returned_callables": [
     {
       "target": "closure_models.some_decorator.wrapper_func[captured_variable(func, closure_models.some_decorator)=closure_models.test_dsl_decorator_source.decorated_local_function_capturing_local_variable]",

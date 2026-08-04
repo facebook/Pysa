@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "higher_order_functions.$toplevel",
+  "callable": "Function{higher_order_functions.$toplevel}",
   "returned_callables": [],
   "calls": {
     "170:29-170:43|identifier|CallableSource": {
@@ -57,7 +57,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply",
+  "callable": "Function{higher_order_functions.apply}",
   "returned_callables": [],
   "calls": {
     "61:11-61:15": {
@@ -66,7 +66,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_skip_both",
+  "callable": "Function{higher_order_functions.apply_skip_both}",
   "returned_callables": [],
   "calls": {
     "245:11-245:15": {
@@ -75,7 +75,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_skip_call",
+  "callable": "Function{higher_order_functions.apply_skip_call}",
   "returned_callables": [],
   "calls": {
     "233:11-233:15": {
@@ -84,7 +84,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_skip_inlining",
+  "callable": "Function{higher_order_functions.apply_skip_inlining}",
   "returned_callables": [],
   "calls": {
     "221:11-221:15": {
@@ -93,14 +93,14 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_without_return",
+  "callable": "Function{higher_order_functions.apply_without_return}",
   "returned_callables": [],
   "calls": {
     "87:4-87:8": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } }
   }
 }
 {
-  "callable": "higher_order_functions.callable_class",
+  "callable": "Function{higher_order_functions.callable_class}",
   "returned_callables": [],
   "calls": {
     "104:8-104:32": {
@@ -172,7 +172,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.conditional_apply",
+  "callable": "Function{higher_order_functions.conditional_apply}",
   "returned_callables": [],
   "calls": {
     "120:15-120:19": {
@@ -184,7 +184,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.goes_to_sink",
+  "callable": "Function{higher_order_functions.goes_to_sink}",
   "returned_callables": [],
   "calls": {
     "10:4-10:19": {
@@ -197,14 +197,14 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function",
+  "callable": "Function{higher_order_functions.higher_order_function}",
   "returned_callables": [],
   "calls": {
     "18:4-18:10": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } }
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function_and_sink",
+  "callable": "Function{higher_order_functions.higher_order_function_and_sink}",
   "returned_callables": [],
   "calls": {
     "47:4-47:10": { "call": { "unresolved": [ "UnexpectedPyreflyTarget" ] } },
@@ -218,7 +218,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_method",
+  "callable": "Function{higher_order_functions.higher_order_method}",
   "returned_callables": [],
   "calls": {
     "34:4-34:48": {
@@ -250,7 +250,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.sink_after_apply",
+  "callable": "Function{higher_order_functions.sink_after_apply}",
   "returned_callables": [],
   "calls": {
     "79:4-79:19": {
@@ -266,7 +266,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.sink_args",
+  "callable": "Function{higher_order_functions.sink_args}",
   "returned_callables": [],
   "calls": {
     "110:15-110:19|artificial-call|for-iter": {
@@ -305,7 +305,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.source_through_tito",
+  "callable": "Function{higher_order_functions.source_through_tito}",
   "returned_callables": [],
   "calls": {
     "69:8-69:22": {
@@ -342,7 +342,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_apply_source",
+  "callable": "Function{higher_order_functions.test_apply_source}",
   "returned_callables": [],
   "calls": {
     "75:11-75:33": {
@@ -368,7 +368,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_apply_tito",
+  "callable": "Function{higher_order_functions.test_apply_tito}",
   "returned_callables": [],
   "calls": {
     "65:11-65:29": {
@@ -398,7 +398,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_apply_without_return",
+  "callable": "Function{higher_order_functions.test_apply_without_return}",
   "returned_callables": [],
   "calls": {
     "91:4-91:52": {
@@ -471,7 +471,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_bound_method_through_higher_order",
+  "callable": "Function{higher_order_functions.test_bound_method_through_higher_order}",
   "returned_callables": [],
   "calls": {
     "285:4-285:36": {
@@ -561,7 +561,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_callable_class_to_obscure",
+  "callable": "Function{higher_order_functions.test_callable_class_to_obscure}",
   "returned_callables": [],
   "calls": {
     "156:4-156:28": {
@@ -641,7 +641,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_callable_class_to_perfect_tito",
+  "callable": "Function{higher_order_functions.test_callable_class_to_perfect_tito}",
   "returned_callables": [
     {
       "target": "Overrides{higher_order_functions.CallableSource.__call__}",
@@ -715,7 +715,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_callable_class_to_perfect_tito.perfect_tito",
+  "callable": "Function{higher_order_functions.test_callable_class_to_perfect_tito.perfect_tito}",
   "returned_callables": [
     {
       "target": "Overrides{higher_order_functions.CallableSource.__call__}",
@@ -746,7 +746,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_callable_default_value",
+  "callable": "Function{higher_order_functions.test_callable_default_value}",
   "returned_callables": [],
   "calls": {
     "216:34-216:46|identifier|_test_source": {
@@ -775,7 +775,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_callable_subclass_to_annotated_superclass",
+  "callable": "Function{higher_order_functions.test_callable_subclass_to_annotated_superclass}",
   "returned_callables": [
     {
       "target": "Overrides{higher_order_functions.CallableSource.__call__}",
@@ -849,7 +849,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_callable_subclass_to_annotated_superclass.accept_callable_source",
+  "callable": "Function{higher_order_functions.test_callable_subclass_to_annotated_superclass.accept_callable_source}",
   "returned_callables": [
     {
       "target": "Overrides{higher_order_functions.CallableSource.__call__}",
@@ -880,7 +880,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_conditional_apply_backward",
+  "callable": "Function{higher_order_functions.test_conditional_apply_backward}",
   "returned_callables": [],
   "calls": {
     "139:4-139:48": {
@@ -1018,7 +1018,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_conditional_apply_forward",
+  "callable": "Function{higher_order_functions.test_conditional_apply_forward}",
   "returned_callables": [],
   "calls": {
     "130:4-130:62": {
@@ -1184,7 +1184,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables",
+  "callable": "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables}",
   "returned_callables": [],
   "calls": {
     "186:4-187:23": {
@@ -1360,7 +1360,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper",
+  "callable": "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}",
   "returned_callables": [],
   "calls": {
     "187:8-187:23": {
@@ -1373,7 +1373,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2",
+  "callable": "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}",
   "returned_callables": [],
   "calls": {
     "204:8-204:23": {
@@ -1386,7 +1386,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_higher_order_function",
+  "callable": "Function{higher_order_functions.test_higher_order_function}",
   "returned_callables": [],
   "calls": {
     "22:4-22:55": {
@@ -1423,7 +1423,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_higher_order_function_and_sink",
+  "callable": "Function{higher_order_functions.test_higher_order_function_and_sink}",
   "returned_callables": [],
   "calls": {
     "52:4-52:64": {
@@ -1460,7 +1460,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_higher_order_method",
+  "callable": "Function{higher_order_functions.test_higher_order_method}",
   "returned_callables": [],
   "calls": {
     "38:4-38:44": {
@@ -1505,7 +1505,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_higher_order_method_self",
+  "callable": "Function{higher_order_functions.test_higher_order_method_self}",
   "returned_callables": [],
   "calls": {
     "42:11-42:25": {
@@ -1544,7 +1544,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_higher_order_tito",
+  "callable": "Function{higher_order_functions.test_higher_order_tito}",
   "returned_callables": [],
   "calls": {
     "57:11-57:45": {
@@ -1574,7 +1574,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_location",
+  "callable": "Function{higher_order_functions.test_location}",
   "returned_callables": [],
   "calls": {
     "115:4-115:22": {
@@ -1622,7 +1622,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_parameterized_target_in_issue_handle",
+  "callable": "Function{higher_order_functions.test_parameterized_target_in_issue_handle}",
   "returned_callables": [],
   "calls": {
     "83:4-83:34": {
@@ -1648,7 +1648,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_skip_both_higher_order_function",
+  "callable": "Function{higher_order_functions.test_skip_both_higher_order_function}",
   "returned_callables": [],
   "calls": {
     "249:4-249:49": {
@@ -1685,7 +1685,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_skip_both_tito",
+  "callable": "Function{higher_order_functions.test_skip_both_tito}",
   "returned_callables": [],
   "calls": {
     "253:11-253:39": {
@@ -1715,7 +1715,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_skip_call_higher_order_function",
+  "callable": "Function{higher_order_functions.test_skip_call_higher_order_function}",
   "returned_callables": [],
   "calls": {
     "237:4-237:49": {
@@ -1752,7 +1752,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_skip_call_tito",
+  "callable": "Function{higher_order_functions.test_skip_call_tito}",
   "returned_callables": [],
   "calls": {
     "241:11-241:39": {
@@ -1782,7 +1782,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_skip_inlining_higher_order_function",
+  "callable": "Function{higher_order_functions.test_skip_inlining_higher_order_function}",
   "returned_callables": [],
   "calls": {
     "225:4-225:53": {
@@ -1831,7 +1831,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_skip_inlining_tito",
+  "callable": "Function{higher_order_functions.test_skip_inlining_tito}",
   "returned_callables": [],
   "calls": {
     "229:11-229:43": {
@@ -1873,7 +1873,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.C.method_to_sink",
+  "callable": "Method{higher_order_functions.C.method_to_sink}",
   "returned_callables": [],
   "calls": {
     "27:8-27:23": {
@@ -1886,7 +1886,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.C.self_to_sink",
+  "callable": "Method{higher_order_functions.C.self_to_sink}",
   "returned_callables": [],
   "calls": {
     "30:8-30:24": {
@@ -1899,7 +1899,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.Cache.row_update",
+  "callable": "Method{higher_order_functions.Cache.row_update}",
   "returned_callables": [],
   "calls": {
     "280:14-280:55": {
@@ -1943,7 +1943,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.CallableSource.__call__",
+  "callable": "Method{higher_order_functions.CallableSource.__call__}",
   "returned_callables": [],
   "calls": {
     "152:15-152:29": {
@@ -1956,7 +1956,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.CallableSourceSubclass.__call__",
+  "callable": "Method{higher_order_functions.CallableSourceSubclass.__call__}",
   "returned_callables": [],
   "calls": {
     "172:15-172:29": {
@@ -1969,7 +1969,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.Connection.execute",
+  "callable": "Method{higher_order_functions.Connection.execute}",
   "returned_callables": [],
   "calls": {
     "260:8-260:23": {
@@ -1982,7 +1982,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply[formal(f, position=0)=higher_order_functions.has_tito]",
+  "callable": "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.has_tito}]",
   "returned_callables": [],
   "calls": {
     "61:11-61:15": {
@@ -1999,7 +1999,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2]",
+  "callable": "Function{higher_order_functions.apply}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper2}]",
   "returned_callables": [],
   "calls": {
     "61:11-61:15": {
@@ -2016,7 +2016,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply[formal(f, position=0)=pysa._test_sink]",
+  "callable": "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_sink}]",
   "returned_callables": [],
   "calls": {
     "61:11-61:15": {
@@ -2029,7 +2029,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply[formal(f, position=0)=pysa._test_source]",
+  "callable": "Function{higher_order_functions.apply}[formal(f, position=0)=Function{pysa._test_source}]",
   "returned_callables": [],
   "calls": {
     "61:11-61:15": {
@@ -2042,7 +2042,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_skip_call[formal(f, position=0)=higher_order_functions.goes_to_sink]",
+  "callable": "Function{higher_order_functions.apply_skip_call}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]",
   "returned_callables": [],
   "calls": {
     "233:11-233:15": {
@@ -2059,7 +2059,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_skip_call[formal(f, position=0)=higher_order_functions.has_tito]",
+  "callable": "Function{higher_order_functions.apply_skip_call}[formal(f, position=0)=Function{higher_order_functions.has_tito}]",
   "returned_callables": [],
   "calls": {
     "233:11-233:15": {
@@ -2076,7 +2076,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.apply_without_return[formal(f, position=0)=pysa._test_sink]",
+  "callable": "Function{higher_order_functions.apply_without_return}[formal(f, position=0)=Function{pysa._test_sink}]",
   "returned_callables": [],
   "calls": {
     "87:4-87:8": {
@@ -2089,7 +2089,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.conditional_apply[formal(f, position=0)=higher_order_functions.safe, formal(g, position=1)=pysa._test_sink]",
+  "callable": "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{higher_order_functions.safe}, formal(g, position=1)=Function{pysa._test_sink}]",
   "returned_callables": [],
   "calls": {
     "120:15-120:19": {
@@ -2113,7 +2113,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.conditional_apply[formal(f, position=0)=higher_order_functions.safe, formal(g, position=1)=pysa._test_source]",
+  "callable": "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{higher_order_functions.safe}, formal(g, position=1)=Function{pysa._test_source}]",
   "returned_callables": [],
   "calls": {
     "120:15-120:19": {
@@ -2137,7 +2137,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.conditional_apply[formal(f, position=0)=pysa._test_sink, formal(g, position=1)=higher_order_functions.safe]",
+  "callable": "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{pysa._test_sink}, formal(g, position=1)=Function{higher_order_functions.safe}]",
   "returned_callables": [],
   "calls": {
     "120:15-120:19": {
@@ -2161,7 +2161,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.conditional_apply[formal(f, position=0)=pysa._test_source, formal(g, position=1)=higher_order_functions.safe]",
+  "callable": "Function{higher_order_functions.conditional_apply}[formal(f, position=0)=Function{pysa._test_source}, formal(g, position=1)=Function{higher_order_functions.safe}]",
   "returned_callables": [],
   "calls": {
     "120:15-120:19": {
@@ -2185,7 +2185,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function[formal(f, position=0)=higher_order_functions.goes_to_sink]",
+  "callable": "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]",
   "returned_callables": [],
   "calls": {
     "18:4-18:10": {
@@ -2202,7 +2202,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function[formal(f, position=0)=higher_order_functions.has_tito]",
+  "callable": "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Function{higher_order_functions.has_tito}]",
   "returned_callables": [],
   "calls": {
     "18:4-18:10": {
@@ -2219,7 +2219,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function[formal(f, position=0)=higher_order_functions.C.method_to_sink (bound)]",
+  "callable": "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Method{higher_order_functions.C.method_to_sink} (bound)]",
   "returned_callables": [],
   "calls": {
     "18:4-18:10": {
@@ -2237,7 +2237,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function[formal(f, position=0)=higher_order_functions.C.self_to_sink (bound)]",
+  "callable": "Function{higher_order_functions.higher_order_function}[formal(f, position=0)=Method{higher_order_functions.C.self_to_sink} (bound)]",
   "returned_callables": [],
   "calls": {
     "18:4-18:10": {
@@ -2255,7 +2255,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.higher_order_function_and_sink[formal(f, position=0)=higher_order_functions.goes_to_sink]",
+  "callable": "Function{higher_order_functions.higher_order_function_and_sink}[formal(f, position=0)=Function{higher_order_functions.goes_to_sink}]",
   "returned_callables": [],
   "calls": {
     "47:4-47:10": {
@@ -2279,7 +2279,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.return_callable_as_any[formal(f, position=0)=higher_order_functions.Connection.execute (bound)]",
+  "callable": "Function{higher_order_functions.return_callable_as_any}[formal(f, position=0)=Method{higher_order_functions.Connection.execute} (bound)]",
   "returned_callables": [
     {
       "target": "higher_order_functions.Connection.execute",
@@ -2291,7 +2291,7 @@ Higher order call graphs
   "calls": {}
 }
 {
-  "callable": "higher_order_functions.sink_after_apply[formal(f, position=0)=pysa._test_source]",
+  "callable": "Function{higher_order_functions.sink_after_apply}[formal(f, position=0)=Function{pysa._test_source}]",
   "returned_callables": [],
   "calls": {
     "79:4-79:19": {
@@ -2311,7 +2311,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables[formal(f, position=0)=builtins.print]",
+  "callable": "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables}[formal(f, position=0)=Function{builtins.print}]",
   "returned_callables": [],
   "calls": {
     "186:4-187:23": {
@@ -2487,7 +2487,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar]",
+  "callable": "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.bar}]",
   "returned_callables": [],
   "calls": {
     "187:8-187:23": {
@@ -2500,7 +2500,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper[formal(f, position=0)=higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo]",
+  "callable": "Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.sink_wrapper}[formal(f, position=0)=Function{higher_order_functions.test_duplicate_issues_in_different_parameterized_callables.foo}]",
   "returned_callables": [],
   "calls": {
     "187:8-187:23": {

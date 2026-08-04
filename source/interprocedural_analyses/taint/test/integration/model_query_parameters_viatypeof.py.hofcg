@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "model_query_parameters_viatypeof.test1_alarm1",
+  "callable": "Function{model_query_parameters_viatypeof.test1_alarm1}",
   "returned_callables": [],
   "calls": {
     "16:13-16:27": {
@@ -25,7 +25,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test1_alarm2",
+  "callable": "Function{model_query_parameters_viatypeof.test1_alarm2}",
   "returned_callables": [],
   "calls": {
     "21:31-21:45": {
@@ -49,7 +49,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test1_alarm3",
+  "callable": "Function{model_query_parameters_viatypeof.test1_alarm3}",
   "returned_callables": [],
   "calls": {
     "26:13-26:27": {
@@ -73,7 +73,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test1_noalarm1",
+  "callable": "Function{model_query_parameters_viatypeof.test1_noalarm1}",
   "returned_callables": [],
   "calls": {
     "31:4-31:25": {
@@ -90,7 +90,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_alarm1",
+  "callable": "Function{model_query_parameters_viatypeof.test2_alarm1}",
   "returned_callables": [],
   "calls": {
     "47:13-47:27": {
@@ -116,7 +116,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_alarm2",
+  "callable": "Function{model_query_parameters_viatypeof.test2_alarm2}",
   "returned_callables": [],
   "calls": {
     "52:24-52:38": {
@@ -142,7 +142,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_alarm3",
+  "callable": "Function{model_query_parameters_viatypeof.test2_alarm3}",
   "returned_callables": [],
   "calls": {
     "57:17-57:31": {
@@ -168,7 +168,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_alarm4",
+  "callable": "Function{model_query_parameters_viatypeof.test2_alarm4}",
   "returned_callables": [],
   "calls": {
     "62:13-62:27": {
@@ -194,7 +194,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_alarm5",
+  "callable": "Function{model_query_parameters_viatypeof.test2_alarm5}",
   "returned_callables": [],
   "calls": {
     "67:29-67:43": {
@@ -220,7 +220,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_alarm6",
+  "callable": "Function{model_query_parameters_viatypeof.test2_alarm6}",
   "returned_callables": [],
   "calls": {
     "72:15-72:29": {
@@ -246,7 +246,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_noalarm1",
+  "callable": "Function{model_query_parameters_viatypeof.test2_noalarm1}",
   "returned_callables": [],
   "calls": {
     "77:4-77:21": {
@@ -265,7 +265,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test2_noalarm2",
+  "callable": "Function{model_query_parameters_viatypeof.test2_noalarm2}",
   "returned_callables": [],
   "calls": {
     "81:4-81:27": {
@@ -305,7 +305,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test3_alarm1",
+  "callable": "Function{model_query_parameters_viatypeof.test3_alarm1}",
   "returned_callables": [],
   "calls": {
     "89:13-89:27": {
@@ -329,7 +329,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test3_alarm2",
+  "callable": "Function{model_query_parameters_viatypeof.test3_alarm2}",
   "returned_callables": [],
   "calls": {
     "94:31-94:45": {
@@ -353,7 +353,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test3_alarm3",
+  "callable": "Function{model_query_parameters_viatypeof.test3_alarm3}",
   "returned_callables": [],
   "calls": {
     "99:13-99:27": {
@@ -377,7 +377,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "model_query_parameters_viatypeof.test3_noalarm1",
+  "callable": "Function{model_query_parameters_viatypeof.test3_noalarm1}",
   "returned_callables": [],
   "calls": {
     "104:4-104:25": {

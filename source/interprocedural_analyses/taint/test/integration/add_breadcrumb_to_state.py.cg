@@ -1,37 +1,37 @@
 @generated
 Call dependencies
 {
-  "add_breadcrumb_to_state.add_breadcrumb_to_state_wrapper (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state (fun)"
+  "Function{add_breadcrumb_to_state.add_breadcrumb_to_state_wrapper}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state}"
   ],
-  "add_breadcrumb_to_state.test_add_breadcrumb_context_manager (fun)": [
-    "add_breadcrumb_to_state.BreadcrumbOnEnter.__enter__ (method)",
-    "add_breadcrumb_to_state.BreadcrumbOnEnter.__init__ (method)",
-    "builtins.object.__new__ (method)", "pysa._test_sink (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_breadcrumb_to_state.test_add_breadcrumb_context_manager}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{add_breadcrumb_to_state.BreadcrumbOnEnter.__enter__}",
+    "Method{add_breadcrumb_to_state.BreadcrumbOnEnter.__init__}",
+    "Method{builtins.object.__new__}"
   ],
-  "add_breadcrumb_to_state.test_if_issue (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{add_breadcrumb_to_state.test_if_issue}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "add_breadcrumb_to_state.test_if_sink_outside_condition (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state (fun)",
-    "pysa._test_sink (fun)"
+  "Function{add_breadcrumb_to_state.test_if_sink_outside_condition}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state}",
+    "Function{pysa._test_sink}"
   ],
-  "add_breadcrumb_to_state.test_if_sink_within_condition (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state (fun)",
-    "pysa._test_sink (fun)"
+  "Function{add_breadcrumb_to_state.test_if_sink_within_condition}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state}",
+    "Function{pysa._test_sink}"
   ],
-  "add_breadcrumb_to_state.test_if_source_outside_condition (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_breadcrumb_to_state.test_if_source_outside_condition}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state}",
+    "Function{pysa._test_source}"
   ],
-  "add_breadcrumb_to_state.test_if_source_within_condition (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state (fun)",
-    "pysa._test_source (fun)"
+  "Function{add_breadcrumb_to_state.test_if_source_within_condition}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state}",
+    "Function{pysa._test_source}"
   ],
-  "add_breadcrumb_to_state.test_wrapper (fun)": [
-    "add_breadcrumb_to_state.add_breadcrumb_to_state_wrapper (fun)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{add_breadcrumb_to_state.test_wrapper}": [
+    "Function{add_breadcrumb_to_state.add_breadcrumb_to_state_wrapper}",
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ]
 }

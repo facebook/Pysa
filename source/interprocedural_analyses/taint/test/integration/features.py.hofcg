@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "features.async_issue_bools",
+  "callable": "Function{features.async_issue_bools}",
   "returned_callables": [],
   "calls": {
     "95:17-95:39": {
@@ -25,7 +25,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.async_tuple_of_bools",
+  "callable": "Function{features.async_tuple_of_bools}",
   "returned_callables": [],
   "calls": {
     "91:11-91:25": {
@@ -45,7 +45,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.issue_from_tuple",
+  "callable": "Function{features.issue_from_tuple}",
   "returned_callables": [],
   "calls": {
     "79:11-79:34": {
@@ -69,7 +69,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.issue_via_bool",
+  "callable": "Function{features.issue_via_bool}",
   "returned_callables": [],
   "calls": {
     "59:8-59:22": {
@@ -109,7 +109,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.issue_via_equality",
+  "callable": "Function{features.issue_via_equality}",
   "returned_callables": [],
   "calls": {
     "69:8-69:32": {
@@ -145,7 +145,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.issue_via_in",
+  "callable": "Function{features.issue_via_in}",
   "returned_callables": [],
   "calls": {
     "104:8-104:22": {
@@ -182,7 +182,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.no_always_when_calling_setitem",
+  "callable": "Function{features.no_always_when_calling_setitem}",
   "returned_callables": [],
   "calls": {
     "120:8-120:22": {
@@ -229,7 +229,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.return_tuple_of_bools",
+  "callable": "Function{features.return_tuple_of_bools}",
   "returned_callables": [],
   "calls": {
     "75:11-75:25": {
@@ -249,7 +249,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.returns_tainted_object",
+  "callable": "Function{features.returns_tainted_object}",
   "returned_callables": [],
   "calls": {
     "65:11-65:25": {
@@ -262,7 +262,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_constructor",
+  "callable": "Function{features.tito_via_constructor}",
   "returned_callables": [],
   "calls": {
     "47:11-47:17": {
@@ -288,7 +288,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_len",
+  "callable": "Function{features.tito_via_len}",
   "returned_callables": [],
   "calls": {
     "24:11-24:17": {
@@ -305,7 +305,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_min_left",
+  "callable": "Function{features.tito_via_min_left}",
   "returned_callables": [],
   "calls": {
     "28:11-28:21": {
@@ -322,7 +322,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_min_or_not",
+  "callable": "Function{features.tito_via_min_or_not}",
   "returned_callables": [],
   "calls": {
     "41:15-41:28": {
@@ -339,7 +339,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_min_right",
+  "callable": "Function{features.tito_via_min_right}",
   "returned_callables": [],
   "calls": {
     "32:11-32:20": {
@@ -356,7 +356,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_named",
+  "callable": "Function{features.tito_via_named}",
   "returned_callables": [],
   "calls": {
     "36:11-36:35": {
@@ -369,7 +369,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_via_optional",
+  "callable": "Function{features.tito_via_optional}",
   "returned_callables": [],
   "calls": {
     "55:11-55:29": {
@@ -386,7 +386,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "features.tito_with_tuple",
+  "callable": "Function{features.tito_with_tuple}",
   "returned_callables": [],
   "calls": {
     "85:15-85:28": {

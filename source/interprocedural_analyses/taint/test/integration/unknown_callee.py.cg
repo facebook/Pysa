@@ -1,15 +1,17 @@
 @generated
 Call dependencies
 {
-  "unknown_callee.test_collapse_depth (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)",
-    "unknown_callee.should_collapse_depth_zero (fun)"
+  "Function{unknown_callee.test_collapse_depth}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Function{unknown_callee.should_collapse_depth_zero}"
   ],
-  "unknown_callee.test_collapse_source (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{unknown_callee.test_collapse_source}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "unknown_callee.test_issue (fun)": [
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Function{unknown_callee.test_issue}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}"
   ],
-  "unknown_callee.test_sink_collapse (fun)": [ "pysa._test_sink (fun)" ]
+  "Function{unknown_callee.test_sink_collapse}": [
+    "Function{pysa._test_sink}"
+  ]
 }

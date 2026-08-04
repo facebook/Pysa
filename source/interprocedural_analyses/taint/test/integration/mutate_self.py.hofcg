@@ -1,14 +1,14 @@
 @generated
 Higher order call graphs
 {
-  "callable": "mutate_self.$toplevel",
+  "callable": "Function{mutate_self.$toplevel}",
   "returned_callables": [],
   "calls": {
     "11:9-11:26": { "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] } }
   }
 }
 {
-  "callable": "mutate_self.free_function_mutates_self",
+  "callable": "Function{mutate_self.free_function_mutates_self}",
   "returned_callables": [],
   "calls": {
     "78:15-78:29": {
@@ -21,7 +21,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.issue_free_function",
+  "callable": "Function{mutate_self.issue_free_function}",
   "returned_callables": [],
   "calls": {
     "82:8-82:14": {
@@ -85,7 +85,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.issue_mutates_foo_and_returns_instance",
+  "callable": "Function{mutate_self.issue_mutates_foo_and_returns_instance}",
   "returned_callables": [],
   "calls": {
     "74:4-74:10": {
@@ -138,7 +138,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.issue_mutates_foo_instance",
+  "callable": "Function{mutate_self.issue_mutates_foo_instance}",
   "returned_callables": [],
   "calls": {
     "67:8-67:14": {
@@ -204,7 +204,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.bar_sink",
+  "callable": "Method{mutate_self.Base.bar_sink}",
   "returned_callables": [],
   "calls": {
     "23:8-23:28": {
@@ -217,7 +217,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.foo_sink",
+  "callable": "Method{mutate_self.Base.foo_sink}",
   "returned_callables": [],
   "calls": {
     "20:8-20:28": {
@@ -230,7 +230,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.isssue_mutates_foo",
+  "callable": "Method{mutate_self.Base.isssue_mutates_foo}",
   "returned_callables": [],
   "calls": {
     "32:8-32:26": {
@@ -275,7 +275,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.issue_mutates_and_returns",
+  "callable": "Method{mutate_self.Base.issue_mutates_and_returns}",
   "returned_callables": [],
   "calls": {
     "46:8-46:38": {
@@ -307,7 +307,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.issue_mutates_foo_self_annotation",
+  "callable": "Method{mutate_self.Base.issue_mutates_foo_self_annotation}",
   "returned_callables": [],
   "calls": {
     "53:8-53:42": {
@@ -352,7 +352,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.issue_mutates_foo_self_typevar",
+  "callable": "Method{mutate_self.Base.issue_mutates_foo_self_typevar}",
   "returned_callables": [],
   "calls": {
     "61:8-61:39": {
@@ -397,7 +397,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.issue_mutates_foo_with_hop",
+  "callable": "Method{mutate_self.Base.issue_mutates_foo_with_hop}",
   "returned_callables": [],
   "calls": {
     "37:8-37:35": {
@@ -442,7 +442,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.mutates_foo",
+  "callable": "Method{mutate_self.Base.mutates_foo}",
   "returned_callables": [],
   "calls": {
     "26:19-26:33": {
@@ -455,7 +455,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.mutates_foo_and_returns",
+  "callable": "Method{mutate_self.Base.mutates_foo_and_returns}",
   "returned_callables": [],
   "calls": {
     "42:19-42:33": {
@@ -468,7 +468,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.mutates_foo_self_annotation",
+  "callable": "Method{mutate_self.Base.mutates_foo_self_annotation}",
   "returned_callables": [],
   "calls": {
     "50:19-50:33": {
@@ -481,7 +481,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.mutates_foo_self_typevar",
+  "callable": "Method{mutate_self.Base.mutates_foo_self_typevar}",
   "returned_callables": [],
   "calls": {
     "58:19-58:33": {
@@ -494,7 +494,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "mutate_self.Base.mutates_foo_with_hop",
+  "callable": "Method{mutate_self.Base.mutates_foo_with_hop}",
   "returned_callables": [],
   "calls": {
     "29:8-29:26": {

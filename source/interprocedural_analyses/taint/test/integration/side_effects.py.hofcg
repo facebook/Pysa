@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "side_effects.dict_to_sink_via_side_effect",
+  "callable": "Function{side_effects.dict_to_sink_via_side_effect}",
   "returned_callables": [],
   "calls": {
     "68:4-68:28": {
@@ -38,7 +38,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.test_from_0_to_1",
+  "callable": "Function{side_effects.test_from_0_to_1}",
   "returned_callables": [],
   "calls": {
     "30:4-30:34": {
@@ -62,7 +62,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.test_from_1_to_0",
+  "callable": "Function{side_effects.test_from_1_to_0}",
   "returned_callables": [],
   "calls": {
     "24:4-24:34": {
@@ -86,7 +86,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.test_from_1_to_0_nested",
+  "callable": "Function{side_effects.test_from_1_to_0_nested}",
   "returned_callables": [],
   "calls": {
     "35:8-35:16": {
@@ -131,7 +131,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.test_from_1_to_0_nested_distinct",
+  "callable": "Function{side_effects.test_from_1_to_0_nested_distinct}",
   "returned_callables": [],
   "calls": {
     "41:8-41:16": {
@@ -176,7 +176,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.test_list_append",
+  "callable": "Function{side_effects.test_list_append}",
   "returned_callables": [],
   "calls": {
     "47:8-47:16": {
@@ -223,7 +223,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.to_sink_via_side_effect",
+  "callable": "Function{side_effects.to_sink_via_side_effect}",
   "returned_callables": [],
   "calls": {
     "62:4-62:21": {
@@ -247,7 +247,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.wrapper_from_0_to_1",
+  "callable": "Function{side_effects.wrapper_from_0_to_1}",
   "returned_callables": [],
   "calls": {
     "57:4-57:21": {
@@ -264,7 +264,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "side_effects.wrapper_from_1_to_0",
+  "callable": "Function{side_effects.wrapper_from_1_to_0}",
   "returned_callables": [],
   "calls": {
     "53:4-53:21": {

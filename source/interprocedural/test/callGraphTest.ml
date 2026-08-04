@@ -201,6 +201,7 @@ let assert_higher_order_call_graph_of_define
              (Reference.create define_name))
   in
   let maximum_target_depth = Configuration.StaticAnalysis.default_maximum_target_depth in
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   let object_targets = List.map object_targets ~f:(fun create -> create pyrefly_api) in
   let define_call_graph, callables_to_definitions_map =
     compute_define_call_graph
@@ -218,7 +219,8 @@ let assert_higher_order_call_graph_of_define
     |> CallablesSharedMemory.ReadOnly.get_define
          (CallablesSharedMemory.ReadOnly.read_only callables_to_definitions_map)
     |> PyreflyApi.AstResult.value_exn
-         ~message:(Format.asprintf "Found no definition for `%a`" Target.pp_pretty callable)
+         ~message:
+           (Format.asprintf "Found no definition for `%a`" (Target.pp_pretty ~display_api) callable)
   in
   let actual =
     CallGraphBuilder.higher_order_call_graph_of_define

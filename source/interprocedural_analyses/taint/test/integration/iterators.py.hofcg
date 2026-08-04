@@ -1,7 +1,7 @@
 @generated
 Higher order call graphs
 {
-  "callable": "iterators.test_custom_getitem",
+  "callable": "Function{iterators.test_custom_getitem}",
   "returned_callables": [],
   "calls": {
     "61:4-61:43": {
@@ -65,7 +65,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "iterators.test_custom_iter",
+  "callable": "Function{iterators.test_custom_iter}",
   "returned_callables": [],
   "calls": {
     "48:4-48:40": {
@@ -139,7 +139,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "iterators.test_next_iter",
+  "callable": "Function{iterators.test_next_iter}",
   "returned_callables": [],
   "calls": {
     "12:16-12:30": {
@@ -626,7 +626,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "iterators.CustomGetItem.__getitem__",
+  "callable": "Method{iterators.CustomGetItem.__getitem__}",
   "returned_callables": [],
   "calls": {
     "53:15-53:29": {
@@ -639,7 +639,7 @@ Higher order call graphs
   }
 }
 {
-  "callable": "iterators.CustomIter.__iter__",
+  "callable": "Method{iterators.CustomIter.__iter__}",
   "returned_callables": [],
   "calls": {
     "43:15-43:37": {

@@ -68,6 +68,7 @@ let unknown_callee_model _ =
 (* Return the initial set of models, updated for the missing-flows=obscure analysis. *)
 let add_obscure_models
     ~scheduler
+    ~display_api
     ~static_analysis_configuration:{ Configuration.StaticAnalysis.find_missing_flows; _ }
     ~callables_to_definitions_map
     ~stubs
@@ -88,7 +89,7 @@ let add_obscure_models
         ~f:(fun ~target ~model ->
           if Model.is_obscure model then
             model
-            |> Model.add_obscure_sink ~callables_to_definitions_map ~call_target:target
+            |> Model.add_obscure_sink ~display_api ~callables_to_definitions_map ~call_target:target
             |> Model.remove_obscureness
           else
             model)
@@ -103,7 +104,7 @@ let add_obscure_models
       ~init:(SharedModels.add_only models)
       ~f:(fun models target ->
         Model.empty_model
-        |> Model.add_obscure_sink ~callables_to_definitions_map ~call_target:target
+        |> Model.add_obscure_sink ~display_api ~callables_to_definitions_map ~call_target:target
         |> Model.remove_obscureness
         |> SharedModels.AddOnly.add models target)
       stubs_without_model

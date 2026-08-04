@@ -1,33 +1,33 @@
 @generated
 Call dependencies
 {
-  "port.Foo.some_source (method)": [ "pysa._test_source (fun)" ],
-  "port.match_flows (fun)": [
-    "port.sink_field (fun)", "port.source_field (fun)"
+  "Function{port.match_flows}": [
+    "Function{port.sink_field}", "Function{port.source_field}"
   ],
-  "port.match_star_arg_directly (fun)": [
-    "port.source_field (fun)", "port.star_arg_wrapper (fun)"
+  "Function{port.match_star_arg_directly}": [
+    "Function{port.source_field}", "Function{port.star_arg_wrapper}"
   ],
-  "port.match_star_arg_with_star (fun)": [
-    "port.source_field (fun)", "port.star_arg_wrapper (fun)"
+  "Function{port.match_star_arg_with_star}": [
+    "Function{port.source_field}", "Function{port.star_arg_wrapper}"
   ],
-  "port.match_star_star_arg_directly (fun)": [
-    "port.source_field (fun)", "port.star_star_arg_wrapper (fun)"
+  "Function{port.match_star_star_arg_directly}": [
+    "Function{port.source_field}", "Function{port.star_star_arg_wrapper}"
   ],
-  "port.match_star_star_arg_with_star (fun)": [
-    "port.source_field (fun)", "port.star_star_arg_wrapper (fun)"
+  "Function{port.match_star_star_arg_with_star}": [
+    "Function{port.source_field}", "Function{port.star_star_arg_wrapper}"
   ],
-  "port.refer_to_method_as_field (fun)": [
-    "port.Foo.some_source (method)", "pysa._test_sink (fun)"
+  "Function{port.refer_to_method_as_field}": [
+    "Function{pysa._test_sink}", "Method{port.Foo.some_source}"
   ],
-  "port.sink_field (fun)": [ "pysa._test_sink (fun)" ],
-  "port.source_field (fun)": [ "pysa._test_source (fun)" ],
-  "port.star_arg (fun)": [
-    "builtins.tuple.__getitem__ (method)", "port.sink_field (fun)"
+  "Function{port.sink_field}": [ "Function{pysa._test_sink}" ],
+  "Function{port.source_field}": [ "Function{pysa._test_source}" ],
+  "Function{port.star_arg_wrapper}": [ "Function{port.star_arg}" ],
+  "Function{port.star_arg}": [
+    "Function{port.sink_field}", "Method{builtins.tuple.__getitem__}"
   ],
-  "port.star_arg_wrapper (fun)": [ "port.star_arg (fun)" ],
-  "port.star_star_arg (fun)": [
-    "builtins.dict.__getitem__ (method)", "port.sink_field (fun)"
+  "Function{port.star_star_arg_wrapper}": [ "Function{port.star_star_arg}" ],
+  "Function{port.star_star_arg}": [
+    "Function{port.sink_field}", "Method{builtins.dict.__getitem__}"
   ],
-  "port.star_star_arg_wrapper (fun)": [ "port.star_star_arg (fun)" ]
+  "Method{port.Foo.some_source}": [ "Function{pysa._test_source}" ]
 }

@@ -314,7 +314,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
       log
         "Checking triggered flows for %dth parameter in call `%a` at `%a`"
         parameter_index
-        Target.pp_pretty_with_kind
+        (Target.pp_pretty ~display_api)
         target
         Location.pp
         location;
@@ -478,7 +478,7 @@ module State (FunctionContext : FUNCTION_CONTEXT) = struct
     in
     log
       "Forward analysis of call to `%a` with arguments (%a)@,Call site model:@,%a"
-      Target.pp_pretty
+      (Target.pp_pretty ~display_api)
       target
       Ast.Expression.pp_expression_argument_list
       arguments
@@ -3705,6 +3705,7 @@ let run
   in
   let module State = State (FunctionContext) in
   let module Fixpoint = PyrePysaLogic.Fixpoint.Make (State) in
+  let display_api = PyreflyApi.ReadOnly.display_api pyrefly_api in
   if
     FunctionContext.debug
     || Interprocedural.PysaDump.should_dump_call_graph ~pyrefly_api ~define:define.value ~callable
@@ -3715,7 +3716,7 @@ let run
       (Statement.Define.name define.Node.value)
       CallGraph.DefineCallGraph.pp
       call_graph_of_define;
-  State.log "Forward analysis of callable: `%a`" Target.pp_pretty callable;
+  State.log "Forward analysis of callable: `%a`" (Target.pp_pretty ~display_api) callable;
   let timer = Timer.start () in
   let initial =
     TaintProfiler.track_duration ~profiler ~name:"Forward analysis - initial state" ~f:(fun () ->
@@ -3728,7 +3729,7 @@ let run
         Alarm.with_alarm
           ~max_time_in_seconds:60
           ~event_name:"forward taint analysis"
-          ~callable:(Target.show_pretty callable)
+          ~callable:((Target.show_pretty ~display_api) callable)
           (fun () -> Fixpoint.forward ~cfg ~initial |> Fixpoint.exit)
           ())
   in
@@ -3763,7 +3764,7 @@ let run
     ~always_log_time_threshold:1.0 (* Seconds *)
     ~name:"Forward analysis"
     ~section:`Taint
-    ~normals:["callable", Target.show_pretty callable]
+    ~normals:["callable", (Target.show_pretty ~display_api) callable]
     ~timer
     ();
   model, issues, FunctionContext.triggered_sinks_to_propagate

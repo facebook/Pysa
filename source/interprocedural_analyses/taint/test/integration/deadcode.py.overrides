@@ -1,5 +1,5 @@
 @generated
 Overrides
-builtins.object.__init__ (override) -> [builtins.object.__init__ (method) deadcode.EarlyReturns.__init__ (override) deadcode.Foo.__init__ (override)]
-deadcode.EarlyReturns.__init__ (override) -> [deadcode.EarlyReturns.__init__ (method)]
-deadcode.Foo.__init__ (override) -> [deadcode.Foo.__init__ (method)]
+Override{builtins.object.__init__} -> [Method{builtins.object.__init__} Override{deadcode.EarlyReturns.__init__} Override{deadcode.Foo.__init__}]
+Override{deadcode.EarlyReturns.__init__} -> [Method{deadcode.EarlyReturns.__init__}]
+Override{deadcode.Foo.__init__} -> [Method{deadcode.Foo.__init__}]

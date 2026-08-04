@@ -1,57 +1,57 @@
 @generated
 Call dependencies
 {
-  "class_methods.C.class_method (method)": [ "pysa._test_sink (fun)" ],
-  "class_methods.C.one_hop_abstract_class_method (method)": [
-    "class_methods.C.abstract_class_method (override)"
+  "Function{class_methods.bar}": [
+    "Function{pysa._test_source}", "Method{class_methods.Test.foo}"
   ],
-  "class_methods.C.one_hop_abstract_method (method)": [
-    "class_methods.C.abstract_method (method)"
+  "Function{class_methods.issue_with_abstract_class_method}": [
+    "Function{pysa._test_source}",
+    "Method{class_methods.C.one_hop_abstract_class_method}",
+    "Method{class_methods.C.one_hop_abstract_method}",
+    "Method{class_methods.C.one_hop_class_abstractmethod}",
+    "Method{class_methods.C.one_hop_class_method}",
+    "Method{class_methods.C.one_hop_static_abstractmethod}"
   ],
-  "class_methods.C.one_hop_class_abstractmethod (method)": [
-    "class_methods.C.class_abstractmethod (override)"
+  "Function{class_methods.issue_with_abstract_property}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}", "Method{class_methods.D.__init__}",
+    "Method{class_methods.D.my_abstract_property@setter}",
+    "Method{class_methods.D.my_abstract_property}"
   ],
-  "class_methods.C.one_hop_class_method (method)": [
-    "class_methods.C.class_method (method)"
+  "Function{class_methods.test_obscure_class_method_tito}": [
+    "Function{pysa._test_sink}", "Function{pysa._test_source}",
+    "Method{builtins.object.__new__}",
+    "Method{class_methods.ObscureClassMethodTito.__init__}",
+    "Method{class_methods.ObscureClassMethodTito.method}"
   ],
-  "class_methods.C.one_hop_static_abstractmethod (method)": [
-    "class_methods.C.static_abstractmethod (method)"
+  "Method{class_methods.C.class_method}": [ "Function{pysa._test_sink}" ],
+  "Method{class_methods.C.one_hop_abstract_class_method}": [
+    "Override{class_methods.C.abstract_class_method}"
   ],
-  "class_methods.C.static_abstractmethod (method)": [
-    "pysa._test_sink (fun)"
+  "Method{class_methods.C.one_hop_abstract_method}": [
+    "Method{class_methods.C.abstract_method}"
   ],
-  "class_methods.D.__init__ (method)": [
-    "builtins.object.__new__ (method)", "builtins.super.__init__ (method)"
+  "Method{class_methods.C.one_hop_class_abstractmethod}": [
+    "Override{class_methods.C.class_abstractmethod}"
   ],
-  "class_methods.D.abstract_class_method (method)": [
-    "pysa._test_sink (fun)"
+  "Method{class_methods.C.one_hop_class_method}": [
+    "Method{class_methods.C.class_method}"
   ],
-  "class_methods.D.abstract_method (method)": [ "pysa._test_sink (fun)" ],
-  "class_methods.D.class_abstractmethod (method)": [
-    "pysa._test_sink (fun)"
+  "Method{class_methods.C.one_hop_static_abstractmethod}": [
+    "Method{class_methods.C.static_abstractmethod}"
   ],
-  "class_methods.Test.foo (method)": [ "pysa._test_sink (fun)" ],
-  "class_methods.bar (fun)": [
-    "class_methods.Test.foo (method)", "pysa._test_source (fun)"
+  "Method{class_methods.C.static_abstractmethod}": [
+    "Function{pysa._test_sink}"
   ],
-  "class_methods.issue_with_abstract_class_method (fun)": [
-    "class_methods.C.one_hop_abstract_class_method (method)",
-    "class_methods.C.one_hop_abstract_method (method)",
-    "class_methods.C.one_hop_class_abstractmethod (method)",
-    "class_methods.C.one_hop_class_method (method)",
-    "class_methods.C.one_hop_static_abstractmethod (method)",
-    "pysa._test_source (fun)"
+  "Method{class_methods.D.__init__}": [
+    "Method{builtins.object.__new__}", "Method{builtins.super.__init__}"
   ],
-  "class_methods.issue_with_abstract_property (fun)": [
-    "builtins.object.__new__ (method)", "class_methods.D.__init__ (method)",
-    "class_methods.D.my_abstract_property (method)",
-    "class_methods.D.my_abstract_property@setter (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
+  "Method{class_methods.D.abstract_class_method}": [
+    "Function{pysa._test_sink}"
   ],
-  "class_methods.test_obscure_class_method_tito (fun)": [
-    "builtins.object.__new__ (method)",
-    "class_methods.ObscureClassMethodTito.__init__ (method)",
-    "class_methods.ObscureClassMethodTito.method (method)",
-    "pysa._test_sink (fun)", "pysa._test_source (fun)"
-  ]
+  "Method{class_methods.D.abstract_method}": [ "Function{pysa._test_sink}" ],
+  "Method{class_methods.D.class_abstractmethod}": [
+    "Function{pysa._test_sink}"
+  ],
+  "Method{class_methods.Test.foo}": [ "Function{pysa._test_sink}" ]
 }
