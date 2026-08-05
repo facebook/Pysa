@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/facebook/pyre-check.git",
+    "url": "https://github.com/facebook/Pysa.git",
     "directory": "tools/ide_plugins/pysa-vscode"
   },
   "displayName": "pysa-vscode",

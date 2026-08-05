@@ -34,7 +34,7 @@ Para aceptar su solicitud de extracción, necesitamos que envíe un CLA. Solo ne
 hacer esto una vez para trabajar en cualquiera de los proyectos de código abierto de Facebook.
 
 Completa su CLA aquí: <https://code.facebook.com/cla>. Si tienes alguna pregunta,
-por favor escríbanos a cla@fb.com.
+por favor escríbanos a cla@meta.com.
 
 También se espera que siga el [Código de conducta](CODE_OF_CONDUCT.md), así que lea eso si es un colaborador nuevo.
 

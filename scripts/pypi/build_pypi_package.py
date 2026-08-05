@@ -27,7 +27,7 @@ from twine.commands.check import check as twine_check
 
 from .setup import run as run_setup
 
-MODULE_NAME = "pyre_check"
+MODULE_NAME = "Pysa"
 EXPECTED_LD_PATH = "/lib64/ld-linux-x86-64.so.2"
 
 LOG: logging.Logger = logging.getLogger(__name__)

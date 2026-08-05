@@ -38,11 +38,11 @@ class TestCreatingWheel(unittest.TestCase):
             _add_init_files(path, "version")
             # Assert the expected __init__ files are present
             init_files = [str(path) for path in path.glob("**/*.py")]
-            self.assertTrue(build_root + "/pyre_check/__init__.py" in init_files)
-            self.assertTrue(build_root + "/pyre_check/client/__init__.py" in init_files)
-            self.assertTrue(build_root + "/pyre_check/tools/__init__.py" in init_files)
+            self.assertTrue(build_root + "/Pysa/__init__.py" in init_files)
+            self.assertTrue(build_root + "/Pysa/client/__init__.py" in init_files)
+            self.assertTrue(build_root + "/Pysa/tools/__init__.py" in init_files)
             self.assertTrue(
-                build_root + "/pyre_check/tools/upgrade/__init__.py" in init_files
+                build_root + "/Pysa/tools/upgrade/__init__.py" in init_files
             )
 
     def test_sync_files(self) -> None:
@@ -50,7 +50,7 @@ class TestCreatingWheel(unittest.TestCase):
             build_path = Path(build_root)
             _add_init_files(build_path, "version")
             _sync_python_files(self.pyre_directory, build_path)
-            command_directory = build_path / "pyre_check/client/commands"
+            command_directory = build_path / "Pysa/client/commands"
             self.assertTrue(command_directory.is_dir())
 
     @patch("subprocess.run")

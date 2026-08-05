@@ -27,15 +27,15 @@ In addition to [Python and watchman](getting_started.md#requirements), we need a
 package management systems. Please follow their instructions for your particular operating system.
 
 ### Building the OCaml binary
-First, clone the repository from [GitHub](https://github.com/facebook/pyre-check) using:
+First, clone the repository from [GitHub](https://github.com/facebook/Pysa) using:
 ```bash
-$ git clone https://github.com/facebook/pyre-check
+$ git clone https://github.com/facebook/Pysa
 ```
 
 You can complete the setup of your development environment with:
 
 ```bash
-$ cd pyre-check
+$ cd Pysa
 $ ./scripts/setup.sh --local
 ```
 
@@ -52,16 +52,16 @@ $ make test
 In a virtualenv, install dependencies with `requirements.txt` and run python tests to make sure everything is set up correctly
 
 ```bash
-$ cd /path/to/pyre-check
+$ cd /path/to/Pysa
 $ pip install -r requirements.txt
 $ ./scripts/run-python-tests.sh
 ```
 
-When installing and running `pyre` from PyPi, the entry point to the executable is actually `client/pyre.py`. To be able to run this file from anywhere, add the directory containing the `pyre-check` directory to the `PYTHONPATH` environment variable and subsequently assign `pyre` as an alias for `pyre-check.client.pyre`. For the `pyre` command to correctly point to the compiled binary, also set the environment variable `PYRE_BINARY` to `source/build/default/main.exe`.
+When installing and running `pyre` from PyPi, the entry point to the executable is actually `client/pyre.py`. To be able to run this file from anywhere, add the directory containing the `Pysa` directory to the `PYTHONPATH` environment variable and subsequently assign `pyre` as an alias for `Pysa.client.pyre`. For the `pyre` command to correctly point to the compiled binary, also set the environment variable `PYRE_BINARY` to `source/build/default/main.exe`.
 
 ```bash
-$ echo "alias pyre='PYTHONPATH=\"/path/to/pyre-check/..:\$PYTHONPATH\" python -m pyre-check.client.pyre'" >> ~/.bashrc
-$ echo "export PYRE_BINARY=/path/to/pyre-check/source/_build/default/main.exe" >> ~/.bashrc
+$ echo "alias pyre='PYTHONPATH=\"/path/to/Pysa/..:\$PYTHONPATH\" python -m Pysa.client.pyre'" >> ~/.bashrc
+$ echo "export PYRE_BINARY=/path/to/Pysa/source/_build/default/main.exe" >> ~/.bashrc
 $ source ~/.bashrc
 ```
 You should be able to open a new shell and run `pyre -h` now, confirming `pyre` was set-up correctly. Any changes made to the Pyre Python client code should be immediately observable the next time you invoke `pyre`
@@ -71,25 +71,25 @@ VSCode will not pick up your shell aliases, so the alias step in the previous se
 
 ```bash
 #!/bin/bash
-PYTHONPATH="/path/to/pyre-check/..:$PYTHONPATH" python -m pyre-check.client.pyre "$@"
+PYTHONPATH="/path/to/Pysa/..:$PYTHONPATH" python -m Pysa.client.pyre "$@"
 ```
-Add the `pyre-check/scripts` directory to `PATH` (assuming you placed the above script in that directory) and then use the command `pyre` to launch the client like before
+Add the `Pysa/scripts` directory to `PATH` (assuming you placed the above script in that directory) and then use the command `pyre` to launch the client like before
 
 ```bash
-$ echo 'PATH="/path/to/pyre-check/scripts:$PATH"' >> ~/.bashrc
+$ echo 'PATH="/path/to/Pysa/scripts:$PATH"' >> ~/.bashrc
 $ source ~/.bashrc
 ```
 
 ## Building from Docker
 
-If you're having issues setting up or your OS is not yet supported, you can also use a Docker image. It runs [Debian GNU/Linux 10 (buster)](https://www.debian.org/) and builds pyre-check from source.
+If you're having issues setting up or your OS is not yet supported, you can also use a Docker image. It runs [Debian GNU/Linux 10 (buster)](https://www.debian.org/) and builds Pysa from source.
 
 Before starting, ensure that [Docker](https://docs.docker.com/get-docker/) is installed on your computer.
 
-1. Clone the pyre-check repository and navigate to the root directory.
+1. Clone the Pysa repository and navigate to the root directory.
    ```bash
-   git clone https://github.com/facebook/pyre-check.git
-   cd pyre-check
+   git clone https://github.com/facebook/Pysa.git
+   cd Pysa
    ```
 
 2. Build the Docker image with the tag `pyre-check` (or another tag if you wish)
@@ -111,11 +111,11 @@ Before starting, ensure that [Docker](https://docs.docker.com/get-docker/) is in
 
    *Note: When initializing Pyre with `pyre init`, you may have to enter the following paths for the binary and typeshed:*
    ```bash
-   ƛ No `pyre.bin` found, enter the path manually: /home/opam/pyre-check/source/_build/default/main.exe
-   ƛ Unable to locate typeshed, please enter its root: /home/opam/pyre-check/stubs/typeshed/typeshed-master
+   ƛ No `pyre.bin` found, enter the path manually: /home/opam/Pysa/source/_build/default/main.exe
+   ƛ Unable to locate typeshed, please enter its root: /home/opam/Pysa/stubs/typeshed/typeshed-master
    ```
 
-**For contributors:** Inside the Docker container, the added pyre-check directory is only editable by the root user. To contribute to Pyre, make edits in your local filesystem and rebuild the Docker by running Step 2, then running a new Docker container in Steps 3-4.
+**For contributors:** Inside the Docker container, the added Pysa directory is only editable by the root user. To contribute to Pyre, make edits in your local filesystem and rebuild the Docker by running Step 2, then running a new Docker container in Steps 3-4.
 
 ## Windows Subsystem for Linux (WSL) Install
 

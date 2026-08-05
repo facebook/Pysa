@@ -22,8 +22,8 @@ sudo apt-get install -y \
   nginx
 
 # Grab the code and link it to ~/playground
-git clone https://github.com/facebook/pyre-check.git
-ln -s pyre-check/tools/playground/ ~/playground
+git clone https://github.com/facebook/Pysa.git
+ln -s Pysa/tools/playground/ ~/playground
 cd ~/playground
 
 # Set up the environment. You can verify the python app works with:

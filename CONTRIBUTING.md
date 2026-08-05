@@ -31,7 +31,7 @@ In order to accept your pull request, we need you to submit a CLA. You only need
 to do this once to work on any of Facebook's open source projects.
 
 Complete your CLA here: <https://code.facebook.com/cla>. If you have any questions,
-please drop us a line at cla@fb.com.
+please drop us a line at cla@meta.com.
 
 You are also expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md),
 so please read that if you are a new contributor.

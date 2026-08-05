@@ -23,8 +23,8 @@ project.
    reading this on GitHub), clone this repo and navigate to the root of the folder:
 
    ```
-   git clone https://github.com/facebook/pyre-check.git
-   cd pyre-check
+   git clone https://github.com/facebook/Pysa.git
+   cd Pysa
    ```
 
 2. Install the correct environment. We currently support Ubuntu 18.04 and OSX at
