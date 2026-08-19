@@ -1242,13 +1242,13 @@
                 "kind": "Test"
               }
             ],
-            "local_features": [ { "always-via-type": "Ellipsis" } ],
+            "local_features": [ { "always-via-type": "types.EllipsisType" } ],
             "origin": { "line": 137, "start": 4, "end": 7 }
           }
         ]
       }
     ],
-    "features": [ { "always-via-type": "Ellipsis" } ],
+    "features": [ { "always-via-type": "types.EllipsisType" } ],
     "sink_handle": {
       "kind": "Global",
       "callee": "Obj{via_type_of.Test4_C.x}",
