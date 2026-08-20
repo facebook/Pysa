@@ -87,19 +87,20 @@ class DecoratorParser:
         # decorator does have args and / or kwargs
         decorator_name = self._resolve_decorator_func_name(decorator.func)
         decorator_arguments = {
-            argument.s for argument in decorator.args if isinstance(argument, ast.Str)
+            argument.value
+            for argument in decorator.args
+            if isinstance(argument, ast.Constant) and isinstance(argument.value, str)
         }
         decorator_keywords = {
-            (keyword.arg, keyword.value.s)
+            (keyword.arg, keyword.value.value)
             for keyword in decorator.keywords
-            if isinstance(keyword.value, ast.Str)
+            if isinstance(keyword.value, ast.Constant)
+            and isinstance(keyword.value.value, str)
         }
 
         return Decorator(
             decorator_name,
-            # pyrefly: ignore [bad-argument-type]
             decorator_arguments,
-            # pyrefly: ignore [bad-argument-type]
             decorator_keywords,
         )
 
