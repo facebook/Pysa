@@ -3,7 +3,6 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# pyre-strict
 
 import tempfile
 import textwrap
@@ -670,7 +669,6 @@ class StatisticsTest(testslide.TestCase):
             a_path.write_text(
                 textwrap.dedent(
                     """
-                    # pyre-unsafe
 
                     def foo():
                         return 1
@@ -712,7 +710,6 @@ class StatisticsTest(testslide.TestCase):
             a_path.write_text(
                 textwrap.dedent(
                     """
-                    # pyre-unsafe
 
                     def foo():
                         return 1
@@ -722,7 +719,6 @@ class StatisticsTest(testslide.TestCase):
             b_path.write_text(
                 textwrap.dedent(
                     """
-                    # pyre-strict
 
                     def foo(x: int) -> int:
                         return 1

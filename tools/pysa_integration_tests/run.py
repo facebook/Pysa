@@ -7,7 +7,6 @@
 A generic script to run integration tests.
 """
 
-# pyre-strict
 import argparse
 import logging
 import os

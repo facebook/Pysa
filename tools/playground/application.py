@@ -10,8 +10,6 @@ the Pyre class sets up a worker-specific temp directory and runs pyre incrementa
 there. As a result, all workers can process incremental requests in parallel.
 """
 
-# pyre-unsafe
-
 import argparse
 import functools
 import hashlib

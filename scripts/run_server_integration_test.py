@@ -19,8 +19,6 @@ python3 scripts/run_server_integration_test.py \
 ```
 """
 
-# pyre-strict
-
 import argparse
 import filecmp
 import json

@@ -3,7 +3,6 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
-# pyre-strict
 
 import tempfile
 import textwrap
@@ -1122,7 +1121,6 @@ class ModuleModecollectorTest(testslide.TestCase):
         generated_string = "generated"
         self.assert_counts(
             """
-            # pyre-unsafe
 
             def foo():
                 return 1
@@ -1133,7 +1131,6 @@ class ModuleModecollectorTest(testslide.TestCase):
         )
         self.assert_counts(
             """
-            # pyre-strict
             def foo():
                 return 1
             """,
@@ -1180,7 +1177,6 @@ class ModuleModecollectorTest(testslide.TestCase):
         )
         self.assert_counts(
             """
-            #  pyre-strict
             def foo(x: str) -> int:
                 return x
             """,
