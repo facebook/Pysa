@@ -486,6 +486,7 @@ class Configurationless(Command):
         options = ConfigurationlessOptions(
             global_configuration=global_configuration,
             local_configuration=local_configuration,
+            isolation_dir=self._isolation_dir,
         )
 
         LOG.info(f"Configurationless options:\n{str(options)}")
