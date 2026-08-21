@@ -13,9 +13,10 @@ Call dependencies
   ],
   "Function{lambda.test_filter_lambda}": [
     "Function{pysa._test_sink}", "Function{pysa._test_source}",
-    "Method{builtins.filter.__new__}", "Method{builtins.int.__ne__}",
-    "Method{builtins.list.__getitem__}", "Method{builtins.list.__init__}",
-    "Method{builtins.object.__init__}", "Method{builtins.object.__new__}"
+    "Method{builtins.dict.__getitem__}", "Method{builtins.filter.__new__}",
+    "Method{builtins.int.__ne__}", "Method{builtins.list.__getitem__}",
+    "Method{builtins.list.__init__}", "Method{builtins.object.__init__}",
+    "Method{builtins.object.__new__}"
   ],
   "Function{lambda.test_lambda_sink}": [
     "Function{lambda.lambda_sink}", "Function{pysa._test_source}"
