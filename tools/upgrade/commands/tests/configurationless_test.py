@@ -4,6 +4,9 @@
 # LICENSE file in the root directory of this source tree.
 
 
+import contextlib
+import json
+import tempfile
 from pathlib import Path
 from typing import Any, Iterable, List, Optional
 from unittest import mock, TestCase
@@ -249,3 +252,30 @@ class TestConfigurationless(TestCase):
             options.get_file_mode_to_apply(Path("path/to/file.py")),
             LocalMode.STRICT,
         )
+
+    def test_get_options_propagates_isolation_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as root:
+            root_path = Path(root)
+            project_path = root_path / "project"
+            project_path.mkdir()
+            (root_path / ".pyre_configuration").write_text(
+                json.dumps({"source_directories": ["."]})
+            )
+            (project_path / ".pyre_configuration.local").write_text(
+                json.dumps({"source_directories": ["."]})
+            )
+            configurationless = Configurationless(
+                repository=Repository(),
+                path=project_path,
+                includes=["**.py"],
+                commit=False,
+                force_remigrate=False,
+                isolation_dir="fake_isolation_dir",
+            )
+            with contextlib.chdir(root_path):
+                options = configurationless.get_options()
+            self.assertEqual(options.isolation_dir, "fake_isolation_dir")
+            self.assertEqual(
+                options._get_isolation_dir(),
+                ["--isolation-dir", "fake_isolation_dir"],
+            )
