@@ -7,7 +7,7 @@
 import tempfile
 import textwrap
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Sequence
 
 import libcst as cst
 import testslide
@@ -25,7 +25,6 @@ from ..coverage_data import (
     Location,
     module_from_code,
     module_from_path,
-    ModuleMode,
     ParameterAnnotationInfo,
     ReturnAnnotationInfo,
     SuppressionKind,
@@ -1094,150 +1093,6 @@ class SuppressionCollectorTest(testslide.TestCase):
                     error_codes=None,
                 ),
             ],
-        )
-
-
-class ModuleModecollectorTest(testslide.TestCase):
-    def assert_counts(
-        self,
-        source: str,
-        default_strict: bool,
-        mode: ModuleMode,
-        explicit_comment_line: Optional[int],
-        is_generated: bool = False,
-        is_test: bool = False,
-        path: Optional[str] = None,
-    ) -> None:
-        source_module = parse_code(source)
-        if path is None:
-            path = "/a/b/c.py"
-        result = coverage_data.collect_mode(source_module, default_strict, Path(path))
-        self.assertEqual(mode, result.mode)
-        self.assertEqual(explicit_comment_line, result.explicit_comment_line)
-        self.assertEqual(is_generated, result.is_generated)
-        self.assertEqual(is_test, result.is_test)
-
-    def test_strict_files(self) -> None:
-        generated_string = "generated"
-        self.assert_counts(
-            """
-
-            def foo():
-                return 1
-            """,
-            default_strict=True,
-            mode=ModuleMode.UNSAFE,
-            explicit_comment_line=2,
-        )
-        self.assert_counts(
-            """
-            def foo():
-                return 1
-            """,
-            default_strict=False,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=2,
-        )
-        self.assert_counts(
-            """
-            def foo():
-                return 1
-            """,
-            default_strict=False,
-            mode=ModuleMode.UNSAFE,
-            explicit_comment_line=None,
-        )
-        self.assert_counts(
-            """
-            def foo():
-                return 1
-            """,
-            default_strict=True,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=None,
-        )
-        self.assert_counts(
-            """
-            # pyre-ignore-all-errors
-            def foo():
-                return 1
-            """,
-            default_strict=True,
-            mode=ModuleMode.IGNORE_ALL,
-            explicit_comment_line=2,
-        )
-        self.assert_counts(
-            """
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=False,
-            mode=ModuleMode.UNSAFE,
-            explicit_comment_line=None,
-        )
-        self.assert_counts(
-            """
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=False,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=2,
-        )
-        self.assert_counts(
-            """
-            #  pyre-ignore-all-errors[56]
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=True,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=None,
-        )
-        self.assert_counts(
-            f"""
-            # @{generated_string}
-
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=True,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=None,
-            is_generated=True,
-        )
-        self.assert_counts(
-            """
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=True,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=None,
-            is_test=True,
-            path="path/tests/example_test.py",
-        )
-        self.assert_counts(
-            """
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=True,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=None,
-            is_test=True,
-            path="path/tests/example_tests.py",
-        )
-        self.assert_counts(
-            """
-            def foo(x: str) -> int:
-                return x
-            """,
-            default_strict=True,
-            mode=ModuleMode.STRICT,
-            explicit_comment_line=None,
-            is_test=False,
-            path="path/test_example.py",
         )
 
 
