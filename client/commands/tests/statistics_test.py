@@ -669,6 +669,7 @@ class StatisticsTest(testslide.TestCase):
             a_path.write_text(
                 textwrap.dedent(
                     """
+                    # pyre-unsafe
 
                     def foo():
                         return 1
@@ -710,6 +711,7 @@ class StatisticsTest(testslide.TestCase):
             a_path.write_text(
                 textwrap.dedent(
                     """
+                    # pyre-unsafe
 
                     def foo():
                         return 1
@@ -719,6 +721,7 @@ class StatisticsTest(testslide.TestCase):
             b_path.write_text(
                 textwrap.dedent(
                     """
+                    # pyre-strict
 
                     def foo(x: int) -> int:
                         return 1
