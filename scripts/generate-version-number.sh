@@ -31,6 +31,8 @@ echo "Build info: ${BUILD_INFO}"
 while [ $# -gt 0 ]; do
   if [[ "$1" =~ ^--out-dir=(.*)$ ]]; then
     _OUT_DIR="${BASH_REMATCH[1]}"
+  elif [[ "$1" =~ ^--version=([0-9a-f]{40})$ ]]; then
+    _VERSION="${BASH_REMATCH[1]}"
   else
     echo "Unexpected arg: $1" && exit 1
   fi
@@ -38,8 +40,10 @@ while [ $# -gt 0 ]; do
 done
 
 # Gather version information.
-VERSION=""
-if HG_VERSION="$(hg log -r . -T '{node}')"; then
+VERSION="${_VERSION:-}"
+if [[ -n "$VERSION" ]]; then
+  echo "Version override: ${VERSION}"
+elif HG_VERSION="$(hg log -r . -T '{node}')"; then
   VERSION="${HG_VERSION}"
   echo "HG revision: ${VERSION}"
 elif GIT_VERSION="$(git rev-parse HEAD)"; then
