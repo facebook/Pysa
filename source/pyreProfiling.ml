@@ -31,7 +31,12 @@ module GlobalState = struct
     ()
 
 
-  let get () = global_state
+  let get () =
+    {
+      profiling_output = global_state.profiling_output;
+      memory_profiling_output = global_state.memory_profiling_output;
+    }
+
 
   let restore old_state =
     global_state.profiling_output <- old_state.profiling_output;

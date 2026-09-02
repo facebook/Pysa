@@ -19,6 +19,9 @@ let setup ?(other_sources = []) ~context ~handle source =
     InterproceduralTest.ScratchPyrePysaProject.setup
       ~context
       ~requires_type_of_expressions:true
+        (* Cached projects retain paths under the OUnit temporary directory, which is removed
+           between test cases when they run in the same process. *)
+      ~use_cache:false
       ~external_sources
       [handle, source]
   in

@@ -73,6 +73,13 @@ module ShimArgumentMapping = struct
         }
     [@@deriving equal, show { with_path = false }]
 
+    let show_constant constant =
+      (* ppx_deriving includes the compiled module name. Normalize Buck's wrapper so serialized
+         shims are identical across build systems. *)
+      Constant.show constant
+      |> String.substr_replace_all ~pattern:"Ast__Expression" ~with_:"Expression"
+
+
     let rec to_json = function
       | Callee -> `Assoc ["kind", `String "callee"]
       | Argument { index } -> `Assoc ["kind", `String "argument"; "index", `Int index]
@@ -105,7 +112,7 @@ module ShimArgumentMapping = struct
       | GetCallArgument { index; inner } ->
           `Assoc ["kind", `String "get-call-argument"; "inner", to_json inner; "index", `Int index]
       | Constant constant ->
-          `Assoc ["kind", `String "constant"; "value", `String (Constant.show constant)]
+          `Assoc ["kind", `String "constant"; "value", `String (show_constant constant)]
       | StaticMethod { class_name; method_name } ->
           `Assoc
             [

@@ -3537,6 +3537,10 @@ end
 
 let find_pyre_source_code_root () =
   match Stdlib.Sys.getenv_opt "PYRE_CODE_ROOT" with
+  | Some pyre_root_string when Stdlib.Filename.is_relative pyre_root_string ->
+      PyrePath.create_relative
+        ~root:(PyrePath.current_working_directory ())
+        ~relative:pyre_root_string
   | Some pyre_root_string -> PyrePath.create_absolute pyre_root_string
   | None -> (
       let current_directory = PyrePath.current_working_directory () in
