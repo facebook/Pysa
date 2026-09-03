@@ -37,7 +37,7 @@ clean:
 .PHONY: pyrefly
 pyrefly: configure
 	@if [ ! -f .build_type ]; then \
-		echo "error: source/.build_type not found; run ./facebook/scripts/setup.sh --local (Meta) or ./scripts/setup.sh --local (OSS) before 'make'." >&2; \
+		echo "error: source/.build_type not found; run ./facebook/scripts/setup.sh --local --build-system=opam (Meta) or ./scripts/setup.sh --local --build-system=opam (OSS) before 'make'." >&2; \
 		exit 1; \
 	fi
 	@if [ "$$(cat .build_type)" = "facebook" ]; then fbpython ../facebook/scripts/refresh_pyrefly.py; fi

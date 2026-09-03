@@ -30,7 +30,7 @@ jobs:
           # manually. TODO(T195374929) Maybe investigate this more?
           export PATH="${HOME}/.opam/pyre-4.14.0/bin:${PATH}"
 
-          ./scripts/setup.sh --local --no-tests
+          ./scripts/setup.sh --local --no-tests --build-system=opam
 
           echo "PYTHONPATH=$GITHUB_WORKSPACE/..:$PYTHONPATH" >> $GITHUB_ENV
           echo "pythonLocation=$GITHUB_WORKSPACE:$pythonLocation" >> $GITHUB_ENV

@@ -108,9 +108,9 @@ module ScratchPyreflyProject = struct
           PyrePath.absolute binary
         else
           failwith
-            "Could not find source/pyrefly.exe; run ./facebook/scripts/setup.sh --local (Meta) or \
-             ./scripts/setup.sh --local (OSS) before 'make'. Alternatively, set the PYREFLY_BINARY \
-             environment variable."
+            "Could not find source/pyrefly.exe; run ./facebook/scripts/setup.sh --local \
+             --build-system=opam (Meta) or ./scripts/setup.sh --local --build-system=opam (OSS) \
+             before 'make'. Alternatively, set the PYREFLY_BINARY environment variable."
 
 
   let setup

@@ -24,7 +24,7 @@ In that case, run the following command:
 # For Meta internal users (facebook/ directory exists)
 ./facebook/scripts/setup.sh --local
 # For open source users
-./scripts/setup.sh --local
+./scripts/setup.sh --local --build-system=opam
 ```
 
 ### Building the OCaml binary

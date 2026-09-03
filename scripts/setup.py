@@ -6,13 +6,13 @@
 
 
 """
-This script provides a the logic used to bootstrap a local opam
-switch for building Pyre by collecting all dependencies, as well
-as how to configure opam and then invoke dune for various flavors
-of builds.
+This script provides the logic used to build Pyre with Buck or OPAM. The OPAM
+path bootstraps a local switch and invokes Dune.
 """
 
 import argparse
+import dataclasses
+import json
 import logging
 import os
 import shutil
@@ -22,7 +22,7 @@ import textwrap
 from enum import Enum
 from pathlib import Path
 from subprocess import CalledProcessError
-from typing import Dict, List, Mapping, Optional, Tuple
+from typing import cast, Dict, List, Mapping, Optional, Tuple
 
 LOG: logging.Logger = logging.getLogger(__name__)
 
@@ -64,6 +64,17 @@ class OpamVersionParseError(Exception):
 class BuildType(Enum):
     EXTERNAL = "external"
     FACEBOOK = "facebook"
+
+
+class BuildSystem(Enum):
+    BUCK = "buck"
+    OPAM = "opam"
+
+
+@dataclasses.dataclass(frozen=True)
+class BuiltBinaries:
+    pyre_binary: Path
+    buck_main_binary: Path
 
 
 def _custom_linker_option(pyre_directory: Path, build_type: BuildType) -> str:
@@ -401,18 +412,99 @@ def initialize_opam_switch(
     _install_dependencies(opam_root, opam_version, add_environment_variables, rust_path)
 
 
-def full_setup(
-    opam_root: Path,
-    opam_version: Tuple[int, ...],
+def _build_buck_binary(
+    pyre_directory: Path,
+    binary_name: str,
+    mode: str,
+    version: str,
+    add_environment_variables: Optional[Mapping[str, str]],
+) -> Path:
+    target = f"fbcode//tools/pyre/source:{binary_name}"
+    output = _run_command(
+        [
+            "buck2",
+            "build",
+            "--show-full-json-output",
+            mode,
+            "-c",
+            f"pyre.version={version}",
+            target,
+        ],
+        current_working_directory=pyre_directory,
+        add_environment_variables=add_environment_variables,
+    )
+    outputs = cast(Dict[str, str], json.loads(output))
+    if len(outputs) != 1:
+        raise RuntimeError(f"Expected one output for `{target}`, got {outputs}")
+    return Path(next(iter(outputs.values())))
+
+
+def _full_setup_with_buck(
     pyre_directory: Path,
     *,
+    release: bool,
+    run_tests: bool,
+    add_environment_variables: Optional[Mapping[str, str]],
+) -> BuiltBinaries:
+    mode = "@fbcode//mode/opt" if release else "@fbcode//mode/dev"
+    version = _run_command(
+        ["hg", "log", "-r", ".", "-T", "{node}"],
+        current_working_directory=pyre_directory,
+    )
+    pyre_binary = _build_buck_binary(
+        pyre_directory, "main", mode, version, add_environment_variables
+    )
+    buck_main_binary = _build_buck_binary(
+        pyre_directory, "buck_main", mode, version, add_environment_variables
+    )
+    if run_tests:
+        process_count = min(os.cpu_count() or 1, 32)
+        _run_command(
+            [
+                "buck2",
+                "test",
+                "-j",
+                str(process_count),
+                mode,
+                "-c",
+                f"pyre.version={version}",
+                "fbcode//tools/pyre/source/...",
+            ],
+            current_working_directory=pyre_directory,
+            add_environment_variables=add_environment_variables,
+        )
+    return BuiltBinaries(
+        pyre_binary=pyre_binary,
+        buck_main_binary=buck_main_binary,
+    )
+
+
+def full_setup(
+    pyre_directory: Path,
+    *,
+    opam_root: Optional[Path] = None,
+    opam_version: Optional[Tuple[int, ...]] = None,
+    build_system: BuildSystem = BuildSystem.OPAM,
     release: bool = False,
     run_tests: bool = False,
     run_clean: bool = False,
     build_type: BuildType,
     add_environment_variables: Optional[Mapping[str, str]] = None,
     rust_path: Optional[Path] = None,
-) -> None:
+) -> BuiltBinaries:
+    if build_system == BuildSystem.BUCK:
+        if build_type == BuildType.EXTERNAL:
+            raise ValueError("Buck can only build an internal Pyre binary")
+        return _full_setup_with_buck(
+            pyre_directory,
+            release=release,
+            run_tests=run_tests,
+            add_environment_variables=add_environment_variables,
+        )
+
+    if opam_root is None or opam_version is None:
+        raise ValueError("An OPAM root and version are required for an OPAM build")
+
     opam_environment_variables: Mapping[str, str] = _install_dependencies(
         opam_root,
         opam_version,
@@ -445,6 +537,12 @@ def full_setup(
         run_in_opam_environment(["make", "dev"])
         if run_tests:
             run_in_opam_environment(["make", "test"])
+    return BuiltBinaries(
+        pyre_binary=(pyre_directory / "source" / "_build" / "default" / "main.exe"),
+        buck_main_binary=(
+            pyre_directory / "source" / "_build" / "default" / "buck_main.exe"
+        ),
+    )
 
 
 def _make_opam_root(local: bool) -> Path:
@@ -480,6 +578,7 @@ def setup(
     parser.add_argument("--configure", action="store_true")
     parser.add_argument("--release", action="store_true")
     parser.add_argument("--build-type", type=BuildType)
+    parser.add_argument("--build-system", type=BuildSystem, default=BuildSystem.OPAM)
     parser.add_argument("--no-tests", action="store_true")
     parser.add_argument("--rust-path", type=Path)
 
@@ -489,9 +588,8 @@ def setup(
     if not pyre_directory:
         pyre_directory = Path(__file__).parent.parent.absolute()
 
-    opam_root = _make_opam_root(parsed.local)
     build_type = parsed.build_type or _infer_build_type_from_filesystem(pyre_directory)
-    opam_version = detect_opam_version()
+    build_system = parsed.build_system
     release = parsed.release
 
     if parsed.configure:
@@ -499,17 +597,23 @@ def setup(
         produce_taint_test_dune_file(pyre_directory)
         expose_pyrefly_binary(pyre_directory, build_type)
     else:
-        initialize_opam_switch(
-            opam_root,
-            opam_version,
-            release,
-            add_environment_variables,
-            parsed.rust_path,
-        )
+        opam_root = None
+        opam_version = None
+        if build_system == BuildSystem.OPAM:
+            opam_root = _make_opam_root(parsed.local)
+            opam_version = detect_opam_version()
+            initialize_opam_switch(
+                opam_root,
+                opam_version,
+                release,
+                add_environment_variables,
+                parsed.rust_path,
+            )
         full_setup(
-            opam_root,
-            opam_version,
             pyre_directory,
+            opam_root=opam_root,
+            opam_version=opam_version,
+            build_system=build_system,
             release=release,
             run_tests=not parsed.no_tests,
             build_type=build_type,

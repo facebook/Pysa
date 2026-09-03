@@ -36,7 +36,7 @@ You can complete the setup of your development environment with:
 
 ```bash
 $ cd Pysa
-$ ./scripts/setup.sh --local
+$ ./scripts/setup.sh --local --build-system=opam
 ```
 
 This will compile Pyre and run all the unit tests. This is likely going to take some time on your system.
