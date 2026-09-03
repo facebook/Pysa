@@ -22,7 +22,7 @@ In that case, run the following command:
 
 ```bash
 # For Meta internal users (facebook/ directory exists)
-./facebook/scripts/setup.sh --local
+./facebook/scripts/setup.sh --local --build-system=opam
 # For open source users
 ./scripts/setup.sh --local --build-system=opam
 ```
