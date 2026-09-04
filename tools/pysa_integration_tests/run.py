@@ -14,8 +14,9 @@ import sys
 from pathlib import Path
 from typing import List, Optional, TYPE_CHECKING
 
-# This script is meant to be run from the command line.
-if TYPE_CHECKING:
+# Import through the package when Buck loads this module, and from the script's
+# directory when it is executed directly.
+if TYPE_CHECKING or __name__ != "__main__":
     import tools.pyre.tools.pysa_integration_tests.runner_lib as test_runner_lib
 else:
     import runner_lib as test_runner_lib  # @manual=//tools/pyre/tools/pysa_integration_tests:runner_lib
@@ -23,7 +24,7 @@ else:
 LOG: logging.Logger = logging.getLogger(__name__)
 
 
-def main(
+def run(
     *,
     working_directory: Path,
     filter_issues: bool,
@@ -92,7 +93,7 @@ def main(
     )
 
 
-if __name__ == "__main__":
+def main() -> None:
     parser = argparse.ArgumentParser(description="Run integeration tests")
 
     parser.add_argument("--working-directory", type=Path, help="Test working directory")
@@ -113,7 +114,7 @@ if __name__ == "__main__":
         "--run-from",
         choices=[run_from.value for run_from in test_runner_lib.RunFrom],
         default=test_runner_lib.RunFrom.PYRE_IN_PATH.value,
-        help="How to run pysa: `pyre-in-path` (default; uses the `pyre` client on PATH), `python-package` (open source setup, runs `python -mPysa.client.pyre`), `internal-buck` (runs `buck run fbcode//tools/pyre/facebook/client:pysa`), or `oss-buck` (runs `buck run fbcode//tools/pyre/client:pyre`).",
+        help="How to run pysa: `pyre-in-path` (default; uses the `pyre` client on PATH), `pyre-client-env` (runs the executable in `PYRE_CLIENT`), `python-package` (open source setup, runs `python -mPysa.client.pyre`), `internal-buck` (runs `buck run fbcode//tools/pyre/facebook/client:pysa`), or `oss-buck` (runs `buck run fbcode//tools/pyre/client:pyre`).",
     )
     parser.add_argument(
         "--run-from-source",
@@ -199,7 +200,7 @@ if __name__ == "__main__":
         run_from = test_runner_lib.RunFrom.PYTHON_PACKAGE
     elif parsed.run_from_buck:
         run_from = test_runner_lib.RunFrom.INTERNAL_BUCK
-    main(
+    run(
         working_directory=parsed.working_directory or Path(os.getcwd()),
         filter_issues=parsed.filter_issues,
         skip_model_verification=parsed.skip_model_verification,
@@ -217,3 +218,7 @@ if __name__ == "__main__":
         show_type_errors=parsed.show_type_errors,
         debug_pyrefly_report=parsed.debug_pyrefly_report,
     )
+
+
+if __name__ == "__main__":
+    main()

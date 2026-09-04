@@ -59,6 +59,7 @@ class ExitCode(enum.IntEnum):
 
 class RunFrom(enum.Enum):
     PYRE_IN_PATH = "pyre-in-path"
+    PYRE_CLIENT_ENV = "pyre-client-env"
     PYTHON_PACKAGE = "python-package"
     INTERNAL_BUCK = "internal-buck"
     OSS_BUCK = "oss-buck"
@@ -234,6 +235,13 @@ def run_pysa(
     """Run pysa for the given test and produce a list of errors in JSON."""
     if run_from == RunFrom.PYRE_IN_PATH:
         command = ["pyre"]
+    elif run_from == RunFrom.PYRE_CLIENT_ENV:
+        pyre_client = os.environ.get("PYRE_CLIENT")
+        if pyre_client is None:
+            raise ValueError(
+                "PYRE_CLIENT must be set when using --run-from=pyre-client-env"
+            )
+        command = [pyre_client]
     elif run_from == RunFrom.PYTHON_PACKAGE:
         command = [
             "python",

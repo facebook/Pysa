@@ -3,8 +3,11 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+import os
+import subprocess
 import textwrap
 from typing import List
+from unittest.mock import patch
 
 import testslide
 from tools.pyre.tools.pysa_integration_tests import runner_lib as test_runner_lib
@@ -15,6 +18,38 @@ from tools.pyre.tools.pysa_integration_tests.runner_lib import (
 
 
 class RunnerLibTest(testslide.TestCase):
+    def test_run_pysa_with_pyre_client_env(self) -> None:
+        completed_process = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="[]"
+        )
+        with (
+            patch.dict(os.environ, {"PYRE_CLIENT": "/test/pyre-client"}),
+            patch.object(
+                subprocess, "run", return_value=completed_process
+            ) as subprocess_run,
+        ):
+            self.assertEqual(
+                test_runner_lib.run_pysa(
+                    run_from=test_runner_lib.RunFrom.PYRE_CLIENT_ENV
+                ),
+                "[]",
+            )
+
+        self.assertEqual(
+            subprocess_run.call_args.args[0],
+            ["/test/pyre-client", "--noninteractive", "analyze", "--use-pyre1"],
+        )
+
+    def test_run_pysa_with_pyre_client_env_requires_environment_variable(self) -> None:
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            self.assertRaisesRegex(
+                ValueError,
+                "PYRE_CLIENT must be set when using --run-from=pyre-client-env",
+            ),
+        ):
+            test_runner_lib.run_pysa(run_from=test_runner_lib.RunFrom.PYRE_CLIENT_ENV)
+
     def test_parse_annotations(self) -> None:
         self.assertEqual(
             test_runner_lib.parse_test_annotations_from_source(
