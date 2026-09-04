@@ -25,6 +25,8 @@ as old as *10.11*) and *Linux* (tested on *Ubuntu 16.04 LTS* and *CentOS 7*).
 In addition to [Python and watchman](getting_started.md#requirements), we need a working *OCaml* compiler. We use
 [Opam](https://opam.ocaml.org/) to manage our compiler and libraries. You can get Opam via various
 package management systems. Please follow their instructions for your particular operating system.
+OPAM is required for open-source builds because Meta's Buck configuration and
+its internal dependencies are not available in the open-source repository.
 
 ### Building the OCaml binary
 First, clone the repository from [GitHub](https://github.com/facebook/Pysa) using:

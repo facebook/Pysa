@@ -17,31 +17,40 @@ Assume the user is a Meta internal user by default. If the `facebook/` directory
 
 ### Configure
 
-If the file `source/dune` is missing, this must be a fresh repository clone.
-In that case, run the following command:
+Buck is the official build system for Meta-internal development. Open-source
+checkouts must use OPAM because they do not contain the internal sources that
+the default Buck configuration uses.
+
+If the file `source/dune` is missing in an open-source checkout, run:
 
 ```bash
-# For Meta internal users (facebook/ directory exists)
-./facebook/scripts/setup.sh --local --build-system=opam
-# For open source users
 ./scripts/setup.sh --local --build-system=opam
 ```
 
 ### Building the OCaml binary
 
+Pyre and Pysa use the same OCaml binary.
+
 ```bash
+# For Meta internal users
+buck build fbcode//tools/pyre/source:main
+
+# For open source users
 cd source && make
 ```
 
-The built binary is at `source/_build/default/main.exe`.
+For open-source builds, the binary is at `source/_build/default/main.exe`.
 
 ### Running OCaml tests
 
 ```bash
-# All OCaml tests
+# For Meta internal users
+buck test -j 32 fbcode//tools/pyre/source/...
+
+# For open source users: all OCaml tests
 cd source && make test
 
-# Specific OCaml test - e.g. analysis/test/integration/methodTest.ml:
+# For open source users: a specific OCaml test
 cd source && dune exec analysis/test/integration/methodTest.exe
 ```
 
@@ -81,9 +90,14 @@ pyre -n check  # Use one-off check mode, not the server, when recompiling freque
 
 ### Pyrefly Integration
 
-Pyrefly is the default type provider for Pysa tests. The setup script (`./facebook/scripts/setup.sh --local`) automatically builds the Pyrefly binary and symlinks it to `source/pyrefly.exe`. After setup, `make test` uses Pyrefly automatically — no manual steps needed.
+For Meta-internal builds, running an OCaml test with `buck test` automatically
+builds and uses Pyrefly. No separate setup step is needed.
 
-To manually rebuild the Pyrefly binary (Meta internal only):
+In an open-source checkout, the setup script (`./scripts/setup.sh --local
+--build-system=opam`) builds the Pyrefly binary and symlinks it to
+`source/pyrefly.exe`. After setup, `make test` uses Pyrefly automatically.
+
+To manually rebuild the Pyrefly binary in an open-source checkout:
 
 ```bash
 cd source && make pyrefly

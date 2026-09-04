@@ -506,7 +506,7 @@ def full_setup(
     *,
     opam_root: Optional[Path] = None,
     opam_version: Optional[Tuple[int, ...]] = None,
-    build_system: BuildSystem = BuildSystem.OPAM,
+    build_system: BuildSystem,
     release: bool = False,
     run_tests: bool = False,
     run_clean: bool = False,
@@ -599,7 +599,7 @@ def setup(
     parser.add_argument("--configure", action="store_true")
     parser.add_argument("--release", action="store_true")
     parser.add_argument("--build-type", type=BuildType)
-    parser.add_argument("--build-system", type=BuildSystem, default=BuildSystem.OPAM)
+    parser.add_argument("--build-system", type=BuildSystem, required=True)
     parser.add_argument("--no-tests", action="store_true")
     parser.add_argument("--rust-path", type=Path)
 

@@ -46,7 +46,7 @@ pyrefly: configure
 configure: dune;
 
 dune: dune.in interprocedural_analyses/taint/test/dune.in $(wildcard **/dune)
-	../scripts/setup.sh --configure
+	../scripts/setup.sh --configure --build-system=opam
 	dune build @fmt --auto-promote || true
 
 interprocedural_analyses/taint/test/dune: dune

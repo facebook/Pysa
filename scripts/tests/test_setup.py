@@ -182,9 +182,10 @@ class FullSetupTest(unittest.TestCase):
             ],
         )
 
-    def test_opam_is_default_and_requires_root_and_version(self) -> None:
+    def test_opam_requires_root_and_version(self) -> None:
         with self.assertRaisesRegex(ValueError, "OPAM root and version"):
             setup.full_setup(
                 Path("/repo/pyre"),
+                build_system=setup.BuildSystem.OPAM,
                 build_type=setup.BuildType.EXTERNAL,
             )

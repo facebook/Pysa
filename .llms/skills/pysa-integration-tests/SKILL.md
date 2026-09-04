@@ -14,7 +14,15 @@ End-to-end integration tests for the Pysa taint analysis engine. Each test is a 
 
 ## Running Tests
 
-All commands must be run from the `source/` directory.
+At Meta, Buck is the official build system. Run the OCaml tests from anywhere
+in fbsource with:
+
+```bash
+buck test -j 32 fbcode//tools/pyre/source/...
+```
+
+Open-source checkouts must use OPAM and Dune. Run these commands from the
+`source/` directory:
 
 ```bash
 cd source
@@ -28,7 +36,9 @@ PYSA_INTEGRATION_TEST=format.py dune exec interprocedural_analyses/taint/test/in
 
 ### With Pyrefly Frontend
 
-After running `./facebook/scripts/setup.sh --local`, Pyrefly is the default backend — tests use `source/pyrefly.exe` automatically. To override with a custom binary:
+After running `./scripts/setup.sh --local --build-system=opam` in an open-source
+checkout, Pyrefly is the default backend — tests use `source/pyrefly.exe`
+automatically. To override with a custom binary:
 
 ```bash
 PYREFLY_BINARY=<path-to-binary> PYSA_INTEGRATION_TEST=format.py dune exec interprocedural_analyses/taint/test/integrationTest.exe
