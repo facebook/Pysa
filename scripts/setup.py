@@ -71,6 +71,9 @@ class BuildSystem(Enum):
     OPAM = "opam"
 
 
+EXTERNAL_BUCK_BUILD_TYPE = "fbcode//tools/pyre/source:build_type[external]"
+
+
 @dataclasses.dataclass(frozen=True)
 class BuiltBinaries:
     pyre_binary: Path
@@ -418,18 +421,22 @@ def _build_buck_binary(
     mode: str,
     version: str,
     add_environment_variables: Optional[Mapping[str, str]],
+    modifier: Optional[str] = None,
 ) -> Path:
     target = f"fbcode//tools/pyre/source:{binary_name}"
+    command = [
+        "buck2",
+        "build",
+        "--show-full-json-output",
+        mode,
+        "-c",
+        f"pyre.version={version}",
+    ]
+    if modifier is not None:
+        command.extend(["-m", modifier])
+    command.append(target)
     output = _run_command(
-        [
-            "buck2",
-            "build",
-            "--show-full-json-output",
-            mode,
-            "-c",
-            f"pyre.version={version}",
-            target,
-        ],
+        command,
         current_working_directory=pyre_directory,
         add_environment_variables=add_environment_variables,
     )
@@ -442,6 +449,7 @@ def _build_buck_binary(
 def _full_setup_with_buck(
     pyre_directory: Path,
     *,
+    build_type: BuildType,
     release: bool,
     run_tests: bool,
     add_environment_variables: Optional[Mapping[str, str]],
@@ -451,25 +459,39 @@ def _full_setup_with_buck(
         ["hg", "log", "-r", ".", "-T", "{node}"],
         current_working_directory=pyre_directory,
     )
+    modifier = EXTERNAL_BUCK_BUILD_TYPE if build_type == BuildType.EXTERNAL else None
     pyre_binary = _build_buck_binary(
-        pyre_directory, "main", mode, version, add_environment_variables
+        pyre_directory,
+        "main",
+        mode,
+        version,
+        add_environment_variables,
+        modifier,
     )
     buck_main_binary = _build_buck_binary(
-        pyre_directory, "buck_main", mode, version, add_environment_variables
+        pyre_directory,
+        "buck_main",
+        mode,
+        version,
+        add_environment_variables,
+        modifier,
     )
     if run_tests:
         process_count = min(os.cpu_count() or 1, 32)
+        command = [
+            "buck2",
+            "test",
+            "-j",
+            str(process_count),
+            mode,
+            "-c",
+            f"pyre.version={version}",
+        ]
+        if modifier is not None:
+            command.extend(["-m", modifier])
+        command.append("fbcode//tools/pyre/source/...")
         _run_command(
-            [
-                "buck2",
-                "test",
-                "-j",
-                str(process_count),
-                mode,
-                "-c",
-                f"pyre.version={version}",
-                "fbcode//tools/pyre/source/...",
-            ],
+            command,
             current_working_directory=pyre_directory,
             add_environment_variables=add_environment_variables,
         )
@@ -493,10 +515,9 @@ def full_setup(
     rust_path: Optional[Path] = None,
 ) -> BuiltBinaries:
     if build_system == BuildSystem.BUCK:
-        if build_type == BuildType.EXTERNAL:
-            raise ValueError("Buck can only build an internal Pyre binary")
         return _full_setup_with_buck(
             pyre_directory,
+            build_type=build_type,
             release=release,
             run_tests=run_tests,
             add_environment_variables=add_environment_variables,

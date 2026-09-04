@@ -29,8 +29,8 @@ let apply ~argument ~name =
       Type.Callable
         {
           callable with
-          implementation = process_overload old_implementation;
-          overloads = List.map old_overloads ~f:process_overload;
+          Type.Callable.implementation = process_overload old_implementation;
+          Type.Callable.overloads = List.map old_overloads ~f:process_overload;
         }
   | _, argument -> argument
 

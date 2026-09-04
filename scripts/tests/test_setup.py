@@ -104,16 +104,83 @@ class FullSetupTest(unittest.TestCase):
             ),
         )
 
+    @patch.object(setup.os, "cpu_count", return_value=64)
     @patch.object(setup, "_run_command")
-    def test_buck_rejects_external_builds(self, run_command: MagicMock) -> None:
-        with self.assertRaisesRegex(ValueError, "internal Pyre binary"):
-            setup.full_setup(
-                Path("/repo/pyre"),
-                build_system=setup.BuildSystem.BUCK,
-                build_type=setup.BuildType.EXTERNAL,
-            )
+    def test_buck_external_build_and_tests(
+        self, run_command: MagicMock, _cpu_count: MagicMock
+    ) -> None:
+        run_command.side_effect = [
+            "c" * 40,
+            json.dumps({"main": "/tmp/main"}),
+            json.dumps({"buck_main": "/tmp/buck_main"}),
+            "",
+        ]
+        pyre_directory = Path("/repo/fbcode/tools/pyre")
 
-        run_command.assert_not_called()
+        binaries = setup.full_setup(
+            pyre_directory,
+            build_system=setup.BuildSystem.BUCK,
+            build_type=setup.BuildType.EXTERNAL,
+            run_tests=True,
+        )
+
+        self.assertEqual(binaries.pyre_binary, Path("/tmp/main"))
+        self.assertEqual(binaries.buck_main_binary, Path("/tmp/buck_main"))
+        self.assertEqual(
+            run_command.call_args_list,
+            [
+                call(
+                    ["hg", "log", "-r", ".", "-T", "{node}"],
+                    current_working_directory=pyre_directory,
+                ),
+                call(
+                    [
+                        "buck2",
+                        "build",
+                        "--show-full-json-output",
+                        "@fbcode//mode/dev",
+                        "-c",
+                        f"pyre.version={'c' * 40}",
+                        "-m",
+                        "fbcode//tools/pyre/source:build_type[external]",
+                        "fbcode//tools/pyre/source:main",
+                    ],
+                    current_working_directory=pyre_directory,
+                    add_environment_variables=None,
+                ),
+                call(
+                    [
+                        "buck2",
+                        "build",
+                        "--show-full-json-output",
+                        "@fbcode//mode/dev",
+                        "-c",
+                        f"pyre.version={'c' * 40}",
+                        "-m",
+                        "fbcode//tools/pyre/source:build_type[external]",
+                        "fbcode//tools/pyre/source:buck_main",
+                    ],
+                    current_working_directory=pyre_directory,
+                    add_environment_variables=None,
+                ),
+                call(
+                    [
+                        "buck2",
+                        "test",
+                        "-j",
+                        "32",
+                        "@fbcode//mode/dev",
+                        "-c",
+                        f"pyre.version={'c' * 40}",
+                        "-m",
+                        "fbcode//tools/pyre/source:build_type[external]",
+                        "fbcode//tools/pyre/source/...",
+                    ],
+                    current_working_directory=pyre_directory,
+                    add_environment_variables=None,
+                ),
+            ],
+        )
 
     def test_opam_is_default_and_requires_root_and_version(self) -> None:
         with self.assertRaisesRegex(ValueError, "OPAM root and version"):
