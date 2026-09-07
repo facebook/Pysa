@@ -78,6 +78,7 @@ class Transport(Thread, ClosingContextManager):
     server_accept_cv: Condition
     subsystem_table: dict[str, tuple[type[SubsystemHandler], tuple[Any, ...], dict[str, Any]]]
     sys: ModuleType
+    _PROTO_ID: str
     def __init__(
         self,
         sock: _SocketLike,
