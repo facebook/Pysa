@@ -148,12 +148,14 @@ class PyreConnection:
                 f"`{response} is not valid JSON."
             ) from decode_error
         if "error" in response:
+            # pyrefly: ignore [bad-index]
             raise PyreQueryError(response["error"])
         if "response" not in response:
             raise PyreQueryUnexpectedError(
                 'The server response is invalid: It does not contain an "error" or'
                 f'"response" field. Response: `{response}`."'
             )
+        # pyrefly: ignore [bad-return]
         return response
 
     def query_server(self, query: str) -> PyreQueryResult:

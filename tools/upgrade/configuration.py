@@ -38,24 +38,35 @@ class Configuration:
         else:
             self.is_local: bool = False
         self.root: str = str(path.parent)
+        # pyrefly: ignore [bad-assignment]
         self.original_contents: Dict[str, Any] = json_contents
 
         # Configuration fields
+        # pyrefly: ignore [missing-attribute]
         self.strict: Optional[bool] = json_contents.get("strict")
+        # pyrefly: ignore [missing-attribute]
         self.targets: Optional[List[str]] = json_contents.get("targets")
+        # pyrefly: ignore [missing-attribute]
         self.source_directories: Optional[List[str]] = json_contents.get(
             "source_directories"
         )
+        # pyrefly: ignore [missing-attribute]
         self.version: Optional[str] = json_contents.get("version")
+        # pyrefly: ignore [missing-attribute]
         self.pysa_version: Optional[str] = json_contents.get("pysa_version")
+        # pyrefly: ignore [missing-attribute]
         self.use_buck_builder: Optional[bool] = json_contents.get("use_buck_builder")
+        # pyrefly: ignore [missing-attribute]
         self.use_buck_source_database: Optional[bool] = json_contents.get(
             "use_buck_source_database"
         )
+        # pyrefly: ignore [missing-attribute]
         self.ignore_all_errors: Optional[List[str]] = json_contents.get(
             "ignore_all_errors"
         )
+        # pyrefly: ignore [missing-attribute]
         self.exclude: Optional[List[str]] = json_contents.get("exclude")
+        # pyrefly: ignore [missing-attribute]
         self.use_buck2: Optional[bool] = json_contents.get("use_buck2")
 
     def get_contents(self) -> Dict[str, Any]:

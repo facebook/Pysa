@@ -64,6 +64,7 @@ class DynamicGraphQLSourceGenerator(ModelGenerator[CallableModel]):
                 continue
 
             try:
+                # pyrefly: ignore [missing-attribute]
                 fields = element.fields
                 gql_object_name = element.name
             except AssertionError:
