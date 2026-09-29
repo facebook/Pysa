@@ -1,0 +1,14 @@
+@generated
+Call dependencies
+{
+  "Function{override_model_shaping.issue}": [
+    "Function{pysa._test_source}",
+    "Override{override_model_shaping.Base.handle}"
+  ],
+  "Method{override_model_shaping.Base.handle}": [
+    "Method{override_model_shaping.Base.sinks}"
+  ],
+  "Method{override_model_shaping.Base.sinks}": [
+    "Function{pysa._test_sink}"
+  ]
+}

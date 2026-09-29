@@ -1,0 +1,5 @@
+@generated
+Overrides
+Override{override_model_shaping.AnotherChild.handle} -> [Method{override_model_shaping.AnotherChild.handle}]
+Override{override_model_shaping.Base.handle} -> [Method{override_model_shaping.Base.handle} Override{override_model_shaping.AnotherChild.handle} Override{override_model_shaping.Child.handle}]
+Override{override_model_shaping.Child.handle} -> [Method{override_model_shaping.Child.handle}]
