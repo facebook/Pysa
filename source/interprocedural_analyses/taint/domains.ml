@@ -1647,7 +1647,7 @@ end = struct
       | CallInfo.Origin { class_intervals; _ } ->
           let call_info = CallInfo.OverrideCall { port; path; class_intervals } in
           call_info, local_taint
-      | CallSite { port; path; location = _; callees = _; class_intervals; call_site = _ } ->
+      | CallSite { class_intervals; _ } ->
           let call_info = CallInfo.OverrideCall { port; path; class_intervals } in
           call_info, local_taint
       | Declaration { leaf_name_provided = true } -> call_info, local_taint

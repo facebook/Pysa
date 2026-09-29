@@ -5,7 +5,35 @@
     "callable": "override_model_shaping.issue",
     "filename": "override_model_shaping.py",
     "callable_line": 35,
-    "sinks": [ { "port": "formal(base, position=0)[payload]", "taint": [] } ]
+    "sinks": [
+      {
+        "port": "formal(base, position=0)[payload]",
+        "taint": [
+          {
+            "kinds": [
+              {
+                "features": [
+                  { "always-via": "special_sink" },
+                  { "always-via": "model-broadening" },
+                  { "always-via": "broadening" },
+                  { "always-via": "model-sink-broadening" }
+                ],
+                "length": 2,
+                "kind": "Test"
+              }
+            ],
+            "call": {
+              "position": { "line": 39, "start": 4, "end": 8 },
+              "resolves_to": [ "override_model_shaping.Base.handle" ],
+              "port": "formal(self, position=0)[payload]",
+              "call_site": "39:4-39:17"
+            },
+            "receiver_interval": [ { "lower": 2, "upper": 7 } ],
+            "is_self_call": false
+          }
+        ]
+      }
+    ]
   }
 }
 {
@@ -41,7 +69,36 @@
           }
         ]
       },
-      { "name": "backward", "roots": [] }
+      {
+        "name": "backward",
+        "roots": [
+          {
+            "kinds": [
+              {
+                "features": [
+                  { "always-via": "special_sink" },
+                  { "always-via": "model-broadening" },
+                  { "always-via": "broadening" },
+                  { "always-via": "model-sink-broadening" }
+                ],
+                "leaves": [
+                  { "name": "pysa._test_sink", "port": "leaf:arg" }
+                ],
+                "length": 2,
+                "kind": "Test"
+              }
+            ],
+            "call": {
+              "position": { "line": 39, "start": 4, "end": 8 },
+              "resolves_to": [ "override_model_shaping.Base.handle" ],
+              "port": "formal(self, position=0)[payload]",
+              "call_site": "39:4-39:17"
+            },
+            "receiver_interval": [ { "lower": 2, "upper": 7 } ],
+            "is_self_call": false
+          }
+        ]
+      }
     ],
     "features": [
       { "always-via": "special_source" },
@@ -549,32 +606,7 @@
               { "always-via": "broadening" },
               { "always-via": "model-sink-broadening" }
             ],
-            "override_call": {
-              "port": "formal(self, position=0)[payload][left]"
-            },
-            "caller_interval": [ { "lower": 2, "upper": 7 } ],
-            "receiver_interval": [ { "lower": 2, "upper": 7 } ],
-            "is_self_call": true
-          },
-          {
-            "kinds": [
-              {
-                "features": [ { "always-via": "special_sink" } ],
-                "leaves": [
-                  { "name": "pysa._test_sink", "port": "leaf:arg" }
-                ],
-                "length": 1,
-                "kind": "Test"
-              }
-            ],
-            "local_features": [
-              { "always-via": "model-broadening" },
-              { "always-via": "broadening" },
-              { "always-via": "model-sink-broadening" }
-            ],
-            "override_call": {
-              "port": "formal(self, position=0)[payload][right]"
-            },
+            "override_call": { "port": "formal(self, position=0)[payload]" },
             "caller_interval": [ { "lower": 2, "upper": 7 } ],
             "receiver_interval": [ { "lower": 2, "upper": 7 } ],
             "is_self_call": true
