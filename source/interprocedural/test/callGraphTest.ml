@@ -8342,6 +8342,51 @@ let test_higher_order_call_graph_of_define =
       @@ assert_higher_order_call_graph_of_define
            ~source:
              {|
+     def foo(in_scope: list[str], by_file: bool):
+       for path in in_scope or ([] if by_file else ["<no-headers>"]):
+         pass
+  |}
+           ~define_name:"test.foo"
+           ~expected_call_graph:(fun pyrefly_api ->
+             [
+               ( "3:14-3:62|artificial-call|for-iter",
+                 ExpressionCallees.from_call
+                   (CallCallees.create
+                      ~call_targets:
+                        [
+                          CallTarget.create_regular
+                            ~implicit_receiver:true
+                            ~receiver_class:(class_id_exn pyrefly_api "builtins.list")
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"builtins.list"
+                               ~method_name:"__iter__"
+                               ());
+                        ]
+                      ()) );
+               ( "3:14-3:62|artificial-call|for-next",
+                 ExpressionCallees.from_call
+                   (CallCallees.create
+                      ~call_targets:
+                        [
+                          CallTarget.create_regular
+                            ~implicit_receiver:true
+                            ~receiver_class:(class_id_exn pyrefly_api "typing.Iterator")
+                            ~return_type:(Some ReturnType.unknown)
+                            (InterproceduralTest.resolve_method_regular_exn
+                               ~pyrefly_api
+                               ~class_name:!&"typing.Iterator"
+                               ~method_name:"__next__"
+                               ());
+                        ]
+                      ()) );
+             ])
+           ~expected_returned_callables:(fun _pyrefly_api -> [])
+           ();
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_higher_order_call_graph_of_define
+           ~source:
+             {|
      def foo():
        for x in [1, 2]:
          def dummy_trace():
