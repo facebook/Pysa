@@ -1031,6 +1031,7 @@ module ReadWrite = struct
       ~callable_metadata_shared_memory
       ~class_metadata_shared_memory
       ~class_id_to_qualified_name_shared_memory
+      ~callable_id_to_qualified_name_shared_memory
     =
     let timer = Timer.start () in
     let () = Log.info "Parsing source files..." in
@@ -1234,10 +1235,17 @@ module ReadWrite = struct
             Map.min_elt_exn id_to_callable
             |> fun (local_function_id, callable) -> LocalFunctionId.show local_function_id, callable
         in
+        let callable_name =
+          CallableIdToQualifiedNameSharedMemory.get
+            callable_id_to_qualified_name_shared_memory
+            callable_id
+        in
         Format.asprintf
-          "Could not find AST of function `%a` at `%s` in module `%a`"
+          "Could not find AST of function `%a` (fully qualified name `%a`) at `%s` in module `%a`"
           CallableId.pp
           callable_id
+          FullyQualifiedName.pp
+          callable_name
           id_or_location
           ModuleId.pp
           module_id
@@ -2354,6 +2362,7 @@ module ReadWrite = struct
         ~callable_metadata_shared_memory
         ~class_metadata_shared_memory
         ~class_id_to_qualified_name_shared_memory
+        ~callable_id_to_qualified_name_shared_memory
     in
 
     let all_sys_infos =
