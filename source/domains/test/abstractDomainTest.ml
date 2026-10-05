@@ -3021,6 +3021,59 @@ end
 
 module TestStringSetWrapper = TestAbstractDomain (StringSetWrapper)
 
+(* Element whose transform_on_sink drops everything but 0, like Pysa's collapse depth. *)
+module TreeOverSinkTransformedElement = struct
+  module Depth = struct
+    include AbstractSimpleDomain.Make (struct
+      type t = int
+
+      let name = "depth"
+
+      let bottom = Int.max_value
+
+      let equal = Int.equal
+
+      let join = Int.min
+
+      let meet = Int.max
+
+      let less_or_equal ~left ~right = left >= right
+
+      let pp formatter value = Format.fprintf formatter "%d" value
+
+      let show = Int.to_string
+    end)
+
+    let transform_on_widening_collapse _ = 0
+
+    let transform_on_sink = function
+      | 0 -> 0
+      | _ -> bottom
+
+
+    let transform_on_hoist _ = 0
+  end
+
+  module Tree =
+    AbstractTreeDomain.Make
+      (struct
+        let max_tree_depth_after_widening () = 3
+
+        let check_invariants = true
+      end)
+      (Depth)
+      ()
+
+  let test_less_or_equal_consistent_with_join _ =
+    let create path depth = Tree.create [AbstractDomain.Part (Tree.Path, (path, depth))] in
+    let child = create [AbstractTreeDomain.Label.create_name_index "a"] 3 in
+    let root = create [] 2 in
+    let joined = Tree.join child root in
+    assert_bool "join is not above root" (not (Tree.equal joined root));
+    assert_bool "child <= root" (not (Tree.less_or_equal ~left:child ~right:root));
+    assert_bool "join child root <= root" (not (Tree.less_or_equal ~left:joined ~right:root))
+end
+
 let () =
   "abstractDomainTest"
   >::: [
@@ -3040,5 +3093,7 @@ let () =
          "flat_string" >::: TestFlatString.suite ();
          "product_ambiguous_part" >::: TestProductAmbiguousPart.suite ();
          "string_set_wrapper" >::: TestStringSetWrapper.suite ();
+         "tree_less_or_equal_transform_on_sink"
+         >:: TreeOverSinkTransformedElement.test_less_or_equal_consistent_with_join;
        ]
   |> run_test_tt_main

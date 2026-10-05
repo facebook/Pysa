@@ -898,7 +898,7 @@ module Make (Config : CONFIG) (Element : ELEMENT) () = struct
 
 
   (** right_ancestors is the path element of right_tree, i.e. the join of element's along the spine
-      of the right tree to this point. *)
+      of the right tree to this point, transformed by `Element.transform_on_sink` as in `join`. *)
   let rec less_or_equal_tree
       { element = left_element; children = left_children }
       right_ancestors
@@ -914,7 +914,10 @@ module Make (Config : CONFIG) (Element : ELEMENT) () = struct
       in
       Checks.false_witness ~message
     else
-      less_or_equal_children left_children right_ancestors right_children
+      less_or_equal_children
+        left_children
+        (Element.transform_on_sink right_ancestors)
+        right_children
 
 
   and less_or_equal_option_tree left_option_tree right_ancestors right_option_tree =
