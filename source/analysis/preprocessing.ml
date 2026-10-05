@@ -1607,8 +1607,32 @@ let replace_version_specific_code ~major_version ~minor_version ~micro_version s
       [%compare: int] actual_version given_version |> Comparison.evaluate ~operator
 
 
-    let evaluate_three_versions ~operator actual_versions given_versions =
-      [%compare: int * int * int] actual_versions given_versions |> Comparison.evaluate ~operator
+    (* The running interpreter is a final release, i.e. `(major, minor, micro, "final", 0)`. A
+       release level without a serial compares as a shorter, hence smaller, tuple. *)
+    let compare_release_level = function
+      | [
+          {
+            Node.value = Expression.Constant (Constant.String { StringLiteral.value = level; _ });
+            _;
+          };
+        ] ->
+          [%compare: string * int] ("final", 0) (level, -1)
+      | [
+          {
+            Node.value = Expression.Constant (Constant.String { StringLiteral.value = level; _ });
+            _;
+          };
+          { Node.value = Expression.Constant (Constant.Integer serial); _ };
+        ] ->
+          [%compare: string * int] ("final", 0) (level, serial)
+      | _ -> 0
+
+
+    let evaluate_three_versions ?(release_level = []) ~operator actual_versions given_versions =
+      (match [%compare: int * int * int] actual_versions given_versions with
+      | 0 -> compare_release_level release_level
+      | result -> result)
+      |> Comparison.evaluate ~operator
 
 
     let statement _ ({ Node.location; value } as statement) =
@@ -1738,11 +1762,12 @@ let replace_version_specific_code ~major_version ~minor_version ~micro_version s
                            Node.value = Expression.Constant (Constant.Integer given_micro_version);
                            _;
                          }
-                      :: _);
+                      :: release_level);
                   _;
                 } )
             when is_system_version_expression left ->
               evaluate_three_versions
+                ~release_level
                 ~operator
                 (major_version, minor_version, micro_version)
                 (given_major_version, given_minor_version, given_micro_version)
@@ -1842,12 +1867,13 @@ let replace_version_specific_code ~major_version ~minor_version ~micro_version s
                            Node.value = Expression.Constant (Constant.Integer given_micro_version);
                            _;
                          }
-                      :: _);
+                      :: release_level);
                   _;
                 },
                 right )
             when is_system_version_expression right ->
               evaluate_three_versions
+                ~release_level
                 ~operator:(Comparison.inverse operator)
                 (major_version, minor_version, micro_version)
                 (given_major_version, given_minor_version, given_micro_version)

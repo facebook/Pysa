@@ -3329,6 +3329,90 @@ let test_replace_version_specific_code =
       labeled_test_case __FUNCTION__ __LINE__
       @@ assert_preprocessed
            ~major_version:3
+           ~minor_version:14
+           ~micro_version:0
+           {|
+      if sys.version_info >= (3, 14, 0, "beta"):
+        from A import B
+      else:
+        from A import C
+    |}
+           {|
+       from A import B
+    |};
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_preprocessed
+           ~major_version:3
+           ~minor_version:14
+           ~micro_version:0
+           {|
+      if sys.version_info > (3, 14, 0, "beta"):
+        from A import B
+      else:
+        from A import C
+    |}
+           {|
+       from A import B
+    |};
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_preprocessed
+           ~major_version:3
+           ~minor_version:14
+           ~micro_version:0
+           {|
+      if sys.version_info <= (3, 14, 0, "candidate", 1):
+        from A import B
+      else:
+        from A import C
+    |}
+           {|
+       from A import C
+    |};
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_preprocessed
+           ~major_version:3
+           ~minor_version:14
+           ~micro_version:0
+           {|
+      if sys.version_info == (3, 14, 0, "final", 0):
+        from A import B
+      else:
+        from A import C
+    |}
+           {|
+       from A import B
+    |};
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_preprocessed
+           ~major_version:3
+           ~minor_version:14
+           ~micro_version:0
+           {|
+      if sys.version_info > (3, 14, 0, "final"):
+        from A import B
+      else:
+        from A import C
+    |}
+           {|
+       from A import B
+    |};
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_preprocessed
+           ~major_version:3
+           ~minor_version:14
+           ~micro_version:0
+           {|
+      if (3, 14, 0, "final") < sys.version_info:
+        from A import B
+      else:
+        from A import C
+    |}
+           {|
+       from A import B
+    |};
+      labeled_test_case __FUNCTION__ __LINE__
+      @@ assert_preprocessed
+           ~major_version:3
            ~minor_version:6
            ~micro_version:12
            {|
