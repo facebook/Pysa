@@ -49,9 +49,10 @@ class ConsolidateNestedConfigurationsTest(unittest.TestCase):
         ).gather_nested_configuration_mapping(configurations)
         self.assertEqual(expected_mapping, mapping)
 
+    @patch("subprocess.check_output", side_effect=[b"//a:a", b"//b:b", b"//x:x"])
     @patch.object(Repository, "remove_paths")
     @patch.object(Configuration, "get_errors")
-    def test_consolidate(self, get_errors, remove_paths) -> None:
+    def test_consolidate(self, get_errors, remove_paths, mock_check_output) -> None:
         get_errors.return_value = errors.Errors([])
         with tempfile.TemporaryDirectory() as root:
             configuration_path = os.path.join(root, ".pyre_configuration.local")
@@ -87,6 +88,7 @@ class ConsolidateNestedConfigurationsTest(unittest.TestCase):
                     json.load(configuration_file),
                     {"targets": ["//x/...", "//a/...", "//b/..."]},
                 )
+                self.assertEqual(mock_check_output.call_count, 3)
 
     @patch.object(Repository, "commit_changes")
     @patch.object(consolidate_nested_configurations, "consolidate_nested")
