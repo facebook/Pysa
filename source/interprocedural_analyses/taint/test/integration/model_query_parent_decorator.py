@@ -6,12 +6,12 @@
 from pysa import _test_sink
 
 
-def d1():
-    pass
+def d1[T](cls: T) -> T:
+    return cls
 
 
-def d2():
-    pass
+def d2[T](cls: T) -> T:
+    return cls
 
 
 class TestC:

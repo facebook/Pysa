@@ -2,6 +2,44 @@
 {
   "kind": "model",
   "data": {
+    "callable": "model_query_parent_decorator.d1",
+    "filename": "model_query_parent_decorator.py",
+    "callable_line": 9,
+    "tito": [
+      {
+        "port": "formal(cls, position=0)",
+        "taint": [
+          {
+            "kinds": [ { "return_paths": { "": 4 }, "kind": "LocalReturn" } ],
+            "tito": {}
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "kind": "model",
+  "data": {
+    "callable": "model_query_parent_decorator.d2",
+    "filename": "model_query_parent_decorator.py",
+    "callable_line": 13,
+    "tito": [
+      {
+        "port": "formal(cls, position=0)",
+        "taint": [
+          {
+            "kinds": [ { "return_paths": { "": 4 }, "kind": "LocalReturn" } ],
+            "tito": {}
+          }
+        ]
+      }
+    ]
+  }
+}
+{
+  "kind": "model",
+  "data": {
     "callable": "pysa._test_sink",
     "filename": "pysa/__init__.pyi",
     "callable_line": 4,
