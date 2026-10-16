@@ -92,6 +92,21 @@ let assert_generated_annotations context ~source ~query ~callable ~expected () =
     actual
 
 
+let assert_generated_annotations_with_identity_decorator context ~source =
+  assert_generated_annotations
+    context
+    ~source:
+      ({|      from typing import TypeVar
+
+      T = TypeVar("T")
+
+
+      def decorator(cls: T) -> T:
+        return cls
+|}
+      ^ source)
+
+
 let assert_generated_annotations_for_attributes context ~source ~query ~name ~expected () =
   let project =
     InterproceduralTest.ScratchPyrePysaProject.setup
@@ -4202,7 +4217,7 @@ let test_generated_annotations_class_constraints context =
 
 (* Test cls.any_child *)
 let test_generated_annotations_class_any_child context =
-  let assert_generated_annotations = assert_generated_annotations context in
+  let assert_generated_annotations = assert_generated_annotations_with_identity_decorator context in
   assert_generated_annotations
     ~source:
       {|
@@ -4598,7 +4613,7 @@ let test_generated_annotations_class_any_child context =
 
 (* Test cls.any_parent *)
 let test_generated_annotations_class_any_parent context =
-  let assert_generated_annotations = assert_generated_annotations context in
+  let assert_generated_annotations = assert_generated_annotations_with_identity_decorator context in
   assert_generated_annotations
     ~source:
       {|
