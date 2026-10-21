@@ -38,21 +38,6 @@ module Make (Key : KEY) (Element : AbstractDomainCore.S) = struct
 
     let fold ~f map ~init = Map.fold (fun key data acc -> f ~key ~data acc) map init
 
-    let fold2 ~f ~init left right =
-      let combine _key left right =
-        match left, right with
-        | Some left, None -> Some (`Left left)
-        | None, Some right -> Some (`Right right)
-        | Some left, Some right -> Some (`Both (left, right))
-        | None, None -> None
-      in
-      Map.merge combine left right |> fold ~f ~init
-
-
-    let iter2 ~f left right =
-      ignore (fold2 left right ~f:(fun ~key ~data () -> f ~key ~data) ~init:())
-
-
     let map ~f map = Map.map f map
 
     let find map key = Map.find_opt key map
@@ -119,20 +104,16 @@ module Make (Key : KEY) (Element : AbstractDomainCore.S) = struct
       else if is_bottom right then
         false
       else
-        let find_witness ~key:_ ~data =
-          match data with
-          | `Both (left, right) ->
-              if not (Element.less_or_equal ~left ~right) then raise_notrace Exit
-          | `Left _ ->
+        let find_witness ~key ~data:left () =
+          match Map.find right key with
+          | Some right -> if not (Element.less_or_equal ~left ~right) then raise_notrace Exit
+          | None ->
               (* If absence_implicitly_maps_to_bottom, then left is not bottom, so in either case,
                  the relation does not hold. *)
               raise_notrace Exit
-          | `Right _ ->
-              (* An absent key is less than a present key in either case. *)
-              ()
         in
         try
-          Map.iter2 ~f:find_witness left right;
+          Map.fold ~f:find_witness left ~init:();
           true
         with
         | Exit -> false
@@ -353,16 +334,19 @@ module Make (Key : KEY) (Element : AbstractDomainCore.S) = struct
 
 
     let subtract to_remove ~from =
-      let subtract_element ~key ~data result =
-        match data with
-        | `Both (to_remove, from) ->
-            let difference = Element.subtract to_remove ~from in
+      (* Only keys of `from` can remain, so look each one up in `to_remove` rather than merging both
+         maps: the ancestors subtracted from a tree element are often much larger than it. *)
+      let subtract_element ~key ~data:from_element result =
+        match Map.find to_remove key with
+        | None -> set result ~key ~data:from_element
+        | Some to_remove_element ->
+            let difference = Element.subtract to_remove_element ~from:from_element in
             if Element.is_bottom difference then
+              Map.remove result key
+            else if difference == from_element then
               result
             else
               Map.set result ~key ~data:difference
-        | `Left _ -> result
-        | `Right keep -> set result ~key ~data:keep
       in
       if from == to_remove then
         bottom
@@ -371,7 +355,7 @@ module Make (Key : KEY) (Element : AbstractDomainCore.S) = struct
       else if is_bottom to_remove then
         from
       else
-        Map.fold2 to_remove from ~f:subtract_element ~init:bottom
+        Map.fold from ~f:subtract_element ~init:from
 
 
     let create parts =
