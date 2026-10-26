@@ -523,6 +523,7 @@ class QueryAPITest(unittest.TestCase):
                         "column": 0,
                         "stop_line": 4,
                         "stop_column": 1,
+                        "code": 9,
                     }
                 ]
             }
@@ -538,6 +539,7 @@ class QueryAPITest(unittest.TestCase):
                     stop_line=4,
                     stop_column=1,
                     full_error_message="Invalid model for `first.f`: Unrecognized taint annotation `NotAnAnnotation`",  # noqa: B950
+                    code=9,
                 ),
             ],
         )

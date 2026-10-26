@@ -126,6 +126,9 @@ class PyreCache:
     class_hierarchy: Optional[ClassHierarchy] = None
 
 
+INVALID_TAINT_ANNOTATION_ERROR_CODE: int = 9
+
+
 class InvalidModel(NamedTuple):
     fully_qualified_name: str
     path: Optional[str]
@@ -134,6 +137,7 @@ class InvalidModel(NamedTuple):
     stop_line: int
     stop_column: int
     full_error_message: str
+    code: Optional[int] = None
 
 
 def _defines(pyre_connection: PyreConnection, modules: Iterable[str]) -> List[Define]:
@@ -337,6 +341,7 @@ def parse_validate_taint_models_response(
                     stop_line=error["stop_line"],
                     stop_column=error["stop_column"],
                     fully_qualified_name="",
+                    code=error.get("code"),
                 )
             )
     return errors
