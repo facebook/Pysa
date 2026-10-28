@@ -176,7 +176,7 @@
   "data": {
     "callable": "_typeshed._type_checker_internals.NamedTupleFallback._asdict",
     "filename": "_typeshed/_type_checker_internals.pyi",
-    "callable_line": 82,
+    "callable_line": 85,
     "tito": [
       {
         "port": "formal(self, position=0)",

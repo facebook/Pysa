@@ -3952,7 +3952,7 @@
   "data": {
     "callable": "builtins.dict.__getitem__",
     "filename": "builtins.pyi",
-    "callable_line": 3744,
+    "callable_line": 3756,
     "tito": [
       {
         "port": "formal(self, position=0, positional_only)[*]",
@@ -3980,7 +3980,7 @@
   "data": {
     "callable": "builtins.dict.get",
     "filename": "builtins.pyi",
-    "callable_line": 3709,
+    "callable_line": 3721,
     "tito": [
       {
         "port": "formal(__default, position=2, positional_only)",
@@ -4383,7 +4383,7 @@
   "data": {
     "callable": "typing.Mapping.__getitem__",
     "filename": "typing.pyi",
-    "callable_line": 867,
+    "callable_line": 869,
     "tito": [
       {
         "port": "formal(self, position=0, positional_only)[*]",
@@ -4411,7 +4411,7 @@
   "data": {
     "callable": "typing.Mapping.get",
     "filename": "typing.pyi",
-    "callable_line": 875,
+    "callable_line": 877,
     "tito": [
       {
         "port": "formal(default, position=2, positional_only)",
@@ -4450,7 +4450,7 @@
   "data": {
     "callable": "typing.MutableMapping.update",
     "filename": "typing.pyi",
-    "callable_line": 942,
+    "callable_line": 944,
     "tito": [
       {
         "port": "formal(**kwargs, excluded=[self])",

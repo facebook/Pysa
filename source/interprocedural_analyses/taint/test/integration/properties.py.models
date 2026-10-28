@@ -1202,7 +1202,7 @@
   "data": {
     "callable": "builtins.object.__class__",
     "filename": "builtins.pyi",
-    "callable_line": 127,
+    "callable_line": 128,
     "global_sanitizer": {
       "sources": "All",
       "sinks": "All",
