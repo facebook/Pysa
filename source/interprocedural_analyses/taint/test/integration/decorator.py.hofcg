@@ -1556,7 +1556,25 @@ Higher order call graphs
       }
     },
     "227:38-227:43": {
-      "call": { "unresolved": [ "EmptyPyreflyCallTarget" ] }
+      "call": {
+        "new_calls": [
+          {
+            "target": "builtins.object.__new__",
+            "index": 5,
+            "return_type": [],
+            "is_static_method": true
+          }
+        ],
+        "init_calls": [
+          {
+            "target": "builtins.object.__init__",
+            "index": 5,
+            "implicit_receiver": true,
+            "return_type": [],
+            "receiver_class": "decorator.Foo"
+          }
+        ]
+      }
     },
     "227:47-227:61": {
       "call": {
