@@ -50,6 +50,21 @@ class RunnerLibTest(testslide.TestCase):
         ):
             test_runner_lib.run_pysa(run_from=test_runner_lib.RunFrom.PYRE_CLIENT_ENV)
 
+    def test_run_pysa_with_environment(self) -> None:
+        completed_process = subprocess.CompletedProcess(
+            args=[], returncode=0, stdout="[]"
+        )
+        environment = {"TEST_VARIABLE": "test-value"}
+        with patch.object(
+            subprocess, "run", return_value=completed_process
+        ) as subprocess_run:
+            self.assertEqual(
+                test_runner_lib.run_pysa(environment=environment),
+                "[]",
+            )
+
+        self.assertEqual(subprocess_run.call_args.kwargs["env"], environment)
+
     def test_parse_annotations(self) -> None:
         self.assertEqual(
             test_runner_lib.parse_test_annotations_from_source(

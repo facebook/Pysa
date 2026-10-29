@@ -28,6 +28,7 @@ from typing import (
     final,
     IO,
     List,
+    Mapping,
     Optional,
     Sequence,
     TypedDict,
@@ -231,6 +232,7 @@ def run_pysa(
     skip_buck_dependencies: bool = False,
     show_type_errors: bool = False,
     debug_pyrefly_report: bool = False,
+    environment: Optional[Mapping[str, str]] = None,
 ) -> str:
     """Run pysa for the given test and produce a list of errors in JSON."""
     if run_from == RunFrom.PYRE_IN_PATH:
@@ -335,6 +337,7 @@ def run_pysa(
             stdout=subprocess.PIPE,
             stderr=(subprocess.DEVNULL if silent else None),
             cwd=working_directory,
+            env=environment,
         )
     except subprocess.CalledProcessError as exception:
         LOG.error(f"`pyre analyze` failed with return code {exception.returncode}")
