@@ -196,6 +196,7 @@ def dataclass_merge(cls: Type[T]) -> Type[T]:
         _assert_is_dataclass_instance(base)
         _assert_is_dataclass_instance(override)
         return cls(
+            # pyrefly: ignore[bad-argument-count]
             *_merge_fields(
                 # pyrefly: ignore [bad-argument-type]
                 dataclasses.fields(cls),
